@@ -41,7 +41,9 @@
                 const html = await res.text();
                 contentEl.innerHTML = html;
                 setActive(slug);
-                if (push) history.pushState({ slug }, "", `/docs/${slug}`);
+                if (push) {
+                    location.hash = `/${slug}`;
+                }
             } catch (err) {
                 contentEl.innerHTML = `<h1>404</h1><p>Conteúdo não encontrado.</p>`;
             }
@@ -55,16 +57,17 @@
             });
         });
 
-        window.addEventListener("popstate", e => {
-            if (e.state && e.state.slug) {
-                loadContent(e.state.slug, false);
-            }
+        // Detecta alterações no hash (voltar/avançar ou usuário editando na barra)
+        window.addEventListener("hashchange", () => {
+            const slug = location.hash.split("/").pop() || "getting-started";
+            loadContent(slug, false);
         });
 
-        // Detecta slug inicial pela URL
-        const initialSlug = location.pathname.split("/").pop() || "getting-started";
+        // Detecta slug inicial pelo hash
+        const initialSlug = location.hash.split("/").pop() || "getting-started";
         loadContent(initialSlug, false);
     </script>
+
 </body>
 
 </html>
