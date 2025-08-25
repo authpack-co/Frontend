@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthPack - Extensão de Autenticação</title>
+    <link rel="shortcut icon" href="/src/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/src/styles/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">AuthPack</div>
+        <nav>
+            <a href="#pricing">Pricing</a>
+            <a href="#features">Features</a>
+            <a href="#enterprise">Enterprise</a>
+            <a href="#docs">Docs</a>
+        </nav>
+        <div class="buttons">
+            <button class="btn btn-signin">Sign in</button>
+            <button class="btn btn-download">Download</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Gerencie sessões como um profissional</h1>
+        <p>O AuthPack simplifica a autenticação, organiza seus acessos e garante segurança máxima em cada conexão.</p>
+        <div class="buttons">
+            <button class="btn-primary">Baixar para Chrome</button>
+            <button class="btn-secondary">Todas as versões</button>
+        </div>
+        <div class="placeholder-img"></div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-left">
+                <h3>AuthPack</h3>
+                <p>Gerencie sessões com segurança e praticidade.</p>
+            </div>
+
+            <div class="footer-center">
+                <a href="#">Docs</a>
+                <a href="#">Suporte</a>
+                <a href="#">Contato</a>
+            </div>
+
+            <div class="footer-right">
+                <p>© 2025 AuthPack. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        // Add dynamic background gradient animation
+        let gradientAngle = 135;
+        setInterval(() => {
+            gradientAngle = (gradientAngle + 0.5) % 360;
+            const hero = document.querySelector('.hero');
+            hero.style.background = `linear-gradient(${gradientAngle}deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)`;
+        }, 100);
+    </script>
+</body>
+
+</html>
