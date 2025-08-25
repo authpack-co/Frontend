@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthPack Docs</title>
+    <link rel="shortcut icon" href="/src/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./assets/css/docs.css">
+    <link rel="stylesheet" href="./assets/css/content.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Docs</h2>
+        <ul class="nav">
+            <li><a href="/docs/getting-started" data-slug="getting-started">Getting Started</a></li>
+            <li><a href="/docs/install" data-slug="install">Instalação</a></li>
+            <li><a href="/docs/faq" data-slug="faq">FAQ</a></li>
+        </ul>
+    </div>
+    <div class="content" id="doc-content">
+        <!-- Conteúdo carregado dinamicamente -->
+    </div>
+
+    <script>
+        const contentEl = document.getElementById("doc-content");
+        const navLinks = document.querySelectorAll(".nav a");
+
+        function setActive(slug) {
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.dataset.slug === slug) link.classList.add("active");
+            });
+        }
+
+        async function loadContent(slug, push = true) {
+            try {
+                const res = await fetch(`/docs/content/${slug}.html`);
+                if (!res.ok) throw new Error("Conteúdo não encontrado");
+                const html = await res.text();
+                contentEl.innerHTML = html;
+                setActive(slug);
+                if (push) history.pushState({ slug }, "", `/docs/${slug}`);
+            } catch (err) {
+                contentEl.innerHTML = `<h1>404</h1><p>Conteúdo não encontrado.</p>`;
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener("click", e => {
+                e.preventDefault();
+                const slug = link.dataset.slug;
+                loadContent(slug);
+            });
+        });
+
+        window.addEventListener("popstate", e => {
+            if (e.state && e.state.slug) {
+                loadContent(e.state.slug, false);
+            }
+        });
+
+        // Detecta slug inicial pela URL
+        const initialSlug = location.pathname.split("/").pop() || "getting-started";
+        loadContent(initialSlug, false);
+    </script>
+</body>
+
+</html>

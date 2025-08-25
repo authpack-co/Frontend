@@ -32,7 +32,7 @@ header .logo {
     color: white;
 }
 
-header nav a {
+header a {
     margin-left: 25px;
     text-decoration: none;
     color: white;
