@@ -6,16 +6,18 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: #000;
-    color: white;
+    background: #ffffff;
+    color: #333333;
     display: flex;
     flex-direction: column;
+    padding: 0 3rem;
     min-height: 100vh;
 }
 
 header {
     width: 100%;
-    background: #000;
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,18 +26,19 @@ header {
     top: 0;
     left: 0;
     z-index: 1000;
+    height: 80px; /* Definindo altura fixa para o header */
 }
 
 header .logo {
     font-size: 1.5rem;
     font-weight: bold;
-    color: white;
+    color: #333333;
 }
 
 header a {
     margin-left: 25px;
     text-decoration: none;
-    color: white;
+    color: #333333;
     font-weight: 500;
 }
 
@@ -50,12 +53,13 @@ header .btn {
 
 header .btn-signin {
     background: transparent;
-    color: white;
+    color: #333333;
+    border: 1px solid #dee2e6;
 }
 
 header .btn-download {
-    background: white;
-    color: black;
+    background: #333333;
+    color: white;
 }
 
 .hero {
@@ -64,11 +68,15 @@ header .btn-download {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 120px 20px 60px;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 80px 20px 60px; /* Voltei ao padding original */
+    margin-top: 100px; /* Adicionei margin-top para empurrar o hero para baixo */
     text-align: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
+    color: white;
 }
 
 @keyframes gradient {
@@ -89,11 +97,13 @@ header .btn-download {
     font-size: 3rem;
     font-weight: bold;
     margin-bottom: 20px;
+    color: white;
 }
 
 .hero p {
     font-size: 1.2rem;
     margin-bottom: 30px;
+    color: white;
 }
 
 .hero .buttons {
@@ -116,40 +126,41 @@ header .btn-download {
 
 .btn-primary {
     background: white;
-    color: black;
+    color: #333333;
 }
 
 .btn-primary:hover {
-    background: #f0f0f0;
+    background: #f8f9fa;
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary {
-    background: black;
+    background: rgba(255, 255, 255, 0.1);
     color: white;
     border: 1px solid white;
+    backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover {
-    background: #222;
+    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
 }
-
 
 .placeholder-img {
     margin-top: 40px;
     width: 620px;
     height: 400px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.1);
     background-image: url("/src/images/workflow.png");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 12px;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 5px 15px;
     animation: float 5s ease-in-out infinite;
+    backdrop-filter: blur(10px);
 }
 
 @keyframes float {
@@ -157,12 +168,11 @@ header .btn-download {
     50% { transform: translateY(-10px); }
 }
 
-
 footer {
-    background: #000;
+    background: #f8f9fa;
     padding: 40px 20px;
-    border-top: 1px solid #222;
-    color: #bbb;
+    border-top: 1px solid #dee2e6;
+    color: #495057;
     font-size: 0.9rem;
 }
 
@@ -182,13 +192,13 @@ footer {
 }
 
 .footer-left h3 {
-    color: #fff;
+    color: #333333;
     margin-bottom: 8px;
     font-size: 1.2rem;
 }
 
 .footer-left p {
-    color: #888;
+    color: #666666;
     font-size: 0.9rem;
 }
 
@@ -199,13 +209,13 @@ footer {
 }
 
 .footer-center a {
-    color: #bbb;
+    color: #495057;
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .footer-center a:hover {
-    color: #fff;
+    color: #333333;
 }
 
 .footer-right {
@@ -218,12 +228,12 @@ footer {
 }
 
 .footer-right a {
-    color: #bbb;
+    color: #495057;
     text-decoration: none;
 }
 
 .footer-right a:hover {
-    color: #fff;
+    color: #333333;
 }
 
 @media (max-width: 768px) {
@@ -232,8 +242,17 @@ footer {
         text-align: center;
         gap: 30px;
     }
+    
+    .hero {
+        padding: 80px 20px 40px; /* Ajuste para mobile */
+        margin-top: 70px; /* Margin menor para mobile */
+    }
+    
+    header {
+        padding: 15px 20px; /* Padding menor no mobile */
+        height: 70px; /* Header menor no mobile */
+    }
 }
-
 
 .logos {
     display: flex;
@@ -245,6 +264,7 @@ footer {
 .logos div {
     width: 120px;
     height: 40px;
-    background: #444;
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
     border-radius: 6px;
 }

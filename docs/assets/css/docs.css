@@ -7,8 +7,8 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #0f0f0f;
-    color: #f5f5f5;
+    background: #ffffff;
+    color: #333333;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -16,7 +16,8 @@ body {
 
 header {
     width: 100%;
-    background: #000;
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -25,18 +26,20 @@ header {
     top: 0;
     left: 0;
     z-index: 1000;
+    height: 80px;
+    /* Definindo altura fixa para o header */
 }
 
 header .logo {
     font-size: 1.5rem;
     font-weight: bold;
-    color: white;
+    color: #333333;
 }
 
 header a {
     margin-left: 25px;
     text-decoration: none;
-    color: white;
+    color: #333333;
     font-weight: 500;
 }
 
@@ -51,12 +54,13 @@ header .btn {
 
 header .btn-signin {
     background: transparent;
-    color: white;
+    color: #333333;
+    border: 1px solid #dee2e6;
 }
 
 header .btn-download {
-    background: white;
-    color: black;
+    background: #333333;
+    color: white;
 }
 
 .main-wrapper {
@@ -68,8 +72,8 @@ header .btn-download {
 
 .sidebar {
     width: 250px;
-    background: #141414;
-    border-right: 1px solid #222;
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
     padding: 20px;
     box-sizing: border-box;
     height: calc(100vh - 80px);
@@ -82,7 +86,7 @@ header .btn-download {
 .sidebar h2 {
     font-size: 18px;
     margin-bottom: 15px;
-    color: #fff;
+    color: #333333;
 }
 
 .nav {
@@ -97,7 +101,7 @@ header .btn-download {
 
 .nav a {
     text-decoration: none;
-    color: #aaa;
+    color: #666666;
     font-size: 14px;
     display: block;
     padding: 6px 10px;
@@ -107,8 +111,8 @@ header .btn-download {
 
 .nav a.active,
 .nav a:hover {
-    background: #1e1e1e;
-    color: #fff;
+    background: #e9ecef;
+    color: #333333;
 }
 
 .content {
@@ -119,5 +123,5 @@ header .btn-download {
 
 .content h1 {
     margin-top: 0;
-    color: #fff;
+    color: #333333;
 }
