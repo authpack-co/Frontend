@@ -26,7 +26,8 @@ header {
     top: 0;
     left: 0;
     z-index: 1000;
-    height: 80px; /* Definindo altura fixa para o header */
+    height: 80px;
+    /* Definindo altura fixa para o header */
 }
 
 header .logo {
@@ -70,8 +71,10 @@ header .btn-download {
     justify-content: center;
     border-radius: 10px;
     overflow: hidden;
-    padding: 80px 20px 60px; /* Voltei ao padding original */
-    margin-top: 100px; /* Adicionei margin-top para empurrar o hero para baixo */
+    padding: 80px 20px 60px;
+    /* Voltei ao padding original */
+    margin-top: 100px;
+    /* Adicionei margin-top para empurrar o hero para baixo */
     text-align: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
     background-size: 400% 400%;
@@ -148,6 +151,60 @@ header .btn-download {
     box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
 }
 
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+
+.dropdown-menu {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    padding: 6px 0;
+    min-width: 180px;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.2s ease-in-out;
+}
+
+
+.dropdown-menu.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+.dropdown-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+    border-left: 3px solid transparent;
+}
+
+
+.dropdown-item:hover {
+    background: #f3f4f6;
+}
+
+
+.dropdown-item.selected {
+    font-weight: 600;
+    color: #000;
+    background: #f9fafb;
+    border-left: 3px solid #2563eb;
+    /* Azul marcando opção ativa */
+}
+
 .placeholder-img {
     margin-top: 40px;
     width: 620px;
@@ -164,8 +221,15 @@ header .btn-download {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 footer {
@@ -242,15 +306,19 @@ footer {
         text-align: center;
         gap: 30px;
     }
-    
+
     .hero {
-        padding: 80px 20px 40px; /* Ajuste para mobile */
-        margin-top: 70px; /* Margin menor para mobile */
+        padding: 80px 20px 40px;
+        /* Ajuste para mobile */
+        margin-top: 70px;
+        /* Margin menor para mobile */
     }
-    
+
     header {
-        padding: 15px 20px; /* Padding menor no mobile */
-        height: 70px; /* Header menor no mobile */
+        padding: 15px 20px;
+        /* Padding menor no mobile */
+        height: 70px;
+        /* Header menor no mobile */
     }
 }
 
