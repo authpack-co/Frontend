@@ -9,19 +9,11 @@
     <link rel="stylesheet" href="./assets/css/docs.css">
     <link rel="stylesheet" href="./assets/css/content.css">
 </head>
-
 <body>
     <header>
         <a href="/" class="logo">AuthPack</a>
-        <!-- <div class="logo">AuthPack</div> -->
-        <nav>
-            <!-- <a href="#pricing">Pricing</a>
-            <a href="#features">Features</a>
-            <a href="#enterprise">Enterprise</a>
-            <a href="#docs">Docs</a> -->
-        </nav>
+        <nav></nav>
         <div class="buttons">
-            <!-- <button class="btn btn-signin">Sign in</button> -->
             <a href="/docs/">Docs</a>
             <button class="btn btn-download">Download</button>
         </div>
@@ -60,7 +52,9 @@
                 contentEl.innerHTML = html;
                 setActive(slug);
                 if (push) {
-                    location.hash = `/${slug}`;
+                    const params = new URLSearchParams(window.location.search);
+                    params.set("go", slug);
+                    history.pushState({}, "", `?${params.toString()}`);
                 }
             } catch (err) {
                 contentEl.innerHTML = `<h1>404</h1><p>Conteúdo não encontrado.</p>`;
@@ -75,17 +69,17 @@
             });
         });
 
-        // Detecta alterações no hash (voltar/avançar ou usuário editando na barra)
-        window.addEventListener("hashchange", () => {
-            const slug = location.hash.split("/").pop() || "getting-started";
+        // Detecta alterações no histórico (voltar/avançar)
+        window.addEventListener("popstate", () => {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get("go") || "getting-started";
             loadContent(slug, false);
         });
 
-        // Detecta slug inicial pelo hash
-        const initialSlug = location.hash.split("/").pop() || "getting-started";
+        // Detecta slug inicial pelos query params
+        const params = new URLSearchParams(window.location.search);
+        const initialSlug = params.get("go") || "getting-started";
         loadContent(initialSlug, false);
     </script>
-
 </body>
-
 </html>
