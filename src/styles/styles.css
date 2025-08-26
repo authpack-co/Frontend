@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+html {
+  font-size: clamp(14px, 1.5vw, 16px);
+}
+
 body {
     font-family: Arial, sans-serif;
     background: #ffffff;
@@ -70,7 +74,6 @@ header .btn-download {
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    overflow: hidden;
     padding: 80px 20px 60px;
     /* Voltei ao padding original */
     margin-top: 100px;
@@ -273,6 +276,7 @@ footer {
 .footer-center {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
 }
 
@@ -289,6 +293,7 @@ footer {
 .footer-right {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .footer-right p {
@@ -305,17 +310,30 @@ footer {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding: 0;
+    }
+
     .footer-container {
         flex-direction: column;
         text-align: center;
         gap: 30px;
     }
 
+    .footer-center {
+        justify-content: center;
+    }
+
     .hero {
-        padding: 80px 20px 40px;
+        border-radius: 0;
+        padding: 30px 20px 40px;
         /* Ajuste para mobile */
         margin-top: 70px;
         /* Margin menor para mobile */
+    }
+
+    .hero .placeholder-img {
+        display: none;
     }
 
     header {
@@ -324,19 +342,4 @@ footer {
         height: 70px;
         /* Header menor no mobile */
     }
-}
-
-.logos {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
-}
-
-.logos div {
-    width: 120px;
-    height: 40px;
-    background: #e9ecef;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
 }

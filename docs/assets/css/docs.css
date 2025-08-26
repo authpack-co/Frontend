@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+html {
+  font-size: clamp(14px, 1.5vw, 16px);
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -27,7 +31,6 @@ header {
     left: 0;
     z-index: 1000;
     height: 80px;
-    /* Definindo altura fixa para o header */
 }
 
 header .logo {
@@ -67,7 +70,6 @@ header .btn-download {
     display: flex;
     flex: 1;
     margin-top: 80px;
-    /* altura aproximada do header */
 }
 
 .sidebar {
@@ -79,7 +81,6 @@ header .btn-download {
     height: calc(100vh - 80px);
     position: sticky;
     top: 80px;
-    /* começa logo abaixo do header */
     overflow-y: auto;
 }
 
@@ -124,4 +125,46 @@ header .btn-download {
 .content h1 {
     margin-top: 0;
     color: #333333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    header {
+        padding: 15px 20px;
+        /* Padding menor no mobile */
+        height: 70px;
+        /* Header menor no mobile */
+    }
+
+    .main-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: 0;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    header .logo {
+        font-size: 1.2rem;
+    }
+
+    .nav a {
+        font-size: 13px;
+        padding: 5px 8px;
+    }
+
+    .content {
+        padding: 15px;
+    }
 }
