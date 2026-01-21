@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Bloqueio CSS imediato: impede qualquer paint -->
+    <style id="ap-block-style">
+        html {
+            visibility: hidden !important;
+        }
+    </style>
+
+    <!-- Detect Extension Flag -->
+    <script>
+        (function () {
+            'use strict';
+
+            // Configuração
+            const MAX_WAIT = 100;
+            const ATTRIBUTE_NAME = 'data-authpack-active';
+            const REDIRECT_URL = '/pages/download/';
+
+            // Estado
+            let released = false;
+            let timeoutId = null;
+
+            // Remove o bloqueio e restaura visibilidade
+            function release() {
+                if (released) return; // Previne execução múltipla
+                released = true;
+
+                try {
+                    const blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle?.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    // Fallback: força visibilidade
+                    document.documentElement.style.visibility = '';
+                } catch (e) { /* ignore */ }
+            }
+
+            // Verifica se o atributo da extensão existe
+            function isExtensionPresent() {
+                try {
+                    const root = document.documentElement;
+                    return root && root.getAttribute(ATTRIBUTE_NAME) === '1';
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // Limpa recursos
+            function cleanup() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                // Remove listener de segurança
+                window.removeEventListener('pagehide', cleanup);
+            }
+
+            // Redireciona para página de download
+            function redirectToDownload() {
+                cleanup();
+                try {
+                    window.location.replace(REDIRECT_URL);
+                } catch (e) {
+                    // Fallback: libera página se redirect falhar
+                    release();
+                }
+            }
+
+            // ==================== DETECÇÃO PRINCIPAL ====================
+
+            // Verificação imediata (caso mais comum)
+            if (isExtensionPresent()) {
+                release();
+                return;
+            }
+
+            // Usa MutationObserver para detectar quando atributo for adicionado
+            // (mais eficiente que polling)
+            const observer = new MutationObserver(function (mutations) {
+                if (isExtensionPresent()) {
+                    observer.disconnect();
+                    cleanup();
+                    release();
+                }
+            });
+
+            // Observa mudanças de atributos no <html>
+            try {
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: [ATTRIBUTE_NAME]
+                });
+            } catch (e) {
+                // Fallback: se MutationObserver falhar, usa polling simples
+                let checks = 0;
+                const MAX_CHECKS = 10;
+
+                function poll() {
+                    if (isExtensionPresent()) {
+                        cleanup();
+                        release();
+                        return;
+                    }
+                    checks++;
+                    if (checks < MAX_CHECKS) {
+                        setTimeout(poll, 10);
+                    }
+                }
+                poll();
+            }
+
+            // Timeout: se extensão não for detectada, redireciona
+            timeoutId = setTimeout(function () {
+                if (!released && !isExtensionPresent()) {
+                    observer.disconnect();
+                    redirectToDownload();
+                } else {
+                    observer.disconnect();
+                    release();
+                }
+            }, MAX_WAIT);
+
+            // Segurança: limpa recursos se página for descarregada
+            window.addEventListener('pagehide', function () {
+                observer.disconnect();
+                cleanup();
+            });
+
+        })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ativação de dispositivo - AuthPack</title>
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/pages/deviceActivation/deviceActivation.css">
+    <link rel="stylesheet" href="/assets/styles/animations.css">
+</head>
+
+<body>
+
+    <div class="bg-decoration"></div>
+
+    <div class="activation-container loading-state" id="activationContainer">
+        <div class="logo">
+            <div class="logo-text">Auth<span class="logo-accent">Pack</span></div>
+        </div>
+
+        <div class="content-area">
+            <!-- Loading State -->
+            <div class="preset preset-loading">
+                <div class="icon-container">
+                    <div class="loading-icon">
+                        <div class="spinner"></div>
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring"></div>
+                        <div class="device-icon"></div>
+                    </div>
+                </div>
+                <h1 class="status-title">Ativando dispositivo<span class="loading-dots"></span></h1>
+                <p class="status-description">
+                    Aguarde enquanto configuramos seu dispositivo de forma segura
+                </p>
+            </div>
+
+            <!-- Success State -->
+            <div class="preset preset-success">
+                <div class="icon-container">
+                    <div class="success-icon">
+                        <div class="checkmark"></div>
+                    </div>
+                </div>
+                <h1 class="status-title">Dispositivo ativado com sucesso!</h1>
+                <p class="status-description">
+                    Seu dispositivo foi configurado e está pronto para uso
+                </p>
+            </div>
+
+            <!-- Error State -->
+            <div class="preset preset-error">
+                <div class="icon-container">
+                    <div class="error-icon">
+                        <div class="cross"></div>
+                    </div>
+                </div>
+                <h1 class="status-title">Falha ao ativar dispositivo</h1>
+                <p class="status-description">
+                    Não foi possível concluir a ativação. Por favor, tente novamente mais tarde
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/pages/deviceActivation/deviceActivation.js"></script>
+</body>
+
+</html>

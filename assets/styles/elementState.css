@@ -1,0 +1,15 @@
+.preset {
+  display: none;
+}
+
+/* quando o JS marca como visível, mostra e anima */
+.preset.is-visible {
+  display: block !important;
+  animation: fadeIn 0.3s ease-in forwards;
+}
+
+/* sua animação existente */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

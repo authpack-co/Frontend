@@ -1,0 +1,491 @@
+/* Modal Base */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: #181d23;
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    overflow: auto;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #404040;
+    position: relative;
+}
+
+.modal-title {
+    color: var(--color-text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    padding-right: 30px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+}
+
+/* Modal Body */
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 24px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 0 24px 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-footer.center {
+    justify-content: center;
+}
+
+.modal-footer.space-between {
+    justify-content: space-between;
+}
+
+/* Form Elements */
+.form-input {
+    width: 100%;
+    background-color: #0d1117;
+    border: 1px solid var(--color-border-muted);
+    color: var(--color-text-primary);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.invalid {
+    border-color: red;
+}
+
+.form-input:focus {
+    border-color: #4a90e2;
+}
+
+.form-input.readonly {
+    cursor: default;
+}
+
+.error-message {
+    display: block;
+    color: var(--color-error);
+    font-size: 0.85em;
+    margin-top: -10px;
+    position: relative;
+}
+
+.error-message.hidden {
+    display: none;
+}
+
+
+.form-label {
+    color: #b6b0a6;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 8px;
+    display: block;
+}
+
+.form-text {
+    color: #b0b0b0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.form-text strong {
+    color: #ffffff;
+}
+
+.input-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-actions .form-input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-note {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: 8px;
+    background-color: rgb(38 90 153 / 20%);
+    border: 1px solid rgba(23, 78, 142, 0.3);
+    color: #64a7e2;
+}
+
+.note {
+    font-size: 14px;
+}
+
+/* Share modal */
+#sharePackageModal .modal-body {
+    max-height: fit-content;
+}
+
+.renew-key-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.renew-key-btn:hover {
+    color: #fff;
+}
+
+.info-box {
+    background: rgba(74, 144, 226, 0.1);
+    border: 1px solid rgba(74, 144, 226, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.info-text {
+    color: #4a90e2;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Key Display */
+.key-display {
+    background-color: #0d1117;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.key-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.key-value {
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#keyValue {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Toggle Switch */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #303436;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-switch.active {
+    background: #4a90e2;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.toggle-switch.active .toggle-slider {
+    transform: translateX(20px);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: fit-content;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-open {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.status-closed {
+    background-color: var(--color-error-bg);
+    color: var(--color-error);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Modal Wide */
+.modal-wide {
+    max-width: 520px;
+}
+
+/* Warning Box */
+.warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.warning-box svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.warning-full {
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    color: #ffa726;
+}
+
+.warning-danger {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #ef5350;
+}
+
+.warning-text strong {
+    font-weight: 600;
+}
+
+/* Device List */
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: #0d1117;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.device-item:hover {
+    border-color: #4a90e2;
+    background: rgba(74, 144, 226, 0.05);
+}
+
+.device-item.selected {
+    border-color: #4a90e2;
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.device-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.device-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(74, 144, 226, 0.1);
+    border-radius: 8px;
+    color: #4a90e2;
+    flex-shrink: 0;
+}
+
+.device-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.device-name {
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.device-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.device-version {
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+}
+
+.device-date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.device-date::before {
+    content: "•";
+    color: var(--color-border-muted);
+}
+
+/* Custom Radio Button */
+.device-radio {
+    position: relative;
+}
+
+.radio-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-label {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border-muted);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.radio-input:checked + .radio-label {
+    border-color: #4a90e2;
+}
+
+.radio-input:checked + .radio-label::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4a90e2;
+}
+
+.radio-label:hover {
+    border-color: #4a90e2;
+}
+
+/* Desabilita clique direto no radio/label para usar o clique no item inteiro */
+.radio-input,
+.radio-label {
+    pointer-events: none;
+}
+
+/* Button States */
+.btn-remove.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

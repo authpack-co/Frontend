@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download - AuthPack</title>
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/pages/download/download.css">
+    <link rel="stylesheet" href="/assets/styles/animations.css">
+    <link rel="stylesheet" href="/assets/styles/modals.css">
+    <link rel="stylesheet" href="/assets/styles/elementState.css">
+</head>
+
+<body class="visitor-state">
+    <!-- Hidden structures -->
+    <div class="modals">
+        <!-- Create Package Modal -->
+        <div class="modal-overlay" id="createPackageModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Crie um novo pacote</h2>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-actions">
+                        <input type="text" class="form-input" placeholder="Nome do pacote..." maxlength="50">
+                        <div class="buttonContent content-state">
+                            <div class="preset preset-content">
+                                <button class="btn btn-primary btn-small confirm-btn">Ok</button>
+                            </div>
+                            <div class="preset preset-loading">
+                                <button class="btn btn-primary btn-small confirm-btn">
+                                    <div class="spinner"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="error-message hidden"></span>
+
+                    <div class="form-note">
+                        <span>💡</span>
+                        <span class="note">
+                            Crie pacotes para organizar suas sessões e facilitar o compartilhamento com outras
+                            pessoas
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove device access -->
+        <div class="modal-overlay" id="removeDeviceAccessModal">
+            <div class="modal modal-wide">
+                <div class="modal-header">
+                    <h2 class="modal-title">Gerenciar Dispositivos</h2>
+                </div>
+                <div class="modal-body">
+                    <!-- Account Full Warning (mostrar quando tiver 2 dispositivos) -->
+                    <div class="warning-box warning-full hidden">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1L1 14h14L8 1z" stroke="currentColor" stroke-width="1.5" fill="none" />
+                            <path d="M8 6v3M8 11h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        <span class="warning-text">
+                            <strong>Conta cheia:</strong> Você atingiu o limite de 2 dispositivos. Para registrar um
+                            novo dispositivo, remova o acesso de um dos dispositivos abaixo.
+                        </span>
+                    </div>
+
+                    <!-- Device List -->
+                    <div class="device-list-container empty-state">
+                        <div class="preset preset-content">
+                            <div class="device-list">
+                                <!-- Device Item (repetir para cada dispositivo) -->
+                                <div class="device-item" data-device-id="">
+                                    <div class="device-info">
+                                        <div class="device-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                                <line x1="12" y1="18" x2="12" y2="18" />
+                                            </svg>
+                                        </div>
+                                        <div class="device-details">
+                                            <div class="device-name">Windows • Chrome</div>
+                                            <div class="device-meta">
+                                                <span class="device-version">v1.0.0</span>
+                                                <span class="device-date">Registrado em 04/12/2025</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="device-actions">
+                                        <div class="device-radio">
+                                            <input type="radio" name="device-select" id="device-1" class="radio-input">
+                                            <label for="device-1" class="radio-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Device Item 2 (exemplo) -->
+                                <div class="device-item" data-device-id="">
+                                    <div class="device-info">
+                                        <div class="device-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                                <line x1="12" y1="18" x2="12" y2="18" />
+                                            </svg>
+                                        </div>
+                                        <div class="device-details">
+                                            <div class="device-name">Windows • Firefox</div>
+                                            <div class="device-meta">
+                                                <span class="device-version">v1.0.0</span>
+                                                <span class="device-date">Registrado em 03/12/2025</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="device-actions">
+                                        <div class="device-radio">
+                                            <input type="radio" name="device-select" id="device-2" class="radio-input">
+                                            <label for="device-2" class="radio-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preset preset-empty">
+                            <div class="empty-state-message-container">
+                                <div class="empty-state-icon">
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5">
+                                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                        <line x1="12" y1="18" x2="12.01" y2="18" />
+                                        <path d="M8 2v4M16 2v4" stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div class="empty-state-content">
+                                    <h3 class="empty-state-title">Nenhum dispositivo registrado</h3>
+                                    <p class="empty-state-description">
+                                        Sua conta ainda não possui dispositivos vinculados. Baixe a extensão em um dispositivo
+                                        para começar a gerenciar seus acessos.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                    <div class="buttonContent content-state">
+                        <div class="preset preset-content">
+                            <button class="btn btn-danger btn-remove disabled">Remover Acesso</button>
+                        </div>
+                        <div class="preset preset-loading">
+                            <button class="btn btn-danger btn-remove">
+                                <div class="spinner"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <span class="logo">AuthPack</span>
+            <nav></nav>
+            <div class="preset preset-visitor">
+                <div class="header-actions">
+                    <a href="http://127.0.0.1:3000/api/auth/google">
+                        <button class="btn">Sign up</button>
+                    </a>
+                    <a href="/" class="hidden">
+                        <button class="btn enter-btn">Enter</button>
+                    </a>
+                </div>
+            </div>
+            <div class="preset preset-logged">
+                <div class="header-actions">
+                    <div class="profile">
+                        <span class="profile-name">Thales Wendel</span>
+                        <span class="profile-picture">
+                            <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                                alt="Thales Wendel">
+                        </span>
+                    </div>
+                    <a href="/" class="hidden">
+                        <button class="btn enter-btn">Enter</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <main>
+            <section class="download-section">
+                <div class="authpack-icon">
+                    <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
+                </div>
+                <div class="download-details">
+                    <div>
+                        <p class="main-title">Download AuthPack</p>
+                        <p class="description">Get the latest version of AuthPack and integrate it into your project.
+                        </p>
+                    </div>
+                    <div class="download-actions">
+                        <div class="preset preset-visitor">
+                            <a href="http://127.0.0.1:3000/api/auth/google">
+                                <button class="btn btn-download highlight-bg">
+                                    <span>Sign up to download</span>
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="lucide lucide-arrow-down-to-line-icon lucide-arrow-down-to-line">
+                                        <path d="M12 17V3" />
+                                        <path d="m6 11 6 6 6-6" />
+                                        <path d="M19 21H5" />
+                                    </svg>
+                                </button>
+                            </a>
+                        </div>
+                        <div class="preset preset-logged">
+                            <button class="btn btn-download highlight-bg">
+                                <span>Download for Chrome</span>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="lucide lucide-arrow-down-to-line-icon lucide-arrow-down-to-line">
+                                    <path d="M12 17V3" />
+                                    <path d="m6 11 6 6 6-6" />
+                                    <path d="M19 21H5" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="preset preset-logged">
+                            <span class="manageDevices">Gerenciar dispositivos</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Divider -->
+            <div class="section-divider"></div>
+
+            <!-- Installation Guide -->
+            <section class="installation-guide">
+                <div class="guide-header">
+                    <h2 class="guide-title">Guia de Instalação</h2>
+                    <p class="guide-subtitle">Siga os passos abaixo para instalar a extensão AuthPack no Google Chrome
+                    </p>
+                </div>
+
+                <div class="installation-steps">
+                    <!-- Step 1 -->
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-1.png" alt="Passo 1" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Baixe o Pacote</h3>
+                            <p class="step-description">
+                                Baixe o pacote da extensão AuthPack (arquivo .zip ou pasta fornecida).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-2.png" alt="Passo 2" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Extraia o Conteúdo</h3>
+                            <p class="step-description">
+                                Extraia o conteúdo do arquivo para uma pasta no seu computador.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-3.png" alt="Passo 3" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Acesse as Extensões</h3>
+                            <p class="step-description">
+                                Abra o Google Chrome e digite na barra de endereços:
+                            </p>
+                            <code class="step-code">chrome://extensions/</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-4.png" alt="Passo 4" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Ative o Modo Desenvolvedor</h3>
+                            <p class="step-description">
+                                No canto superior direito, ative o "Modo do desenvolvedor" (Developer Mode).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="step-card">
+                        <div class="step-number">5</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-4.png" alt="Passo 5" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Carregue a Extensão</h3>
+                            <p class="step-description">
+                                Clique em "Carregar sem compactação" (Load unpacked).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div class="step-card">
+                        <div class="step-number">6</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/step-6.png" alt="Passo 6" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Selecione a Pasta</h3>
+                            <p class="step-description">
+                                Selecione a pasta que foi criada ao extrair o arquivo .zip anteriormente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 7 -->
+                    <div class="step-card">
+                        <div class="step-number">7</div>
+                        <div class="step-image">
+                            <img src="/assets/images/install-guide/image.png" alt="Passo 7" />
+                        </div>
+                        <div class="step-content">
+                            <h3 class="step-title">Extensão Instalada!</h3>
+                            <p class="step-description">
+                                A extensão será instalada e ficará visível na barra de extensões do Chrome.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer></footer>
+    </div>
+
+    <script src="/assets/scripts/elementState.js"></script>
+    <script src="/assets/scripts/fetchManager.js"></script>
+    <script src="/pages/download/download.js"></script>
+</body>
+
+</html>

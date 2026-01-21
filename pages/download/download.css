@@ -1,0 +1,516 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Sora:wght@100..800&display=swap');
+
+:root {
+    /* Base */
+    --color-bg-primary: #181a1b;
+    --color-bg-secondary: #1c1f20;
+    --color-bg-tertiary: #232627;
+    --color-bg-muted: #26292b;
+    --color-bg-transparent: rgba(24, 26, 27, 0);
+
+    --color-text-primary: #e8e6e3;
+    --color-text-secondary: #d6d3cd;
+    --color-text-muted: #9d9488;
+
+    /* Accent */
+    --color-accent-subtle: rgba(24, 83, 153, 0.1);
+    --color-accent-hover: #54a1e4;
+
+    /* Error */
+    --color-error: #f54e42;
+    --color-danger: #e74c3c;
+    --color-error-bg: rgba(169, 20, 9, 0.2);
+
+    /* Border */
+    --color-border-primary: #333840;
+    --color-border-secondary: #3b3f42;
+    --color-border-muted: #6d655a;
+
+    /* Scrollbar */
+    --scrollbar-thumb: var(--color-border-secondary);
+    --scrollbar-track: var(--color-bg-muted);
+    --scrollbar-thumb-hover: var(--color-border-primary);
+
+    /* Measurement */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    --header-height: 80px;
+}
+
+/* ============================================
+   Reset & Base Styles
+   ============================================ */
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color: var(--color-text-secondary);
+    background: #181d23;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Scrollbar Styles
+   ============================================ */
+::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+    border: 1px solid var(--color-border-primary);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* ============================================
+   Header Components
+   ============================================ */
+.main-header {
+    width: 100%;
+    background: #141619;
+    border-bottom: 1px solid var(--color-border-primary);
+    padding: 20px 50px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    height: var(--header-height);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-header .logo {
+    user-select: none;
+    cursor: default;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #c8c3bc;
+    text-decoration: none;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header-actions a {
+    text-decoration: none;
+    color: var(--color-text-primary);
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-name {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.profile-picture {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ============================================
+   Button Components
+   ============================================ */
+.btn {
+    border: 1px solid var(--color-border-muted);
+    color: var(--color-text-primary);
+    background: #181d23;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.hidden:has(.enter-btn) {
+    display: none;
+}
+
+.enter-btn {
+    background: none;
+    border: none;
+    border-radius: 0;
+}
+
+.enter-btn:hover {
+    border-bottom: 1px solid #177aec;
+}
+
+.highlight-bg {
+    background: #177aec;
+}
+
+.btn:hover {
+    filter: brightness(1.2);
+}
+
+.btn-small {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.btn-download {
+    color: var(--color-text-primary);
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+}
+
+a:has(.btn-download) {
+    text-decoration: none;
+}
+
+/* ============================================
+    Page content styles
+   ============================================ */
+
+.page-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 150px 0 0;
+}
+
+.page-content main .download-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.download-section .authpack-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: fit-content;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-primary);
+}
+
+.download-section .download-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.download-details .main-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.download-details .description {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.download-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.download-actions button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.download-actions .manageDevices {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.download-actions .manageDevices:hover {
+    text-decoration: underline;
+    cursor: default;
+}
+
+.spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite, fadeIn 0.3s ease forwards;
+}
+
+.empty-state-message-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* padding: 48px 24px; */
+    min-height: 240px;
+}
+
+.empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(74, 144, 226, 0.08);
+    border-radius: 50%;
+    margin-bottom: 20px;
+    color: #4a90e2;
+}
+
+.empty-state-icon svg {
+    opacity: 0.6;
+}
+
+.empty-state-content {
+    text-align: center;
+    max-width: 360px;
+}
+
+.empty-state-title {
+    color: var(--color-text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.empty-state-description {
+    color: var(--color-text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ============================================
+   Installation Guide Section
+   ============================================ */
+.section-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right,
+            var(--color-bg-transparent),
+            var(--color-border-primary) 20%,
+            var(--color-border-primary) 80%,
+            var(--color-bg-transparent));
+    margin: 4rem 0 3rem;
+}
+
+.installation-guide {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.installation-guide .guide-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.guide-header .guide-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.guide-header .guide-subtitle {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+}
+
+.installation-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding: 0 1rem;
+}
+
+.step-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.step-card:hover {
+    border-color: var(--color-border-muted);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.step-card .step-number {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.step-card .step-image {
+    width: 100%;
+    height: 180px;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    overflow: hidden;
+}
+
+.step-card .step-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.step-card .step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.step-content .step-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.step-content .step-description {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.step-content .step-code {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border-secondary);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: var(--color-accent-hover);
+    margin-top: 0.5rem;
+}
+
+/* Hidden class */
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+@media (max-width: 1024px) {
+    .download-section {
+        padding: 0 1.5rem;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .download-section .authpack-icon img {
+        width: 100px;
+    }
+
+    .download-section .download-details {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .download-details>div {
+        text-align: center;
+    }
+
+    .download-details .description {
+        margin-top: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .download-actions button {
+        font-size: 0.875rem;
+    }
+
+    .installation-steps {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .installation-steps {
+        grid-template-columns: 1fr;
+    }
+}
