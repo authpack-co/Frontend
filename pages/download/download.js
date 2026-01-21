@@ -10,7 +10,7 @@ const fpPromise = import('https://api.authpack.co/web/v3/WhjnKdImdrIFK4nCzKLI')
     }))
 
 const downloadButton = document.querySelector(".preset-logged .btn-download");
-downloadButton.addEventListener("click", () => downloadExtension("http://127.0.0.1:3000/api/extensions/chrome/build"));
+downloadButton.addEventListener("click", () => downloadExtension("https://api.authpack.co/api/extensions/chrome/build"));
 
 const manageDevicesButton = document.querySelector(".preset-logged .manageDevices");
 manageDevicesButton.addEventListener("click", () => {
