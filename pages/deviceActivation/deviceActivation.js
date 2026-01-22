@@ -1,11 +1,6 @@
 // Initialize the agent on page load.
-const fpPromise = import('https://api.authpack.co/web/v3/WhjnKdImdrIFK4nCzKLI')
-    .then(FingerprintJS => FingerprintJS.load({
-        endpoint: [
-            "https://api.authpack.co",
-            FingerprintJS.defaultEndpoint
-        ]
-    }))
+const fpPromise = import('https://fpjscdn.net/v3/WhjnKdImdrIFK4nCzKLI')
+    .then(FingerprintJS => FingerprintJS.load())
 
 // Função para alterar estado
 function setElementState(element, newState) {
