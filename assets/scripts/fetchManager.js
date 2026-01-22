@@ -1,43 +1,51 @@
 const serverURL = "https://api.authpack.co";
 
 async function fetchRoutes(route, options = {}, rawResponse = false) {
-  try {
-    const method = (options.method || "GET").toUpperCase();
+    try {
+        // Configurações padrão (método GET)
+        const defaultOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        };
 
-    // monta headers sem forçar Content-Type
-    const headers = {
-      ...(options.headers || {})
-    };
+        // Mescla as opções fornecidas com as padrões
+        const fetchOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...(options.headers || {}) // Mescla cabeçalhos fornecidos
+            },
+        };
 
-    // só seta Content-Type se for enviar body (JSON)
-    const hasBody = options.body !== undefined && options.body !== null;
-    if (hasBody && !headers["Content-Type"]) {
-      headers["Content-Type"] = "application/json";
+        // Faz a requisição com as opções configuradas
+        const fetchURL = `${serverURL}${route}`
+        const response = await fetch(fetchURL, fetchOptions);
+
+        // Se rawResponse for true, retorna a resposta completa
+        if (rawResponse) {
+            return response;
+        }
+
+        // Tenta obter os dados JSON da resposta
+        const data = await response.json().catch(() => null); // Captura erros de parsing
+
+        return {
+            status: response.status, // Status HTTP da resposta
+            ok: response.ok,         // Indica se a resposta foi bem-sucedida
+            result: data,                    // Conteúdo do JSON (ou null se falhou)
+        };
+    } catch (err) {
+        console.error("Erro:", err.message);
+        return {
+            status: null,  // Sem status HTTP (erro de rede, etc.)
+            ok: false,     // Requisição falhou
+            result: null,    // Nenhum dado retornado
+        };
     }
-
-    const fetchOptions = {
-      method,
-      ...options,
-      headers,
-    };
-
-    const response = await fetch(`${serverURL}${route}`, fetchOptions);
-
-    if (rawResponse) return response;
-
-    const data = await response.json().catch(() => null);
-
-    return {
-      status: response.status,
-      ok: response.ok,
-      result: data,
-    };
-  } catch (err) {
-    console.error("Erro:", err.message);
-    return { status: null, ok: false, result: null };
-  }
 }
-
 
 const fetchManager = {
     // Packages
@@ -184,7 +192,7 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/auth/`, {
             credentials: "include"
         });
-        
+
         return response;
     },
 
@@ -192,7 +200,7 @@ const fetchManager = {
 
     async getUserInfo() {
         const response = await fetchRoutes(`/api/users/info`);
-        
+
         return response;
     }
 }

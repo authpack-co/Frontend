@@ -1,8 +1,13 @@
 let userData = null;
 
 // Initialize the agent on page load.
-const fpPromise = import('https://fpjscdn.net/v3/WhjnKdImdrIFK4nCzKLI')
-    .then(FingerprintJS => FingerprintJS.load());
+const fpPromise = import('https://fp.authpack.co/web/v3/WhjnKdImdrIFK4nCzKLI')
+    .then(FingerprintJS => FingerprintJS.load({
+        endpoint: [
+            "https://fp.authpack.co",
+            FingerprintJS.defaultEndpoint
+        ]
+    }))
 
 const downloadButton = document.querySelector(".preset-logged .btn-download");
 downloadButton.addEventListener("click", () => downloadExtension("https://api.authpack.co/api/extensions/chrome/build"));
