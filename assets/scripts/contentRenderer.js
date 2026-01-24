@@ -585,12 +585,13 @@ async function loadPackageStats(pkg, period) {
                 // Procura em pkg.users o usuario que tem o id especifico, e adiciona a data de ultima utilização
                 const user = pkg.users.find(u => u.id === userId);
                 if (user) {
-                    user.lastUsage = usersLastUsage[userId];
+                    const timestamp = usersLastUsage[userId];
+                    const dateObj = new Date(timestamp.replace(' ', 'T') + 'Z');
+
+                    user.lastUsage = formatLocalDateTime(dateObj);
 
                     const now = new Date();
-                    const past = new Date(user.lastUsage);
-
-                    const diffInSeconds = Math.floor((now - past) / 1000);
+                    const diffInSeconds = Math.floor((now - dateObj) / 1000);
 
                     if (diffInSeconds < 60) {
                         pkg.stats.totalUsersOnline++;
@@ -776,7 +777,7 @@ async function loadUserStats(user, pkg, period) {
     const lastUsageEl = userScreen.querySelector(".user-last-usage .stat-value");
 
     const userLastUsageFormatted = timeAgo(user.lastUsage);
-    
+
     lastUsageEl.textContent = userLastUsageFormatted;
     totalUsageEl.textContent = formatHours(user.stats.totalUsage.hours);
 
@@ -1031,6 +1032,12 @@ function formatDate(date) {
     return `${day}/${month}/${year}`;
 }
 
+function formatLocalDateTime(d) {
+    // Formato: YYYY-MM-DDTHH:mm:ss (sem Z, representa horário local)
+    const pad = v => String(v).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 // Função para formatar horas
 function formatHours(hours) {
     if (hours === -1) {
@@ -1102,11 +1109,6 @@ function processRawAccessHistory(rawAccessHistory) {
 
     function formatDateKey(d) {
         return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-    }
-
-    function formatLocalDateTime(d) {
-        // Formato: YYYY-MM-DDTHH:mm:ss (sem Z, representa horário local)
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
     const result = {};
