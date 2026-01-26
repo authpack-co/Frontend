@@ -1,4 +1,4 @@
-const serverURL = "https://api.authpack.co";
+const serverURL = IS_DEV ? "http://127.0.0.1:3000" : "https://api.authpack.co";
 
 async function fetchRoutes(route, options = {}, rawResponse = false) {
     try {

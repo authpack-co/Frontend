@@ -9,8 +9,12 @@ const fpPromise = import('https://fp.authpack.co/web/v3/WhjnKdImdrIFK4nCzKLI')
         ]
     }))
 
+const signupLink = document.querySelectorAll(".signup-link");
+signupLink.forEach(link => link.href = IS_DEV ? "http://127.0.0.1:3000/api/auth/google" : "https://api.authpack.co/api/auth/google");
+
 const downloadButton = document.querySelector(".preset-logged .btn-download");
-downloadButton.addEventListener("click", () => downloadExtension("https://api.authpack.co/api/extensions/chrome/build"));
+const downloadRoute = IS_DEV ? "http://127.0.0.1:3000/api/extensions/build/chrome" : "https://api.authpack.co/api/extensions/build/chrome";
+downloadButton.addEventListener("click", () => downloadExtension(downloadRoute));
 
 const manageDevicesButton = document.querySelector(".preset-logged .manageDevices");
 manageDevicesButton.addEventListener("click", () => {

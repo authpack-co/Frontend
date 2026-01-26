@@ -64,16 +64,3 @@ window.addEventListener("message", async (event) => {
         }
     }
 });
-
-
-// Simular sucesso após 3 segundos
-// setTimeout(() => {
-//     const container = document.getElementById('activationContainer');
-//     setElementState(container, 'success');
-// }, 3000);
-
-// Simular erro após 3 segundos
-// setTimeout(() => {
-//     const container = document.getElementById('activationContainer');
-//     setElementState(container, 'error');
-// }, 3000);
