@@ -950,17 +950,20 @@ span.coming-soon {
    ============================================ */
 .sessions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(100px, 120px));
     gap: 12px;
     padding: 0.5rem 0;
+    justify-content: center;
 }
 
 .session-card {
     position: relative;
-    border-radius: 14px;
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    aspect-ratio: 1;
+
     background: #1e2227;
     border: 1px solid var(--color-border-primary);
     transition: all 0.3s ease;
@@ -981,7 +984,7 @@ span.coming-soon {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 16px;
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
@@ -991,26 +994,26 @@ span.coming-soon {
 }
 
 .session-card-icon img {
-    width: 64px;
-    height: 64px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .session-card-name {
     position: absolute;
-    bottom: 10px;
+    bottom: 8px;
     left: 0;
     right: 0;
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--color-text-secondary);
     transition: all 0.3s ease;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 8px;
+    padding: 0 6px;
 }
 
 .session-card:hover .session-card-name {
@@ -1056,8 +1059,8 @@ span.coming-soon {
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    padding: 14px;
-    gap: 10px;
+    padding: 8px;
+    gap: 6px;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
@@ -1070,7 +1073,7 @@ span.coming-soon {
 }
 
 .session-hover-name {
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--color-text-primary);
     white-space: nowrap;
@@ -1090,13 +1093,13 @@ span.coming-soon {
     display: flex;
     align-items: center;
     gap: 5px;
-    padding: 5px 10px;
-    border-radius: 8px;
+    padding: 3px 7px;
+    border-radius: 6px;
     background: #54a1e4;
     color: #0f1115;
     border: none;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -1110,14 +1113,14 @@ span.coming-soon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
     background: rgba(255, 255, 255, 0.1);
     color: var(--color-text-primary);
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     transition: all 0.2s ease;
     flex-shrink: 0;
