@@ -186,6 +186,13 @@ const fetchManager = {
         return response;
     },
 
+    async getPackageOnlineSummary(packageDetails) {
+        const { id } = packageDetails;
+
+        const response = await fetchRoutes(`/api/stats/package/online-summary/${id}`);
+        return response;
+    },
+
     // Auth
 
     async getAuthenticatedUser() {

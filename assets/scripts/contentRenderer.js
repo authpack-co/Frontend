@@ -514,6 +514,11 @@ async function renderPackageDetails(pkg, isCollection = true) {
         });
     }
 
+    // Busca contagem de usuários online (para access view)
+    if (!isCollection) {
+        loadAccessOnlineSummary(pkg, activePreset);
+    }
+
     // Renderiza usuários
 
     if (isCollection && pkg.users) {
@@ -630,6 +635,39 @@ function reloadPackagesSelect(isAccess = false) {
         } else {
             selectPackage(packagesList.userCollection[0].id);
         }
+    }
+}
+
+async function loadAccessOnlineSummary(pkg, activePreset) {
+    try {
+        const fetchOnlineSummary = await fetchManager.getPackageOnlineSummary({ id: pkg.id });
+
+        if (!fetchOnlineSummary.ok) return;
+
+        const { totalOnline, sessionsOnline } = fetchOnlineSummary.result.data;
+
+        // Verifica se ainda é o pacote selecionado
+        const contentCard = document.querySelector('#package-details');
+        if (contentCard.dataset.packageId !== pkg.id) return;
+
+        // Atualiza contagem no header
+        const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
+        if (onlineCountEl) {
+            onlineCountEl.textContent = `${totalOnline} online`;
+        }
+
+        // Atualiza badges em cada session card
+        if (sessionsOnline) {
+            const sessionCards = activePreset.querySelectorAll('.session-card');
+            sessionCards.forEach(card => {
+                const sessionId = card.dataset.sessionId;
+                const count = sessionsOnline[sessionId] || 0;
+                const badge = card.querySelector('.online-count-num');
+                if (badge) badge.textContent = count;
+            });
+        }
+    } catch (err) {
+        console.error('Error loading access online summary:', err);
     }
 }
 
