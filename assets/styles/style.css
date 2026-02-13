@@ -206,6 +206,37 @@ body {
     border-radius: var(--radius-xl);
     padding: 18px 12px;
     background: #141619;
+    display: flex;
+    flex-direction: column;
+}
+
+.plus-subscribe-btn {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #7c3aed, #28b0d9);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.plus-subscribe-btn:hover {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+    transform: translateY(-1px);
+}
+
+.plus-subscribe-btn svg {
+    color: #fbbf24;
 }
 
 .nav-menu {
