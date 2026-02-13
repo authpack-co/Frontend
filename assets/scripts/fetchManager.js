@@ -186,10 +186,10 @@ const fetchManager = {
         return response;
     },
 
-    async getPackageOnlineSummary(packageDetails) {
+    async getPackageAccessOverview(packageDetails) {
         const { id } = packageDetails;
 
-        const response = await fetchRoutes(`/api/stats/package/online-summary/${id}`);
+        const response = await fetchRoutes(`/api/stats/package/access-overview/${id}`);
         return response;
     },
 

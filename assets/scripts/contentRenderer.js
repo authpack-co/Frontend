@@ -470,26 +470,6 @@ async function renderPackageDetails(pkg, isCollection = true) {
         const createdAt = activePreset.querySelector('.header-top .created-at-label');
         const dateLabel = `Criado em ${date.toLocaleDateString('pt-BR', dateFormatOptions)}`;
         if (createdAt) createdAt.textContent = dateLabel;
-    } else {
-        // Access view: atualiza header de info do pacote
-        const createdAtLabel = activePreset.querySelector('.package-info-header .created-at-value');
-        if (createdAtLabel) {
-            createdAtLabel.textContent = date.toLocaleDateString('pt-BR', dateFormatOptions);
-        }
-
-        const renewsAtLabel = activePreset.querySelector('.package-info-header .renews-at-value');
-        if (renewsAtLabel && pkg.renewsAt) {
-            const renewDate = new Date(pkg.renewsAt);
-            renewsAtLabel.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
-        } else if (renewsAtLabel) {
-            renewsAtLabel.textContent = '—';
-        }
-
-        const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
-        if (onlineCountEl) {
-            const onlineCount = pkg.onlineCount || 0;
-            onlineCountEl.textContent = `${onlineCount} online`;
-        }
     }
 
     // Renderiza sessões
@@ -514,9 +494,9 @@ async function renderPackageDetails(pkg, isCollection = true) {
         });
     }
 
-    // Busca contagem de usuários online (para access view)
+    // Busca overview do pacote (para access view: joinedAt, renewsAt, online counts)
     if (!isCollection) {
-        loadAccessOnlineSummary(pkg, activePreset);
+        loadAccessOverview(pkg, activePreset);
     }
 
     // Renderiza usuários
@@ -638,19 +618,39 @@ function reloadPackagesSelect(isAccess = false) {
     }
 }
 
-async function loadAccessOnlineSummary(pkg, activePreset) {
+async function loadAccessOverview(pkg, activePreset) {
     try {
-        const fetchOnlineSummary = await fetchManager.getPackageOnlineSummary({ id: pkg.id });
+        const fetchOverview = await fetchManager.getPackageAccessOverview({ id: pkg.id });
 
-        if (!fetchOnlineSummary.ok) return;
+        if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline } = fetchOnlineSummary.result.data;
+        const { totalOnline, sessionsOnline, joinedAt, renewsAt } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
         if (contentCard.dataset.packageId !== pkg.id) return;
 
-        // Atualiza contagem no header
+        const dateFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+
+        // Atualiza "Entrou em"
+        const joinedAtEl = activePreset.querySelector('.package-info-header .joined-at-value');
+        if (joinedAtEl && joinedAt) {
+            const joinDate = new Date(joinedAt);
+            joinedAtEl.textContent = joinDate.toLocaleDateString('pt-BR', dateFormatOptions);
+        } else if (joinedAtEl) {
+            joinedAtEl.textContent = '—';
+        }
+
+        // Atualiza "Renova em"
+        const renewsAtEl = activePreset.querySelector('.package-info-header .renews-at-value');
+        if (renewsAtEl && renewsAt) {
+            const renewDate = new Date(renewsAt);
+            renewsAtEl.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
+        } else if (renewsAtEl) {
+            renewsAtEl.textContent = '—';
+        }
+
+        // Atualiza contagem online no header
         const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
         if (onlineCountEl) {
             onlineCountEl.textContent = `${totalOnline} online`;
@@ -667,7 +667,7 @@ async function loadAccessOnlineSummary(pkg, activePreset) {
             });
         }
     } catch (err) {
-        console.error('Error loading access online summary:', err);
+        console.error('Error loading access overview:', err);
     }
 }
 

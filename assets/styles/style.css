@@ -1092,7 +1092,7 @@ span.coming-soon {
     gap: 5px;
     padding: 5px 10px;
     border-radius: 8px;
-    background: #4ade80;
+    background: #54a1e4;
     color: #0f1115;
     border: none;
     cursor: pointer;
@@ -1103,7 +1103,7 @@ span.coming-soon {
 }
 
 .session-hover-actions .connect-session-btn:hover {
-    background: #22c55e;
+    background: #57a3e6;
 }
 
 .session-hover-actions .session-more-btn {
@@ -1174,7 +1174,10 @@ span.coming-soon {
 
 .package-info-label span:first-child {
     color: var(--color-text-muted);
-    min-width: 110px;
+}
+
+.package-info-label span:last-child {
+    color: #fff;
 }
 
 .online-count {
