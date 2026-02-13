@@ -580,12 +580,12 @@ closeBtns.forEach(item => item.addEventListener("click", event => {
 }));
 
 // Plus Subscribe
-const plusSubscribeBtn = document.querySelector('.plus-subscribe-btn');
-if (plusSubscribeBtn) {
-    plusSubscribeBtn.addEventListener('click', () => {
+const plusSubscribeBtns = document.querySelectorAll('.plus-subscribe-btn');
+plusSubscribeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
         utils.showModal("plusSubscribe");
     });
-}
+});
 
 const cancelBtns = document.querySelectorAll(".cancel-btn");
 cancelBtns.forEach(item => item.addEventListener("click", event => {
