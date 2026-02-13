@@ -945,6 +945,260 @@ span.coming-soon {
     visibility: hidden;
 }
 
+/* ============================================
+   Session Grid Cards (Access View)
+   ============================================ */
+.sessions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    padding: 0.5rem 0;
+}
+
+.session-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 1;
+    background: #1e2227;
+    border: 1px solid var(--color-border-primary);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.session-card:hover {
+    border-color: #454a50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.session-card-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.session-card:hover .session-card-icon {
+    transform: scale(0.9);
+    filter: brightness(0.6);
+}
+
+.session-card-icon img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.session-card-name {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+}
+
+.session-card:hover .session-card-name {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.session-online-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    border-radius: 10px;
+    padding: 2px 7px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    z-index: 2;
+}
+
+.session-online-badge .online-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    display: inline-block;
+}
+
+.session-online-badge .online-count-num {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+/* Hover overlay */
+.session-card-hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(2px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 14px;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.session-card:hover .session-card-hover-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+.session-hover-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.session-hover-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.session-hover-actions .connect-session-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #4ade80;
+    color: #0f1115;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.session-hover-actions .connect-session-btn:hover {
+    background: #22c55e;
+}
+
+.session-hover-actions .session-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.session-hover-actions .session-more-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   Package Info Header (Access View)
+   ============================================ */
+.package-info-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+    background: #1a1e24;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+}
+
+.package-info-header .package-info-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px 0;
+}
+
+.package-info-header .package-info-title .package-icon {
+    font-size: 18px;
+}
+
+.package-info-header .package-info-title h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.package-info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.package-info-label {
+    font-size: 14px;
+    color: var(--color-text-gray);
+    display: flex;
+    gap: 8px;
+}
+
+.package-info-label span:first-child {
+    color: var(--color-text-muted);
+    min-width: 110px;
+}
+
+.online-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #4ade80;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.online-count .online-dot-lg {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    display: inline-block;
+}
+
+.online-count svg {
+    width: 16px;
+    height: 16px;
+}
 
 /* ============================================
    Collection Component

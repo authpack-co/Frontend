@@ -102,8 +102,14 @@ function createPackageElement(pkg, isAccess = false) {
     return container;
 }
 
-// Gera o elemento DOM de uma sessão
-function createSessionElement(session, includeActions = true) {
+// Gera o elemento DOM de uma sessão (grid card para access, list item para collection)
+function createSessionElement(session, isCollection = true) {
+    // Access view: grid card
+    if (!isCollection) {
+        return createSessionCardElement(session);
+    }
+
+    // Collection view: list item (mantém o layout original)
     const container = createElement('div', 'list-item session');
     container.dataset.sessionId = session.id;
 
@@ -125,63 +131,115 @@ function createSessionElement(session, includeActions = true) {
     // Item actions
     const itemActions = createElement('div', 'item-actions');
 
-    if (includeActions) {
-        const managementActions = createElement('div', 'management-actions');
+    const managementActions = createElement('div', 'management-actions');
 
-        // Connect button
-        const connectBtn = createElement('div', 'connect-session-btn actionBtn');
-        connectBtn.title = 'Conectar';
-        connectBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16"
-                height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"
-                class="lucide lucide-play-icon lucide-play">
-                <path
-                    d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
-            </svg>
-        `;
+    // Connect button
+    const connectBtn = createElement('div', 'connect-session-btn actionBtn');
+    connectBtn.title = 'Conectar';
+    connectBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16"
+            height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-play-icon lucide-play">
+            <path
+                d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+        </svg>
+    `;
 
-        // Edit button
-        const editBtn = createElement('div', 'edit-session-btn actionBtn');
-        editBtn.title = 'Editar';
-        editBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
-            </svg>
-        `;
+    // Edit button
+    const editBtn = createElement('div', 'edit-session-btn actionBtn');
+    editBtn.title = 'Editar';
+    editBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
+        </svg>
+    `;
 
-        // Delete button
-        const deleteBtn = createElement('div', 'delete-session-btn actionBtn');
-        deleteBtn.title = 'Excluir';
-        deleteBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
-        `;
+    // Delete button
+    const deleteBtn = createElement('div', 'delete-session-btn actionBtn');
+    deleteBtn.title = 'Excluir';
+    deleteBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        </svg>
+    `;
 
-        managementActions.appendChild(connectBtn);
-        managementActions.appendChild(editBtn);
-        managementActions.appendChild(deleteBtn);
+    managementActions.appendChild(connectBtn);
+    managementActions.appendChild(editBtn);
+    managementActions.appendChild(deleteBtn);
 
-        itemActions.appendChild(managementActions);
+    itemActions.appendChild(managementActions);
 
-        // See details Button
-        const seeDetailsBtn = createElement('button', 'btn btn-small details-btn', 'Ver detalhes');
-        itemActions.appendChild(seeDetailsBtn);
-    } else {
-        // Botão de Conectar
-        const connectBtn = createElement('button', 'btn btn-small connect-session-btn', 'Conectar');
-        itemActions.appendChild(connectBtn);
-    }
+    // See details Button
+    const seeDetailsBtn = createElement('button', 'btn btn-small details-btn', 'Ver detalhes');
+    itemActions.appendChild(seeDetailsBtn);
 
     container.appendChild(itemInfo);
     container.appendChild(itemActions);
 
     return container;
+}
+
+// Gera o elemento DOM de uma sessão como card de grid (para access view)
+function createSessionCardElement(session) {
+    const card = createElement('div', 'session-card');
+    card.dataset.sessionId = session.id;
+
+    // Ícone grande
+    const iconWrapper = createElement('div', 'session-card-icon');
+    const img = document.createElement('img');
+    img.alt = session.name;
+    img.src = session.icon;
+    iconWrapper.appendChild(img);
+
+    // Badge de online (placeholder — será atualizado com dados reais)
+    const onlineBadge = createElement('div', 'session-online-badge');
+    const onlineDot = createElement('span', 'online-dot');
+    const onlineNum = createElement('span', 'online-count-num');
+    onlineNum.textContent = session.onlineCount || '0';
+    onlineBadge.appendChild(onlineDot);
+    onlineBadge.appendChild(onlineNum);
+
+    // Nome na parte inferior
+    const name = createElement('div', 'session-card-name');
+    name.textContent = session.name;
+
+    // Hover overlay
+    const overlay = createElement('div', 'session-card-hover-overlay');
+
+    const hoverName = createElement('span', 'session-hover-name');
+    hoverName.textContent = session.name;
+
+    const hoverActions = createElement('div', 'session-hover-actions');
+
+    const connectBtn = createElement('button', 'connect-session-btn');
+    connectBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
+        </svg>
+        Conectar
+    `;
+
+    const moreBtn = createElement('button', 'session-more-btn');
+    moreBtn.textContent = '···';
+
+    hoverActions.appendChild(connectBtn);
+    hoverActions.appendChild(moreBtn);
+
+    overlay.appendChild(hoverName);
+    overlay.appendChild(hoverActions);
+
+    card.appendChild(iconWrapper);
+    card.appendChild(onlineBadge);
+    card.appendChild(name);
+    card.appendChild(overlay);
+
+    return card;
 }
 
 // Gera o elemento DOM de um usuário conectado
@@ -401,18 +459,38 @@ async function renderPackageDetails(pkg, isCollection = true) {
     if (!activePreset) return;
 
     // Atualiza título
-    const title = activePreset.querySelector('.header-top h2');
+    const title = activePreset.querySelector('.header-top h2') || activePreset.querySelector('.package-info-title h2');
     if (title) title.textContent = pkg.name;
 
     // Atualiza data de criação
-    const createdAt = activePreset.querySelector('.header-top .created-at-label');
     const date = new Date(pkg.createdAt);
-    const dateLabel = `Criado em ${date.toLocaleDateString('pt-BR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    })}`;
-    if (createdAt) createdAt.textContent = dateLabel;
+    const dateFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+
+    if (isCollection) {
+        const createdAt = activePreset.querySelector('.header-top .created-at-label');
+        const dateLabel = `Criado em ${date.toLocaleDateString('pt-BR', dateFormatOptions)}`;
+        if (createdAt) createdAt.textContent = dateLabel;
+    } else {
+        // Access view: atualiza header de info do pacote
+        const createdAtLabel = activePreset.querySelector('.package-info-header .created-at-value');
+        if (createdAtLabel) {
+            createdAtLabel.textContent = date.toLocaleDateString('pt-BR', dateFormatOptions);
+        }
+
+        const renewsAtLabel = activePreset.querySelector('.package-info-header .renews-at-value');
+        if (renewsAtLabel && pkg.renewsAt) {
+            const renewDate = new Date(pkg.renewsAt);
+            renewsAtLabel.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
+        } else if (renewsAtLabel) {
+            renewsAtLabel.textContent = '—';
+        }
+
+        const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
+        if (onlineCountEl) {
+            const onlineCount = pkg.onlineCount || 0;
+            onlineCountEl.textContent = `${onlineCount} online`;
+        }
+    }
 
     // Renderiza sessões
     const sessionsPanelContainer = activePreset.querySelector(".sessions-panel-container");
@@ -423,12 +501,16 @@ async function renderPackageDetails(pkg, isCollection = true) {
         setElementState(sessionsPanelContainer, "content");
     }
 
-    const sessionsList = activePreset.querySelector('.sessions-panel .scrollable-list');
-    if (sessionsList && pkg.sessions) {
-        sessionsList.innerHTML = '';
+    // Seleciona container correto: grid para access, lista para collection
+    const sessionsContainer = isCollection
+        ? activePreset.querySelector('.sessions-panel .scrollable-list')
+        : activePreset.querySelector('.sessions-panel .sessions-grid');
+
+    if (sessionsContainer && pkg.sessions) {
+        sessionsContainer.innerHTML = '';
         pkg.sessions.forEach(session => {
             const sessionElement = createSessionElement(session, isCollection);
-            sessionsList.appendChild(sessionElement);
+            sessionsContainer.appendChild(sessionElement);
         });
     }
 

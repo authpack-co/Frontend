@@ -134,7 +134,7 @@ const listenerMap = [
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
-    { selector: '.list-item.session .connect-session-btn', event: 'click', handler: handleConnectSession },
+    { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
     { selector: '.list-item.session .details-btn', event: 'click', handler: showSessionScreen }
 ];
@@ -290,7 +290,7 @@ async function handleConnectSession(e) {
     const packageEl = this.closest('#package-details');
     const packageId = packageEl.dataset.packageId;
 
-    const sessionEl = this.closest('.list-item.session');
+    const sessionEl = this.closest('.session-card') || this.closest('.list-item.session');
     const sessionId = sessionEl.dataset.sessionId;
 
     const isAccess = sessionEl.closest('.preset-collection') ? false : true;
