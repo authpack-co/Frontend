@@ -668,7 +668,7 @@ async function loadPackageStats(pkg, period) {
                 const user = pkg.users.find(u => u.id === userId);
                 if (user) {
                     const timestamp = usersLastUsage[userId];
-                    const dateObj = new Date(timestamp.replace(' ', 'T') + 'Z');
+                    const dateObj = new Date(timestamp.replace(' ', 'T'));
 
                     user.lastUsage = formatLocalDateTime(dateObj);
 
