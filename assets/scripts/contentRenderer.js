@@ -189,55 +189,61 @@ function createSessionCardElement(session) {
     const card = createElement('div', 'session-card');
     card.dataset.sessionId = session.id;
 
-    // Ícone grande
-    const iconWrapper = createElement('div', 'session-card-icon');
-    const img = document.createElement('img');
-    img.alt = session.name;
-    img.src = session.icon;
-    iconWrapper.appendChild(img);
+    // Aplica glow se tiver paleta
+    if (session.palette && session.palette.dominantColor) {
+        const [r, g, b] = session.palette.dominantColor.rgb;
+        card.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
+    }
 
-    // Badge de online (placeholder — será atualizado com dados reais)
+    // Content wrapper (z-index acima do ::before glow)
+    const content = createElement('div', 'session-card-content');
+
+    // Header: ícone + nome + domínio
+    const header = createElement('div', 'session-card-header');
+
+    const icon = document.createElement('img');
+    icon.className = 'session-card-icon';
+    icon.alt = session.name;
+    icon.src = session.icon;
+
+    const headerText = createElement('div', 'session-card-header-text');
+
+    const name = createElement('h3', 'session-card-name');
+    name.textContent = session.name;
+
+    const domain = createElement('p', 'session-card-domain');
+    try {
+        domain.textContent = new URL(session.url).hostname.replace(/^www\./, '');
+    } catch {
+        domain.textContent = session.url || '';
+    }
+
+    headerText.appendChild(name);
+    headerText.appendChild(domain);
+    header.appendChild(icon);
+    header.appendChild(headerText);
+
+    // Footer: online badge + botão conectar
+    const footer = createElement('div', 'session-card-footer');
+
     const onlineBadge = createElement('div', 'session-online-badge');
     const onlineDot = createElement('span', 'online-dot');
     const onlineNum = createElement('span', 'online-count-num');
     onlineNum.textContent = session.onlineCount || '0';
+    const onlineLabel = createElement('span', 'online-label', 'online');
     onlineBadge.appendChild(onlineDot);
     onlineBadge.appendChild(onlineNum);
+    onlineBadge.appendChild(onlineLabel);
 
-    // Nome na parte inferior
-    const name = createElement('div', 'session-card-name');
-    name.textContent = session.name;
+    const connectBtn = createElement('button', 'connect-session-btn', 'Conectar');
 
-    // Hover overlay
-    const overlay = createElement('div', 'session-card-hover-overlay');
+    footer.appendChild(onlineBadge);
+    footer.appendChild(connectBtn);
 
-    const hoverName = createElement('span', 'session-hover-name');
-    hoverName.textContent = session.name;
-
-    const hoverActions = createElement('div', 'session-hover-actions');
-
-    const connectBtn = createElement('button', 'connect-session-btn');
-    connectBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
-        </svg>
-        Conectar
-    `;
-
-    const moreBtn = createElement('button', 'session-more-btn');
-    moreBtn.textContent = '···';
-
-    hoverActions.appendChild(connectBtn);
-    hoverActions.appendChild(moreBtn);
-
-    overlay.appendChild(hoverName);
-    overlay.appendChild(hoverActions);
-
-    card.appendChild(iconWrapper);
-    card.appendChild(onlineBadge);
-    card.appendChild(name);
-    card.appendChild(overlay);
+    // Monta estrutura
+    content.appendChild(header);
+    content.appendChild(footer);
+    card.appendChild(content);
 
     return card;
 }
@@ -545,6 +551,15 @@ async function renderPackageDetails(pkg, isCollection = true) {
                     dominantColor,
                     details: paletteExtracted
                 };
+            }
+        }
+
+        // Aplica glow nos session-cards do access view (paleta pode ter sido extraída após render)
+        if (!isCollection && session.palette && session.palette.dominantColor) {
+            const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
+            if (sessionCard) {
+                const [r, g, b] = session.palette.dominantColor.rgb;
+                sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
             }
         }
     }
