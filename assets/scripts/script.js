@@ -279,7 +279,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                             tooltipEl.style.borderRadius = '8px';
                             tooltipEl.style.color = '#fff';
                             tooltipEl.style.opacity = 0;
-                            tooltipEl.style.pointerEvents = 'auto';
+                            tooltipEl.style.pointerEvents = 'none';
                             tooltipEl.style.position = 'absolute';
                             tooltipEl.style.transform = 'translate(-50%, 0)';
                             tooltipEl.style.transition = 'all .3s ease';
@@ -299,11 +299,13 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                                     tooltipEl._hideTimeout = null;
                                 }
                                 tooltipEl.style.opacity = 1;
+                                tooltipEl.style.pointerEvents = 'auto';
                             });
 
                             tooltipEl.addEventListener('mouseleave', () => {
                                 tooltipEl._hideTimeout = setTimeout(() => {
                                     tooltipEl.style.opacity = 0;
+                                    tooltipEl.style.pointerEvents = 'none';
                                 }, 150);
                             });
                         }
@@ -318,6 +320,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                             if (tooltipEl._hideTimeout) clearTimeout(tooltipEl._hideTimeout);
                             tooltipEl._hideTimeout = setTimeout(() => {
                                 tooltipEl.style.opacity = 0;
+                                tooltipEl.style.pointerEvents = 'none';
                             }, 120);
                             return;
                         }
@@ -352,7 +355,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                                         </svg>
                                         <span>${formatHours(itemData.hours)} de uso</span>
                                     </div>
-                                    ${renderTarget === "user" ? "" : 
+                                    ${renderTarget === "user" ? "" :
                                         `
                                         <div style="display:flex;align-items:center;gap:6px;">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
@@ -376,8 +379,8 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                                     </svg>
                                     <span>${formatHours(itemData.hours)} de uso</span>
                                 </div>
-                                ${renderTarget === "user" ? "" : 
-                                    `
+                                ${renderTarget === "user" ? "" :
+                                        `
                                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -403,6 +406,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                         // Posicionamento
                         const position = context.chart.canvas.getBoundingClientRect();
                         tooltipEl.style.opacity = 1;
+                        tooltipEl.style.pointerEvents = 'auto';
                         tooltipEl.style.left =
                             position.left + window.pageXOffset + tooltipModel.caretX + 'px';
                         tooltipEl.style.top =
@@ -468,9 +472,9 @@ function updateChartPeriod(chartType, event) {
             chartTitle.textContent = 'Uso do pacote hoje';
             if (chartType === 'package') {
                 loadPackageStats(pkg, 0);
-            } else if(chartType === 'session') {
+            } else if (chartType === 'session') {
                 loadSessionStats(session, pkg, 0);
-            } else if(chartType === 'user') {
+            } else if (chartType === 'user') {
                 loadUserStats(user, pkg, 0);
             }
             break;
@@ -478,9 +482,9 @@ function updateChartPeriod(chartType, event) {
             chartTitle.textContent = 'Uso do pacote nos últimos 7 dias';
             if (chartType === 'package') {
                 loadPackageStats(pkg, 7);
-            } else if(chartType === 'session') {
+            } else if (chartType === 'session') {
                 loadSessionStats(session, pkg, 7);
-            } else if(chartType === 'user') {
+            } else if (chartType === 'user') {
                 loadUserStats(user, pkg, 7);
             }
             break;
@@ -488,9 +492,9 @@ function updateChartPeriod(chartType, event) {
             chartTitle.textContent = 'Uso do pacote nos últimos 30 dias';
             if (chartType === 'package') {
                 loadPackageStats(pkg, 30);
-            } else if(chartType === 'session') {
+            } else if (chartType === 'session') {
                 loadSessionStats(session, pkg, 30);
-            } else if(chartType === 'user') {
+            } else if (chartType === 'user') {
                 loadUserStats(user, pkg, 30);
             }
             break;
