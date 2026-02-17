@@ -126,6 +126,7 @@ const utils = {
 
 const listenerMap = [
     { selector: '.options-btn', event: 'click', handler: handleToggleOptions },
+    { selector: '.session-options-btn', event: 'click', handler: handleToggleSessionOptions },
     { selector: '.preset-collection .list-item', event: 'click', handler: handleListItemClick },
     { selector: '.edit-package-btn', event: 'click', handler: setupEditPackageForm },
     { selector: '.delete-package-btn', event: 'click', handler: setupDeletePackageForm },
@@ -136,7 +137,7 @@ const listenerMap = [
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
-    { selector: '.list-item.session .details-btn', event: 'click', handler: showSessionScreen }
+    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen }
 ];
 
 const listenerSelectors = listenerMap.map(l => l.selector).join(',');
@@ -192,6 +193,22 @@ function handleToggleOptions(e) {
 
     const packageOptions = e.currentTarget.nextElementSibling;
     packageOptions?.classList.toggle('hidden');
+}
+
+function handleToggleSessionOptions(e) {
+    e.stopPropagation();
+
+    // Fecha todas as session-options abertas
+    const activeSessionOptions = document.querySelectorAll('.session-options:not(.hidden)');
+    activeSessionOptions.forEach(opt => {
+        if (opt !== e.currentTarget.closest('.session-card')?.querySelector('.session-options')) {
+            opt.classList.add('hidden');
+        }
+    });
+
+    const card = e.currentTarget.closest('.session-card');
+    const sessionOptions = card?.querySelector('.session-options');
+    sessionOptions?.classList.toggle('hidden');
 }
 
 function handleListItemClick(e) {
@@ -428,9 +445,13 @@ function setupRemoveUserAccessForm(e) {
 function setupEditSessionForm(event) {
     event.stopPropagation();
 
-    const sessionEl = this.closest(".session");
+    const sessionEl = this.closest(".session-card") || this.closest(".session");
     const sessionId = sessionEl.dataset.sessionId;
-    const sessionName = sessionEl.querySelector(".item-name").textContent;
+    const sessionName = sessionEl.querySelector(".session-card-name")?.textContent || sessionEl.querySelector(".item-name")?.textContent;
+
+    // Fecha session-options se estiver aberto
+    const sessionOptions = sessionEl.querySelector('.session-options');
+    if (sessionOptions) sessionOptions.classList.add('hidden');
 
     const editSessionModal = document.querySelector("#editSessionModal");
     const editSessionInput = editSessionModal.querySelector("input");
@@ -451,9 +472,14 @@ function setupEditSessionForm(event) {
 function setupDeleteSessionForm(event) {
     event.stopPropagation();
 
-    const sessionEl = this.closest(".session");
+    const sessionEl = this.closest(".session-card") || this.closest(".session");
     const sessionId = sessionEl.dataset.sessionId;
-    const sessionName = sessionEl.querySelector(".item-name").textContent;
+    const sessionName = sessionEl.querySelector(".session-card-name")?.textContent || sessionEl.querySelector(".item-name")?.textContent;
+
+    // Fecha session-options se estiver aberto
+    const sessionOptions = sessionEl.querySelector('.session-options');
+    if (sessionOptions) sessionOptions.classList.add('hidden');
+
     const deleteSessionModal = document.querySelector("#deleteSessionModal");
     const dynamicTitle = deleteSessionModal.querySelector(".modal-body .form-text strong");
 
@@ -518,7 +544,7 @@ function showUserScreen(event) {
 
 function showSessionScreen(event) {
     event.stopPropagation();
-    const sessionEl = this.closest(".session");
+    const sessionEl = this.closest(".session-card") || this.closest(".session");
     const sessionId = sessionEl.dataset.sessionId;
 
     const packageDetails = document.querySelector("#package-details");
@@ -599,6 +625,14 @@ document.addEventListener('click', e => {
         const activePackageOptions = document.querySelectorAll('.package-options:not(.hidden)');
         activePackageOptions.forEach(packageOptions => {
             packageOptions.classList.add('hidden');
+        });
+    }
+
+    // Close session options if click outside
+    if (!e.target.closest('.session-options-btn') && !e.target.closest('.session-options')) {
+        const activeSessionOptions = document.querySelectorAll('.session-options:not(.hidden)');
+        activeSessionOptions.forEach(opt => {
+            opt.classList.add('hidden');
         });
     }
 });

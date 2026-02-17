@@ -102,86 +102,140 @@ function createPackageElement(pkg, isAccess = false) {
     return container;
 }
 
-// Gera o elemento DOM de uma sessão (grid card para access, list item para collection)
+// Gera o elemento DOM de uma sessão (grid card para ambas as views)
 function createSessionElement(session, isCollection = true) {
     // Access view: grid card
     if (!isCollection) {
         return createSessionCardElement(session);
     }
 
-    // Collection view: list item (mantém o layout original)
-    const container = createElement('div', 'list-item session');
-    container.dataset.sessionId = session.id;
+    // Collection view: grid card com ações de gerenciamento
+    return createCollectionSessionCardElement(session);
+}
 
-    // Item info
-    const itemInfo = createElement('div', 'item-info');
+// Gera o elemento DOM de uma sessão como card de grid (para collection view)
+// Inclui: ícone de relógio (tempo de uso), botão ⋯ (session-options), online badge, botão "Ver detalhes"
+function createCollectionSessionCardElement(session) {
+    const card = createElement('div', 'session-card');
+    card.dataset.sessionId = session.id;
 
-    const itemIcon = createElement('div', 'item-icon');
-    const img = document.createElement('img');
-    img.alt = session.name;
-    img.src = session.icon;
-    itemIcon.appendChild(img);
+    // Aplica glow se tiver darkPalette
+    if (session.darkPalette) {
+        const [r, g, b] = JSON.parse(session.darkPalette);
+        card.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
+    }
 
-    const itemName = createElement('div', 'item-name');
-    itemName.textContent = session.name;
+    // Actions no canto superior direito: relógio + 3 pontinhos
+    const actions = createElement('div', 'session-card-actions');
 
-    itemInfo.appendChild(itemIcon);
-    itemInfo.appendChild(itemName);
-
-    // Item actions
-    const itemActions = createElement('div', 'item-actions');
-
-    const managementActions = createElement('div', 'management-actions');
-
-    // Connect button
-    const connectBtn = createElement('div', 'connect-session-btn actionBtn');
-    connectBtn.title = 'Conectar';
-    connectBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16"
-            height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round"
-            class="lucide lucide-play-icon lucide-play">
-            <path
-                d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+    // Ícone de tempo de uso
+    const usageTime = createElement('div', 'session-card-usage-time');
+    usageTime.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
         </svg>
     `;
+    const usageTimeText = createElement('span', 'usage-time-text');
+    usageTimeText.textContent = session.usageTime || '0m';
+    usageTime.appendChild(usageTimeText);
 
-    // Edit button
-    const editBtn = createElement('div', 'edit-session-btn actionBtn');
-    editBtn.title = 'Editar';
-    editBtn.innerHTML = `
+    // Botão de 3 pontinhos
+    const optionsBtn = createElement('button', 'session-options-btn', '⋯');
+
+    actions.appendChild(usageTime);
+    actions.appendChild(optionsBtn);
+    card.appendChild(actions);
+
+    // Session Options Dropdown
+    const sessionOptions = createElement('div', 'session-options hidden');
+
+    // Conectar
+    const connectOptBtn = createElement('button', 'connect-session-btn');
+    connectOptBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+        </svg>
+        <span>Conectar</span>
+    `;
+
+    // Editar
+    const editOptBtn = createElement('button', 'edit-session-btn');
+    editOptBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
         </svg>
+        <span>Editar</span>
     `;
 
-    // Delete button
-    const deleteBtn = createElement('div', 'delete-session-btn actionBtn');
-    deleteBtn.title = 'Excluir';
-    deleteBtn.innerHTML = `
+    // Excluir
+    const deleteOptBtn = createElement('button', 'delete-session-btn');
+    deleteOptBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"></path>
             <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
         </svg>
+        <span>Excluir</span>
     `;
 
-    managementActions.appendChild(connectBtn);
-    managementActions.appendChild(editBtn);
-    managementActions.appendChild(deleteBtn);
+    sessionOptions.appendChild(connectOptBtn);
+    sessionOptions.appendChild(editOptBtn);
+    sessionOptions.appendChild(deleteOptBtn);
+    card.appendChild(sessionOptions);
 
-    itemActions.appendChild(managementActions);
+    // Content wrapper (z-index acima do ::before glow)
+    const content = createElement('div', 'session-card-content');
 
-    // See details Button
-    const seeDetailsBtn = createElement('button', 'btn btn-small details-btn', 'Ver detalhes');
-    itemActions.appendChild(seeDetailsBtn);
+    // Header: ícone + nome + domínio
+    const header = createElement('div', 'session-card-header');
 
-    container.appendChild(itemInfo);
-    container.appendChild(itemActions);
+    const icon = document.createElement('img');
+    icon.className = 'session-card-icon';
+    icon.alt = session.name;
+    icon.src = session.icon;
 
-    return container;
+    const headerText = createElement('div', 'session-card-header-text');
+
+    const name = createElement('h3', 'session-card-name');
+    name.textContent = session.name;
+
+    const domain = createElement('p', 'session-card-domain');
+    try {
+        domain.textContent = new URL(session.url).hostname.replace(/^www\./, '');
+    } catch {
+        domain.textContent = session.url || '';
+    }
+
+    headerText.appendChild(name);
+    headerText.appendChild(domain);
+    header.appendChild(icon);
+    header.appendChild(headerText);
+
+    // Footer: online badge + botão "Ver detalhes"
+    const footer = createElement('div', 'session-card-footer');
+
+    const onlineBadge = createElement('div', 'session-online-badge');
+    const onlineDot = createElement('span', 'online-dot');
+    const onlineNum = createElement('span', 'online-count-num');
+    onlineNum.textContent = session.onlineCount || '0';
+    const onlineLabel = createElement('span', 'online-label', 'online');
+    onlineBadge.appendChild(onlineDot);
+    onlineBadge.appendChild(onlineNum);
+    onlineBadge.appendChild(onlineLabel);
+
+    const detailsBtn = createElement('button', 'details-btn', 'Ver detalhes');
+
+    footer.appendChild(onlineBadge);
+    footer.appendChild(detailsBtn);
+
+    // Monta estrutura
+    content.appendChild(header);
+    content.appendChild(footer);
+    card.appendChild(content);
+
+    return card;
 }
 
 // Gera o elemento DOM de uma sessão como card de grid (para access view)
@@ -487,10 +541,8 @@ async function renderPackageDetails(pkg, isCollection = true) {
         setElementState(sessionsPanelContainer, "content");
     }
 
-    // Seleciona container correto: grid para access, lista para collection
-    const sessionsContainer = isCollection
-        ? activePreset.querySelector('.sessions-panel .scrollable-list')
-        : activePreset.querySelector('.sessions-panel .sessions-grid');
+    // Seleciona container correto: grid para ambas as views
+    const sessionsContainer = activePreset.querySelector('.sessions-panel .sessions-grid');
 
     if (sessionsContainer && pkg.sessions) {
         sessionsContainer.innerHTML = '';
@@ -539,15 +591,13 @@ async function renderPackageDetails(pkg, isCollection = true) {
         loadPackageStats(pkg, period);
     }
 
-    // Aplica glow nos session-cards do access view usando darkPalette
-    if (!isCollection) {
-        for (const session of pkg.sessions) {
-            if (session.darkPalette) {
-                const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
-                if (sessionCard) {
-                    const [r, g, b] = JSON.parse(session.darkPalette);
-                    sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
-                }
+    // Aplica glow nos session-cards usando darkPalette
+    for (const session of pkg.sessions) {
+        if (session.darkPalette) {
+            const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
+            if (sessionCard) {
+                const [r, g, b] = JSON.parse(session.darkPalette);
+                sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
             }
         }
     }
@@ -697,6 +747,7 @@ async function loadPackageStats(pkg, period) {
                 totalSessions: pkg.sessions.length,
                 totalUsers: pkg.users.length,
                 totalUsersOnline: 0,
+                sessionsOnline: {},
                 sessionsHistoryUsage,
                 packageHistoryUsage,
                 dailyPackageUsage,
@@ -721,6 +772,24 @@ async function loadPackageStats(pkg, period) {
                     }
                 }
             }
+
+            // Calcula sessionsOnline a partir do accessHistory
+            // Percorre todos os registros buscando acessos nos últimos 60 segundos
+            const now = new Date();
+            Object.values(accessHistory).forEach(dayAccesses => {
+                dayAccesses.forEach(access => {
+                    const accessDate = new Date(access.localDateTime);
+                    const endTime = new Date(accessDate.getTime() + (access.usageTimeSeconds || 0) * 1000);
+                    const diffInSec = Math.floor((now - endTime) / 1000);
+
+                    if (diffInSec < 60 && diffInSec >= 0) {
+                        if (!pkg.stats.sessionsOnline[access.sessionId]) {
+                            pkg.stats.sessionsOnline[access.sessionId] = 0;
+                        }
+                        pkg.stats.sessionsOnline[access.sessionId]++;
+                    }
+                });
+            });
         }
     }
 
@@ -758,6 +827,19 @@ async function loadPackageStats(pkg, period) {
     // Users stats
     const usersTitle = usersStat.querySelector(".access-title");
     usersTitle.textContent = pkg.stats ? (String(pkg.stats.totalUsers)) : "0";
+
+    // Online users stat
+    const onlineStat = contentPreset.querySelector(".online-users-stat");
+    if (onlineStat) {
+        const onlineTitle = onlineStat.querySelector(".access-title");
+        onlineTitle.textContent = pkg.stats ? String(pkg.stats.totalUsersOnline) : "0";
+    }
+
+    // Atualiza contagem online no header
+    const onlineCountEl = contentPreset.querySelector('.package-info-header .online-count-value');
+    if (onlineCountEl) {
+        onlineCountEl.textContent = `${pkg.stats.totalUsersOnline} online`;
+    }
 
     const packageStatsContainer = contentPreset.querySelector(".package-stats-container");
     setElementState(packageStatsContainer, "content");
@@ -797,14 +879,14 @@ async function loadPackageStats(pkg, period) {
         }
     }
 
-    // Sessions panel
-    const sessionsEl = document.querySelectorAll("#package-details .preset-collection .sessions-panel .session");
-    sessionsEl.forEach(session => {
+    // Sessions panel: atualiza usage time e online badges nos session-cards
+    const sessionCards = document.querySelectorAll("#package-details .preset-collection .sessions-panel .session-card");
+    sessionCards.forEach(card => {
         const sessionsHistoryUsageFiltered = filterByLastDays(pkg.stats.sessionsHistoryUsage, period);
-        const sessionId = session.getAttribute("data-session-id");
+        const sessionId = card.getAttribute("data-session-id");
 
+        // Calcula tempo total de uso da sessão
         let sessionTime = 0;
-
         Object.values(sessionsHistoryUsageFiltered).forEach(daySessions => {
             if (daySessions[sessionId]) {
                 sessionTime += daySessions[sessionId];
@@ -813,18 +895,18 @@ async function loadPackageStats(pkg, period) {
 
         const sessionTimeFormatted = formatDuration(sessionTime);
 
-        // Se já existe itemDetails, atualiza
-        if (session.querySelector(".item-details")) {
-            session.querySelector(".item-details").querySelector(".total-usage").textContent = sessionTimeFormatted === "0s" ? "" : sessionTimeFormatted;
-            return;
+        // Atualiza o texto de usage time no clock icon
+        const usageTimeText = card.querySelector('.usage-time-text');
+        if (usageTimeText) {
+            usageTimeText.textContent = sessionTimeFormatted === "0s" ? "0m" : sessionTimeFormatted;
         }
 
-        const itemDetails = createElement('div', 'item-details');
-        const totalUsage = createElement('div', 'total-usage');
-        totalUsage.textContent = sessionTimeFormatted === "0s" ? "" : sessionTimeFormatted;
-        itemDetails.appendChild(totalUsage);
-
-        session.appendChild(itemDetails);
+        // Atualiza badge de online count
+        const onlineCountNum = card.querySelector('.online-count-num');
+        if (onlineCountNum) {
+            const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
+            onlineCountNum.textContent = onlineCount;
+        }
     });
 
     // Users panel
