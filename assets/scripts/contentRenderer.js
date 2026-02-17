@@ -189,9 +189,9 @@ function createSessionCardElement(session) {
     const card = createElement('div', 'session-card');
     card.dataset.sessionId = session.id;
 
-    // Aplica glow se tiver paleta
-    if (session.palette && session.palette.dominantColor) {
-        const [r, g, b] = session.palette.dominantColor.rgb;
+    // Aplica glow se tiver darkPalette
+    if (session.darkPalette) {
+        const [r, g, b] = JSON.parse(session.darkPalette);
         card.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
     }
 
@@ -539,27 +539,15 @@ async function renderPackageDetails(pkg, isCollection = true) {
         loadPackageStats(pkg, period);
     }
 
-    // Renderiza paleta de cores
-    for (session of pkg.sessions) {
-        if (!session.palette) {
-            const paletteExtracted = await getPaletteFromUrl(session.icon);
-
-            if (paletteExtracted) {
-                const dominantColor = paletteExtracted.DarkVibrant || paletteExtracted.Vibrant || paletteExtracted.Muted;
-
-                session.palette = {
-                    dominantColor,
-                    details: paletteExtracted
-                };
-            }
-        }
-
-        // Aplica glow nos session-cards do access view (paleta pode ter sido extraída após render)
-        if (!isCollection && session.palette && session.palette.dominantColor) {
-            const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
-            if (sessionCard) {
-                const [r, g, b] = session.palette.dominantColor.rgb;
-                sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
+    // Aplica glow nos session-cards do access view usando darkPalette
+    if (!isCollection) {
+        for (const session of pkg.sessions) {
+            if (session.darkPalette) {
+                const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
+                if (sessionCard) {
+                    const [r, g, b] = JSON.parse(session.darkPalette);
+                    sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
+                }
             }
         }
     }
@@ -969,8 +957,8 @@ function renderSessionDetails(session, pkg, period) {
     const sessionName = serviceCard.querySelector(".service-name");
     const sessionDomain = serviceCard.querySelector(".service-domain");
 
-    if (session.palette && session.palette.dominantColor) {
-        const [r, g, b] = session.palette.dominantColor.rgb;
+    if (session.darkPalette) {
+        const [r, g, b] = JSON.parse(session.darkPalette);
         serviceCard.style.setProperty("--glow-color", `${r}, ${g}, ${b}`);
     } else {
         serviceCard.style.removeProperty("--glow-color");
@@ -1192,52 +1180,7 @@ function formatHours(hours) {
     }
 }
 
-// Função para buscar a imagem via proxy e obter a paleta
-async function getPaletteFromUrl(imageUrl) {
-    try {
-        // 1. Busca a imagem via proxy
-        const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(imageUrl)}`;
-        const response = await fetch(proxiedUrl, { mode: 'cors' });
 
-        if (!response.ok) {
-            throw new Error(`Proxy fetch falhou: ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-
-        // 2. Cria elemento img temporário para o Vibrant analisar
-        const tempImg = document.createElement('img');
-        tempImg.crossOrigin = '';
-        tempImg.src = blobUrl;
-
-        // 3. Aguarda a imagem carregar
-        await new Promise((resolve, reject) => {
-            tempImg.onload = resolve;
-            tempImg.onerror = reject;
-        });
-
-        // 4. Usa o Vibrant para extrair a paleta
-        let palette = null;
-        if (window.Vibrant) {
-            if (Vibrant.from) {
-                palette = await Vibrant.from(tempImg).getPalette();
-            } else {
-                const v = new Vibrant(tempImg);
-                palette = v.swatches ? v.swatches() : null;
-            }
-        }
-
-        // 5. Limpa o blob URL
-        URL.revokeObjectURL(blobUrl);
-
-        return palette;
-
-    } catch (err) {
-        console.warn('Erro ao obter paleta:', err);
-        return null;
-    }
-}
 
 function processRawAccessHistory(rawAccessHistory) {
     const pad = v => String(v).padStart(2, '0');
