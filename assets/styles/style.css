@@ -1037,6 +1037,8 @@ span.coming-soon {
 .sessions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    max-height: 360px;
+    overflow: auto;
     gap: 16px;
     padding: 0.5rem 0;
 }
@@ -1411,6 +1413,15 @@ span.coming-soon {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+}
+
+/* Online Status Dot */
+.online-dot-large {
+    width: 8px;
+    height: 8px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
 }
 
 /* Collection Session Card Details Button */
