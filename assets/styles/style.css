@@ -286,7 +286,7 @@ body {
 }
 
 .plus-subscribe-btn:hover {
-background: linear-gradient(135deg, #312e37, #2e3133);
+    background: linear-gradient(135deg, #312e37, #2e3133);
     transform: translateY(-1px);
 }
 
@@ -340,7 +340,7 @@ span.coming-soon {
 .main-content {
     flex: 1;
     min-height: 200px;
-    max-width: 925px;
+    max-width: 1100px;
 }
 
 /* ============================================
@@ -352,7 +352,7 @@ span.coming-soon {
     padding: 28px 25px 18px 25px;
     margin-bottom: 18px;
     background: #141619;
-    max-width: 925px;
+    max-width: 1100px;
     width: 95vw;
 }
 
@@ -388,7 +388,7 @@ span.coming-soon {
 
 .content-card h2 {
     margin: 0 0 20px 0;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
 }
 
@@ -1036,7 +1036,7 @@ span.coming-soon {
    ============================================ */
 .sessions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 16px;
     padding: 0.5rem 0;
 }
@@ -1057,6 +1057,11 @@ span.coming-soon {
     border-color: #454a50;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     transform: translateY(-2px);
+}
+
+.session-card:hover .session-card-usage-time {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .session-card::before {
@@ -1149,7 +1154,7 @@ span.coming-soon {
     color: rgba(255, 255, 255, 0.5);
 }
 
-.session-card .connect-session-btn {
+.access-state .session-card .connect-session-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1165,7 +1170,7 @@ span.coming-soon {
     white-space: nowrap;
 }
 
-.session-card .connect-session-btn:hover {
+.access-state .session-card .connect-session-btn:hover {
     background: #6bb3f0;
     transform: scale(1.03);
 }
@@ -1265,14 +1270,26 @@ span.coming-soon {
 .collection-right-column {
     width: 280px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .collection-right-column .users-panel-container {
-    position: sticky;
-    top: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-right-column .users-panel-container .preset-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .collection-right-column .users-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     background: #1a1e24;
     border: 1px solid var(--color-border-primary);
     border-radius: var(--radius-lg);
@@ -1280,7 +1297,7 @@ span.coming-soon {
 }
 
 .collection-right-column .scrollable-list {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
 }
 
@@ -1288,6 +1305,7 @@ span.coming-soon {
     .collection-content-layout {
         flex-direction: column;
     }
+
     .collection-right-column {
         width: 100%;
     }
@@ -1307,11 +1325,17 @@ span.coming-soon {
 }
 
 .session-card-usage-time {
+    opacity: 0;
     display: flex;
     align-items: center;
     gap: 4px;
+    background: #141619;
+    padding: 0.25rem;
+    border-radius: 8px;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
+    transform: scale(0.8);
+    transition: all 0.3s;
 }
 
 .session-card-usage-time svg {
@@ -1342,59 +1366,51 @@ span.coming-soon {
 /* Session Options Dropdown */
 .session-options {
     position: absolute;
+    width: 130px;
+    height: fit-content;
+    max-height: 105px;
     top: 38px;
     right: 12px;
-    background: #1e2228;
-    border: 1px solid var(--color-border-primary);
-    border-radius: 12px;
-    padding: 6px;
+    background-color: #181d23;
+    border: 1px solid var(--color-border-muted);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 8px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
     z-index: 10;
-    min-width: 160px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.15s ease, visibility 0.15s ease;
+    overflow: hidden;
+    transform: translateY(0);
+    transition: all 0.3s ease;
 }
 
 .session-options.hidden {
-    opacity: 0;
     visibility: hidden;
-    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-20px);
 }
 
 .session-options button {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    gap: 0.5rem;
     width: 100%;
-    padding: 10px 12px;
-    background: none;
-    border: none;
-    color: var(--color-text-gray);
-    font-size: 14px;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-primary);
+    padding: 5px 10px;
     cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .session-options button:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
+    background: #212830;
 }
 
 .session-options button svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
-}
-
-.session-options .delete-session-btn {
-    color: #f87171;
-}
-
-.session-options .delete-session-btn:hover {
-    background: rgba(248, 113, 113, 0.1);
-    color: #fca5a5;
 }
 
 /* Collection Session Card Details Button */
@@ -1674,12 +1690,12 @@ span.coming-soon {
     border: 1px solid var(--color-border-primary);
     border-radius: var(--radius-md);
     padding: 20px;
-    height: 220px;
+    height: 150px;
 }
 
 .chart-wrapper canvas {
-    height: 180px !important;
-    max-height: 180px;
+    height: 122px !important;
+    max-height: 122px;
 }
 
 .screen-section.secondary .chart-wrapper {
