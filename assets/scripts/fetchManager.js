@@ -209,5 +209,14 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/users/info`);
 
         return response;
-    }
+    },
+
+    // Billing
+
+    async checkoutPlus() {
+        const response = await fetchRoutes(`/api/billing/checkout/plus`, {
+            method: "POST",
+        });
+        return response;
+    },
 }

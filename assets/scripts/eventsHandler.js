@@ -613,6 +613,44 @@ plusSubscribeBtns.forEach(btn => {
     });
 });
 
+// Plus CTA (checkout redirect)
+const plusCtaBtn = document.querySelector('.plus-cta-btn');
+if (plusCtaBtn) {
+    plusCtaBtn.addEventListener('click', async () => {
+        // Previne duplo clique
+        if (plusCtaBtn.disabled) return;
+        plusCtaBtn.disabled = true;
+
+        const originalText = plusCtaBtn.innerHTML;
+        plusCtaBtn.innerHTML = `<div class="spinner"></div>`;
+
+        try {
+            const result = await fetchManager.checkoutPlus();
+
+            if (!result.ok) {
+                const errorMsg = result.result?.error === "ALREADY_SUBSCRIBED_TO_THIS_PLAN"
+                    ? "Você já possui uma assinatura ativa."
+                    : "Não foi possível iniciar o checkout.";
+                notify("error", errorMsg);
+                return;
+            }
+
+            const checkoutUrl = result.result?.url;
+            if (checkoutUrl) {
+                window.location.href = checkoutUrl;
+            } else {
+                notify("error", "URL de checkout não encontrada.");
+            }
+        } catch (err) {
+            console.error("Checkout error:", err);
+            notify("error", "Erro ao iniciar checkout.");
+        } finally {
+            plusCtaBtn.innerHTML = originalText;
+            plusCtaBtn.disabled = false;
+        }
+    });
+}
+
 const cancelBtns = document.querySelectorAll(".cancel-btn");
 cancelBtns.forEach(item => item.addEventListener("click", event => {
     utils.closeModals();
