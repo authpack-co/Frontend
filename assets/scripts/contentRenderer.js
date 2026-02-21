@@ -2071,13 +2071,23 @@ function processUserAccessHistory(accessHistory, pkg) {
 }
 
 function renderUserInfo(userInfo) {
-    const { name, picture } = userInfo;
+    const { name, email, picture } = userInfo;
 
+    // Trigger elements
     const profileName = document.querySelector('header.main-header .header-actions .profile-name');
     const profilePicture = document.querySelector('header.main-header .header-actions .profile-picture img');
 
-    profileName.textContent = name;
-    profilePicture.src = picture;
+    if (profileName) profileName.textContent = name;
+    if (profilePicture) profilePicture.src = picture;
+
+    // Dropdown header elements
+    const dropdownName = document.getElementById('dropdown-name');
+    const dropdownEmail = document.getElementById('dropdown-email');
+    const dropdownAvatar = document.getElementById('dropdown-avatar');
+
+    if (dropdownName) dropdownName.textContent = name;
+    if (dropdownEmail) dropdownEmail.textContent = email;
+    if (dropdownAvatar) dropdownAvatar.src = picture;
 }
 // ============================================================================
 // INICIALIZAÇÃO
