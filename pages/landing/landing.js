@@ -6,6 +6,14 @@
     'use strict';
 
     // ============================================
+    // Extension flag detection
+    // ============================================
+    const isExtensionPresent = document.documentElement.hasAttribute('data-authpack-active');
+    if (isExtensionPresent) {
+        document.body.classList.add('extension-detected');
+    }
+
+    // ============================================
     // Fade-in on scroll
     // ============================================
     const fadeElements = document.querySelectorAll('.lp-fade-in');

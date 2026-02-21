@@ -28,12 +28,18 @@
             </div>
 
             <div class="lp-navbar-actions">
-                <a href="https://api.authpack.co/api/auth/google">
-                    <button class="lp-btn-ghost">Entrar</button>
-                </a>
-                <a href="https://api.authpack.co/api/auth/google">
-                    <button class="lp-btn-primary">Sign up</button>
-                </a>
+                <!-- Visitor state: no extension detected -->
+                <div class="lp-nav-visitor">
+                    <a href="/pages/download/">
+                        <button class="lp-btn-primary">Download</button>
+                    </a>
+                </div>
+                <!-- Extension detected state -->
+                <div class="lp-nav-extension">
+                    <a href="/">
+                        <button class="lp-btn-ghost">Entrar</button>
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -59,7 +65,7 @@
                 </p>
 
                 <div class="lp-hero-ctas">
-                    <a href="https://api.authpack.co/api/auth/google">
+                    <a href="/pages/download/">
                         <button class="lp-btn-primary">
                             Começar agora
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -101,16 +107,9 @@
                 </div>
             </div>
 
-            <!-- Right Column — Card -->
-            <div class="lp-hero-card">
-                <div class="lp-hero-card-logo">
-                    <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
-                    <span>AuthPack</span>
-                </div>
-                <a href="https://api.authpack.co/api/auth/google" style="width: 100%;">
-                    <button class="lp-btn-primary" style="width: 100%; justify-content: center;">Começar</button>
-                </a>
-                <span class="lp-hero-card-label">Enterprise Access Control</span>
+            <!-- Right Column — Image -->
+            <div class="lp-hero-image">
+                <img src="/assets/images/landing-person.png" alt="Pessoa usando AuthPack">
             </div>
         </div>
     </section>
@@ -144,7 +143,8 @@
                     <div class="lp-feature-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                            <path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                             <circle cx="12" cy="12" r="3" />
                         </svg>
                     </div>
@@ -283,7 +283,7 @@
                 </div>
             </div>
 
-            <a href="https://api.authpack.co/api/auth/google">
+            <a href="/pages/download/">
                 <button class="lp-btn-primary" style="padding: 14px 32px; font-size: 1rem;">
                     Começar Agora
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -303,7 +303,7 @@
                 <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
                 <span>AuthPack</span>
             </div>
-            <span class="lp-footer-copy">© 2024 AuthPack. Todos os direitos reservados.</span>
+            <span class="lp-footer-copy">© 2026 AuthPack. Todos os direitos reservados.</span>
         </div>
     </footer>
 
