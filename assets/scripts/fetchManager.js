@@ -219,4 +219,25 @@ const fetchManager = {
         });
         return response;
     },
+
+    // Auth
+
+    async logout() {
+        const response = await fetchRoutes(`/api/auth/logout`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
+    },
+
+    // Extension
+
+    async downloadExtension({ visitorId, requestId }) {
+        const response = await fetchRoutes(`/api/extensions/build/chrome`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ visitorId, requestId })
+        }, true); // rawResponse = true → returns blob
+        return response;
+    },
 }
