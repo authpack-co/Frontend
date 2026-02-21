@@ -673,7 +673,24 @@ document.addEventListener('click', e => {
             opt.classList.add('hidden');
         });
     }
+
+    // Close profile dropdown if click outside
+    if (!e.target.closest('.profile-dropdown-wrapper')) {
+        document.getElementById('profile-dropdown')?.classList.remove('open');
+    }
 });
+
+// Profile dropdown toggle
+const profileTrigger = document.getElementById('profile-trigger');
+const profileDropdown = document.getElementById('profile-dropdown');
+
+if (profileTrigger && profileDropdown) {
+    profileTrigger.addEventListener('click', e => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('open');
+    });
+}
+
 
 // Create package
 const createPackageModal = document.querySelector('#createPackageModal');

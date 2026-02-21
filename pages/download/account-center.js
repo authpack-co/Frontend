@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (reinstallBtn) reinstallBtn.addEventListener('click', downloadExtension);
 
     const dashBtn = el('btn-open-dashboard');
-    if (dashBtn) dashBtn.addEventListener('click', () => { window.open(DASHBOARD_URL, '_blank'); });
+    if (dashBtn) dashBtn.addEventListener('click', () => { window.open(DASHBOARD_URL, '_self'); });
 
     const disconnectBtn = el('btn-disconnect');
     if (disconnectBtn) disconnectBtn.addEventListener('click', handleDisconnect);
