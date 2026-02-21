@@ -132,7 +132,7 @@ function resetDownloadButton() {
     btn.disabled = false;
     btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/>
-    </svg> Download Extension`;
+    </svg> Baixar Extensão`;
 }
 
 function showDeviceLimitError() {
@@ -224,8 +224,8 @@ function applyState(connected, extensionActive) {
             ? 'ext-status ext-status--active'
             : 'ext-status ext-status--inactive';
         extStatusEl.innerHTML = extensionActive
-            ? `<span class="ext-dot"></span> Extension: Active ✅`
-            : `<span class="ext-dot"></span> Extension: Not detected ❌`;
+            ? `<span class="ext-dot"></span> Extensão: Ativa ✅`
+            : `<span class="ext-dot"></span> Extensão: Não detectada ❌`;
     }
 
     // Open Dashboard button  → only if extension active
@@ -320,7 +320,7 @@ async function handleDisconnect() {
         window.location.reload();
     } catch (err) {
         btn.disabled = false;
-        btn.textContent = 'Disconnect';
+        btn.textContent = 'Desconectar';
         console.error('[AccountCenter] logout error:', err);
     }
 }
