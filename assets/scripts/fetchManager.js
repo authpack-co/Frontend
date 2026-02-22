@@ -165,7 +165,8 @@ const fetchManager = {
 
     async removeDevice(deviceId) {
         const response = await fetchRoutes(`/api/devices/${deviceId}`, {
-            method: "DELETE"
+            method: "DELETE",
+            credentials: "include"
         });
         return response;
     },

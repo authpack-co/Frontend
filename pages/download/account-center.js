@@ -167,16 +167,27 @@ function renderDevices(devices) {
 
         const row = document.createElement('div');
         row.className = 'device-row';
+        row.dataset.deviceId = device.id;
         row.innerHTML = `
-            <div class="device-type-icon">${getDeviceSVG(device.device)}</div>
-            <div class="device-row-info">
-                <div class="device-row-name"></div>
-                <div class="device-row-meta"></div>
-            </div>
-            ${isFirst
+            <div class="device-row-main">
+                <div class="device-type-icon">${getDeviceSVG(device.device)}</div>
+                <div class="device-row-info">
+                    <div class="device-row-name"></div>
+                    <div class="device-row-meta"></div>
+                </div>
+                ${isFirst
                 ? `<span class="device-row-badge device-row-badge--current">Este dispositivo</span>`
                 : `<span class="device-row-badge device-row-badge--other">v${device.version}</span>`
             }
+            </div>
+            <div class="device-row-actions">
+                <button class="btn btn-danger btn-remove-device" data-device-id="${device.id}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                    </svg>
+                    Remover dispositivo
+                </button>
+            </div>
         `;
 
         row.querySelector('.device-row-name').textContent =
@@ -184,9 +195,22 @@ function renderDevices(devices) {
         row.querySelector('.device-row-meta').textContent =
             `Registrado em ${date}`;
 
+        // Toggle expand on row click (but not on the remove button itself)
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-remove-device')) return;
+            row.classList.toggle('device-row--expanded');
+        });
+
+        // Remove button
+        row.querySelector('.btn-remove-device').addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleRemoveDevice(device.id, device.osName, device.browserName, row);
+        });
+
         list.appendChild(row);
     });
 }
+
 
 function renderUserInfo(user) {
     // Header avatar
@@ -324,3 +348,65 @@ async function handleDisconnect() {
         console.error('[AccountCenter] logout error:', err);
     }
 }
+
+// ─── Remove Device ────────────────────────────────────────────────────────────
+
+async function handleRemoveDevice(deviceId, osName, browserName, rowEl) {
+    const label = `${osName} • ${browserName}`;
+    if (!confirm(`Remover "${label}" da sua conta?\n\nO acesso deste dispositivo será revogado.`)) return;
+
+    const btn = rowEl.querySelector('.btn-remove-device');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon">
+                <path d="M21 12a9 9 0 11-6.219-8.56"/>
+            </svg>
+            Removendo...
+        `;
+    }
+
+    try {
+        const res = await fetchManager.removeDevice(deviceId);
+
+        if (!res.ok) {
+            alert('Não foi possível remover este dispositivo. Tente novamente.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                    </svg>
+                    Remover dispositivo
+                `;
+            }
+            return;
+        }
+
+        // Fade out and remove row
+        rowEl.style.transition = 'opacity 0.3s ease, max-height 0.35s ease';
+        rowEl.style.overflow = 'hidden';
+        rowEl.style.maxHeight = rowEl.offsetHeight + 'px';
+        requestAnimationFrame(() => {
+            rowEl.style.opacity = '0';
+            rowEl.style.maxHeight = '0';
+            rowEl.style.paddingTop = '0';
+            rowEl.style.paddingBottom = '0';
+        });
+        setTimeout(() => {
+            rowEl.remove();
+            // Show empty state if no devices left
+            const list = el('devices-list');
+            if (list && list.children.length === 0) {
+                setVisible(list, false);
+                setVisible(el('devices-empty'), true);
+            }
+        }, 350);
+
+    } catch (err) {
+        console.error('[AccountCenter] removeDevice error:', err);
+        alert('Erro inesperado. Tente novamente.');
+        if (btn) btn.disabled = false;
+    }
+}
+

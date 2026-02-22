@@ -475,11 +475,11 @@ img {
 
 .device-row {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 24px;
+    flex-direction: column;
     border-bottom: 1px solid var(--border-default);
     transition: background 0.15s;
+    cursor: pointer;
+    user-select: none;
 }
 
 .device-row:last-child {
@@ -489,6 +489,34 @@ img {
 .device-row:hover {
     background: var(--bg-card-alt);
 }
+
+/* Inner row: icon + info + badge side by side */
+.device-row-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+}
+
+/* Collapsible tray with remove button */
+.device-row-actions {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease, padding 0.28s ease;
+    padding: 0 24px;
+}
+
+.device-row--expanded .device-row-actions {
+    max-height: 56px;
+    padding: 0 24px 14px;
+}
+
+.btn-remove-device {
+    font-size: 12.5px;
+    padding: 6px 13px;
+    border-radius: var(--radius-sm);
+}
+
 
 .device-type-icon {
     display: flex;
@@ -574,11 +602,11 @@ img {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 18px;
+    padding: 10px;
     background: var(--bg-success);
     border: 1.5px solid var(--border-success);
     border-radius: var(--radius-md);
-    font-size: 14.5px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--success);
     line-height: 1.4;
@@ -989,6 +1017,17 @@ img {
 .ac-help-text a:hover {
     text-decoration: underline;
     color: var(--accent-hover);
+}
+
+/* Spinner for loading buttons */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin-icon {
+    animation: spin 0.8s linear infinite;
 }
 
 /* ============================================
