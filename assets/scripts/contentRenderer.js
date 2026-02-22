@@ -2071,11 +2071,12 @@ function processUserAccessHistory(accessHistory, pkg) {
 }
 
 function renderUserInfo(userInfo) {
-    const { name, email, picture } = userInfo;
+    const { name, email, picture, plan } = userInfo;
 
     // Trigger elements
     const profileName = document.querySelector('header.main-header .header-actions .profile-name');
     const profilePicture = document.querySelector('header.main-header .header-actions .profile-picture img');
+    const profilePictureWrapper = document.querySelector('header.main-header .header-actions .profile-picture');
 
     if (profileName) profileName.textContent = name;
     if (profilePicture) profilePicture.src = picture;
@@ -2088,6 +2089,28 @@ function renderUserInfo(userInfo) {
     if (dropdownName) dropdownName.textContent = name;
     if (dropdownEmail) dropdownEmail.textContent = email;
     if (dropdownAvatar) dropdownAvatar.src = picture;
+
+    // Plus plan features
+    if (plan === 'plus') {
+        // Hide all "Assinar Plus" buttons
+        document.querySelectorAll('.plus-subscribe-btn').forEach(btn => {
+            btn.style.display = 'none';
+        });
+
+        // Add premium blue border to profile picture
+        if (profilePictureWrapper) {
+            profilePictureWrapper.classList.add('plus-avatar');
+        }
+
+        // Add "Plus" badge to the profile container
+        const profileTrigger = document.getElementById('profile-trigger');
+        if (profileTrigger && !document.querySelector('.plus-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'plus-badge';
+            badge.textContent = 'Plus';
+            profileTrigger.appendChild(badge);
+        }
+    }
 }
 // ============================================================================
 // INICIALIZAÇÃO
@@ -2101,6 +2124,7 @@ async function init() {
     packagesList.userAccess = userAccessPackages.result.data || [];
     packagesList.userCollection = userCollectionPackages.result.data || [];
 
+    console.log(userInfo)
     // Renderiza informações do usuário
     renderUserInfo(userInfo.result.data);
 

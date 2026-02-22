@@ -207,6 +207,7 @@ body {
     border-radius: var(--radius-md);
     padding: 6px 8px;
     transition: background 0.15s ease;
+    position: relative;
 }
 
 .profile:hover {
@@ -333,6 +334,35 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* Plus plan - premium avatar border */
+.profile-picture.plus-avatar {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* Plus plan - badge tag */
+.plus-badge {
+    position: absolute;
+    top: 25px;
+    right: -18px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #93c5fd;
+    background: #141619;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 4px;
+    padding: 2px 6px;
+    line-height: 1;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    z-index: 2;
 }
 
 .activation-input {
