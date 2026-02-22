@@ -214,6 +214,10 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+#sidebar-profile.profile {
+    justify-content: end;
+}
+
 /* Dropdown wrapper */
 .profile-dropdown-wrapper {
     position: relative;
@@ -363,6 +367,12 @@ body {
     user-select: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     z-index: 2;
+}
+
+#sidebar-profile .plus-badge {
+    top: 3px;
+    left: 10px;
+    right: unset;
 }
 
 .activation-input {

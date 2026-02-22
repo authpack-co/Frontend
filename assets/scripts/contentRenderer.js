@@ -2073,13 +2073,21 @@ function processUserAccessHistory(accessHistory, pkg) {
 function renderUserInfo(userInfo) {
     const { name, email, picture, plan } = userInfo;
 
-    // Trigger elements
+    // Trigger elements (Header)
     const profileName = document.querySelector('header.main-header .header-actions .profile-name');
     const profilePicture = document.querySelector('header.main-header .header-actions .profile-picture img');
     const profilePictureWrapper = document.querySelector('header.main-header .header-actions .profile-picture');
 
+    // Trigger elements (Sidebar)
+    const sidebarProfileName = document.querySelector('#sidebar-profile .profile-name');
+    const sidebarProfilePicture = document.querySelector('#sidebar-profile .profile-picture img');
+    const sidebarProfilePictureWrapper = document.querySelector('#sidebar-profile .profile-picture');
+
     if (profileName) profileName.textContent = name;
     if (profilePicture) profilePicture.src = picture;
+
+    if (sidebarProfileName) sidebarProfileName.textContent = name;
+    if (sidebarProfilePicture) sidebarProfilePicture.src = picture;
 
     // Dropdown header elements
     const dropdownName = document.getElementById('dropdown-name');
@@ -2097,18 +2105,30 @@ function renderUserInfo(userInfo) {
             btn.style.display = 'none';
         });
 
-        // Add premium blue border to profile picture
+        // Add premium blue border to profile pictures
         if (profilePictureWrapper) {
             profilePictureWrapper.classList.add('plus-avatar');
         }
+        if (sidebarProfilePictureWrapper) {
+            sidebarProfilePictureWrapper.classList.add('plus-avatar');
+        }
 
-        // Add "Plus" badge to the profile container
+        // Add "Plus" badge to the header profile container
         const profileTrigger = document.getElementById('profile-trigger');
-        if (profileTrigger && !document.querySelector('.plus-badge')) {
+        if (profileTrigger && !profileTrigger.querySelector('.plus-badge')) {
             const badge = document.createElement('span');
             badge.className = 'plus-badge';
             badge.textContent = 'Plus';
             profileTrigger.appendChild(badge);
+        }
+
+        // Add "Plus" badge to the sidebar profile container
+        const sidebarProfile = document.getElementById('sidebar-profile');
+        if (sidebarProfile && !sidebarProfile.querySelector('.plus-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'plus-badge';
+            badge.textContent = 'Plus';
+            sidebarProfile.appendChild(badge);
         }
     }
 }
