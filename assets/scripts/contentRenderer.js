@@ -599,7 +599,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
                         <path d="M12 17h.01"/>
                     </svg>
                 </div>
-                <span><strong>Operação interrompida:</strong> este pacote utiliza recursos <strong>Plus</strong> para operar</span>
+                <span><strong>Operação interrompida:</strong> este pacote está tempoariamente inativo.</span>
             `;
             activePreset.insertBefore(alertNote, activePreset.firstChild);
         }
