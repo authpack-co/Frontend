@@ -100,6 +100,11 @@ function createPackageElement(pkg, isAccess = false) {
     container.appendChild(optionsBtn);
     container.appendChild(packageOptions);
 
+    // Plus tier: adiciona classe de destaque no pick
+    if (pkg.tier === 'plus') {
+        container.classList.add('plus-pick');
+    }
+
     // Inactive badge (⚠️) quando isActive === false
     if (pkg.isActive === false) {
         const inactiveBadge = createElement('div', 'inactive-badge');
@@ -535,34 +540,67 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Gerencia estado inativo do pacote
     const isInactive = pkg.isActive === false;
 
-    // Remove nota de alerta anterior (se existir)
-    const existingAlert = activePreset.querySelector('.inactive-alert-note');
-    if (existingAlert) existingAlert.remove();
+    // Remove badges/alertas anteriores
+    activePreset.querySelector('.inactive-alert-note')?.remove();
+    activePreset.querySelector('.plus-note-badge')?.remove();
+    activePreset.querySelector('.package-status-badge')?.remove();
+
+    if (isCollection) {
+        // Badge de status no canto superior direito do card-header (collection only)
+        const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
+        if (cardHeader && pkg.tier === 'plus') {
+            const statusBadge = createElement('div', 'package-status-badge');
+
+            if (isInactive) {
+                // Plus + inativo: badge de alerta âmbar
+                statusBadge.classList.add('status-badge--warning');
+                statusBadge.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                        <path d="M12 9v4"/>
+                        <path d="M12 17h.01"/>
+                    </svg>
+                    <span>Operação interrompida</span>
+                    <div class="status-badge-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4"/>
+                            <path d="M12 8h.01"/>
+                        </svg>
+                        <div class="status-badge-tooltip">Este pacote requer plano Plus</div>
+                    </div>
+                `;
+            } else {
+                // Apenas Plus: badge azul
+                statusBadge.classList.add('status-badge--plus');
+                statusBadge.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
+                    </svg>
+                    <span>Este pacote utiliza recursos Plus</span>
+                `;
+            }
+
+            cardHeader.appendChild(statusBadge);
+        }
+    }
 
     if (isInactive) {
         activePreset.classList.add('package-inactive');
 
-        // Insere nota de alerta no topo
-        const alertNote = createElement('div', 'inactive-alert-note');
-        alertNote.innerHTML = `
-            <div class="inactive-alert-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                    <path d="M12 9v4"/>
-                    <path d="M12 17h.01"/>
-                </svg>
-            </div>
-            <span><strong>Operação interrompida:</strong> este pacote utiliza recursos <strong>Plus</strong> para operar</span>
-        `;
-
-        // Insere no local correto
-        if (isCollection) {
-            // Insere dentro do card-header da screen primary (como primeiro elemento)
-            const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
-            if (cardHeader) {
-                cardHeader.insertBefore(alertNote, cardHeader.firstChild);
-            }
-        } else {
+        // Access view: banner de alerta full-width
+        if (!isCollection) {
+            const alertNote = createElement('div', 'inactive-alert-note');
+            alertNote.innerHTML = `
+                <div class="inactive-alert-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                        <path d="M12 9v4"/>
+                        <path d="M12 17h.01"/>
+                    </svg>
+                </div>
+                <span><strong>Operação interrompida:</strong> este pacote utiliza recursos <strong>Plus</strong> para operar</span>
+            `;
             activePreset.insertBefore(alertNote, activePreset.firstChild);
         }
     } else {

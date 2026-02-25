@@ -2516,3 +2516,96 @@ span.coming-soon {
 .preset-collection.package-inactive .connect-session-btn {
     cursor: pointer;
 }
+
+/* ============================================
+   Plus Package Aesthetic (Minha coleção)
+   ============================================ */
+
+/* Pick de pacote Plus — borda e brilho azul */
+.access-item.plus-pick {
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2), 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+/* Badge absoluto no canto superior direito do card-header */
+.card-header {
+    position: relative;
+}
+
+.package-status-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.package-status-badge.status-badge--plus {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+}
+
+.package-status-badge.status-badge--plus svg {
+    color: #818cf8;
+}
+
+.package-status-badge.status-badge--warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+.package-status-badge.status-badge--warning svg {
+    stroke: #f59e0b;
+}
+
+/* Info icon + tooltip no warning badge */
+.status-badge-info {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 2px;
+    pointer-events: auto;
+    cursor: default;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.status-badge-info:hover {
+    opacity: 1;
+}
+
+.status-badge-info svg {
+    stroke: #fcd34d;
+}
+
+.status-badge-tooltip {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #1c1f20;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #e8e6e3;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 50;
+}
+
+.status-badge-info:hover .status-badge-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
