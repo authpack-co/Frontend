@@ -23,6 +23,7 @@ function createElement(tag, className = '', textContent = '') {
 function createPackageElement(pkg, isAccess = false) {
     const container = createElement('div', 'access-item');
     container.dataset.packageId = pkg.id;
+    container.dataset.isActive = pkg.isActive !== false ? 'true' : 'false';
 
     // Icon stack
     const iconStack = createElement('div', 'icon-stack');
@@ -98,6 +99,19 @@ function createPackageElement(pkg, isAccess = false) {
     container.appendChild(title);
     container.appendChild(optionsBtn);
     container.appendChild(packageOptions);
+
+    // Inactive badge (⚠️) quando isActive === false
+    if (pkg.isActive === false) {
+        const inactiveBadge = createElement('div', 'inactive-badge');
+        inactiveBadge.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+            </svg>
+        `;
+        container.appendChild(inactiveBadge);
+    }
 
     return container;
 }
@@ -518,6 +532,43 @@ async function renderPackageDetails(pkg, isCollection = true) {
     const activePreset = contentCard.querySelector(presetSelector);
     if (!activePreset) return;
 
+    // Gerencia estado inativo do pacote
+    const isInactive = pkg.isActive === false;
+
+    // Remove nota de alerta anterior (se existir)
+    const existingAlert = activePreset.querySelector('.inactive-alert-note');
+    if (existingAlert) existingAlert.remove();
+
+    if (isInactive) {
+        activePreset.classList.add('package-inactive');
+
+        // Insere nota de alerta no topo
+        const alertNote = createElement('div', 'inactive-alert-note');
+        alertNote.innerHTML = `
+            <div class="inactive-alert-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                </svg>
+            </div>
+            <span><strong>Operação interrompida:</strong> este pacote utiliza recursos <strong>Plus</strong> para operar</span>
+        `;
+
+        // Insere no local correto
+        if (isCollection) {
+            // Insere dentro do card-header da screen primary (como primeiro elemento)
+            const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
+            if (cardHeader) {
+                cardHeader.insertBefore(alertNote, cardHeader.firstChild);
+            }
+        } else {
+            activePreset.insertBefore(alertNote, activePreset.firstChild);
+        }
+    } else {
+        activePreset.classList.remove('package-inactive');
+    }
+
     // Atualiza título
     const title = activePreset.querySelector('.header-top h2') || activePreset.querySelector('.package-info-title h2');
     if (title) title.textContent = pkg.name;
@@ -549,6 +600,14 @@ async function renderPackageDetails(pkg, isCollection = true) {
         pkg.sessions.forEach(session => {
             const sessionElement = createSessionElement(session, isCollection);
             sessionsContainer.appendChild(sessionElement);
+        });
+    }
+
+    // Se inativo na access view: desabilita botões de conectar
+    if (isInactive && !isCollection) {
+        const connectBtns = activePreset.querySelectorAll('.connect-session-btn');
+        connectBtns.forEach(btn => {
+            btn.disabled = true;
         });
     }
 
@@ -2144,7 +2203,6 @@ async function init() {
     packagesList.userAccess = userAccessPackages.result.data || [];
     packagesList.userCollection = userCollectionPackages.result.data || [];
 
-    console.log(userInfo)
     // Renderiza informações do usuário
     renderUserInfo(userInfo.result.data);
 

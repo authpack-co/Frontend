@@ -292,6 +292,9 @@ async function handleRemoveUser(e) {
 async function handleConnectSession(e) {
     e.stopPropagation();
 
+    // Ignora clique se o botão estiver desabilitado (pacote inativo)
+    if (this.disabled) return;
+
     function addURLParams(url, parameters) {
         // Verifique se há uma interrogação (?) na URL
         const separator = url.includes('?') ? '&' : '?';
