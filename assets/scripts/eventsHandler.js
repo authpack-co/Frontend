@@ -703,6 +703,15 @@ const confirmCreatePackageBtn = createPackageModal.querySelector('.confirm-btn')
 const createPackageBtns = document.querySelectorAll('.create-package-btn');
 createPackageBtns.forEach(createPackageBtn => {
     createPackageBtn.addEventListener('click', () => {
+        // Verifica limite do plano free (3 pacotes basic)
+        if (currentUserInfo?.plan === 'free') {
+            const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
+            if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
+                utils.showModal("plusSubscribe");
+                return;
+            }
+        }
+
         utils.showModal("createPackage");
         createPackageInput.value = "";
 
@@ -787,6 +796,9 @@ const createPackageHandler = async (event) => {
     createdPackageEl.addEventListener("animationend", () => {
         createdPackageEl.classList.remove("fadeInFromRight");
     }, { once: true });
+
+    // Atualiza o contador do plano free (x/3) após criar pacote
+    updateFreePlanPackageCounter();
 };
 
 confirmCreatePackageBtn.addEventListener('click', createPackageHandler);

@@ -2609,3 +2609,37 @@ span.coming-soon {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* ============================================
+   Free Plan Limits
+   ============================================ */
+
+/* Wrapper que agrupa o contador e o botão "Novo pacote" no lado direito */
+.package-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Contador de pacotes básicos (x/3) no header da colecão */
+.free-plan-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-gray);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+/* Quando no limite (x = 3), destaca em âmbar */
+.free-plan-counter.at-limit {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+}

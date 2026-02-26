@@ -3,6 +3,15 @@ let packagesList = {
     userAccess: []
 }
 
+let currentUserInfo = null;
+
+// Limites do plano free
+const FREE_PLAN_LIMITS = {
+    basicPackages: 3,
+    sessionsPerBasicPackage: 5,
+    usersPerBasicPackage: 5,
+};
+
 // ============================================================================
 // FUNÇÕES AUXILIARES
 // ============================================================================
@@ -919,11 +928,17 @@ async function loadPackageStats(pkg, period) {
 
     // Sessions stats
     const sessionsTitle = sessionsStat.querySelector(".access-title");
-    sessionsTitle.textContent = pkg.stats ? (String(pkg.stats.totalSessions)) : "0";
+    const totalSessions = pkg.stats ? pkg.stats.totalSessions : 0;
+    const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
+    sessionsTitle.textContent = isFreePlanBasicPkg
+        ? `${totalSessions}/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
+        : String(totalSessions);
 
     // Users stats
     const usersTitle = usersStat.querySelector(".access-title");
-    usersTitle.textContent = pkg.stats ? (String(pkg.stats.totalUsers)) : "0";
+    usersTitle.textContent = isFreePlanBasicPkg
+        ? `${totalUsers}/${FREE_PLAN_LIMITS.usersPerBasicPackage}`
+        : String(totalUsers);
 
     // Online users stat
     const onlineStat = contentPreset.querySelector(".online-users-stat");
@@ -2195,6 +2210,9 @@ function renderUserInfo(userInfo) {
     if (dropdownEmail) dropdownEmail.textContent = email;
     if (dropdownAvatar) dropdownAvatar.src = picture;
 
+    // Salva userInfo globalmente
+    currentUserInfo = userInfo;
+
     // Plus plan features
     if (plan === 'plus') {
         // Hide all "Assinar Plus" buttons
@@ -2229,6 +2247,44 @@ function renderUserInfo(userInfo) {
         }
     }
 }
+
+// Atualiza o contador de pacotes básicos para usuários do plano free (x/3)
+function updateFreePlanPackageCounter() {
+    // Seleciona o header da preset-collection
+    const headerTop = document.querySelector('#packages-list .preset-collection .header-top');
+    if (!headerTop) return;
+
+    // Remove contador anterior se existir
+    headerTop.querySelector('.free-plan-counter')?.remove();
+
+    // Só mostra para plano free
+    if (currentUserInfo?.plan !== 'free') return;
+
+    const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
+    const counter = document.createElement('span');
+    counter.className = 'free-plan-counter';
+    if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
+        counter.classList.add('at-limit');
+    }
+    counter.textContent = `${basicCount}/${FREE_PLAN_LIMITS.basicPackages} pacotes`;
+
+    // Garante que o botão "Novo pacote" está dentro de um wrapper flex
+    const createBtn = headerTop.querySelector('.create-package-btn');
+    if (createBtn) {
+        // Cria o wrapper na primeira chamada, reaproveita nas seguintes
+        let wrapper = headerTop.querySelector('.package-header-actions');
+        if (!wrapper) {
+            wrapper = document.createElement('div');
+            wrapper.className = 'package-header-actions';
+            createBtn.parentNode.insertBefore(wrapper, createBtn);
+            wrapper.appendChild(createBtn);
+        }
+        // Insere o contador antes do botão, dentro do wrapper
+        wrapper.insertBefore(counter, createBtn);
+    } else {
+        headerTop.appendChild(counter);
+    }
+}
 // ============================================================================
 // INICIALIZAÇÃO
 // ============================================================================
@@ -2257,6 +2313,9 @@ async function init() {
         '.preset-access .access-grid',
         true
     );
+
+    // Atualiza contador do plano free
+    updateFreePlanPackageCounter();
 
     // Define estado inicial do packages list
     if (packagesList.userCollection.length === 0) {
