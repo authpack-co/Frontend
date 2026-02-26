@@ -266,6 +266,9 @@ async function handleRemoveUser(e) {
     // Atualiza stats do package em cache
     packageData.stats.totalUsers -= 1;
 
+    // Recalcula tier do package (remoção de usuário pode rebaixar de Plus p/ Basic)
+    recalculateAllPackageTiers();
+
     // Notifica ação
     notify("success", "Usuário removido do pacote.");
 
@@ -771,6 +774,9 @@ const createPackageHandler = async (event) => {
     const packageData = fetchCreatePackage.result.data;
     packagesList.userCollection.push(packageData);
 
+    // Atualiza contador x/3 (tier do novo pacote já vem correto do backend)
+    updateFreePlanPackageCounter();
+
     // fecha modal
     utils.closeModals();
 
@@ -930,7 +936,16 @@ const deletePackageHandler = async (event) => {
 
     // Deleta package no array local de packages
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
+    const deletedTier = packagesList.userCollection[packageIdx].tier;
     packagesList.userCollection.splice(packageIdx, 1);
+
+    // Se um Basic foi removido, verifica se algum Plus pode ser rebaixado
+    if (deletedTier === 'basic') {
+        downgradePlusAfterBasicDeletion();
+    } else {
+        // Plus removido: só atualiza o contador x/3
+        updateFreePlanPackageCounter();
+    }
 
     // fecha modal
     utils.closeModals();
@@ -1305,7 +1320,14 @@ const deleteSessionHandler = async (event) => {
     // Deleta session no array local de packages
     const sessionPkgIdx = packagesList.userCollection.findIndex(pkg => pkg.sessions.some(sess => sess.id == sessionId));
     const sessionIdx = packagesList.userCollection[sessionPkgIdx].sessions.findIndex(sess => sess.id == sessionId);
-    packagesList.userCollection[sessionPkgIdx].sessions.splice(sessionIdx, 1);
+    const affectedPkg = packagesList.userCollection[sessionPkgIdx];
+    affectedPkg.sessions.splice(sessionIdx, 1);
+
+    // Atualiza stats em cache
+    if (affectedPkg.stats) affectedPkg.stats.totalSessions -= 1;
+
+    // Recalcula tier do package (remoção de sessão pode rebaixar de Plus p/ Basic)
+    recalculateAllPackageTiers();
 
     // fecha modal
     utils.closeModals();
@@ -1319,6 +1341,11 @@ const deleteSessionHandler = async (event) => {
 
     sessionToDelete.addEventListener("animationend", () => {
         sessionToDelete.remove();
+
+        // Atualiza painel de stats em tempo real (sessões, limite x/5)
+        const periodSelected = document.querySelector(".usage-chart-container .chart-period-select option:checked")?.value;
+        const period = periodSelected === "today" ? 0 : (periodSelected === "7days" ? 7 : 30);
+        loadPackageStats(affectedPkg, period);
 
         // Renderiza coleção do usuário
         renderPackages(

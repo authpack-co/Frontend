@@ -2285,9 +2285,164 @@ function updateFreePlanPackageCounter() {
         headerTop.appendChild(counter);
     }
 }
+
+// ============================================================================
+// RECÁLCULO DE TIER DE PACOTES
+// ============================================================================
+
+/**
+ * Recalcula o tier de um pacote individual com base nas regras de negócio:
+ * Verifica apenas rebaixamento (Plus → Basic) com base nos limites de sessões e usuários.
+ * Promoções (Basic → Plus) são calculadas exclusivamente pelo backend.
+ * Retorna true se o tier mudou.
+ */
+function recalculatePackageTier(pkg) {
+    // Só age sobre pacotes que o backend marcou como Plus
+    if (pkg.tier !== 'plus') return false;
+
+    const withinLimits =
+        pkg.sessions.length <= FREE_PLAN_LIMITS.sessionsPerBasicPackage &&
+        pkg.users.length <= FREE_PLAN_LIMITS.usersPerBasicPackage;
+
+    // Ainda ultrapassa os limites: não rebaixa
+    if (!withinLimits) return false;
+
+    // Rebaixamento: Plus → Basic
+    pkg.tier = 'basic';
+
+    // Remove design Plus do access-item na lista
+    const accessItem = document.querySelector(
+        `#packages-list .preset-collection .access-grid .access-item[data-package-id="${pkg.id}"]`
+    );
+    if (accessItem) {
+        accessItem.classList.remove('plus-pick');
+    }
+
+    return true;
+}
+
+/**
+ * Recalcula o tier de TODOS os pacotes da coleção.
+ * Deve ser chamado após eventos que afetam a posição ou contagens dos pacotes
+ * (criar, excluir pacote, remover sessão, remover usuário).
+ */
+function recalculateAllPackageTiers() {
+    let anyChanged = false;
+    let changedPkgIds = new Set();
+
+    packagesList.userCollection.forEach((pkg) => {
+        const changed = recalculatePackageTier(pkg);
+        if (changed) {
+            anyChanged = true;
+            changedPkgIds.add(pkg.id);
+        }
+    });
+
+    // Sempre atualiza o contador x/3 (pode ter mudado mesmo sem rebaixamentos)
+    updateFreePlanPackageCounter();
+
+    if (!anyChanged) return;
+
+    // Se um pacote estiver selecionado nos detalhes, atualiza badge e stats
+    const contentCard = document.querySelector('#package-details');
+    const selectedPkgId = contentCard?.dataset.packageId;
+    if (selectedPkgId) {
+        const selectedPkg = packagesList.userCollection.find(p => p.id === selectedPkgId);
+        if (selectedPkg) {
+            // Atualiza o badge de status
+            const activePreset = contentCard.querySelector('.preset-collection');
+            if (activePreset) {
+                const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
+                const existingBadge = activePreset.querySelector('.package-status-badge');
+                existingBadge?.remove();
+
+                if (cardHeader && selectedPkg.tier === 'plus') {
+                    const isInactive = selectedPkg.isActive === false;
+                    const statusBadge = createElement('div', 'package-status-badge');
+
+                    if (isInactive) {
+                        statusBadge.classList.add('status-badge--warning');
+                        statusBadge.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                                <path d="M12 9v4"/><path d="M12 17h.01"/>
+                            </svg>
+                            <span>Operação interrompida</span>`;
+                    } else {
+                        statusBadge.classList.add('status-badge--plus');
+                        statusBadge.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
+                            </svg>
+                            <span>Este pacote utiliza recursos Plus</span>`;
+                    }
+
+                    cardHeader.appendChild(statusBadge);
+                }
+            }
+
+            // Se o tier do pacote selecionado mudou, atualiza o painel de stats
+            // para que "x/5" ↔ "x" seja refletido imediatamente
+            if (changedPkgIds.has(selectedPkg.id) && selectedPkg.stats) {
+                const periodSelected = document.querySelector('.usage-chart-container .chart-period-select option:checked')?.value;
+                const period = periodSelected === 'today' ? 0 : (periodSelected === '7days' ? 7 : 30);
+                loadPackageStats(selectedPkg, period);
+            }
+        }
+    }
+}
+
+/**
+ * Chamada após a exclusão de um package Basic.
+ * Se o total de Basics cair abaixo de 3, rebaixa o Plus mais antigo que está
+ * dentro dos limites de sessões/usuários (Plus apenas por regra de quantidade).
+ */
+function downgradePlusAfterBasicDeletion() {
+    const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
+
+    // Ainda há 3 ou mais Basics — nenhum candidato a rebaixamento
+    if (basicCount >= FREE_PLAN_LIMITS.basicPackages) return;
+
+    // Candidatos: Plus com ≤5 sessões E ≤5 usuários (Plus apenas por quantidade, não por uso)
+    const candidates = packagesList.userCollection.filter(pkg =>
+        pkg.tier === 'plus' &&
+        pkg.sessions.length <= FREE_PLAN_LIMITS.sessionsPerBasicPackage &&
+        pkg.users.length <= FREE_PLAN_LIMITS.usersPerBasicPackage
+    );
+
+    if (candidates.length === 0) return;
+
+    // Escolhe o mais antigo (createdAt mais cedo)
+    const oldest = candidates.reduce((prev, curr) =>
+        new Date(prev.createdAt) < new Date(curr.createdAt) ? prev : curr
+    );
+
+    // Rebaixa para Basic
+    oldest.tier = 'basic';
+
+    // Atualiza design do access-item na lista
+    const accessItem = document.querySelector(
+        `#packages-list .preset-collection .access-grid .access-item[data-package-id="${oldest.id}"]`
+    );
+    if (accessItem) {
+        accessItem.classList.remove('plus-pick');
+    }
+
+    // Se o pacote rebaixado estiver selecionado nos detalhes, remove o badge Plus
+    const contentCard = document.querySelector('#package-details');
+    if (contentCard?.dataset.packageId === oldest.id) {
+        const existingBadge = contentCard.querySelector('.package-status-badge');
+        existingBadge?.remove();
+    }
+
+    // Atualiza o contador x/3
+    updateFreePlanPackageCounter();
+}
+
 // ============================================================================
 // INICIALIZAÇÃO
 // ============================================================================
+
 
 async function init() {
     const userInfo = await fetchManager.getUserInfo();
@@ -2313,6 +2468,7 @@ async function init() {
         '.preset-access .access-grid',
         true
     );
+
 
     // Atualiza contador do plano free
     updateFreePlanPackageCounter();
