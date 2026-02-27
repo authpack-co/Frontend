@@ -1253,8 +1253,9 @@ const editSessionHandler = async (event) => {
     }
 
     // Edita session no array local de packages
-    const sessionIdx = packagesList.userCollection.flatMap(pkg => pkg.sessions).findIndex(sess => sess.id == sessionId);
-    packagesList.userCollection.flatMap(pkg => pkg.sessions)[sessionIdx].name = newSessionName;
+    const sessionPkgIdx = packagesList.userCollection.findIndex(pkg => pkg.sessions.some(sess => sess.id == sessionId));
+    const sessionIdx = packagesList.userCollection[sessionPkgIdx].sessions.findIndex(sess => sess.id == sessionId);
+    packagesList.userCollection[sessionPkgIdx].sessions[sessionIdx].name = newSessionName;
 
     // fecha modal
     utils.closeModals();
@@ -1263,8 +1264,8 @@ const editSessionHandler = async (event) => {
     notify("success", "Sessão editada.");
 
     // Edita session na tela
-    const sessionToEdit = document.querySelector(`.sessions-panel .session[data-session-id="${sessionId}"]`);
-    sessionToEdit.querySelector(".item-name").textContent = newSessionName;
+    const sessionToEdit = document.querySelector(`.sessions-panel .session-card[data-session-id="${sessionId}"]`);
+    sessionToEdit.querySelector(".session-card-name").textContent = newSessionName;
     sessionToEdit.classList.add("fadeIn");
 
     sessionToEdit.addEventListener("animationend", () => {
