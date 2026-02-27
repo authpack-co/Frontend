@@ -2204,6 +2204,7 @@ function renderUserInfo(userInfo) {
 
     // Trigger elements (Sidebar)
     const sidebarProfileName = document.querySelector('#sidebar-profile .profile-name');
+    const sidebarProfileEmail = document.querySelector('#sidebar-profile .sidebar-profile-email');
     const sidebarProfilePicture = document.querySelector('#sidebar-profile .profile-picture img');
     const sidebarProfilePictureWrapper = document.querySelector('#sidebar-profile .profile-picture');
 
@@ -2211,6 +2212,7 @@ function renderUserInfo(userInfo) {
     if (profilePicture) profilePicture.src = picture;
 
     if (sidebarProfileName) sidebarProfileName.textContent = name;
+    if (sidebarProfileEmail) sidebarProfileEmail.textContent = email;
     if (sidebarProfilePicture) sidebarProfilePicture.src = picture;
 
     // Dropdown header elements

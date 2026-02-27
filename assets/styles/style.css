@@ -215,7 +215,34 @@ body {
 }
 
 #sidebar-profile.profile {
-    justify-content: end;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+}
+
+.sidebar-profile-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-profile-info .profile-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.sidebar-profile-email {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 /* Dropdown wrapper */
@@ -370,9 +397,8 @@ body {
 }
 
 #sidebar-profile .plus-badge {
-    top: 3px;
-    left: 10px;
-    right: unset;
+    top: 5px;
+    right: 10px;
 }
 
 .activation-input {
