@@ -1441,7 +1441,8 @@ span.coming-soon {
     min-height: 0;
 }
 
-.collection-right-column .users-panel-container .preset-content {
+.collection-right-column .users-panel-container.content-state .preset-content,
+.collection-right-column .users-panel-container.empty-state .preset-empty {
     flex: 1;
     display: flex;
     flex-direction: column;

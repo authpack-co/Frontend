@@ -1336,23 +1336,32 @@ const deleteSessionHandler = async (event) => {
     notify("success", "Sessão deletada.");
 
     // Remove session da tela
-    const sessionToDelete = document.querySelector(`.sessions-panel .session[data-session-id="${sessionId}"]`);
+    const sessionToDelete = document.querySelector(`.sessions-panel .session-card[data-session-id="${sessionId}"]`);
     sessionToDelete.classList.add("fadeOut");
 
     sessionToDelete.addEventListener("animationend", () => {
         sessionToDelete.remove();
 
-        // Atualiza painel de stats em tempo real (sessões, limite x/5)
-        const periodSelected = document.querySelector(".usage-chart-container .chart-period-select option:checked")?.value;
-        const period = periodSelected === "today" ? 0 : (periodSelected === "7days" ? 7 : 30);
-        loadPackageStats(affectedPkg, period);
+        // Atualiza icon stack do package card na coleção
+        const packageCard = document.querySelector(`.preset-collection .access-grid .access-item[data-package-id="${affectedPkg.id}"]`);
+        if (packageCard) {
+            const iconStack = packageCard.querySelector(".icon-stack");
+            if (iconStack) {
+                iconStack.innerHTML = "";
+                affectedPkg.sessions.slice(0, 3).forEach(session => {
+                    const stackIcon = createElement('div', 'stack-icon');
+                    const img = document.createElement('img');
+                    img.alt = session.name;
+                    img.src = session.icon;
+                    stackIcon.appendChild(img);
+                    iconStack.appendChild(stackIcon);
+                });
+            }
+        }
 
-        // Renderiza coleção do usuário
-        renderPackages(
-            packagesList.userCollection,
-            '.preset-collection .access-grid',
-            false
-        );
+        // Re-renderiza completamente o painel de detalhes do pacote afetado
+        // (atualiza lista de sessões, stats, badges de tier, etc.)
+        renderPackageDetails(affectedPkg);
     }, { once: true });
 
 }
