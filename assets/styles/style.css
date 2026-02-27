@@ -1339,6 +1339,7 @@ span.coming-soon {
    Package Info Header (Access View)
    ============================================ */
 .package-info-header {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -1348,6 +1349,42 @@ span.coming-soon {
     border-radius: var(--radius-lg);
     margin-bottom: 16px;
 }
+
+/* Owner badge – top-right corner of the info board */
+.package-owner {
+    position: absolute;
+    display: flex;
+    top: 25%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.package-owner-label {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 1;
+}
+
+.package-owner-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    line-height: 1;
+    text-align: right;
+}
+
+.package-owner-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-border-primary);
+    align-self: flex-end;
+}
+
 
 .package-info-header .package-info-title {
     display: flex;

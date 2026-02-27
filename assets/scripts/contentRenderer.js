@@ -620,6 +620,17 @@ async function renderPackageDetails(pkg, isCollection = true) {
     const title = activePreset.querySelector('.header-top h2') || activePreset.querySelector('.package-info-title h2');
     if (title) title.textContent = pkg.name;
 
+    // Atualiza dados do dono do pacote (apenas na access view)
+    if (!isCollection && pkg.owner) {
+        const ownerNameEl = activePreset.querySelector('.package-owner-name');
+        const ownerAvatarEl = activePreset.querySelector('.package-owner-avatar');
+        if (ownerNameEl) ownerNameEl.textContent = pkg.owner.name || '—';
+        if (ownerAvatarEl) {
+            ownerAvatarEl.src = pkg.owner.picture || '';
+            ownerAvatarEl.alt = pkg.owner.name || '';
+        }
+    }
+
     // Atualiza data de criação
     const date = new Date(pkg.createdAt);
     const dateFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -629,6 +640,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
         const dateLabel = `Criado em ${date.toLocaleDateString('pt-BR', dateFormatOptions)}`;
         if (createdAt) createdAt.textContent = dateLabel;
     }
+
 
     // Renderiza sessões
     const sessionsPanelContainer = activePreset.querySelector(".sessions-panel-container");
