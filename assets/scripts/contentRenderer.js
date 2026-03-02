@@ -1105,7 +1105,7 @@ async function loadUserStats(user, pkg, period) {
     const totalUsageEl = userScreen.querySelector(".user-total-usage .stat-value");
     const lastUsageEl = userScreen.querySelector(".user-last-usage .stat-value");
 
-    const userLastUsageFormatted = timeAgo(user.lastUsage);
+    const userLastUsageFormatted = user.lastUsage ? timeAgo(user.lastUsage) : "—";
 
     lastUsageEl.textContent = userLastUsageFormatted;
     totalUsageEl.textContent = formatHours(user.stats.totalUsage.hours);
@@ -1270,8 +1270,10 @@ async function loadSessionStats(session, pkg, period) {
 }
 
 function timeAgo(date) {
+    if (!date) return "—";
     const now = new Date();
     const past = new Date(date);
+    if (isNaN(past.getTime())) return "—";
 
     const diffInSeconds = Math.floor((now - past) / 1000);
 
@@ -2424,7 +2426,10 @@ function downgradePlusAfterBasicDeletion() {
         pkg.users.length <= FREE_PLAN_LIMITS.usersPerBasicPackage
     );
 
-    if (candidates.length === 0) return;
+    if (candidates.length === 0) {
+        updateFreePlanPackageCounter();
+        return;
+    }
 
     // Escolhe o mais antigo (createdAt mais cedo)
     const oldest = candidates.reduce((prev, curr) =>
