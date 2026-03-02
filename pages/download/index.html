@@ -350,7 +350,7 @@
                             </div>
                             <div class="ac-help-text">
                                 <strong>Precisa de ajuda?</strong>
-                                <a href="#">Ver guia de instalação</a>
+                                <a href="#" id="btn-install-guide">Ver guia de instalação</a>
                             </div>
                         </div>
 
@@ -369,6 +369,35 @@
 
         </div><!-- /ac-container -->
     </div><!-- /ac-page -->
+
+    <!-- Installation Guide Carousel Modal -->
+    <div id="install-guide-modal" class="ig-overlay" aria-hidden="true">
+        <div class="ig-card" role="dialog" aria-modal="true" aria-labelledby="ig-step-title">
+
+            <!-- Skip button -->
+            <button id="ig-skip" class="ig-skip-btn" type="button">Pular</button>
+
+            <!-- Step image -->
+            <div class="ig-image-area">
+                <img id="ig-step-img" src="" alt="Passo de instalação" />
+            </div>
+
+            <!-- Step content -->
+            <div class="ig-body">
+                <div id="ig-step-content" class="ig-step-content"></div>
+
+                <!-- Dot indicators -->
+                <div class="ig-dots" id="ig-dots" aria-hidden="true"></div>
+
+                <!-- Navigation -->
+                <div class="ig-nav">
+                    <button id="ig-prev" class="ig-nav-btn ig-nav-btn--ghost" type="button">Voltar</button>
+                    <button id="ig-next" class="ig-nav-btn ig-nav-btn--primary" type="button">Próximo</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="/assets/scripts/envManager.js"></script>
