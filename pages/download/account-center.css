@@ -333,6 +333,26 @@ img {
     color: var(--accent);
 }
 
+/* Star variant – amber, for the Plan card */
+.ac-card-icon--star {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.ac-card-icon--star svg {
+    color: #f59e0b;
+}
+
+/* Success variant – green, for the Extension Installed header */
+.ac-card-icon--success {
+    background: var(--bg-success);
+    color: var(--success);
+}
+
+.ac-card-icon--success svg {
+    color: var(--success);
+}
+
 /* ============================================
    Onboarding / Warning center card (States 1 & 2)
    ============================================ */
@@ -390,10 +410,21 @@ img {
 /* ============================================
    Google Account Card (States 3 & 4)
    ============================================ */
+.ac-profile-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ac-profile-body .btn-danger {
+    margin-top: auto;
+}
+
 .google-account-row {
     display: flex;
     align-items: center;
     gap: 14px;
+    margin-bottom: 24px;
 }
 
 .google-avatar {
@@ -847,25 +878,23 @@ img {
 }
 
 /* ============================================
-   Two-column layout (States 3 & 4)
+   Top-row: 3 equal cards (States 3 & 4)
    ============================================ */
-.ac-two-col {
+.ac-top-row {
     display: grid;
-    grid-template-columns: 1fr 340px;
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    align-items: start;
+    align-items: stretch;
 }
 
-.ac-col-left {
+/* Make all top-row cards stretch to equal height */
+.ac-top-row>.ac-card {
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
-.ac-col-right {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+.ac-top-row>.ac-card .ac-card-body {
+    flex: 1;
 }
 
 /* Darkened profile background */
@@ -1019,6 +1048,61 @@ img {
     color: var(--accent-hover);
 }
 
+/* ============================================
+   Extension Download Card (State 3 – not installed)
+   ============================================ */
+
+.ac-card-icon--download {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+.ac-card-icon--download svg {
+    color: var(--accent);
+}
+
+.ac-ext-dl-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.ac-ext-dl-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.ac-ext-dl-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 10px;
+}
+
+.ac-ext-dl-guide-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.ac-ext-dl-guide-link:hover {
+    color: var(--accent);
+}
+
+.ac-ext-dl-guide-link svg {
+    flex-shrink: 0;
+}
+
 /* Spinner for loading buttons */
 @keyframes spin {
     to {
@@ -1069,7 +1153,7 @@ img {
    Responsive
    ============================================ */
 @media (max-width: 900px) {
-    .ac-two-col {
+    .ac-top-row {
         grid-template-columns: 1fr;
     }
 }
@@ -1106,6 +1190,230 @@ img {
         justify-content: center;
     }
 }
+
+/* ============================================
+   Inline Help Row (inside extension card)
+   ============================================ */
+.ac-help-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.ac-help-inline .ac-help-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border-default);
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+
+.ac-help-inline .ac-help-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ac-help-inline .ac-help-text strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ac-help-inline .ac-help-text a {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ac-help-inline .ac-help-text a:hover {
+    text-decoration: underline;
+    color: var(--accent-hover);
+}
+
+/* ============================================
+   Plan Card
+   ============================================ */
+.plan-state {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+.plan-state .btn {
+    margin-top: auto;
+}
+
+.plan-current-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.plan-current-text strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.plan-renew-text {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.plan-canceled-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--danger);
+}
+
+.plan-canceled-until {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.plan-canceled-note {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ============================================
+   Plus Modal – Account Center variant
+   ============================================ */
+.plus-modal-ac-card {
+    position: relative;
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-default);
+    transform: scale(0.94) translateY(12px);
+    transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.25s ease;
+}
+
+.ig-overlay.ig-visible .plus-modal-ac-card {
+    transform: scale(1) translateY(0);
+}
+
+.plus-modal-ac-content {
+    display: flex;
+}
+
+.plus-modal-ac-left {
+    flex: 1;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.plus-modal-ac-right {
+    width: 220px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.plus-modal-ac-right img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.plus-modal-ac-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.plus-ac-highlight {
+    color: var(--accent);
+}
+
+.plus-ac-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.plus-ac-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.plus-ac-benefits {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.plus-ac-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.plus-ac-benefits li svg {
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+.plus-ac-pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.plus-ac-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.plus-ac-period {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.plus-ac-cancel-note {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-left: 2px;
+}
+
+.plus-ac-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+    .plus-modal-ac-right {
+        display: none;
+    }
+
+    .plus-modal-ac-left {
+        padding: 28px 22px;
+    }
+}
+
 
 /* ============================================
    Installation Guide Carousel Modal

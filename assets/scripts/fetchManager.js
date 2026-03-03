@@ -221,6 +221,22 @@ const fetchManager = {
         return response;
     },
 
+    async cancelBilling() {
+        const response = await fetchRoutes(`/api/billing/cancel`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
+    },
+
+    async reactivateBilling() {
+        const response = await fetchRoutes(`/api/billing/reactivate`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
+    },
+
     // Auth
 
     async logout() {

@@ -159,204 +159,226 @@
                  STATES 3 & 4 – Connected (shared layout)
                  ───────────────────────────────────────────────────────── -->
             <div id="state-3-4" class="hidden">
-                <div class="ac-two-col">
 
-                    <!-- ══════ LEFT COLUMN ══════ -->
-                    <div class="ac-col-left">
+                <!-- ══════ TOP ROW: 3 equal cards ══════ -->
+                <div class="ac-top-row">
 
-                        <!-- SECTION: Google Account Card -->
-                        <div class="ac-card">
-                            <div class="ac-card-header">
-                                <div class="ac-card-icon">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
-                                    </svg>
-                                </div>
-                                <span class="ac-card-title">Conta Google</span>
-                            </div>
-
-                            <div class="ac-card-body ac-profile-bg" style="position:relative;">
-                                <button id="btn-disconnect"
-                                    class="btn btn-danger btn-disconnect-corner">Desconectar</button>
-                                <div class="google-account-row">
-                                    <div class="google-avatar">
-                                        <img id="gc-avatar" src="" alt="User avatar">
-                                    </div>
-                                    <div class="google-account-info">
-                                        <div id="gc-name" class="user-name">—</div>
-                                        <div id="gc-email" class="user-email">—</div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-
-                        <!-- SECTION: Devices -->
-                        <div class="ac-card">
-                            <div class="ac-card-header">
-                                <div class="ac-card-icon">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                                        <polyline points="8 21 16 21" />
-                                        <line x1="12" y1="17" x2="12" y2="21" />
-                                    </svg>
-                                </div>
-                                <span class="ac-card-title">Dispositivos Registrados</span>
-                                <a href="#" class="ac-manage-link">Gerenciar</a>
-                            </div>
-
-                            <!-- Device list (rendered by JS) -->
-                            <div id="devices-list" class="devices-list"></div>
-
-                            <!-- Empty state -->
-                            <div id="devices-empty" class="devices-empty hidden">
-                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.5">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                                    <polyline points="8 21 16 21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
+                    <!-- CARD: Google Account -->
+                    <div class="ac-card">
+                        <div class="ac-card-header">
+                            <div class="ac-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="none">
+                                    <path
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                        fill="#4285F4" />
+                                    <path
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                        fill="#34A853" />
+                                    <path
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                                        fill="#FBBC05" />
+                                    <path
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                        fill="#EA4335" />
                                 </svg>
-                                <span>Nenhum dispositivo registrado ainda. Baixe a extensão para começar.</span>
                             </div>
+                            <span class="ac-card-title">Conta Google</span>
                         </div>
 
+                        <div class="ac-card-body ac-profile-body">
+                            <div class="google-account-row">
+                                <div class="google-avatar">
+                                    <img id="gc-avatar" src="" alt="User avatar">
+                                </div>
+                                <div class="google-account-info">
+                                    <div id="gc-name" class="user-name">—</div>
+                                    <div id="gc-email" class="user-email">—</div>
+                                </div>
+                            </div>
+                            <button id="btn-disconnect" class="btn btn-danger" style="width:100%;">Desconectar</button>
+                        </div>
                     </div>
 
-                    <!-- ══════ RIGHT COLUMN ══════ -->
-                    <div class="ac-col-right">
+                    <!-- CARD: Extension -->
+                    <div class="ac-card">
 
-                        <!-- Extension Installation Card -->
-                        <div class="ac-card ac-ext-side-card">
-                            <div class="ac-ext-side-body">
-                                <!-- STATE 4: Extension active banner -->
-                                <div id="ext-active-section" class="hidden">
-                                    <div class="ac-ext-side-header">
-                                        <div class="ac-ext-side-icon">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="1.8">
-                                                <path
-                                                    d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-                                                <line x1="7" y1="7" x2="7.01" y2="7" />
-                                            </svg>
-                                        </div>
-                                        <h3 class="ac-ext-side-title">Extensão Instalada</h3>
-                                    </div>
-                                    <div class="ext-active-banner">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2.2">
-                                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-                                            <polyline points="22 4 12 14.01 9 11.01" />
-                                        </svg>
-                                        <span>Extensão ativa neste navegador</span>
-                                    </div>
+                        <!-- STATE 4 header (extension active) -->
+                        <div id="ext-header-active" class="ac-card-header hidden">
+                            <div class="ac-card-icon ac-card-icon--success">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.2">
+                                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                </svg>
+                            </div>
+                            <span class="ac-card-title">Extensão Instalada</span>
+                        </div>
 
-                                    <button id="btn-reinstall" class="btn btn-secondary hidden"
-                                        style="width:100%; font-size:13px; padding:10px 16px;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <polyline points="1 4 1 10 7 10" />
-                                            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-                                        </svg>
-                                        Reinstalar Extensão
-                                    </button>
+                        <!-- STATE 3 header (not installed) -->
+                        <div id="ext-header-install" class="ac-card-header hidden">
+                            <div class="ac-card-icon ac-card-icon--download">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.2">
+                                    <path d="M12 17V3" />
+                                    <path d="m6 11 6 6 6-6" />
+                                    <path d="M19 21H5" />
+                                </svg>
+                            </div>
+                            <span class="ac-card-title">Baixar Extensão</span>
+                        </div>
+
+                        <div class="ac-card-body">
+
+                            <!-- STATE 4: Extension active -->
+                            <div id="ext-active-section" class="hidden">
+                                <div class="ext-active-banner" style="margin-bottom:16px;">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.2">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                                        <polyline points="22 4 12 14.01 9 11.01" />
+                                    </svg>
+                                    <span>Extensão ativa neste navegador</span>
                                 </div>
 
-                                <!-- STATE 3: Extension not detected -->
-                                <div id="ext-install-section" class="hidden">
-                                    <div class="ac-ext-side-header">
-                                        <div class="ac-ext-side-icon">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="1.8">
-                                                <path
-                                                    d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-                                                <line x1="7" y1="7" x2="7.01" y2="7" />
-                                            </svg>
-                                        </div>
-                                        <h3 class="ac-ext-side-title">Instalação da Extensão</h3>
-                                    </div>
-                                    <p class="ac-ext-side-desc">
-                                        Para completar a configuração do seu dispositivo e acessar recursos seguros,
-                                        instale a extensão AuthPack no navegador.
-                                    </p>
+                                <button id="btn-reinstall" class="btn btn-secondary hidden"
+                                    style="width:100%; font-size:13px; padding:10px 16px; margin-bottom:12px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="1 4 1 10 7 10" />
+                                        <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+                                    </svg>
+                                    Reinstalar Extensão
+                                </button>
 
-                                    <ul class="ac-ext-checklist">
-                                        <li>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2.5">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            Login seguro sem senha
-                                        </li>
-                                        <li>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2.5">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            Verificação de confiança do dispositivo
-                                        </li>
-                                        <li>
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2.5">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            Atualizações automáticas
-                                        </li>
-                                    </ul>
-
-                                    <!-- Device limit notice (shown by JS if needed) -->
-                                    <div id="ext-limit-notice" class="ext-limit-notice hidden">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                <div class="ac-help-inline">
+                                    <div class="ac-help-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2">
                                             <circle cx="12" cy="12" r="10" />
-                                            <line x1="12" y1="8" x2="12" y2="12" />
-                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                                            <line x1="12" y1="17" x2="12.01" y2="17" />
                                         </svg>
-                                        <span>
-                                            <strong>Limite de dispositivos atingido.</strong> Você possui 2 dispositivos
-                                            registrados.
-                                            Remova um dispositivo existente para registrar este novo.
-                                        </span>
                                     </div>
+                                    <div class="ac-help-text">
+                                        <strong>Precisa de ajuda?</strong>
+                                        <a href="#" class="js-install-guide">Ver guia de instalação</a>
+                                    </div>
+                                </div>
+                            </div>
 
-                                    <button id="btn-download" class="btn btn-primary btn-primary-full">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M12 17V3" />
-                                            <path d="m6 11 6 6 6-6" />
-                                            <path d="M19 21H5" />
-                                        </svg>
-                                        Baixar Extensão
-                                    </button>
+                            <!-- STATE 3: Extension not detected -->
+                            <div id="ext-install-section" class="hidden">
+                                <p class="ac-ext-dl-desc">
+                                    Instale a extensão para maximizar sua experiência no navegador.
+                                </p>
 
-                                    <p class="ext-compat">Versão 2.4.0 · Chrome, Edge, Brave</p>
+                                <!-- Device limit notice (shown by JS if needed) -->
+                                <div id="ext-limit-notice" class="ext-limit-notice hidden" style="margin-bottom:12px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                    <span>
+                                        <strong>Limite de dispositivos atingido.</strong> Você possui 2 dispositivos
+                                        registrados.
+                                        Remova um dispositivo existente para registrar este novo.
+                                    </span>
                                 </div>
 
-                            </div>
-                        </div>
+                                <button id="btn-download" class="btn btn-primary btn-primary-full">
+                                    Baixar Extensão
+                                </button>
 
-                        <!-- Need Help card -->
-                        <div class="ac-help-card">
-                            <div class="ac-help-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-                                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                                </svg>
+                                <a href="#" class="js-install-guide ac-ext-dl-guide-link">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="1 4 1 10 7 10" />
+                                        <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+                                    </svg>
+                                    Ver guia de instalação
+                                </a>
                             </div>
-                            <div class="ac-help-text">
-                                <strong>Precisa de ajuda?</strong>
-                                <a href="#" id="btn-install-guide">Ver guia de instalação</a>
-                            </div>
-                        </div>
 
+                        </div>
                     </div>
 
-                </div>
+                    <!-- CARD: Plan -->
+                    <div class="ac-card" id="plan-card">
+                        <div class="ac-card-header">
+                            <div class="ac-card-icon ac-card-icon--star">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </div>
+                            <span class="ac-card-title">Plano Atual</span>
+                        </div>
+                        <div class="ac-card-body" id="plan-card-body">
+
+                            <!-- Estado Free -->
+                            <div id="plan-state-free" class="plan-state hidden">
+                                <p class="plan-current-text">Seu plano atual: <strong>Free</strong></p>
+                                <button id="btn-assinar-plus" class="btn btn-primary btn-primary-full">
+                                    Assinar Plus
+                                </button>
+                            </div>
+
+                            <!-- Estado Plus Ativo -->
+                            <div id="plan-state-plus" class="plan-state hidden">
+                                <p class="plan-current-text">Seu plano atual: <strong>Plus</strong></p>
+                                <p class="plan-renew-text" id="plan-renews-at"></p>
+                                <button id="btn-cancel-plan" class="btn btn-danger" style="width:100%;">
+                                    Cancelar assinatura
+                                </button>
+                            </div>
+
+                            <!-- Estado Plus Cancelado -->
+                            <div id="plan-state-canceled" class="plan-state hidden">
+                                <p class="plan-canceled-title">Sua assinatura está cancelada</p>
+                                <p class="plan-canceled-until" id="plan-canceled-until"></p>
+                                <p class="plan-canceled-note">Depois disso sua conta voltará ao plano Free</p>
+                                <button id="btn-reactivate-plan" class="btn btn-primary btn-primary-full">
+                                    Reativar assinatura
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div><!-- /ac-top-row -->
+
+                <!-- ══════ BOTTOM ROW: Devices (full width) ══════ -->
+                <div class="ac-card">
+                    <div class="ac-card-header">
+                        <div class="ac-card-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <polyline points="8 21 16 21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
+                        </div>
+                        <span class="ac-card-title">Dispositivos Registrados</span>
+                        <a href="#" class="ac-manage-link">Gerenciar</a>
+                    </div>
+
+                    <!-- Device list (rendered by JS) -->
+                    <div id="devices-list" class="devices-list"></div>
+
+                    <!-- Empty state -->
+                    <div id="devices-empty" class="devices-empty hidden">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <rect x="2" y="3" width="20" height="14" rx="2" />
+                            <polyline points="8 21 16 21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                        <span>Nenhum dispositivo registrado ainda. Baixe a extensão para começar.</span>
+                    </div>
+                </div><!-- /devices card -->
+
             </div><!-- /state-3-4 -->
 
             <!-- Footer -->
@@ -369,6 +391,69 @@
 
         </div><!-- /ac-container -->
     </div><!-- /ac-page -->
+
+    <!-- Plus Subscribe Modal (Account Center) -->
+    <div id="plus-modal-ac" class="ig-overlay" aria-hidden="true">
+        <div class="plus-modal-ac-card" role="dialog" aria-modal="true">
+            <button id="plus-modal-ac-close" class="ig-skip-btn" type="button">Fechar ×</button>
+            <div class="plus-modal-ac-content">
+                <div class="plus-modal-ac-left">
+                    <div class="plus-modal-ac-header">
+                        <h2>AuthPack <span class="plus-ac-highlight">Plus</span></h2>
+                        <p class="plus-ac-subtitle">Para quem quer ir além.</p>
+                    </div>
+                    <p class="plus-ac-description">Expanda sua atuação dentro do <strong>AuthPack</strong> com
+                        liberdade total para criar e <strong>monetizar</strong>.</p>
+                    <ul class="plus-ac-benefits">
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            <span><strong>Criação ilimitada</strong> de pacotes</span>
+                        </li>
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            <span><strong>Publicação</strong> em vitrines públicas</span>
+                        </li>
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            <span>Venda através de <strong>links diretos</strong></span>
+                        </li>
+                        <li>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            <span><strong>Estrutura</strong> preparada para crescimento</span>
+                        </li>
+                    </ul>
+                    <div class="plus-ac-pricing">
+                        <span class="plus-ac-price">R$ 16,90</span>
+                        <span class="plus-ac-period">/ mês</span>
+                        <span class="plus-ac-cancel-note">Cancele quando quiser.</span>
+                    </div>
+                    <button id="plus-modal-ac-cta" class="btn btn-primary btn-primary-full" style="margin-top:4px;">
+                        🚀 Fazer upgrade para Plus
+                    </button>
+                    <div class="plus-ac-notes">
+                        <span>🔒 Pagamento seguro via Stripe</span>
+                        <span>⚡ Ativação imediata</span>
+                        <span>🔄 Atualização instantânea da sua conta</span>
+                    </div>
+                </div>
+                <div class="plus-modal-ac-right">
+                    <img src="/assets/images/plus-background.png" alt="AuthPack Plus">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Installation Guide Carousel Modal -->
     <div id="install-guide-modal" class="ig-overlay" aria-hidden="true">

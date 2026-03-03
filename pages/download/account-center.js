@@ -278,6 +278,8 @@ function applyState(connected, extensionActive) {
         const extInstall = el('ext-install-section');
         setVisible(extActive, extensionActive);
         setVisible(extInstall, !extensionActive);
+        setVisible(el('ext-header-active'), extensionActive);
+        setVisible(el('ext-header-install'), !extensionActive);
 
         // Reinstall button visible only in State 4
         const btnReinstall = el('btn-reinstall');
@@ -307,6 +309,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize install guide carousel
     InstallGuide.init();
 
+    // Initialize Plus modal
+    PlusModal.init();
+
+    // Wire plan card buttons
+    const cancelPlanBtn = el('btn-cancel-plan');
+    if (cancelPlanBtn) cancelPlanBtn.addEventListener('click', handleCancelPlan);
+
+    const reactivatePlanBtn = el('btn-reactivate-plan');
+    if (reactivatePlanBtn) reactivatePlanBtn.addEventListener('click', handleReactivatePlan);
+
+    const assinarPlusBtn = el('btn-assinar-plus');
+    if (assinarPlusBtn) assinarPlusBtn.addEventListener('click', () => PlusModal.show());
+
     const dashBtn = el('btn-open-dashboard');
     if (dashBtn) dashBtn.addEventListener('click', () => { window.open(DASHBOARD_URL, '_self'); });
 
@@ -326,6 +341,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     userData = fetchUser.result.data;
     renderUserInfo(userData);
     renderDevices(userData.devices);
+    renderPlanCard(userData);
     applyState(true, isExtensionActive);
 
     // 5. Check device limit for download button (State 3)
@@ -415,6 +431,141 @@ async function handleRemoveDevice(deviceId, osName, browserName, rowEl) {
         if (btn) btn.disabled = false;
     }
 }
+
+// ─── Plan Card ────────────────────────────────────────────────────────────────
+
+function renderPlanCard(user) {
+    const plan = user.plan;            // 'free' | 'plus'
+    const planStatus = user.plan_status; // 'active' | 'canceled'
+    const expiresAt = user.plan_expires_at;
+
+    // Hide all plan state blocks first
+    ['plan-state-free', 'plan-state-plus', 'plan-state-canceled'].forEach(id => setVisible(el(id), false));
+
+    if (plan === 'plus' && planStatus === 'canceled') {
+        // Estado Plus Cancelado
+        setVisible(el('plan-state-canceled'), true);
+        const untilEl = el('plan-canceled-until');
+        if (untilEl && expiresAt) {
+            untilEl.textContent = `Você continuará no plano Plus até: ${formatDate(expiresAt)}`;
+        }
+
+    } else if (plan === 'plus' && planStatus === 'active') {
+        // Estado Plus Ativo
+        setVisible(el('plan-state-plus'), true);
+        const renewEl = el('plan-renews-at');
+        if (renewEl && expiresAt) {
+            renewEl.textContent = `Renova em: ${formatDate(expiresAt)}`;
+        }
+
+    } else {
+        // Estado Free (fallback)
+        setVisible(el('plan-state-free'), true);
+    }
+}
+
+async function handleCancelPlan() {
+    const btn = el('btn-cancel-plan');
+    if (!btn) return;
+
+    if (!confirm('Tem certeza que deseja cancelar sua assinatura Plus?\n\nVocê continuará com acesso Plus até o fim do período pago.')) return;
+
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Cancelando...`;
+
+    try {
+        const res = await fetchManager.cancelBilling();
+        if (!res.ok) {
+            alert('Não foi possível cancelar a assinatura. Tente novamente.');
+            btn.disabled = false;
+            btn.textContent = 'Cancelar assinatura';
+            return;
+        }
+        window.location.reload();
+    } catch (err) {
+        console.error('[AccountCenter] cancelBilling error:', err);
+        btn.disabled = false;
+        btn.textContent = 'Cancelar assinatura';
+    }
+}
+
+async function handleReactivatePlan() {
+    const btn = el('btn-reactivate-plan');
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Reativando...`;
+
+    try {
+        const res = await fetchManager.reactivateBilling();
+        if (!res.ok) {
+            alert('Não foi possível reativar a assinatura. Tente novamente.');
+            btn.disabled = false;
+            btn.textContent = 'Reativar assinatura';
+            return;
+        }
+        window.location.reload();
+    } catch (err) {
+        console.error('[AccountCenter] reactivateBilling error:', err);
+        btn.disabled = false;
+        btn.textContent = 'Reativar assinatura';
+    }
+}
+
+// ─── Plus Modal ───────────────────────────────────────────────────────────────
+
+const PlusModal = (() => {
+    const overlay = () => el('plus-modal-ac');
+
+    function show() {
+        const ov = overlay();
+        if (!ov) return;
+        ov.offsetHeight; // force reflow
+        ov.classList.add('ig-visible');
+        ov.removeAttribute('aria-hidden');
+    }
+
+    function hide() {
+        const ov = overlay();
+        if (!ov) return;
+        ov.classList.remove('ig-visible');
+        ov.setAttribute('aria-hidden', 'true');
+    }
+
+    async function handleCta() {
+        const btn = el('plus-modal-ac-cta');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Redirecionando...`;
+        }
+        try {
+            const res = await fetchManager.checkoutPlus();
+            if (res.ok && res.result?.url) {
+                window.location.href = res.result.url;
+            } else {
+                alert('Não foi possível iniciar o checkout. Tente novamente.');
+                if (btn) { btn.disabled = false; btn.textContent = '🚀 Fazer upgrade para Plus'; }
+            }
+        } catch (err) {
+            console.error('[AccountCenter] checkoutPlus error:', err);
+            if (btn) { btn.disabled = false; btn.textContent = '🚀 Fazer upgrade para Plus'; }
+        }
+    }
+
+    function init() {
+        const closeBtn = el('plus-modal-ac-close');
+        if (closeBtn) closeBtn.addEventListener('click', hide);
+
+        const ctaBtn = el('plus-modal-ac-cta');
+        if (ctaBtn) ctaBtn.addEventListener('click', handleCta);
+
+        const ov = overlay();
+        if (ov) ov.addEventListener('click', (e) => { if (e.target === ov) hide(); });
+    }
+
+    return { init, show, hide };
+})();
+
 
 // ─── Installation Guide Carousel ─────────────────────────────────────────────
 
@@ -566,9 +717,10 @@ const InstallGuide = (() => {
         const ov = overlay();
         if (ov) ov.addEventListener('click', (e) => { if (e.target === ov) hide(); });
 
-        // "Precisa de ajuda?" link
-        const helpLink = document.getElementById('btn-install-guide');
-        if (helpLink) helpLink.addEventListener('click', (e) => { e.preventDefault(); show(); });
+        // Guide links (any element with .js-install-guide)
+        document.querySelectorAll('.js-install-guide').forEach(link => {
+            link.addEventListener('click', (e) => { e.preventDefault(); show(); });
+        });
     }
 
     return { init, show, hide };
