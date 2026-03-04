@@ -15,8 +15,8 @@ const GOOGLE_AUTH_URL = IS_DEV
     : 'https://api.authpack.co/api/auth/google';
 
 const DASHBOARD_URL = IS_DEV
-    ? 'http://127.0.0.1:5500'
-    : 'https://dashboard.authpack.co';
+    ? 'http://127.0.0.1:5500/pages/dashboard'
+    : 'https://authpack.co/pages/dashboard';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
