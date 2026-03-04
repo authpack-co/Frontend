@@ -217,6 +217,7 @@ const fetchManager = {
     async checkoutPlus() {
         const response = await fetchRoutes(`/api/billing/checkout/plus`, {
             method: "POST",
+            credentials: "include"
         });
         return response;
     },

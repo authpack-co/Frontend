@@ -481,7 +481,9 @@ async function handleCancelPlan() {
             btn.textContent = 'Cancelar assinatura';
             return;
         }
-        window.location.reload();
+        // Atualiza estado localmente (sem esperar o webhook)
+        if (userData) userData.plan_status = 'canceled';
+        renderPlanCard(userData);
     } catch (err) {
         console.error('[AccountCenter] cancelBilling error:', err);
         btn.disabled = false;
@@ -504,7 +506,9 @@ async function handleReactivatePlan() {
             btn.textContent = 'Reativar assinatura';
             return;
         }
-        window.location.reload();
+        // Atualiza estado localmente (sem esperar o webhook)
+        if (userData) userData.plan_status = 'active';
+        renderPlanCard(userData);
     } catch (err) {
         console.error('[AccountCenter] reactivateBilling error:', err);
         btn.disabled = false;
@@ -515,20 +519,20 @@ async function handleReactivatePlan() {
 // ─── Plus Modal ───────────────────────────────────────────────────────────────
 
 const PlusModal = (() => {
-    const overlay = () => el('plus-modal-ac');
+    const overlay = () => el('plusSubscribeModal');
 
     function show() {
         const ov = overlay();
         if (!ov) return;
         ov.offsetHeight; // force reflow
-        ov.classList.add('ig-visible');
+        ov.classList.add('show');
         ov.removeAttribute('aria-hidden');
     }
 
     function hide() {
         const ov = overlay();
         if (!ov) return;
-        ov.classList.remove('ig-visible');
+        ov.classList.remove('show');
         ov.setAttribute('aria-hidden', 'true');
     }
 
@@ -544,11 +548,11 @@ const PlusModal = (() => {
                 window.location.href = res.result.url;
             } else {
                 alert('Não foi possível iniciar o checkout. Tente novamente.');
-                if (btn) { btn.disabled = false; btn.textContent = '🚀 Fazer upgrade para Plus'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span>🚀</span> Fazer upgrade para Plus'; }
             }
         } catch (err) {
             console.error('[AccountCenter] checkoutPlus error:', err);
-            if (btn) { btn.disabled = false; btn.textContent = '🚀 Fazer upgrade para Plus'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>🚀</span> Fazer upgrade para Plus'; }
         }
     }
 
