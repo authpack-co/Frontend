@@ -58,7 +58,7 @@ window.addEventListener("message", async (event) => {
         if (ok) {
             setElementState(container, 'success');
 
-            setTimeout(() => window.location.href = "/", 1000)
+            setTimeout(() => window.location.href = "/pages/dashboard/", 1000)
         } else {
             setElementState(container, 'error');
         }

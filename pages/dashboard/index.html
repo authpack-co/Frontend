@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Bloqueio CSS imediato: impede qualquer paint -->
+    <style id="ap-block-style">
+        html {
+            visibility: hidden !important;
+        }
+    </style>
+
+    <!-- Detect Extension Flag -->
+    <script>
+        (function () {
+            'use strict';
+
+            // Configuração
+            const MAX_WAIT = 100;
+            const ATTRIBUTE_NAME = 'data-authpack-active';
+            const REDIRECT_URL = '/';
+
+            // Estado
+            let released = false;
+            let timeoutId = null;
+
+            // Remove o bloqueio e restaura visibilidade
+            function release() {
+                if (released) return; // Previne execução múltipla
+                released = true;
+
+                try {
+                    const blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle?.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    // Fallback: força visibilidade
+                    document.documentElement.style.visibility = '';
+                } catch (e) { /* ignore */ }
+            }
+
+            // Verifica se o atributo da extensão existe
+            function isExtensionPresent() {
+                try {
+                    const root = document.documentElement;
+                    return root && root.getAttribute(ATTRIBUTE_NAME) === '1';
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // Limpa recursos
+            function cleanup() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                // Remove listener de segurança
+                window.removeEventListener('pagehide', cleanup);
+            }
+
+            // Redireciona para página de download
+            function redirectToDownload() {
+                cleanup();
+                try {
+                    window.location.replace(REDIRECT_URL);
+                } catch (e) {
+                    // Fallback: libera página se redirect falhar
+                    release();
+                }
+            }
+
+            // ==================== DETECÇÃO PRINCIPAL ====================
+
+            // Verificação imediata (caso mais comum)
+            if (isExtensionPresent()) {
+                release();
+                return;
+            }
+
+            // Usa MutationObserver para detectar quando atributo for adicionado
+            // (mais eficiente que polling)
+            const observer = new MutationObserver(function (mutations) {
+                if (isExtensionPresent()) {
+                    observer.disconnect();
+                    cleanup();
+                    release();
+                }
+            });
+
+            // Observa mudanças de atributos no <html>
+            try {
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: [ATTRIBUTE_NAME]
+                });
+            } catch (e) {
+                // Fallback: se MutationObserver falhar, usa polling simples
+                let checks = 0;
+                const MAX_CHECKS = 10;
+
+                function poll() {
+                    if (isExtensionPresent()) {
+                        cleanup();
+                        release();
+                        return;
+                    }
+                    checks++;
+                    if (checks < MAX_CHECKS) {
+                        setTimeout(poll, 10);
+                    }
+                }
+                poll();
+            }
+
+            // Timeout: se extensão não for detectada, redireciona
+            timeoutId = setTimeout(function () {
+                if (!released && !isExtensionPresent()) {
+                    observer.disconnect();
+                    redirectToDownload();
+                } else {
+                    observer.disconnect();
+                    release();
+                }
+            }, MAX_WAIT);
+
+            // Segurança: limpa recursos se página for descarregada
+            window.addEventListener('pagehide', function () {
+                observer.disconnect();
+                cleanup();
+            });
+
+        })();
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=user-width, initial-scale=1.0" />
+    <title>AuthPack</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/pages/dashboard/style.css">
+    <link rel="stylesheet" href="/pages/dashboard/presets.css">
+    <link rel="stylesheet" href="/assets/styles/modals.css">
+    <link rel="stylesheet" href="/assets/styles/animations.css">
+</head>
+
+<body>
+    <!-- Hidden structures -->
+    <div class="modals">
+        <!-- Create Package Modal -->
+        <div class="modal-overlay" id="createPackageModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Crie um novo pacote</h2>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-actions">
+                        <input type="text" class="form-input" placeholder="Nome do pacote..." maxlength="50">
+                        <div class="buttonContent content-state">
+                            <div class="preset-content">
+                                <button class="btn btn-primary btn-small confirm-btn">Ok</button>
+                            </div>
+                            <div class="preset-loading">
+                                <button class="btn btn-primary btn-small confirm-btn">
+                                    <div class="spinner"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="error-message hidden"></span>
+
+                    <div class="form-note">
+                        <span>💡</span>
+                        <span class="note">
+                            Crie pacotes para organizar suas sessões e facilitar o compartilhamento com outras
+                            pessoas
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Package Modal -->
+        <div class="modal-overlay" id="sharePackageModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Compartilhar chave</h2>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body customScrollbar">
+                    <div>
+                        <label class="form-label" style="margin-bottom: 8px;"></label>
+                        <input type="text" class="form-input readonly" placeholder="Digite o nome do pacote" readonly
+                            value="Top IAs">
+                    </div>
+                    <div class="key-display">
+                        <div class="key-header">
+                            <span class="form-label">Chave Privada</span>
+                            <button class="renew-key-btn" title="Renovar chave">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-refresh-cw-icon lucide-refresh-cw">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="key-value">
+                            <span id="keyValue">c0bdc987-66dd-47af-b7d0-bb7b54c0e327</span>
+                            <button class="btn btn-primary btn-small copy-key-btn"
+                                style="min-width: fit-content;">Copiar</button>
+                        </div>
+                    </div>
+
+                    <div class="toggle-container">
+                        <span class="form-label">Pacote Público</span>
+                        <div class="toggle-switch">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+
+                    <div class="status-badge status-closed" id="statusBadge">
+                        <div class="status-dot"></div>
+                        <span>Acesso Restrito</span>
+                    </div>
+
+                    <div class="form-note">
+                        <span>💡</span>
+                        <span class="note">
+                            Esta chave poderá ser compartilhada e utilizada entre diversas pessoas
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Package Modal -->
+        <div class="modal-overlay" id="editPackageModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Editar pacote</h2>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-actions">
+                        <input type="text" class="form-input" placeholder="Nome do pacote..." value="Top IAs"
+                            maxlength="50">
+                        <div class="buttonContent content-state">
+                            <div class="preset-content">
+                                <button class="btn btn-primary btn-small confirm-btn">Ok</button>
+                            </div>
+                            <div class="preset-loading">
+                                <button class="btn btn-primary btn-small confirm-btn">
+                                    <div class="spinner"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="error-message hidden"></span>
+
+                    <div class="form-note">
+                        <span>💡</span>
+                        <span class="note">
+                            Esta ação apenas altera o nome do pacote, a chave privada permanecerá a mesma
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Package Modal -->
+        <div class="modal-overlay" id="deletePackageModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Excluir pacote</h2>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text">Tem certeza de que deseja excluir <strong>Top IAs</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                    <div class="buttonContent content-state">
+                        <div class="preset-content">
+                            <button class="btn btn-danger confirm-btn">Excluir</button>
+                        </div>
+                        <div class="preset-loading">
+                            <button class="btn btn-danger confirm-btn">
+                                <div class="spinner"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Abort Package Access Modal -->
+        <div class="modal-overlay" id="abortPackageAccessModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Encerrar acesso</h2>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text">Tem certeza de que deseja encerrar o acesso a <strong>Top IAs</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                    <div class="buttonContent content-state">
+                        <div class="preset-content">
+                            <button class="btn btn-danger confirm-btn">Encerrar</button>
+                        </div>
+                        <div class="preset-loading">
+                            <button class="btn btn-danger confirm-btn">
+                                <div class="spinner"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remove User Access Modal -->
+        <div class="modal-overlay" id="removeUserAccessModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Remover acesso</h2>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text">Tem certeza de que deseja remover <strong>User</strong> do pacote?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                    <div class="buttonContent content-state">
+                        <div class="preset-content">
+                            <button class="btn btn-danger confirm-btn">Remover</button>
+                        </div>
+                        <div class="preset-loading">
+                            <button class="btn btn-danger confirm-btn">
+                                <div class="spinner"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Session Modal -->
+        <div class="modal-overlay" id="editSessionModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Editar sessão</h2>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-actions">
+                        <input type="text" class="form-input" placeholder="Nome do pacote..." value="Gemini"
+                            maxlength="50">
+                        <div class="buttonContent content-state">
+                            <div class="preset-content">
+                                <button class="btn btn-primary btn-small confirm-btn">Ok</button>
+                            </div>
+                            <div class="preset-loading">
+                                <button class="btn btn-primary btn-small confirm-btn">
+                                    <div class="spinner"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-note">
+                        <span>💡</span>
+                        <span class="note">
+                            Esta ação apenas altera o nome da sessão, a conexão permanecerá a mesma
+                        </span>
+                    </div>
+                    <span class="error-message hidden"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Session Modal -->
+        <div class="modal-overlay" id="deleteSessionModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Excluir sessão</h2>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text">Tem certeza de que deseja excluir <strong>Gemini</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                    <div class="buttonContent content-state">
+                        <div class="preset-content">
+                            <button class="btn btn-danger confirm-btn">Excluir</button>
+                        </div>
+                        <div class="preset-loading">
+                            <button class="btn btn-danger confirm-btn">
+                                <div class="spinner"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plus Subscribe Modal -->
+        <div class="modal-overlay" id="plusSubscribeModal">
+            <div class="modal plus-modal">
+                <button class="close-btn plus-close-btn">×</button>
+                <div class="plus-modal-content">
+                    <div class="plus-modal-left">
+                        <div class="plus-modal-header">
+                            <h2>AuthPack <span class="plus-highlight">Plus</span></h2>
+                            <p class="plus-subtitle">Para quem quer ir além.</p>
+                        </div>
+                        <p class="plus-description">Expanda sua atuação dentro do <strong>AuthPack</strong> com
+                            liberdade total para criar e <strong>monetizar</strong>.</p>
+                        <ul class="plus-benefits">
+                            <li>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span><strong>Criação ilimitada</strong> de pacotes</span>
+                            </li>
+                            <li>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span><strong>Publicação</strong> em vitrines públicas</span>
+                            </li>
+                            <li>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span>Venda através de <strong>links diretos</strong></span>
+                            </li>
+                            <li>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span><strong>Estrutura</strong> preparada para crescimento</span>
+                            </li>
+                        </ul>
+                        <div class="plus-pricing">
+                            <span class="plus-price">R$ 16,90</span>
+                            <span class="plus-period">/ mês</span>
+                            <span class="plus-cancel">Cancele quando quiser.</span>
+                        </div>
+                        <button class="plus-cta-btn">
+                            <span>🚀</span> Fazer upgrade para Plus
+                        </button>
+                        <div class="plus-notes">
+                            <span>🔒 Pagamento seguro via Stripe</span>
+                            <span>⚡ Ativação imediata</span>
+                            <span>🔄 Atualização instantânea da sua conta</span>
+                        </div>
+                    </div>
+                    <div class="plus-modal-right">
+                        <img src="/assets/images/plus-background.png" alt="AuthPack Plus">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notifications">
+        <div class="notification success">
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-check-icon lucide-check">
+                    <path d="M20 6 9 17l-5-5" />
+                </svg>
+            </div>
+            <div class="notification-message">Pacote criado com sucesso!</div>
+        </div>
+
+        <div class="notification info">
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-circle-alert-icon lucide-circle-alert">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" x2="12" y1="8" y2="12" />
+                    <line x1="12" x2="12.01" y1="16" y2="16" />
+                </svg>
+            </div>
+            <div class="notification-message">Esta é uma mensagem de informação.</div>
+        </div>
+
+        <div class="notification error">
+            <div class="notification-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-x-icon lucide-x">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </div>
+            <div class="notification-message">Ocorreu um erro ao criar o pacote.</div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="logo">
+            <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
+            <span>AuthPack</span>
+        </div>
+        <nav></nav>
+        <div class="header-actions">
+            <div class="header-nav-items">
+                <button class="plus-subscribe-btn header-plus-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-crown-icon lucide-crown">
+                        <path
+                            d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                        <path d="M5 21h14" />
+                    </svg>
+                    Assinar Plus
+                </button>
+            </div>
+            <div class="profile-dropdown-wrapper">
+                <div class="profile" id="profile-trigger">
+                    <span class="profile-name">Thales Wendel</span>
+                    <span class="profile-picture">
+                        <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                            alt="Thales Wendel">
+                    </span>
+                </div>
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <!-- Dropdown Header -->
+                    <div class="profile-dropdown-header">
+                        <img class="dropdown-avatar"
+                            src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                            alt="User" id="dropdown-avatar">
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-name" id="dropdown-name">Thales Wendel</span>
+                            <span class="dropdown-email" id="dropdown-email">thaleswwendel@gmail.com</span>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <!-- Dropdown Items -->
+                    <a href="/pages/download/" class="profile-dropdown-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                        Central de contas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page content -->
+    <div class="page-content">
+        <!-- Sidebar -->
+        <aside class="navigation-sidebar">
+            <!-- <hr> -->
+            <ul class="nav-menu">
+                <li class="nav-item active">Início</li>
+                <li class="nav-item">Vitrines <span class="coming-soon">(Em breve)</span></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <ul class="nav-links">
+                    <li>
+                        <a href="/pages/download/" target="_blank">
+                            <span>Central de contas</span>
+
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link">
+                                <path d="M15 3h6v6" />
+                                <path d="M10 14 21 3" />
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            </svg>
+                        </a>
+
+                    </li>
+                </ul>
+
+                <button class="plus-subscribe-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-crown-icon lucide-crown">
+                        <path
+                            d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                        <path d="M5 21h14" />
+                    </svg>
+                    Assinar Plus
+                </button>
+
+                <div class="profile" id="sidebar-profile">
+                    <span class="profile-picture">
+                        <img>
+                    </span>
+                    <div class="sidebar-profile-info">
+                        <span class="profile-name"></span>
+                        <span class="sidebar-profile-email"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <!-- Packages section-->
+            <section class="content-card">
+                <div id="packages-list" class="card-header loading-state">
+                    <div class="preset-collection">
+                        <div class="header-top">
+                            <div class="card-tabs">
+                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
+                                <h2 class="card-tab access-tab">Meus acessos</h2>
+                            </div>
+                            <button class="btn btn-small create-package-btn">Novo pacote</button>
+                        </div>
+
+                        <div class="access-grid-container">
+                            <div class="access-grid custom-scrollbar">
+                                <button class="scroll-btn prev-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg>
+                                </button>
+
+                                <!-- Packages rendered here -->
+
+                                <button class="scroll-btn next-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preset-access">
+                        <div class="header-top">
+                            <div class="card-tabs">
+                                <h2 class="card-tab collection-tab">Minha coleção</h2>
+                                <h2 class="card-tab access-tab active">Meus acessos</h2>
+                            </div>
+                            <div class="activation-input">
+                                <div>
+                                    <input type="text" placeholder="Inserir chave" />
+                                    <div class="buttonContent content-state">
+                                        <div class="preset-content">
+                                            <button
+                                                class="btn btn-small activate-access-btn confirm-btn">Ativar</button>
+                                        </div>
+                                        <div class="preset-loading">
+                                            <button class="btn btn-small activate-access-btn">
+                                                <div class="spinner"></div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span class="error-message hidden"></span>
+                            </div>
+                        </div>
+
+                        <div class="access-grid-container">
+                            <div class="access-grid custom-scrollbar">
+                                <button class="scroll-btn prev-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg>
+                                </button>
+
+                                <!-- Packages rendered here -->
+
+                                <button class="scroll-btn next-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preset-loading">
+                        <div class="header-top">
+                            <div class="card-tabs">
+                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
+                                <h2 class="card-tab access-tab">Meus acessos</h2>
+                            </div>
+                            <button class="btn btn-small create-package-btn">Novo pacote</button>
+                        </div>
+                        <div class="spinner-container" style="height: 110px;">
+                            <div class="spinner large"></div>
+                        </div>
+                    </div>
+                    <div class="preset-empty-collection">
+                        <div class="header-top">
+                            <div class="card-tabs">
+                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
+                                <h2 class="card-tab access-tab">Meus acessos</h2>
+                            </div>
+                            <button class="btn btn-small create-package-btn">Novo pacote</button>
+                        </div>
+
+                        <div class="collection-empty">
+                            <div class="empty-placeholder">📦</div>
+                            <div class="empty-text">
+                                <h3>Nenhum pacote criado</h3>
+                                <p>Crie seu novo produto para começar a organizar suas sessões</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="preset-empty-access">
+                        <div class="header-top">
+                            <div class="card-tabs">
+                                <h2 class="card-tab collection-tab">Minha coleção</h2>
+                                <h2 class="card-tab access-tab active">Meus acessos</h2>
+                            </div>
+                            <div class="activation-input">
+                                <div>
+                                    <input type="text" placeholder="Inserir chave" />
+                                    <div class="buttonContent content-state">
+                                        <div class="preset-content">
+                                            <button
+                                                class="btn btn-small activate-access-btn confirm-btn">Ativar</button>
+                                        </div>
+                                        <div class="preset-loading">
+                                            <button class="btn btn-small activate-access-btn">
+                                                <div class="spinner"></div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span class="error-message hidden"></span>
+                            </div>
+                        </div>
+
+                        <div class="collection-empty">
+                            <div class="empty-placeholder">📦</div>
+                            <div class="empty-text">
+                                <h3>Nenhum pacote adquirido</h3>
+                                <p>Ative um pacote para conectar a novas sessões</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Package Details -->
+            <section id="package-details" class="content-card empty-state expanded">
+                <div class="preset-collection">
+                    <div class="screens-container">
+                        <div class="screen-section primary content-state">
+                            <div class="preset-content">
+                                <div class="card-header">
+                                    <div class="header-top">
+                                        <h2>Package Details</h2>
+                                        <p class="created-date">
+                                            <span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="lucide lucide-calendar-icon lucide-calendar">
+                                                    <path d="M8 2v4" />
+                                                    <path d="M16 2v4" />
+                                                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                                                    <path d="M3 10h18" />
+                                                </svg>
+                                            </span>
+                                            <span class="created-at-label">Criado em 5 de abril de 2024</span>
+                                        </p>
+                                    </div>
+                                    <div class="package-stats-container content-state">
+                                        <div class="preset-content">
+                                            <div class="package-stats access-grid custom-scrollbar">
+                                                <div class="access-item new-users-stat">
+                                                    <div class="icon-stack green">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-user-plus-icon lucide-user-plus">
+                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                            <line x1="19" x2="19" y1="8" y2="14" />
+                                                            <line x1="22" x2="16" y1="11" y2="11" />
+                                                        </svg>
+                                                        <span>Novos Usuários</span>
+                                                    </div>
+                                                    <div class="access-title">0 (+ 0%)</div>
+                                                </div>
+                                                <div class="access-item users-stat">
+                                                    <div class="icon-stack blue">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-users-icon lucide-users">
+                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                            <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+                                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                        </svg>
+                                                        <span>Usuários</span>
+                                                    </div>
+                                                    <div class="access-title">0</div>
+                                                </div>
+                                                <div class="access-item sessions-stat">
+                                                    <div class="icon-stack blue">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-copy-icon lucide-copy">
+                                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                                            <path
+                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                        </svg>
+
+                                                        <span>Sessões</span>
+                                                    </div>
+                                                    <div class="access-title">0</div>
+                                                </div>
+                                                <div class="access-item online-users-stat">
+                                                    <div class="icon-stack blue">
+                                                        <div class="online-dot-large"></div>
+                                                        <span>Usuários Online</span>
+                                                    </div>
+                                                    <div class="access-title">0</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="preset-loading">
+                                            <div class="package-stats access-grid custom-scrollbar">
+                                                <div class="access-item new-users-stat">
+                                                    <div class="icon-stack green">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-user-plus-icon lucide-user-plus">
+                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                            <line x1="19" x2="19" y1="8" y2="14" />
+                                                            <line x1="22" x2="16" y1="11" y2="11" />
+                                                        </svg>
+                                                        <span>Novos Usuários</span>
+                                                    </div>
+                                                    <div class="access-title skeleton"
+                                                        style="width: 100%; height: 20px; border-radius: 0;padding-bottom: 1rem;">
+                                                    </div>
+
+                                                </div>
+                                                <div class="access-item users-stat">
+                                                    <div class="icon-stack blue">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-users-icon lucide-users">
+                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                            <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+                                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                        </svg>
+                                                        <span>Usuários</span>
+                                                    </div>
+                                                    <div class="access-title skeleton"
+                                                        style="width: 100%; height: 20px; border-radius: 0;padding-bottom: 1rem;">
+                                                    </div>
+
+                                                </div>
+                                                <div class="access-item sessions-stat">
+                                                    <div class="icon-stack blue">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="lucide lucide-copy-icon lucide-copy">
+                                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                                                            <path
+                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                        </svg>
+
+                                                        <span>Sessões</span>
+                                                    </div>
+                                                    <div class="access-title skeleton"
+                                                        style="width: 100%; height: 20px; border-radius: 0;padding-bottom: 1rem;">
+                                                    </div>
+                                                </div>
+                                                <div class="access-item online-users-stat">
+                                                    <div class="icon-stack blue">
+                                                        <div class="online-dot-large"></div>
+                                                        <span>Usuários Online</span>
+                                                    </div>
+                                                    <div class="access-title skeleton"
+                                                        style="width: 100%; height: 20px; border-radius: 0;padding-bottom: 1rem;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-content custom-scrollbar">
+                                    <div class="collection-content-layout">
+                                        <!-- Left column: Chart + Sessions Grid -->
+                                        <div class="collection-left-column">
+                                            <div class="usage-chart-container">
+                                                <div class="chart-header">
+                                                    <div>
+                                                        <h3 class="chart-title">Uso do pacote nos últimos 7 dias</h3>
+                                                        <p class="chart-subtitle">Horas de uso por dia</p>
+                                                    </div>
+                                                    <select class="chart-period-select" id="packageChartPeriodSelect">
+                                                        <option value="today">Hoje</option>
+                                                        <option value="7days" selected>7 dias</option>
+                                                        <option value="30days">30 dias</option>
+                                                    </select>
+                                                </div>
+                                                <div class="chart-wrapper content-state">
+                                                    <div class="preset-content">
+                                                        <canvas id="packageUsageChart"></canvas>
+                                                    </div>
+                                                    <div class="preset-loading">
+                                                        <div class="spinner-container" style="height: 120px;">
+                                                            <div class="spinner large"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="sessions-panel-container content-state">
+                                                <div class="preset-content">
+                                                    <div class="sessions-panel">
+                                                        <p class="panel-title">Minhas sessões</p>
+                                                        <div class="sessions-grid custom-scrollbar">
+                                                            <!-- Sessions rendered here as grid cards -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="preset-empty">
+                                                    <div class="sessions-panel">
+                                                        <p class="panel-title">Minhas sessões</p>
+                                                        <div class="nothing-here-container">
+                                                            <div class="nothing-here-content">
+                                                                <h3 class="nothing-here-title">Crie sua primeira sessão
+                                                                </h3>
+                                                                <p class="nothing-here-text">
+                                                                    Suas sessões criadas aparecerão aqui
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right column: Users Panel -->
+                                        <div class="collection-right-column">
+                                            <div class="users-panel-container content-state">
+                                                <div class="preset-content">
+                                                    <div class="users-panel">
+                                                        <p class="panel-title">Usuários do pacote</p>
+                                                        <div class="scrollable-list custom-scrollbar">
+                                                            <!-- Users rendered here -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="preset-empty">
+                                                    <div class="users-panel">
+                                                        <p class="panel-title">Usuários do pacote</p>
+                                                        <div class="nothing-here-container"
+                                                            style="height: 100%;max-height: 100%;">
+                                                            <div class="nothing-here-content">
+                                                                <h3 class="nothing-here-title">Compartilhe seu pacote
+                                                                </h3>
+                                                                <p class="nothing-here-text">
+                                                                    Compartilhe seu pacote com outras pessoas
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="screen-section secondary">
+                            <div class="preset-user-overview">
+                                <div class="card-header">
+                                    <div class="header-top">
+                                        <h2>
+                                            <span class="header-title">EJECT Pack</span>
+                                            <span class="header-subtitle">> Usuários</span>
+                                        </h2>
+                                        <button class="btn btn-small back-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m15 18-6-6 6-6" />
+                                            </svg>
+                                            Voltar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="overview-container">
+                                    <div class="overview-content">
+                                        <div class="profile-card">
+                                            <div class="profile-avatar">
+                                                <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                                                    alt="Ana Lívia minha amada e benção de Deus, que Jesus te abençoe imensamente!!! minha princesinha linda">
+                                            </div>
+                                            <h4 class="profile-title">Thales Wendel</h4>
+                                            <p class="profile-subtitle">twendel@gmail.com</p>
+                                        </div>
+
+                                        <div class="overview-stats">
+                                            <div class="stats-grid">
+                                                <div class="stat-card user-total-usage">
+                                                    <p class="stat-label">Tempo total de uso do pacote</p>
+                                                    <div class="stat-value">
+                                                        <span class="stat-highlight">2h 45m</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="stat-card user-last-usage">
+                                                    <p class="stat-label">Última vez que usou o pacote</p>
+                                                    <div class="stat-value">
+                                                        <span>há 1 hora</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="usage-chart-container">
+                                                <div class="chart-header">
+                                                    <div>
+                                                        <h3 class="chart-title">Uso do usuário nos últimos 7 dias</h3>
+                                                        <p class="chart-subtitle">Tempo de uso por sessão</p>
+                                                    </div>
+                                                    <select class="chart-period-select" id="userChartPeriodSelect">
+                                                        <option value="today">Hoje</option>
+                                                        <option value="7days" selected>7 dias</option>
+                                                        <option value="30days">30 dias</option>
+                                                    </select>
+                                                </div>
+                                                <div class="chart-wrapper content-state">
+                                                    <div class="preset-content">
+                                                        <canvas id="userUsageChart"></canvas>
+                                                    </div>
+                                                    <div class="preset-loading">
+                                                        <div class="spinner-container" style="height: 120px;">
+                                                            <div class="spinner large"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="data-history userAccessHistory">
+                                        <h4 class="data-history-title">Histórico de uso</h4>
+                                        <div class="data-table">
+                                            <div class="table-header">
+                                                <div class="table-col">Data</div>
+                                                <div class="table-col">Serviço</div>
+                                                <div class="table-col">Tempo</div>
+                                            </div>
+                                            <div class="table-body-presets-container empty-state">
+                                                <div class="preset-content">
+                                                    <div class="table-body custom-scrollbar">
+                                                        <div class="table-row">
+                                                            <div class="table-col">Hoje</div>
+                                                            <div class="table-col">
+                                                                <div class="service-badge">
+                                                                    <div class="service-icon">
+                                                                        <img src="" alt="">
+                                                                    </div>
+                                                                    <span>Instagram</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-col">31m</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="preset-empty">
+                                                    <div class="table-body custom-scrollbar">
+                                                        <div class="nothing-here-container">
+                                                            <div class="nothing-here-content">
+                                                                <h3 class="nothing-here-title">Nada por aqui</h3>
+                                                                <p class="nothing-here-text">
+                                                                    Não há registro de uso nesse período
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="preset-session-overview">
+                                <div class="card-header">
+                                    <div class="header-top">
+                                        <h2>
+                                            <span class="header-title">EJECT Pack</span>
+                                            <span class="header-subtitle">> Sessões</span>
+                                        </h2>
+                                        <button class="btn btn-small back-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m15 18-6-6 6-6" />
+                                            </svg>
+                                            Voltar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="overview-container">
+                                    <div class="overview-content">
+                                        <div class="service-card">
+                                            <div class="service-card-content">
+                                                <div class="service-header">
+                                                    <img src="https://assets.nflxext.com/ffe/siteui/common/icons/nficon2016.ico"
+                                                        class="service-card-icon" alt="Netflix">
+                                                    <div class="service-header-text">
+                                                        <h2 class="service-name">Netflix Premium</h2>
+                                                        <p class="service-domain">netflix.com</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="service-users-section">
+                                                    <div class="service-users-label">Active users</div>
+                                                    <div class="service-users-list">
+                                                        <img class="service-user-avatar"
+                                                            src="https://i.pravatar.cc/150?img=1" alt="User 1">
+                                                        <img class="service-user-avatar"
+                                                            src="https://i.pravatar.cc/150?img=2" alt="User 2">
+                                                        <div class="service-add-user">+</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="overview-stats">
+                                            <div class="stats-grid">
+                                                <div class="stat-card users-stat">
+                                                    <p class="stat-label">Usuários conectados</p>
+                                                    <div class="stat-value">
+                                                        <span class="stat-highlight">6</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="stat-card session-usage-stat">
+                                                    <p class="stat-label">Tempo de uso no período</p>
+                                                    <div class="stat-value">
+                                                        <span class="stat-highlight">2h 45m</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="usage-chart-container">
+                                                <div class="chart-header">
+                                                    <div>
+                                                        <h3 class="chart-title">Uso da sessão nos últimos 7 dias</h3>
+                                                        <p class="chart-subtitle">Horas de uso por dia</p>
+                                                    </div>
+                                                    <select class="chart-period-select" id="sessionChartPeriodSelect">
+                                                        <option value="today">Hoje</option>
+                                                        <option value="7days" selected>7 dias</option>
+                                                        <option value="30days">30 dias</option>
+                                                    </select>
+                                                </div>
+                                                <div class="chart-wrapper content-state">
+                                                    <div class="preset-content">
+                                                        <canvas id="sessionUsageChart"></canvas>
+                                                    </div>
+                                                    <div class="preset-loading">
+                                                        <div class="spinner-container" style="height: 120px;">
+                                                            <div class="spinner large"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="data-history sessionAccessHistory">
+                                        <h4 class="data-history-title">Histórico de uso</h4>
+                                        <div class="data-table">
+                                            <div class="table-header">
+                                                <div class="table-col">Data</div>
+                                                <div class="table-col">Usuário</div>
+                                                <div class="table-col">Tempo</div>
+                                            </div>
+                                            <div class="table-body-presets-container empty-state">
+                                                <div class="preset-content">
+                                                    <div class="table-body custom-scrollbar">
+                                                        <div class="table-row">
+                                                            <div class="table-col">Hoje</div>
+                                                            <div class="table-col">
+                                                                <div class="service-badge">
+                                                                    <div class="service-icon">
+                                                                        <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                                                                            alt="">
+                                                                    </div>
+                                                                    <span>Thales Wendel</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-col">31m</div>
+                                                        </div>
+                                                        <div class="table-row">
+                                                            <div class="table-col">Ontem</div>
+                                                            <div class="table-col">
+                                                                <div class="service-badge">
+                                                                    <div class="service-icon">
+                                                                        <img src="https://yt3.ggpht.com/ytc/AIdro_lwkxOFC5UE__FTWdTXKt27W6mGSW03tHONWmsg4rbtPUCV=s88-c-k-c0x00ffffff-no-rj"
+                                                                            alt="">
+                                                                    </div>
+                                                                    <span>Ana Lívia</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-col">52m</div>
+                                                        </div>
+                                                        <div class="table-row">
+                                                            <div class="table-col">21 de abril de 2024</div>
+                                                            <div class="table-col">
+                                                                <div class="service-badge">
+                                                                    <div class="service-icon">
+                                                                        <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                                                                            alt="">
+                                                                    </div>
+                                                                    <span>Thales Wendel</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-col">1h 10m</div>
+                                                        </div>
+                                                        <div class="table-row">
+                                                            <div class="table-col">20 de abril de 2024</div>
+                                                            <div class="table-col">
+                                                                <div class="service-badge">
+                                                                    <div class="service-icon">
+                                                                        <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
+                                                                            alt="">
+                                                                    </div>
+                                                                    <span>Thales Wendel</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="table-col">12m</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="preset-empty">
+                                                    <div class="table-body custom-scrollbar">
+                                                        <div class="nothing-here-container">
+                                                            <div class="nothing-here-content">
+                                                                <h3 class="nothing-here-title">Nada por aqui</h3>
+                                                                <p class="nothing-here-text">
+                                                                    Não há registro de uso nesse período
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preset-access">
+                    <div class="package-info-header">
+                        <div class="package-info-title">
+                            <span class="package-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-package-icon lucide-package">
+                                    <path
+                                        d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
+                                    <path d="M12 22V12" />
+                                    <polyline points="3.29 7 12 12 20.71 7" />
+                                    <path d="m7.5 4.27 9 5.15" />
+                                </svg>
+                            </span>
+                            <h2>Package Details</h2>
+                        </div>
+                        <div class="package-info-details">
+                            <div class="package-info-label">
+                                <span>Entrou em:</span>
+                                <span class="joined-at-value">—</span>
+                            </div>
+                            <div class="package-info-label">
+                                <span>Renova em:</span>
+                                <span class="renews-at-value">—</span>
+                            </div>
+                            <div class="online-count">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                    <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                    <circle cx="9" cy="7" r="4" />
+                                </svg>
+                                <span class="online-count-value">0 online</span>
+                            </div>
+                        </div>
+                        <div class="package-owner">
+                            <span class="package-owner-label">Por</span>
+                            <span class="package-owner-name">—</span>
+                            <img class="package-owner-avatar" src="" alt="" />
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="sessions-panel-container empty-state">
+                            <div class="preset-content">
+                                <div class="sessions-panel">
+                                    <p class="panel-title">Minhas sessões</p>
+                                    <div class="sessions-grid">
+                                        <!-- Sessions rendered here as grid cards -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="preset-empty">
+                                <div class="sessions-panel">
+                                    <p class="panel-title">Minhas sessões</p>
+                                    <div class="nothing-here-container">
+                                        <div class="nothing-here-content">
+                                            <h3 class="nothing-here-title">Nada por aqui</h3>
+                                            <p class="nothing-here-text">
+                                                Este pacote ainda não possui nenhuma sessão
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preset-loading">
+                    <div class="card-header">
+                        <div class="header-top">
+                            <h2>Top IAs</h2>
+                        </div>
+                        <div class="access-grid custom-scrollbar">
+                            <!-- Package Stats -->
+                            <div class="skeleton access-item-skeleton"></div>
+                            <div class="skeleton access-item-skeleton"></div>
+                            <div class="skeleton access-item-skeleton"></div>
+                            <div class="skeleton access-item-skeleton"></div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="sessions-panel">
+                            <p class="panel-title">Minhas Sessões</p>
+                            <div class="scrollable-list custom-scrollbar">
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                            </div>
+                        </div>
+
+                        <div class="users-panel">
+                            <p class="panel-title">Dispositivos Conectados (4)</p>
+                            <div class="scrollable-list custom-scrollbar">
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                                <div class="dark-skeleton list-item-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="preset-empty">
+                    <div class="card-content nothing-here-container">
+                        <div class="nothing-here-content">
+                            <h3 class="nothing-here-title">
+                                Nada por aqui
+                            </h3>
+                            <p class="nothing-here-text">
+                                Selecione um pacote acima ou crie um novo se ainda não tiver nenhum
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets/scripts/envManager.js"></script>
+    <script src="/assets/scripts/fetchManager.js"></script>
+    <script src="/pages/dashboard/script.js"></script>
+    <script src="/pages/dashboard/eventsHandler.js"></script>
+    <script src="/pages/dashboard/contentRenderer.js"></script>
+</body>
+
+</html>
