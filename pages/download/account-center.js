@@ -164,8 +164,7 @@ function renderDevices(devices) {
     setVisible(list, true);
     setVisible(empty, false);
 
-    devices.forEach((device, idx) => {
-        const isFirst = idx === 0;          // Most recent = current (heuristic)
+    devices.forEach((device) => {
         const date = formatDate(device.createdAt);
 
         const row = document.createElement('div');
@@ -178,7 +177,7 @@ function renderDevices(devices) {
                     <div class="device-row-name"></div>
                     <div class="device-row-meta"></div>
                 </div>
-                ${isFirst
+                ${device.isCurrentDevice
                 ? `<span class="device-row-badge device-row-badge--current">Este dispositivo</span>`
                 : `<span class="device-row-badge device-row-badge--other">v${device.version}</span>`
             }
