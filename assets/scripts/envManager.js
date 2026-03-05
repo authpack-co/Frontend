@@ -1,2 +1,2 @@
-const ENV = "dev";
+const ENV = "prod";
 const IS_DEV = ENV === "dev";

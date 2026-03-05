@@ -215,7 +215,7 @@ const fetchManager = {
     // Billing
 
     async checkoutPlus() {
-        const response = await fetchRoutes(`/api/billing/checkout/plus`, {
+        const response = await fetchRoutes(`/api/subscription/checkout`, {
             method: "POST",
             credentials: "include"
         });
@@ -223,7 +223,7 @@ const fetchManager = {
     },
 
     async cancelBilling() {
-        const response = await fetchRoutes(`/api/billing/cancel`, {
+        const response = await fetchRoutes(`/api/subscription/cancel`, {
             method: "POST",
             credentials: "include"
         });
@@ -231,7 +231,7 @@ const fetchManager = {
     },
 
     async reactivateBilling() {
-        const response = await fetchRoutes(`/api/billing/reactivate`, {
+        const response = await fetchRoutes(`/api/subscription/reactivate`, {
             method: "POST",
             credentials: "include"
         });
