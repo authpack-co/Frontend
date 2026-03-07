@@ -318,13 +318,22 @@ async function handleConnectSession(e) {
 
     const isAccess = sessionEl.closest('.preset-collection') ? false : true;
 
-    const packageIdx = isAccess ? packagesList.userAccess.findIndex(pkg => pkg.id == packageId) : packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
-    const sessionData = isAccess ? packagesList.userAccess[packageIdx].sessions.find(session => session.id == sessionId) : packagesList.userCollection[packageIdx].sessions.find(session => session.id == sessionId);
+    const packageData = isAccess
+        ? packagesList.userAccess.find(pkg => pkg.id == packageId)
+        : packagesList.userCollection.find(pkg => pkg.id == packageId);
+    const sessionData = packageData.sessions.find(session => session.id == sessionId);
 
     const sessionConnectUrl = sessionData.url;
 
-    // redireciona para a URL de conexão da sessão
-    const urlProcessced = addURLParams(sessionConnectUrl, { authpack_session_id: sessionId, authpack_package_id: packageId, authpack_is_acquired: isAccess });
+    // redireciona para a URL de conexão da sessão (com metadados para o overlay de loading da extensão)
+    const urlProcessced = addURLParams(sessionConnectUrl, {
+        authpack_session_id: sessionId,
+        authpack_package_id: packageId,
+        authpack_is_acquired: isAccess,
+        authpack_session_name: sessionData.name || "",
+        authpack_session_icon: sessionData.icon || "",
+        authpack_owner_name: packageData?.owner?.name || "",
+    });
 
     window.open(urlProcessced, '_blank');
 }
