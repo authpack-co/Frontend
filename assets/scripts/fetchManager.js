@@ -258,4 +258,15 @@ const fetchManager = {
         }, true); // rawResponse = true → returns blob
         return response;
     },
+
+    // Device Activation (universal — for CWS and build versions)
+
+    async activateDevice({ visitorId, requestId }) {
+        const response = await fetchRoutes(`/api/devices/activate`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ visitorId, requestId })
+        });
+        return response;
+    },
 }
