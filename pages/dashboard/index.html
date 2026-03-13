@@ -553,6 +553,47 @@
 
         <!-- Main -->
         <main class="main-content">
+            <!-- Extension Setup Alert (hidden by default, shown when extension not detected) -->
+            <section id="setup-alert" class="content-card setup-alert-card" style="display:none;">
+                <div class="setup-alert-body">
+                    <div class="setup-alert-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                        </svg>
+                    </div>
+                    <div class="setup-alert-text">
+                        <h3 class="setup-alert-title">Finalize a configuração do AuthPack</h3>
+                        <p class="setup-alert-desc">Para conectar às sessões automaticamente no seu navegador, instale a
+                            extensão do AuthPack.</p>
+                    </div>
+                    <a id="btn-setup-chrome" href="#" class="setup-alert-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" fill="#fff" />
+                            <path
+                                d="M12 2a10 10 0 0 1 8.66 5H12a5 5 0 0 0-4.33 2.5L5.34 5.05A10 10 0 0 1 12 2z"
+                                fill="#EA4335" />
+                            <path
+                                d="M20.66 7A10 10 0 0 1 14.34 22l2.33-4.05A5 5 0 0 0 17 12H22a10 10 0 0 0-1.34-5z"
+                                fill="#4285F4" />
+                            <path
+                                d="M14.34 22A10 10 0 0 1 2 12a10 10 0 0 0 3.34-6.95L7.67 9.5A5 5 0 0 0 12 17l2.34 5z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.34 5.05L7.67 9.5A5 5 0 0 0 7 12a5 5 0 0 0 .67 2.5L5.34 18.95A10 10 0 0 1 2 12a10 10 0 0 1 3.34-6.95z"
+                                fill="#FBBC05" />
+                            <circle cx="12" cy="12" r="3.5" fill="#fff" />
+                        </svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="setup-alert-footer">
+                    Quer vender seus próprios pacotes? Conheça o <a href="/pages/download/">AuthPack Studio</a>.
+                </div>
+            </section>
+
             <!-- Packages section-->
             <section class="content-card">
                 <div id="packages-list" class="card-header loading-state">

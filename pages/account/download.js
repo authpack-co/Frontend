@@ -92,12 +92,6 @@ async function downloadExtension(route) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const isExtensionPresent = document.documentElement.hasAttribute("data-authpack-active");
-
-    if (isExtensionPresent) {
-        const enterButtons = document.querySelectorAll(".enter-btn");
-        enterButtons.forEach(btn => btn.parentElement.classList.remove("hidden"));
-    }
 
     const fetchUser = await fetchManager.getAuthenticatedUser();
 

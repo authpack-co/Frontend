@@ -235,7 +235,7 @@ function renderUserInfo(user) {
 
 // ─── State renderer ───────────────────────────────────────────────────────────
 
-function applyState(connected, extensionActive) {
+function applyState(connected) {
     // Hide all state blocks first
     ['state-1', 'state-2', 'state-3-4'].forEach(id => setVisible(el(id), false));
 
@@ -243,27 +243,14 @@ function applyState(connected, extensionActive) {
     const headerAvatar = el('header-avatar');
     const btnDashboard = el('btn-open-dashboard');
 
-    // Open Dashboard button  → only if extension active
-    setVisible(btnDashboard, extensionActive);
+    // Always show dashboard button when connected
+    setVisible(btnDashboard, connected);
 
     // Avatar → only if connected
     setVisible(headerAvatar, connected);
 
-    if (!connected && !extensionActive) {
-        // ── STATE 1 ──────────────────────────────────────────
-        setVisible(el('state-1'), true);
-
-    } else if (!connected && extensionActive) {
-        // ── STATE 2 ──────────────────────────────────────────
-        setVisible(el('state-2'), true);
-
-    } else {
-        // Connected (State 3 or 4) – shared layout
+    if (connected) {
         setVisible(el('state-3-4'), true);
-
-        // Extension card: only show when extension is NOT detected
-        const extInstall = el('ext-install-section');
-        setVisible(extInstall, !extensionActive);
     }
 }
 
@@ -271,8 +258,6 @@ function applyState(connected, extensionActive) {
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // 1. Detect extension
-    isExtensionActive = document.documentElement.hasAttribute('data-authpack-active');
 
     // 2. Wire up static buttons
     const googleAuthButtons = document.querySelectorAll('.js-connect-google');
@@ -316,7 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderUserInfo(userData);
     renderDevices(userData.devices);
     renderPlanCard(userData);
-    applyState(true, isExtensionActive);
+    applyState(true);
 });
 
 // ─── Disconnect ───────────────────────────────────────────────────────────────

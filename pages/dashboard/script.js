@@ -501,3 +501,45 @@ function updateChartPeriod(chartType, event) {
     }
 
 }
+
+// ============================================
+// Extension Detection — Show setup alert if not installed
+// ============================================
+(function () {
+    const ATTRIBUTE_NAME = 'data-authpack-active';
+    const setupAlert = document.getElementById('setup-alert');
+    if (!setupAlert) return;
+
+    function isExtensionPresent() {
+        return document.documentElement.getAttribute(ATTRIBUTE_NAME) === '1';
+    }
+
+    // Already present — nothing to do
+    if (isExtensionPresent()) return;
+
+    // Watch for the attribute being set
+    let resolved = false;
+    const observer = new MutationObserver(function () {
+        if (isExtensionPresent() && !resolved) {
+            resolved = true;
+            observer.disconnect();
+            clearTimeout(timeoutId);
+            // Extension detected — keep card hidden
+        }
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: [ATTRIBUTE_NAME]
+    });
+
+    // If not detected after 300ms, show the alert
+    const timeoutId = setTimeout(function () {
+        if (!resolved && !isExtensionPresent()) {
+            observer.disconnect();
+            setupAlert.style.display = '';
+        } else {
+            observer.disconnect();
+        }
+    }, 300);
+})();
