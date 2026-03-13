@@ -240,19 +240,8 @@ function applyState(connected, extensionActive) {
     ['state-1', 'state-2', 'state-3-4'].forEach(id => setVisible(el(id), false));
 
     // Header elements
-    const extStatusEl = el('ext-status');
     const headerAvatar = el('header-avatar');
     const btnDashboard = el('btn-open-dashboard');
-
-    // Extension status badge
-    if (extStatusEl) {
-        extStatusEl.className = extensionActive
-            ? 'ext-status ext-status--active'
-            : 'ext-status ext-status--inactive';
-        extStatusEl.innerHTML = extensionActive
-            ? `<span class="ext-dot"></span> Extensão: Ativa ✅`
-            : `<span class="ext-dot"></span> Extensão: Não detectada ❌`;
-    }
 
     // Open Dashboard button  → only if extension active
     setVisible(btnDashboard, extensionActive);
@@ -272,17 +261,9 @@ function applyState(connected, extensionActive) {
         // Connected (State 3 or 4) – shared layout
         setVisible(el('state-3-4'), true);
 
-        // Extension section: detected vs not
-        const extActive = el('ext-active-section');
+        // Extension card: only show when extension is NOT detected
         const extInstall = el('ext-install-section');
-        setVisible(extActive, extensionActive);
         setVisible(extInstall, !extensionActive);
-        setVisible(el('ext-header-active'), extensionActive);
-        setVisible(el('ext-header-install'), !extensionActive);
-
-        // Reinstall button visible only in State 4
-        const btnReinstall = el('btn-reinstall');
-        setVisible(btnReinstall, extensionActive);
     }
 }
 
@@ -298,12 +279,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     googleAuthButtons.forEach(btn => {
         btn.addEventListener('click', () => { window.location.href = GOOGLE_AUTH_URL; });
     });
-
-    const downloadBtn = el('btn-download');
-    if (downloadBtn) downloadBtn.addEventListener('click', downloadExtension);
-
-    const reinstallBtn = el('btn-reinstall');
-    if (reinstallBtn) reinstallBtn.addEventListener('click', downloadExtension);
 
     // Initialize install guide carousel
     InstallGuide.init();
@@ -342,11 +317,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderDevices(userData.devices);
     renderPlanCard(userData);
     applyState(true, isExtensionActive);
-
-    // 5. Check device limit for download button (State 3)
-    if (!isExtensionActive && userData.devices && userData.devices.length >= 2) {
-        showDeviceLimitError();
-    }
 });
 
 // ─── Disconnect ───────────────────────────────────────────────────────────────
