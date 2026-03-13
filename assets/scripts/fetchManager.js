@@ -5,6 +5,7 @@ async function fetchRoutes(route, options = {}, rawResponse = false) {
         // Configurações padrão (método GET)
         const defaultOptions = {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
