@@ -306,8 +306,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fetchUser = await fetchManager.getAuthenticatedUser();
 
     if (!fetchUser.ok) {
-        // Not connected
-        applyState(false, isExtensionActive);
+        // Not connected — redirect to login
+        window.location.replace('/pages/login/?redirect=' + encodeURIComponent('/pages/account/'));
         return;
     }
 

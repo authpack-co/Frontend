@@ -6,61 +6,35 @@
     'use strict';
 
     // ============================================
-    // Extension flag detection + redirect logic
+    // Auth check: populate header + redirect if logged in
     // ============================================
-    const ATTRIBUTE_NAME = 'data-authpack-active';
     const DASHBOARD_URL = '/pages/dashboard/';
-    const MAX_WAIT = 100;
 
     // Se ?persist=true estiver na URL, nunca redireciona para o dashboard
     const persistMode = new URLSearchParams(window.location.search).get('persist') === 'true';
 
-    function isExtensionPresent() {
-        try {
-            return document.documentElement.getAttribute(ATTRIBUTE_NAME) === '1';
-        } catch (e) {
-            return false;
-        }
-    }
+    const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+    const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
 
-    function onExtensionDetected() {
-        if (persistMode) {
-            // Mantém na landing, apenas aplica a classe visual
-            document.body.classList.add('extension-detected');
-        } else {
-            // Redireciona para o dashboard
-            window.location.replace(DASHBOARD_URL);
-        }
-    }
+    fetch(serverURL + '/api/users/info', { credentials: 'include' })
+        .then(function (res) {
+            if (!res.ok) return;
+            return res.json();
+        })
+        .then(function (data) {
+            if (!data || !data.data) return;
 
-    // Verificação imediata
-    if (isExtensionPresent()) {
-        onExtensionDetected();
-    } else {
-        // Observa o atributo caso a extensão demore para estampar o flag
-        let redirected = false;
-        const observer = new MutationObserver(function () {
-            if (isExtensionPresent() && !redirected) {
-                redirected = true;
-                observer.disconnect();
-                clearTimeout(timeoutId);
-                onExtensionDetected();
+            // Populate navbar avatar
+            var avatar = document.querySelector('.lp-nav-avatar');
+            if (avatar && data.data.picture) avatar.src = data.data.picture;
+            document.body.classList.add('user-logged-in');
+
+            // Redirect to dashboard if not in persist mode
+            if (!persistMode) {
+                window.location.replace(DASHBOARD_URL);
             }
-        });
-
-        try {
-            observer.observe(document.documentElement, {
-                attributes: true,
-                attributeFilter: [ATTRIBUTE_NAME],
-            });
-        } catch (e) { /* ignore */ }
-
-        // Timeout: se a extensão não aparecer em MAX_WAIT ms, assume ausente
-        const timeoutId = setTimeout(function () {
-            observer.disconnect();
-            // Extensão ausente — permanece na landing normalmente
-        }, MAX_WAIT);
-    }
+        })
+        .catch(function () { /* stay on landing */ });
 
     // ============================================
     // Fade-in on scroll

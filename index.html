@@ -28,17 +28,18 @@
             </div>
 
             <div class="lp-navbar-actions">
-                <!-- Visitor state: no extension detected -->
+                <!-- Visitor state: not logged in -->
                 <div class="lp-nav-visitor">
-                    <a href="/pages/account/">
-                        <button class="lp-btn-primary">Download</button>
+                    <a href="/pages/login/">
+                        <button class="lp-btn-primary">Entrar</button>
                     </a>
                 </div>
-                <!-- Extension detected state -->
-                <div class="lp-nav-extension">
+                <!-- Logged-in state -->
+                <div class="lp-nav-user" style="display:none;">
                     <a href="/pages/dashboard/">
-                        <button class="lp-btn-primary">Open dashboard</button>
+                        <button class="lp-btn-primary">Dashboard</button>
                     </a>
+                    <img class="lp-nav-avatar" src="" alt="User">
                 </div>
             </div>
         </div>

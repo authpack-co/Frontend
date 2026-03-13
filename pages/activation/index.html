@@ -9,23 +9,20 @@
         }
     </style>
 
-    <!-- Detect Extension Flag -->
+    <!-- Auth Guard: redirect to login if not authenticated -->
     <script>
         (function () {
             'use strict';
 
-            // Configuração
-            const MAX_WAIT = 100;
-            const ATTRIBUTE_NAME = 'data-authpack-active';
-            const REDIRECT_URL = '/';
+            const LOGIN_URL = '/pages/login/';
+            const CURRENT_PATH = '/pages/activation/';
 
             // Estado
             let released = false;
-            let timeoutId = null;
 
             // Remove o bloqueio e restaura visibilidade
             function release() {
-                if (released) return; // Previne execução múltipla
+                if (released) return;
                 released = true;
 
                 try {
@@ -33,101 +30,34 @@
                     if (blockStyle?.parentNode) {
                         blockStyle.parentNode.removeChild(blockStyle);
                     }
-                    // Fallback: força visibilidade
                     document.documentElement.style.visibility = '';
                 } catch (e) { /* ignore */ }
             }
 
-            // Verifica se o atributo da extensão existe
-            function isExtensionPresent() {
+            // Redireciona para login com redirect param
+            function redirectToLogin() {
                 try {
-                    const root = document.documentElement;
-                    return root && root.getAttribute(ATTRIBUTE_NAME) === '1';
+                    window.location.replace(LOGIN_URL + '?redirect=' + encodeURIComponent(CURRENT_PATH));
                 } catch (e) {
-                    return false;
-                }
-            }
-
-            // Limpa recursos
-            function cleanup() {
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                    timeoutId = null;
-                }
-                // Remove listener de segurança
-                window.removeEventListener('pagehide', cleanup);
-            }
-
-            // Redireciona para página de download
-            function redirectToDownload() {
-                cleanup();
-                try {
-                    window.location.replace(REDIRECT_URL);
-                } catch (e) {
-                    // Fallback: libera página se redirect falhar
                     release();
                 }
             }
 
-            // ==================== DETECÇÃO PRINCIPAL ====================
+            // Verifica autenticação via cookie
+            const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
 
-            // Verificação imediata (caso mais comum)
-            if (isExtensionPresent()) {
-                release();
-                return;
-            }
-
-            // Usa MutationObserver para detectar quando atributo for adicionado
-            // (mais eficiente que polling)
-            const observer = new MutationObserver(function (mutations) {
-                if (isExtensionPresent()) {
-                    observer.disconnect();
-                    cleanup();
-                    release();
-                }
-            });
-
-            // Observa mudanças de atributos no <html>
-            try {
-                observer.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: [ATTRIBUTE_NAME]
-                });
-            } catch (e) {
-                // Fallback: se MutationObserver falhar, usa polling simples
-                let checks = 0;
-                const MAX_CHECKS = 10;
-
-                function poll() {
-                    if (isExtensionPresent()) {
-                        cleanup();
+            fetch(serverURL + '/api/auth/', { credentials: 'include' })
+                .then(function (res) {
+                    if (res.ok) {
                         release();
-                        return;
+                    } else {
+                        redirectToLogin();
                     }
-                    checks++;
-                    if (checks < MAX_CHECKS) {
-                        setTimeout(poll, 10);
-                    }
-                }
-                poll();
-            }
-
-            // Timeout: se extensão não for detectada, redireciona
-            timeoutId = setTimeout(function () {
-                if (!released && !isExtensionPresent()) {
-                    observer.disconnect();
-                    redirectToDownload();
-                } else {
-                    observer.disconnect();
-                    release();
-                }
-            }, MAX_WAIT);
-
-            // Segurança: limpa recursos se página for descarregada
-            window.addEventListener('pagehide', function () {
-                observer.disconnect();
-                cleanup();
-            });
+                })
+                .catch(function () {
+                    redirectToLogin();
+                });
 
         })();
     </script>

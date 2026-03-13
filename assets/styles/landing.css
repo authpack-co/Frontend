@@ -127,18 +127,31 @@ img {
     gap: 12px;
 }
 
-.lp-navbar-actions .lp-nav-extension {
+.lp-navbar-actions .lp-nav-user {
     display: none;
     align-items: center;
     gap: 12px;
 }
 
-body.extension-detected .lp-navbar-actions .lp-nav-visitor {
+body.user-logged-in .lp-navbar-actions .lp-nav-visitor {
     display: none;
 }
 
-body.extension-detected .lp-navbar-actions .lp-nav-extension {
+body.user-logged-in .lp-navbar-actions .lp-nav-user {
     display: flex;
+}
+
+.lp-nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--lp-border-hover);
+    transition: border-color 0.2s ease;
+}
+
+.lp-nav-avatar:hover {
+    border-color: var(--lp-accent);
 }
 
 .lp-navbar-brand {
