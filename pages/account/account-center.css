@@ -1044,13 +1044,6 @@ img {
     font-size: 13px;
     font-weight: 500;
     color: var(--accent);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.ac-manage-link:hover {
-    color: var(--accent-hover);
-    text-decoration: underline;
 }
 
 /* ============================================

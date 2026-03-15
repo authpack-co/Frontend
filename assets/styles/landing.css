@@ -90,7 +90,6 @@ img {
    ============================================ */
 .lp-container {
     width: 100%;
-    max-width: var(--lp-container);
     margin: 0 auto;
     padding-left: 48px;
     padding-right: 48px;
