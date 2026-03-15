@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             if (!data || !data.data) return;
 
-            const avatar = document.querySelector('.lp-nav-avatar');
+            const avatar = document.querySelector('.nav-avatar');
             if (avatar && data.data.picture) avatar.src = data.data.picture;
             document.body.classList.add('user-logged-in');
         })

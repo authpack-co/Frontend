@@ -10,36 +10,37 @@
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/assets/styles/landing.css">
+    <link rel="stylesheet" href="/assets/styles/header.css">
 </head>
 
 <body>
     <!-- ========== NAVBAR ========== -->
-    <nav class="lp-navbar">
-        <div class="lp-container">
-            <a href="#" class="lp-navbar-brand">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/?persist=true" class="navbar-brand">
                 <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
                 <span>AuthPack</span>
             </a>
 
-            <div class="lp-navbar-links">
+            <div class="navbar-links">
                 <a href="#features">Funcionalidades</a>
                 <a href="/pages/download/">Download</a>
                 <a href="#how-it-works">Docs</a>
             </div>
 
-            <div class="lp-navbar-actions">
+            <div class="navbar-actions">
                 <!-- Visitor state: not logged in -->
-                <div class="lp-nav-visitor">
+                <div class="nav-visitor">
                     <a href="/pages/dashboard/">
-                        <button class="lp-btn-primary">Entrar</button>
+                        <button class="nav-btn-primary">Entrar</button>
                     </a>
                 </div>
                 <!-- Logged-in state -->
-                <div class="lp-nav-user">
+                <div class="nav-user">
                     <a href="/pages/dashboard/">
-                        <button class="lp-btn-primary">Entrar</button>
+                        <button class="nav-btn-primary">Entrar</button>
                     </a>
-                    <img class="lp-nav-avatar" src="" alt="User">
+                    <img class="nav-avatar" src="" alt="User">
                 </div>
             </div>
         </div>

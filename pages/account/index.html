@@ -8,49 +8,39 @@
     <meta name="description" content="Gerencie sua identidade Google e dispositivos conectados no AuthPack.">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/styles/header.css">
     <link rel="stylesheet" href="/pages/account/account-center.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
 </head>
 
 <body>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         HEADER
-         ═══════════════════════════════════════════════════════════════ -->
-    <header class="ac-header">
-        <div class="ac-header-inner">
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar navbar-light">
+        <div class="navbar-container">
+            <a href="/?persist=true" class="navbar-brand">
+                <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
+                <span>AuthPack</span>
+            </a>
 
-            <!-- Logo -->
-            <div style="display:flex; align-items:center; gap:20px;">
-                <div class="ac-logo">
-                    <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
-                    <span>AuthPack</span>
-                </div>
-                <a href="/?persist=true" class="ac-back-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2">
-                        <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    Início
-                </a>
+            <div class="navbar-links">
+                <a href="/#features">Funcionalidades</a>
+                <a href="/pages/download/">Download</a>
+                <a href="/#how-it-works">Docs</a>
             </div>
 
             <!-- Right side -->
-            <div class="ac-header-right">
-
+            <div class="navbar-actions">
                 <!-- Open Dashboard (hidden by default; State 2 & 4) -->
-                <button id="btn-open-dashboard" class="btn-open-dashboard hidden">
+                <button id="btn-open-dashboard" class="nav-btn-primary hidden">
                     Entrar
                 </button>
 
                 <!-- User avatar (hidden by default; State 3 & 4) -->
-                <div id="header-avatar" class="ac-avatar hidden">
-                    <img src="" alt="User avatar">
-                </div>
-
+                <img id="header-avatar" class="nav-avatar hidden" src="" alt="User avatar">
             </div>
         </div>
-    </header>
+    </nav>
 
     <!-- ═══════════════════════════════════════════════════════════════
          PAGE

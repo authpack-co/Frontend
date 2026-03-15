@@ -25,7 +25,7 @@
             if (!data || !data.data) return;
 
             // Populate navbar avatar
-            var avatar = document.querySelector('.lp-nav-avatar');
+            var avatar = document.querySelector('.nav-avatar');
             if (avatar && data.data.picture) avatar.src = data.data.picture;
             document.body.classList.add('user-logged-in');
 

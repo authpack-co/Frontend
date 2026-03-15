@@ -218,8 +218,7 @@ function renderUserInfo(user) {
     // Header avatar
     const headerAvatar = el('header-avatar');
     if (headerAvatar) {
-        const img = headerAvatar.querySelector('img');
-        if (img) img.src = user.picture || '';
+        headerAvatar.src = user.picture || '';
         setVisible(headerAvatar, true);
     }
 
