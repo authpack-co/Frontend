@@ -11,6 +11,47 @@
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/assets/styles/landing.css">
     <link rel="stylesheet" href="/assets/styles/header.css">
+
+    <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
+    <style id="ap-block-style">
+        html { visibility: hidden !important; }
+    </style>
+    <script>
+        (function () {
+            'use strict';
+            var persistMode = window.location.search.indexOf('persist=true') > -1;
+
+            function release() {
+                try {
+                    var blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle && blockStyle.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    document.documentElement.style.visibility = '';
+                } catch (e) {}
+            }
+
+            if (persistMode) {
+                release();
+                return;
+            }
+
+            var isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+
+            fetch(serverURL + '/api/auth/', { credentials: 'include' })
+                .then(function (res) {
+                    if (res.ok) {
+                        window.location.replace('/pages/dashboard/');
+                    } else {
+                        release();
+                    }
+                })
+                .catch(function () {
+                    release();
+                });
+        })();
+    </script>
 </head>
 
 <body>

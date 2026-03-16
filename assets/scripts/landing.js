@@ -28,11 +28,6 @@
             var avatar = document.querySelector('.nav-avatar');
             if (avatar && data.data.picture) avatar.src = data.data.picture;
             document.body.classList.add('user-logged-in');
-
-            // Redirect to dashboard if not in persist mode
-            if (!persistMode) {
-                window.location.replace(DASHBOARD_URL);
-            }
         })
         .catch(function () { /* stay on landing */ });
 
