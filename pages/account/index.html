@@ -31,13 +31,14 @@
 
             <!-- Right side -->
             <div class="navbar-actions">
-                <!-- Open Dashboard (hidden by default; State 2 & 4) -->
-                <button id="btn-open-dashboard" class="nav-btn-primary hidden">
-                    Entrar
-                </button>
-
-                <!-- User avatar (hidden by default; State 3 & 4) -->
-                <img id="header-avatar" class="nav-avatar hidden" src="" alt="User avatar">
+                <!-- Visitor state (account page always requires login, but keep for consistency) -->
+                <div class="nav-visitor">
+                    <a href="/pages/login/">
+                        <button class="nav-btn-primary">Começar</button>
+                    </a>
+                </div>
+                <!-- Logged-in state — populated by footer.js -->
+                <div class="nav-user"></div>
             </div>
         </div>
     </nav>
@@ -260,8 +261,8 @@
             <!-- Footer -->
             <footer class="ac-footer">
                 © 2026 AuthPack Inc. &nbsp;·&nbsp;
-                <a href="/pages/privacy/">Privacidade</a> &nbsp;·&nbsp;
-                <a href="/pages/terms/">Termos</a> &nbsp;·&nbsp;
+                <a href="/pages/legal/privacy/">Privacidade</a> &nbsp;·&nbsp;
+                <a href="/pages/legal/terms/">Termos</a> &nbsp;·&nbsp;
                 <a href="mailto:team@authpack.co">Suporte</a>
             </footer>
 
@@ -369,6 +370,7 @@
     <script src="/assets/scripts/elementState.js"></script>
     <script src="/assets/scripts/fetchManager.js"></script>
     <script src="/pages/account/account-center.js"></script>
+    <script src="/assets/scripts/footer.js"></script>
 
 </body>
 

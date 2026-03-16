@@ -144,29 +144,212 @@ body.user-logged-in .nav-user {
     display: flex;
 }
 
-/* Avatar */
+/* Avatar (standalone) */
 .nav-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ── Profile trigger — matches dashboard .profile ── */
+.nav-profile-wrapper {
+    position: relative;
+}
+
+.nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 8px;
+    padding: 6px 8px;
+    transition: background 0.15s ease;
+    text-decoration: none;
+    position: relative;
+}
+
+.nav-profile:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.navbar.navbar-light .nav-profile:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Profile name — matches dashboard .profile-name */
+.nav-profile-name {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--nav-text-dark);
+    white-space: nowrap;
+}
+
+.navbar.navbar-light .nav-profile-name {
+    color: var(--nav-text-light);
+}
+
+/* Profile picture — matches dashboard .profile-picture */
+.nav-profile-picture {
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.nav-profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Plus avatar glow — matches dashboard .plus-avatar */
+.nav-profile-picture.plus-avatar {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* Plus badge — matches dashboard .plus-badge */
+.nav-plus-badge {
+    display: none;
+    position: absolute;
+    top: 25px;
+    right: -18px;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #93c5fd;
+    background: #141619;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 4px;
+    padding: 2px 6px;
+    line-height: 1;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+.navbar.navbar-light .nav-plus-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+    box-shadow: none;
+}
+
+/* ── Dropdown — matches dashboard .profile-dropdown ── */
+.nav-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 200px;
+    background: #1c1f20;
+    border: 1px solid #333840;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    padding: 6px;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+.nav-profile-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.navbar.navbar-light .nav-profile-dropdown {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Dropdown header */
+.nav-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+}
+
+.nav-dropdown-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--nav-border-hover-dark);
-    transition: border-color 0.2s ease;
+    flex-shrink: 0;
 }
 
-.nav-avatar:hover {
-    border-color: var(--nav-accent);
+.nav-dropdown-user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.navbar.navbar-light .nav-avatar {
-    width: 36px;
-    height: 36px;
-    border: 2px solid var(--nav-border-light);
+.nav-dropdown-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8e6e3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    margin-bottom: 2px;
 }
 
-.navbar.navbar-light .nav-avatar:hover {
-    border-color: var(--nav-accent-light);
+.navbar.navbar-light .nav-dropdown-name { color: #111827; }
+
+.nav-dropdown-email {
+    font-size: 13px;
+    color: #8e9091;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
+
+.navbar.navbar-light .nav-dropdown-email { color: #9ca3af; }
+
+.nav-dropdown-divider {
+    height: 1px;
+    background: #333840;
+    margin: 8px 0;
+}
+
+.navbar.navbar-light .nav-dropdown-divider { background: #e5e7eb; }
+
+.nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #d6d3cd;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-dropdown-item:hover { background: #212830; color: #e8e6e3; }
+
+.navbar.navbar-light .nav-dropdown-item { color: #374151; }
+
+.navbar.navbar-light .nav-dropdown-item:hover { background: #f3f4f6; color: #111827; }
+
+.nav-dropdown-item svg { flex-shrink: 0; opacity: 0.7; }
 
 /* Buttons */
 .nav-btn-ghost {
