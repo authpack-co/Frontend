@@ -252,3 +252,36 @@ body.user-logged-in .nav-user {
         display: none;
     }
 }
+
+/* ============================================
+   Shared Page Footer
+   ============================================ */
+.ap-footer {
+    text-align: center;
+    font-size: 12.5px;
+    color: #6b7280;
+    padding: 32px 24px;
+}
+
+.ap-footer a {
+    color: #6b7280;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ap-footer a:hover {
+    color: #374151;
+}
+
+/* Dark page variant (landing, download) */
+body:not(.light-page) .ap-footer {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+body:not(.light-page) .ap-footer a {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+body:not(.light-page) .ap-footer a:hover {
+    color: rgba(255, 255, 255, 0.65);
+}
