@@ -7,14 +7,7 @@ const fpPromise = import('https://fp.authpack.co/web/v3/WhjnKdImdrIFK4nCzKLI')
         ]
     }))
 
-const googleLoginBase = IS_DEV ? "http://127.0.0.1:3000/api/auth/google" : "https://api.authpack.co/api/auth/google";
-const googleLoginUrl = `${googleLoginBase}?redirect=${encodeURIComponent("/pages/activation/")}`;
 
-// Set Google login button href
-const googleLoginBtn = document.getElementById('googleLoginBtn');
-if (googleLoginBtn) {
-    googleLoginBtn.href = googleLoginUrl;
-}
 
 // Função para alterar estado
 function setElementState(element, newState) {
@@ -115,21 +108,11 @@ function waitForExtensionConfirmation(timeoutMs) {
     });
 }
 
-// ─── Page Load: Check Auth → Start Activation ───
+// ─── Page Load: Start Activation ───
+// Auth is guaranteed by the block-style guard in the HTML <head>.
 
 document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById('activationContainer');
-
-    // Step 2: Check if user is authenticated
-    const fetchUser = await fetchManager.getAuthenticatedUser();
-
-    if (!fetchUser.ok) {
-        // Not authenticated — show login state
-        setElementState(container, 'login');
-        return;
-    }
-
-    // User is authenticated — start activation
     setElementState(container, 'loading');
     await startActivation();
 });

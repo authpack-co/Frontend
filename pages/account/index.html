@@ -2,6 +2,66 @@
 <html lang="en">
 
 <head>
+    <!-- Bloqueio CSS imediato: impede qualquer paint -->
+    <style id="ap-block-style">
+        html {
+            visibility: hidden !important;
+        }
+    </style>
+
+    <!-- Auth Guard: redirect to login if not authenticated -->
+    <script>
+        (function () {
+            'use strict';
+
+            const LOGIN_URL = '/pages/login/';
+            const CURRENT_PATH = '/pages/account/';
+
+            // Estado
+            let released = false;
+
+            // Remove o bloqueio e restaura visibilidade
+            function release() {
+                if (released) return;
+                released = true;
+
+                try {
+                    const blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle?.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    document.documentElement.style.visibility = '';
+                } catch (e) { /* ignore */ }
+            }
+
+            // Redireciona para login com redirect param
+            function redirectToLogin() {
+                try {
+                    window.location.replace(LOGIN_URL + '?redirect=' + encodeURIComponent(CURRENT_PATH));
+                } catch (e) {
+                    release();
+                }
+            }
+
+            // Verifica autenticação via cookie
+            const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+
+            fetch(serverURL + '/api/auth/', { credentials: 'include' })
+                .then(function (res) {
+                    if (res.ok) {
+                        release();
+                    } else {
+                        redirectToLogin();
+                    }
+                })
+                .catch(function () {
+                    redirectToLogin();
+                });
+
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central de Contas – AuthPack</title>
