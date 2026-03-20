@@ -251,11 +251,10 @@ const fetchManager = {
 
     // Extension
 
-    async downloadExtension({ visitorId, requestId }) {
+    async downloadExtension() {
         const response = await fetchRoutes(`/api/extensions/build/chrome`, {
             method: "POST",
             credentials: "include",
-            body: JSON.stringify({ visitorId, requestId })
         }, true); // rawResponse = true → returns blob
         return response;
     },
