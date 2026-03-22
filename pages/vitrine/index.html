@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vitrine — AuthPack</title>
+    <meta name="description" content="Adquira este produto na vitrine do AuthPack">
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/assets/styles/elementState.css">
+    <link rel="stylesheet" href="/pages/vitrine/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="vt-header">
+        <a href="/" class="vt-logo">
+            <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
+            <span>AuthPack</span>
+        </a>
+        <div class="vt-secure">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>Compra segura</span>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="vt-main">
+        <div id="vitrine-state" class="loading-state">
+
+            <!-- Loading -->
+            <div class="preset preset-loading">
+                <div class="vt-spinner-wrap">
+                    <div class="vt-spinner"></div>
+                </div>
+            </div>
+
+            <!-- Not found -->
+            <div class="preset preset-empty">
+                <div class="vt-empty">
+                    <div class="vt-empty-icon">🔍</div>
+                    <h2>Produto não encontrado</h2>
+                    <p>Este produto pode ter sido removido ou está indisponível</p>
+                </div>
+            </div>
+
+            <!-- Product content -->
+            <div class="preset preset-content">
+                <!-- Hero Card -->
+                <div class="vt-hero-card">
+                    <div class="vt-icons-grid" id="vt-icons-grid">
+                        <!-- Session icons rendered by JS -->
+                    </div>
+
+                    <div class="vt-hero-info">
+                        <div class="vt-hero-top">
+                            <h1 class="vt-product-name" id="vt-product-name"></h1>
+                            <div class="vt-stock-badge" id="vt-stock-badge"></div>
+                        </div>
+                        <p class="vt-product-desc" id="vt-product-desc"></p>
+
+                        <div class="vt-hero-bottom">
+                            <div class="vt-price-block">
+                                <span class="vt-price" id="vt-price"></span>
+                                <span class="vt-billing-badge" id="vt-billing-badge"></span>
+                            </div>
+                            <div class="vt-seller" id="vt-seller">
+                                <img class="vt-seller-pic" id="vt-seller-pic" alt="Seller">
+                                <div class="vt-seller-info">
+                                    <span class="vt-seller-name" id="vt-seller-name"></span>
+                                    <span class="vt-seller-label">Seller</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inclui acesso a -->
+                <div class="vt-section" id="vt-includes-section">
+                    <h2 class="vt-section-title">Inclui acesso a</h2>
+                    <div class="vt-includes-list" id="vt-includes-list">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Como funciona -->
+                <div class="vt-section">
+                    <h2 class="vt-section-title">Como funciona</h2>
+                    <div class="vt-steps">
+                        <div class="vt-step">
+                            <div class="vt-step-number">1</div>
+                            <strong>Compre ou assine</strong>
+                            <span>Adquira o produto e receba acesso instantâneo via AuthPack.</span>
+                        </div>
+                        <div class="vt-step">
+                            <div class="vt-step-number">2</div>
+                            <strong>Baixe a extensão AuthPack</strong>
+                            <span>Instale a extensão AuthPack no seu navegador.</span>
+                        </div>
+                        <div class="vt-step">
+                            <div class="vt-step-number">3</div>
+                            <strong>Acesse instantaneamente</strong>
+                            <span>Login automático nos serviços incluídos pelo AuthPack.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="vt-cta-section">
+                    <button class="vt-cta-btn" id="vt-cta-btn">Comprar agora</button>
+                    <div class="vt-cta-notes">
+                        <span>🔒 Pagamento processado pela Stripe</span>
+                        <span>⚡ Acesso instantâneo após confirmação</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/scripts/envManager.js"></script>
+    <script src="/assets/scripts/fetchManager.js"></script>
+    <script src="/assets/scripts/elementState.js"></script>
+    <script src="/pages/vitrine/script.js"></script>
+</body>
+
+</html>

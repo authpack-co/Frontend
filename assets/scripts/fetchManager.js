@@ -269,4 +269,62 @@ const fetchManager = {
         });
         return response;
     },
+
+    // ==================== Marketplace ====================
+
+    async getSellerAccountStatus() {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/status`);
+        return response;
+    },
+
+    async startSellerOnboarding() {
+        const response = await fetchRoutes(`/api/marketplace/seller/onboarding`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
+    },
+
+    async getSellerProducts() {
+        const response = await fetchRoutes(`/api/marketplace/seller/products`);
+        return response;
+    },
+
+    async createProduct(productData) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products`, {
+            method: "POST",
+            body: JSON.stringify(productData)
+        });
+        return response;
+    },
+
+    async deleteProduct(productId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}`, {
+            method: "DELETE"
+        });
+        return response;
+    },
+
+    async getMarketplaceProducts() {
+        const response = await fetchRoutes(`/api/marketplace/products`);
+        return response;
+    },
+
+    async getProductBySlug(slug) {
+        const response = await fetchRoutes(`/api/marketplace/products/${slug}`);
+        return response;
+    },
+
+    async startCheckout(data) {
+        const response = await fetchRoutes(`/api/marketplace/checkout`, {
+            method: "POST",
+            body: JSON.stringify(data)
+        });
+        return response;
+    },
+
+    async getMyPurchases() {
+        const response = await fetchRoutes(`/api/marketplace/me/purchases`);
+        return response;
+    },
 }
