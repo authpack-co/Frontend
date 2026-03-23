@@ -689,6 +689,14 @@ document.addEventListener('click', e => {
         });
     }
 
+    // Close product options if click outside
+    if (!e.target.closest('.product-options-btn') && !e.target.closest('.product-options')) {
+        const activeProductOptions = document.querySelectorAll('.product-options:not(.hidden)');
+        activeProductOptions.forEach(opt => {
+            opt.classList.add('hidden');
+        });
+    }
+
     // Close profile dropdown if click outside
     if (!e.target.closest('.profile-dropdown-wrapper')) {
         document.getElementById('profile-dropdown')?.classList.remove('open');

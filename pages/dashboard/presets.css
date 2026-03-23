@@ -102,6 +102,15 @@
     animation: fadeIn 0.3s ease-in forwards;
 }
 
+.preset-vitrine-pending {
+    display: none;
+}
+
+.vitrine-pending-state>.preset-vitrine-pending {
+    display: block;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
 .preset-vitrine-empty {
     display: none;
 }

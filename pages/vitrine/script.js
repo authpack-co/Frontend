@@ -49,19 +49,30 @@
         // Page title
         document.title = `${p.name} — AuthPack`;
 
-        // Icons grid
-        const grid = document.getElementById('vt-icons-grid');
+        // Stacked icons header (show max 4 + "+N more")
+        const header = document.getElementById('vt-icons-header');
         const sessions = p.sessions || [];
-        grid.innerHTML = '';
-        sessions.forEach(s => {
-            const item = document.createElement('div');
-            item.className = 'vt-icon-item';
+        header.innerHTML = '';
+        const maxIcons = 4;
+        const visibleSessions = sessions.slice(0, maxIcons);
+        const remaining = sessions.length - maxIcons;
+
+        visibleSessions.forEach(s => {
+            const el = document.createElement('div');
+            el.className = 'vt-stacked-icon';
             const img = document.createElement('img');
             img.src = s.icon;
             img.alt = s.name;
-            item.appendChild(img);
-            grid.appendChild(item);
+            el.appendChild(img);
+            header.appendChild(el);
         });
+
+        if (remaining > 0) {
+            const more = document.createElement('div');
+            more.className = 'vt-more-badge';
+            more.innerHTML = `<span class="vt-more-num">+${remaining}</span><span class="vt-more-text">more</span>`;
+            header.appendChild(more);
+        }
 
         // Product name
         document.getElementById('vt-product-name').textContent = p.name;
@@ -116,32 +127,52 @@
             picEl.style.display = 'none';
         }
 
-        // Includes list
-        const includesList = document.getElementById('vt-includes-list');
+        // Marquee — Includes list
+        const track = document.getElementById('vt-marquee-track');
+        const wrap = document.querySelector('.vt-marquee-wrap');
         const includesSection = document.getElementById('vt-includes-section');
         if (sessions.length === 0) {
             includesSection.style.display = 'none';
         } else {
-            includesList.innerHTML = '';
-            sessions.forEach(s => {
-                const item = document.createElement('div');
-                item.className = 'vt-include-item';
+            track.innerHTML = '';
+            const useMarquee = sessions.length > 4;
 
-                const icon = document.createElement('div');
-                icon.className = 'vt-include-icon';
-                const img = document.createElement('img');
-                img.src = s.icon;
-                img.alt = s.name;
-                icon.appendChild(img);
+            // Build one set of items
+            const buildItems = () => {
+                const frag = document.createDocumentFragment();
+                sessions.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'vt-marquee-item';
 
-                const name = document.createElement('span');
-                name.className = 'vt-include-name';
-                name.textContent = s.name;
+                    const iconWrap = document.createElement('div');
+                    iconWrap.className = 'vt-marquee-icon';
+                    const img = document.createElement('img');
+                    img.src = s.icon;
+                    img.alt = s.name;
+                    iconWrap.appendChild(img);
 
-                item.appendChild(icon);
-                item.appendChild(name);
-                includesList.appendChild(item);
-            });
+                    const name = document.createElement('span');
+                    name.className = 'vt-marquee-name';
+                    // Always show domain host from URL
+                    name.textContent = extractDomain(s.url);
+
+                    item.appendChild(iconWrap);
+                    item.appendChild(name);
+                    frag.appendChild(item);
+                });
+                return frag;
+            };
+
+            track.appendChild(buildItems());
+
+            if (useMarquee) {
+                // Duplicate for seamless looping
+                track.appendChild(buildItems());
+            } else {
+                // Static — no animation, no edge fades
+                track.style.animation = 'none';
+                wrap.classList.add('vt-marquee-static');
+            }
         }
 
         // CTA button text
@@ -159,6 +190,20 @@
                 ctaBtn.disabled = true;
                 ctaBtn.textContent = 'Esgotado';
             }
+        }
+    }
+
+    // ====================================================================
+    // HELPERS
+    // ====================================================================
+
+    function extractDomain(url) {
+        if (!url) return '';
+        try {
+            const u = new URL(url);
+            return u.hostname.replace(/^www\./, '');
+        } catch {
+            return '';
         }
     }
 

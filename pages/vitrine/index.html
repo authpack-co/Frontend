@@ -51,20 +51,22 @@
             <div class="preset preset-content">
                 <!-- Hero Card -->
                 <div class="vt-hero-card">
-                    <div class="vt-icons-grid" id="vt-icons-grid">
-                        <!-- Session icons rendered by JS -->
+                    <!-- Icons header -->
+                    <div class="vt-icons-header" id="vt-icons-header">
+                        <!-- Rendered by JS: overlapping icons + "+N more" -->
                     </div>
 
+                    <!-- Hero info -->
                     <div class="vt-hero-info">
-                        <div class="vt-hero-top">
-                            <h1 class="vt-product-name" id="vt-product-name"></h1>
-                            <div class="vt-stock-badge" id="vt-stock-badge"></div>
-                        </div>
+                        <h1 class="vt-product-name" id="vt-product-name"></h1>
                         <p class="vt-product-desc" id="vt-product-desc"></p>
 
                         <div class="vt-hero-bottom">
                             <div class="vt-price-block">
-                                <span class="vt-price" id="vt-price"></span>
+                                <div class="vt-price-row">
+                                    <span class="vt-price" id="vt-price"></span>
+                                    <span class="vt-stock-badge" id="vt-stock-badge"></span>
+                                </div>
                                 <span class="vt-billing-badge" id="vt-billing-badge"></span>
                             </div>
                             <div class="vt-seller" id="vt-seller">
@@ -75,14 +77,20 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- CTA inside hero card -->
+                        <button class="vt-cta-btn" id="vt-cta-btn">Comprar agora</button>
+                        <p class="vt-cta-sub">Acesso instantâneo após confirmação do pagamento</p>
                     </div>
                 </div>
 
-                <!-- Inclui acesso a -->
+                <!-- Inclui acesso a — Marquee -->
                 <div class="vt-section" id="vt-includes-section">
                     <h2 class="vt-section-title">Inclui acesso a</h2>
-                    <div class="vt-includes-list" id="vt-includes-list">
-                        <!-- Rendered by JS -->
+                    <div class="vt-marquee-wrap">
+                        <div class="vt-marquee-track" id="vt-marquee-track">
+                            <!-- Duplicated by JS for infinite loop -->
+                        </div>
                     </div>
                 </div>
 
@@ -91,30 +99,32 @@
                     <h2 class="vt-section-title">Como funciona</h2>
                     <div class="vt-steps">
                         <div class="vt-step">
-                            <div class="vt-step-number">1</div>
-                            <strong>Compre ou assine</strong>
-                            <span>Adquira o produto e receba acesso instantâneo via AuthPack.</span>
+                            <div class="vt-step-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                            </div>
+                            <strong>Secure Checkout</strong>
+                            <span>Pagamento completo via Stripe, criptografado e seguro.</span>
                         </div>
                         <div class="vt-step">
-                            <div class="vt-step-number">2</div>
-                            <strong>Baixe a extensão AuthPack</strong>
-                            <span>Instale a extensão AuthPack no seu navegador.</span>
+                            <div class="vt-step-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                            </div>
+                            <strong>Quick Install</strong>
+                            <span>Instale a extensão AuthPack em segundos.</span>
                         </div>
                         <div class="vt-step">
-                            <div class="vt-step-number">3</div>
-                            <strong>Acesse instantaneamente</strong>
-                            <span>Login automático nos serviços incluídos pelo AuthPack.</span>
+                            <div class="vt-step-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            </div>
+                            <strong>Instant Access</strong>
+                            <span>Faça login em todos os serviços incluídos instantaneamente.</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- CTA -->
-                <div class="vt-cta-section">
-                    <button class="vt-cta-btn" id="vt-cta-btn">Comprar agora</button>
-                    <div class="vt-cta-notes">
-                        <span>🔒 Pagamento processado pela Stripe</span>
-                        <span>⚡ Acesso instantâneo após confirmação</span>
-                    </div>
+                <!-- Footer note -->
+                <div class="vt-footer-note">
+                    <span>🔒 Pagamento processado pela Stripe</span>
                 </div>
             </div>
         </div>

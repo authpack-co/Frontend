@@ -1454,11 +1454,36 @@
                         </div>
                     </div>
 
-                    <!-- EMPTY: Plus + Stripe but no products -->
+                    <!-- PENDING: Stripe account exists but onboarding incomplete -->
+                    <div class="preset preset-vitrine-pending">
+                        <div class="vitrine-pending-state-content">
+                            <div class="vt-status-bar pending">
+                                <div class="vt-status-left">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    <div>
+                                        <strong>Onboarding em andamento</strong>
+                                        <span>Complete a verificação da sua conta Stripe para começar a vender.</span>
+                                    </div>
+                                </div>
+                                <button class="vt-status-btn" id="btn-continue-onboarding">Continuar verificação</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMPTY: Plus + Stripe active but no products -->
                     <div class="preset preset-vitrine-empty">
+                        <div class="vt-stripe-bar" style="display:none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            <span>Conta Stripe conectada</span>
+                        </div>
                         <div class="vitrine-header">
-                            <h2>Minha Vitrine</h2>
-                            <p class="vitrine-subtitle">Produtos visíveis para seus clientes</p>
+                            <div>
+                                <h2>Vitrines</h2>
+                                <p class="vitrine-subtitle">Venda seus pacotes publicamente com uma página compartilhável.</p>
+                            </div>
                         </div>
                         <div class="collection-empty">
                             <div class="empty-placeholder">🏪</div>
@@ -1475,11 +1500,15 @@
 
                     <!-- CONTENT: Plus + Stripe + products -->
                     <div class="preset preset-vitrine-content">
+                        <div class="vt-stripe-bar" style="display:none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            <span>Conta Stripe conectada</span>
+                        </div>
                         <div class="vitrine-header">
                             <div class="vitrine-header-top">
                                 <div>
-                                    <h2>Minha Vitrine</h2>
-                                    <p class="vitrine-subtitle">Produtos visíveis para seus clientes</p>
+                                    <h2>Vitrines</h2>
+                                    <p class="vitrine-subtitle">Venda seus pacotes publicamente com uma página compartilhável.</p>
                                 </div>
                                 <button class="btn-create-product" id="btn-create-product">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -1642,6 +1671,70 @@
                 <div class="buttonContent content-state">
                     <div class="preset-content">
                         <button class="btn btn-danger confirm-btn" id="confirm-delete-product">Desativar</button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-danger confirm-btn">
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal-overlay" id="editProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Editar produto</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="step-form">
+                    <div class="form-group">
+                        <label class="form-label">Nome do produto</label>
+                        <input type="text" class="form-input" id="edit-product-name" placeholder="Nome do produto" maxlength="80">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-input form-textarea" id="edit-product-desc" placeholder="Descreva o que seu produto oferece..." maxlength="500" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                <div class="buttonContent content-state">
+                    <div class="preset-content">
+                        <button class="btn btn-primary confirm-btn" id="confirm-edit-product">Salvar</button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-primary confirm-btn">
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hard Delete Product Modal -->
+    <div class="modal-overlay" id="hardDeleteProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Excluir produto</h2>
+            </div>
+            <div class="modal-body">
+                <p class="form-text">Tem certeza de que deseja excluir <strong id="hard-delete-product-name">produto</strong> permanentemente?</p>
+                <div class="form-note">
+                    <span>⚠️</span>
+                    <span class="note">Esta ação é irreversível. O produto será removido permanentemente e não poderá ser recuperado.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                <div class="buttonContent content-state">
+                    <div class="preset-content">
+                        <button class="btn btn-danger confirm-btn" id="confirm-hard-delete-product">Excluir</button>
                     </div>
                     <div class="preset-loading">
                         <button class="btn btn-danger confirm-btn">

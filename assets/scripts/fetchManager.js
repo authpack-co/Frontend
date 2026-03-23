@@ -305,6 +305,28 @@ const fetchManager = {
         return response;
     },
 
+    async updateProduct(productId, data) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}`, {
+            method: "PATCH",
+            body: JSON.stringify(data)
+        });
+        return response;
+    },
+
+    async reactivateProduct(productId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/reactivate`, {
+            method: "PATCH"
+        });
+        return response;
+    },
+
+    async hardDeleteProduct(productId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/permanent`, {
+            method: "DELETE"
+        });
+        return response;
+    },
+
     async getMarketplaceProducts() {
         const response = await fetchRoutes(`/api/marketplace/products`);
         return response;

@@ -94,14 +94,26 @@ async function loadVitrineTab() {
         const accountRes = await fetchManager.getSellerAccountStatus();
         console.log('[Vitrine] Account status:', accountRes);
 
-        if (!accountRes.ok || !accountRes.result?.connected || !accountRes.result?.data?.charges_enabled) {
-            // Not connected or not fully onboarded
+        // State 1: No connected account at all
+        if (!accountRes.ok || !accountRes.result?.connected) {
             setElementState(container, 'vitrine-connect');
             vitrineLoaded = true;
             return;
         }
 
-        // Connected — fetch products
+        const accountData = accountRes.result.data;
+
+        // State 2: Account exists but onboarding incomplete
+        if (!accountData?.charges_enabled) {
+            // Show pending onboarding state
+            setElementState(container, 'vitrine-pending');
+            vitrineLoaded = true;
+            return;
+        }
+
+        // State 3: Account fully active — show products
+        updateStripeStatusBar(true);
+
         const productsRes = await fetchManager.getSellerProducts();
         console.log('[Vitrine] Products:', productsRes);
         vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
@@ -121,6 +133,13 @@ async function loadVitrineTab() {
     }
 }
 
+function updateStripeStatusBar(active) {
+    const bars = document.querySelectorAll('.vt-stripe-bar');
+    bars.forEach(bar => {
+        bar.style.display = active ? 'flex' : 'none';
+    });
+}
+
 // ============================================================================
 // PRODUCT RENDERING
 // ============================================================================
@@ -138,92 +157,231 @@ function renderVitrineProducts(products) {
 
 function createVitrineProductCard(product) {
     const card = document.createElement('div');
-    card.className = 'vitrine-product-card';
+    card.className = 'vp-card';
+    if (product.status === 'inactive') card.classList.add('vp-inactive');
     card.dataset.productId = product.id;
 
-    // Header: name + actions
-    const header = document.createElement('div');
-    header.className = 'vitrine-product-card-header';
+    const sessions = product.sessions || [];
+    const billingType = product.billing_type || product.billingType || 'one_time';
+    const priceValue = parseFloat(product.price_cents || 0) / 100;
+    const priceStr = priceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    const slug = product.slug || product.id;
+    const isInactive = product.status === 'inactive';
 
-    const name = document.createElement('h3');
-    name.className = 'vitrine-product-name';
-    name.textContent = product.name;
+    // === Icon header with gradient ===
+    const iconHeader = document.createElement('div');
+    iconHeader.className = 'vp-icon-header';
 
-    const actions = document.createElement('div');
-    actions.className = 'vitrine-product-actions';
+    sessions.slice(0, 4).forEach(s => {
+        const icon = document.createElement('div');
+        icon.className = 'vp-icon';
+        const img = document.createElement('img');
+        img.src = s.icon;
+        img.alt = s.name;
+        icon.appendChild(img);
+        iconHeader.appendChild(icon);
+    });
 
+    // Inactive badge
+    if (isInactive) {
+        const inactiveBadge = document.createElement('span');
+        inactiveBadge.className = 'vp-inactive-badge';
+        inactiveBadge.textContent = 'Inativo';
+        iconHeader.appendChild(inactiveBadge);
+    }
+
+    // Overlay actions (visible on hover)
+    const overlay = document.createElement('div');
+    overlay.className = 'vp-overlay-actions';
+
+    // Copy link button
     const copyBtn = document.createElement('button');
+    copyBtn.className = 'vp-copy-btn';
     copyBtn.title = 'Copiar link';
-    copyBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-        </svg>
-    `;
+    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
     copyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const slug = product.slug || product.id;
         const url = `${window.location.origin}/pages/vitrine/?slug=${slug}`;
-        navigator.clipboard.writeText(url).then(() => {
-            notify('success', 'Link copiado!');
-        });
+        navigator.clipboard.writeText(url).then(() => notify('success', 'Link copiado!'));
     });
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.title = 'Desativar';
-    deleteBtn.innerHTML = `
+    // Options button (⋯) — follows package-options pattern
+    const optionsBtn = document.createElement('button');
+    optionsBtn.className = 'product-options-btn';
+    optionsBtn.textContent = '⋯';
+
+    // Product options menu
+    const productOptions = document.createElement('div');
+    productOptions.className = 'product-options hidden';
+
+    // Edit option
+    const editBtn = document.createElement('button');
+    editBtn.className = 'edit-product-btn';
+    editBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
         </svg>
     `;
+    editBtn.appendChild(document.createTextNode('Editar'));
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        productOptions.classList.add('hidden');
+        openEditProductModal(product);
+    });
+
+    productOptions.appendChild(editBtn);
+
+    if (isInactive) {
+        // Reactivate option
+        const reactivateBtn = document.createElement('button');
+        reactivateBtn.className = 'reactivate-product-btn';
+        reactivateBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6"></path>
+                <path d="M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
+            </svg>
+        `;
+        reactivateBtn.appendChild(document.createTextNode('Reativar'));
+        reactivateBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            productOptions.classList.add('hidden');
+            try {
+                const res = await fetchManager.reactivateProduct(product.id);
+                if (res.ok) {
+                    notify('success', 'Produto reativado');
+                    vitrineLoaded = false;
+                    await loadVitrineTab();
+                } else {
+                    notify('error', 'Erro ao reativar');
+                }
+            } catch (err) {
+                console.error('Reactivate error:', err);
+                notify('error', 'Erro de conexão');
+            }
+        });
+        productOptions.appendChild(reactivateBtn);
+    } else {
+        // Deactivate option
+        const deactivateBtn = document.createElement('button');
+        deactivateBtn.className = 'deactivate-product-btn';
+        deactivateBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        `;
+        deactivateBtn.appendChild(document.createTextNode('Desativar'));
+        deactivateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            productOptions.classList.add('hidden');
+            openDeleteProductModal(product);
+        });
+        productOptions.appendChild(deactivateBtn);
+    }
+
+    // Delete option (hard delete)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-product-btn';
+    deleteBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        </svg>
+    `;
+    deleteBtn.appendChild(document.createTextNode('Excluir'));
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        openDeleteProductModal(product);
+        productOptions.classList.add('hidden');
+        openHardDeleteProductModal(product);
+    });
+    productOptions.appendChild(deleteBtn);
+
+    // Toggle handler for options button
+    optionsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close all other open product-options
+        document.querySelectorAll('.product-options:not(.hidden)').forEach(opt => {
+            if (opt !== productOptions) opt.classList.add('hidden');
+        });
+        productOptions.classList.toggle('hidden');
     });
 
-    actions.appendChild(copyBtn);
-    actions.appendChild(deleteBtn);
-    header.appendChild(name);
-    header.appendChild(actions);
+    overlay.appendChild(copyBtn);
+    overlay.appendChild(optionsBtn);
+    iconHeader.appendChild(overlay);
+    iconHeader.appendChild(productOptions);
 
-    // Icons (from package sessions)
-    const icons = document.createElement('div');
-    icons.className = 'vitrine-product-icons';
-    const sessions = product.sessions || [];
-    sessions.slice(0, 4).forEach(session => {
-        const iconWrapper = document.createElement('div');
-        iconWrapper.className = 'stack-icon';
-        const img = document.createElement('img');
-        img.src = session.icon;
-        img.alt = session.name;
-        iconWrapper.appendChild(img);
-        icons.appendChild(iconWrapper);
-    });
+    // === Body ===
+    const body = document.createElement('div');
+    body.className = 'vp-body';
 
-    // Footer: price + type badge
+    const name = document.createElement('h3');
+    name.className = 'vp-name';
+    name.textContent = product.name;
+
+    const desc = document.createElement('p');
+    desc.className = 'vp-desc';
+    desc.textContent = product.description || product.package_name || '';
+
+    body.appendChild(name);
+    body.appendChild(desc);
+
+    // === Footer: price + stock ===
     const footer = document.createElement('div');
-    footer.className = 'vitrine-product-footer';
+    footer.className = 'vp-footer';
 
-    const price = document.createElement('div');
-    price.className = 'vitrine-product-price';
-    const priceValue = parseFloat(product.price_cents || product.price_amount || product.priceAmount || 0) / 100;
-    price.innerHTML = `<span class="currency">R$</span> ${priceValue.toFixed(2)}`;
+    const priceRow = document.createElement('div');
+    priceRow.className = 'vp-price-row';
 
-    const typeBadge = document.createElement('span');
-    const billingType = product.billing_type || product.billingType || 'one_time';
-    typeBadge.className = `vitrine-product-type ${billingType}`;
-    typeBadge.textContent = billingType === 'subscription' ? 'Assinatura' : 'Único';
+    const priceEl = document.createElement('span');
+    priceEl.className = 'vp-price';
+    if (billingType === 'subscription') {
+        priceEl.innerHTML = `R$ ${priceStr} <span class="vp-period">/ mês</span>`;
+    } else {
+        priceEl.textContent = `R$ ${priceStr}`;
+    }
 
-    footer.appendChild(price);
-    footer.appendChild(typeBadge);
+    priceRow.appendChild(priceEl);
 
-    card.appendChild(header);
-    if (sessions.length > 0) card.appendChild(icons);
+    // Stock badge
+    if (product.stock != null) {
+        const sold = product.active_access_count || 0;
+        const remaining = Math.max(0, product.stock - sold);
+        const stockBadge = document.createElement('span');
+        stockBadge.className = 'vp-stock';
+        stockBadge.textContent = `${remaining} de ${product.stock} disponíveis`;
+        if (remaining === 0) {
+            stockBadge.classList.add('out');
+            stockBadge.textContent = 'Esgotado';
+        }
+        priceRow.appendChild(stockBadge);
+    } else if (billingType === 'subscription') {
+        const typeBadge = document.createElement('span');
+        typeBadge.className = 'vp-billing-badge';
+        typeBadge.textContent = 'Assinatura mensal';
+        priceRow.appendChild(typeBadge);
+    }
+
+    // View button
+    const viewBtn = document.createElement('a');
+    viewBtn.className = 'vp-view-btn';
+    viewBtn.href = `/pages/vitrine/?slug=${slug}`;
+    viewBtn.target = '_blank';
+    viewBtn.textContent = 'Ver página do produto';
+
+    footer.appendChild(priceRow);
+    footer.appendChild(viewBtn);
+
+    card.appendChild(iconHeader);
+    card.appendChild(body);
     card.appendChild(footer);
 
     return card;
 }
+
 
 // ============================================================================
 // STRIPE CONNECT
@@ -246,6 +404,27 @@ document.getElementById('btn-connect-stripe')?.addEventListener('click', async (
         }
     } catch (err) {
         console.error('Stripe onboarding error:', err);
+        btn.textContent = 'Erro — tente novamente';
+        btn.disabled = false;
+    }
+});
+
+// Continue onboarding (pending state)
+document.getElementById('btn-continue-onboarding')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-continue-onboarding');
+    btn.disabled = true;
+    btn.textContent = 'Redirecionando...';
+
+    try {
+        const res = await fetchManager.startSellerOnboarding();
+        if (res.ok && res.result?.url) {
+            window.location.href = res.result.url;
+        } else {
+            btn.textContent = 'Erro — tente novamente';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        console.error('Continue onboarding error:', err);
         btn.textContent = 'Erro — tente novamente';
         btn.disabled = false;
     }
@@ -606,3 +785,119 @@ document.getElementById('deleteProductModal')?.addEventListener('click', (e) => 
     if (e.target === e.currentTarget) closeDeleteProductModal();
 });
 document.querySelector('#deleteProductModal .cancel-btn')?.addEventListener('click', closeDeleteProductModal);
+
+// ============================================================================
+// EDIT PRODUCT MODAL
+// ============================================================================
+
+let editProductData = null;
+
+function openEditProductModal(product) {
+    editProductData = product;
+    document.getElementById('edit-product-name').value = product.name || '';
+    document.getElementById('edit-product-desc').value = product.description || '';
+
+    const btnContainer = document.querySelector('#editProductModal .buttonContent');
+    if (btnContainer) setElementState(btnContainer, 'content');
+
+    const modal = document.getElementById('editProductModal');
+    modal.classList.add('show');
+}
+
+function closeEditProductModal() {
+    const modal = document.getElementById('editProductModal');
+    modal.classList.remove('show');
+    editProductData = null;
+}
+
+document.getElementById('confirm-edit-product')?.addEventListener('click', async () => {
+    if (!editProductData) return;
+
+    const name = document.getElementById('edit-product-name').value.trim();
+    const description = document.getElementById('edit-product-desc').value.trim();
+
+    if (!name) {
+        notify('error', 'O nome é obrigatório');
+        return;
+    }
+
+    const btnContainer = document.querySelector('#editProductModal .buttonContent');
+    setElementState(btnContainer, 'loading');
+
+    try {
+        const res = await fetchManager.updateProduct(editProductData.id, { name, description });
+        if (res.ok) {
+            closeEditProductModal();
+            notify('success', 'Produto atualizado');
+
+            vitrineLoaded = false;
+            await loadVitrineTab();
+        } else {
+            notify('error', res.result?.error || 'Erro ao atualizar');
+            setElementState(btnContainer, 'content');
+        }
+    } catch (err) {
+        console.error('Edit product error:', err);
+        notify('error', 'Erro de conexão');
+        setElementState(btnContainer, 'content');
+    }
+});
+
+document.getElementById('editProductModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeEditProductModal();
+});
+document.querySelector('#editProductModal .close-btn')?.addEventListener('click', closeEditProductModal);
+document.querySelector('#editProductModal .cancel-btn')?.addEventListener('click', closeEditProductModal);
+
+// ============================================================================
+// HARD DELETE PRODUCT MODAL
+// ============================================================================
+
+let hardDeleteProductId = null;
+
+function openHardDeleteProductModal(product) {
+    hardDeleteProductId = product.id;
+    document.getElementById('hard-delete-product-name').textContent = product.name;
+
+    const btnContainer = document.querySelector('#hardDeleteProductModal .buttonContent');
+    setElementState(btnContainer, 'content');
+
+    const modal = document.getElementById('hardDeleteProductModal');
+    modal.classList.add('show');
+}
+
+function closeHardDeleteProductModal() {
+    const modal = document.getElementById('hardDeleteProductModal');
+    modal.classList.remove('show');
+    hardDeleteProductId = null;
+}
+
+document.getElementById('confirm-hard-delete-product')?.addEventListener('click', async () => {
+    if (!hardDeleteProductId) return;
+
+    const btnContainer = document.querySelector('#hardDeleteProductModal .buttonContent');
+    setElementState(btnContainer, 'loading');
+
+    try {
+        const res = await fetchManager.hardDeleteProduct(hardDeleteProductId);
+        if (res.ok) {
+            closeHardDeleteProductModal();
+            notify('success', 'Produto excluído permanentemente');
+
+            vitrineLoaded = false;
+            await loadVitrineTab();
+        } else {
+            notify('error', 'Erro ao excluir produto');
+            setElementState(btnContainer, 'content');
+        }
+    } catch (err) {
+        console.error('Hard delete product error:', err);
+        notify('error', 'Erro de conexão');
+        setElementState(btnContainer, 'content');
+    }
+});
+
+document.getElementById('hardDeleteProductModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeHardDeleteProductModal();
+});
+document.querySelector('#hardDeleteProductModal .cancel-btn')?.addEventListener('click', closeHardDeleteProductModal);
