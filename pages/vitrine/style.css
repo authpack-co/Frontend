@@ -123,11 +123,43 @@ body {
 
 /* Icons header — stacked overlapping logos */
 .vt-icons-header {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 36px 28px 28px;
     background: linear-gradient(180deg, #282b2f, #181a1e, #1c2129);
+    gap: 0.5rem;
+}
+
+/* Background icons layer — absolutely positioned, mirrors foreground layout */
+.vt-icon-background {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 28px 28px;
+    gap: 0.5rem;
+}
+
+/* Frosted blur overlay */
+.vt-blur-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgb(26 26 26 / 70%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 1;
+}
+
+/* Foreground icons layer — sits above the blur */
+.vt-icon-foreground {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 0.5rem;
 }
 

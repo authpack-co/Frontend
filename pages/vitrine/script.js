@@ -49,7 +49,7 @@
         // Page title
         document.title = `${p.name} — AuthPack`;
 
-        // Stacked icons header (show max 4 + "+N more")
+        // Stacked icons header — 3-layer blur effect
         const header = document.getElementById('vt-icons-header');
         const sessions = p.sessions || [];
         header.innerHTML = '';
@@ -57,22 +57,24 @@
         const visibleSessions = sessions.slice(0, maxIcons);
         const remaining = sessions.length - maxIcons;
 
-        visibleSessions.forEach(s => {
-            const el = document.createElement('div');
-            el.className = 'vt-stacked-icon';
-            const img = document.createElement('img');
-            img.src = s.icon;
-            img.alt = s.name;
-            el.appendChild(img);
-            header.appendChild(el);
-        });
+        // Helper: build a set of stacked icons
+        const buildIcons = (container) => {
+            visibleSessions.forEach(s => {
+                const el = document.createElement('div');
+                el.className = 'vt-stacked-icon';
+                const img = document.createElement('img');
+                img.src = s.icon;
+                img.alt = s.name;
+                el.appendChild(img);
+                container.appendChild(el);
+            });
+        };
 
-        if (remaining > 0) {
-            const more = document.createElement('div');
-            more.className = 'vt-more-badge';
-            more.innerHTML = `<span class="vt-more-num">+${remaining}</span><span class="vt-more-text">more</span>`;
-            header.appendChild(more);
-        }
+        // Layer 1 — background icons (blurred under the overlay)
+        const iconBackground = document.createElement('div');
+        iconBackground.className = 'vt-icon-background';
+        buildIcons(iconBackground);
+        header.appendChild(iconBackground);
 
         // Apply gradient tint from the most vibrant icon's darkPalette
         const vibrant = getMostVibrantPalette(visibleSessions);
@@ -80,6 +82,25 @@
             const [r, g, b] = vibrant;
             header.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.25), #181a1e, #1c2129)`;
         }
+
+        // Layer 2 — frosted blur overlay
+        const blurOverlay = document.createElement('div');
+        blurOverlay.className = 'vt-blur-overlay';
+        header.appendChild(blurOverlay);
+
+        // Layer 3 — foreground icons (crisp, above the blur)
+        const iconForeground = document.createElement('div');
+        iconForeground.className = 'vt-icon-foreground';
+        buildIcons(iconForeground);
+
+        if (remaining > 0) {
+            const more = document.createElement('div');
+            more.className = 'vt-more-badge';
+            more.innerHTML = `<span class="vt-more-num">+${remaining}</span><span class="vt-more-text">more</span>`;
+            iconForeground.appendChild(more);
+        }
+
+        header.appendChild(iconForeground);
 
         // Product name
         document.getElementById('vt-product-name').textContent = p.name;

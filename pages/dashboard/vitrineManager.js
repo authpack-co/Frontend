@@ -190,10 +190,13 @@ function createVitrineProductCard(product) {
     const slug = product.slug || product.id;
     const isInactive = product.status === 'inactive';
 
-    // === Icon header with gradient ===
+    // === Icon header with layered blur effect ===
     const iconHeader = document.createElement('div');
     iconHeader.className = 'vp-icon-header';
 
+    // Layer 1 — background icons (blurred under the overlay, no layout influence)
+    const iconBackground = document.createElement('div');
+    iconBackground.className = 'vp-icon-background';
     sessions.slice(0, 4).forEach(s => {
         const icon = document.createElement('div');
         icon.className = 'vp-icon';
@@ -201,8 +204,9 @@ function createVitrineProductCard(product) {
         img.src = s.icon;
         img.alt = s.name;
         icon.appendChild(img);
-        iconHeader.appendChild(icon);
+        iconBackground.appendChild(icon);
     });
+    iconHeader.appendChild(iconBackground);
 
     // Apply dynamic gradient from the most vibrant icon's darkPalette
     const vibrant = getMostVibrantPaletteFromSessions(sessions.slice(0, 4));
@@ -210,6 +214,25 @@ function createVitrineProductCard(product) {
         const [r, g, b] = vibrant;
         iconHeader.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.25), transparent)`;
     }
+
+    // Layer 2 — frosted blur overlay
+    const blurOverlay = document.createElement('div');
+    blurOverlay.className = 'vp-blur-overlay';
+    iconHeader.appendChild(blurOverlay);
+
+    // Layer 3 — foreground icons (crisp, above the blur)
+    const iconForeground = document.createElement('div');
+    iconForeground.className = 'vp-icon-foreground';
+    sessions.slice(0, 4).forEach(s => {
+        const icon = document.createElement('div');
+        icon.className = 'vp-icon';
+        const img = document.createElement('img');
+        img.src = s.icon;
+        img.alt = s.name;
+        icon.appendChild(img);
+        iconForeground.appendChild(icon);
+    });
+    iconHeader.appendChild(iconForeground);
 
     // Inactive badge
     if (isInactive) {
