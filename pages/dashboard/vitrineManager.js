@@ -17,6 +17,28 @@ let createProductState = {
     stock: '',
 };
 
+/**
+ * Among the given sessions, find the one whose darkPalette is the most
+ * vibrant (highest chroma = max(r,g,b) - min(r,g,b)).
+ * Returns [r, g, b] or null.
+ */
+function getMostVibrantPaletteFromSessions(sessions) {
+    let best = null;
+    let bestChroma = -1;
+    for (const s of sessions) {
+        if (!s.darkPalette) continue;
+        try {
+            const [r, g, b] = JSON.parse(s.darkPalette);
+            const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+            if (chroma > bestChroma) {
+                bestChroma = chroma;
+                best = [r, g, b];
+            }
+        } catch { /* skip malformed */ }
+    }
+    return best;
+}
+
 // ============================================================================
 // SIDEBAR NAV — VIEW SWITCHING
 // ============================================================================
@@ -181,6 +203,13 @@ function createVitrineProductCard(product) {
         icon.appendChild(img);
         iconHeader.appendChild(icon);
     });
+
+    // Apply dynamic gradient from the most vibrant icon's darkPalette
+    const vibrant = getMostVibrantPaletteFromSessions(sessions.slice(0, 4));
+    if (vibrant) {
+        const [r, g, b] = vibrant;
+        iconHeader.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.25), transparent)`;
+    }
 
     // Inactive badge
     if (isInactive) {

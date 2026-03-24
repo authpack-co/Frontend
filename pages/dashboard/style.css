@@ -2976,8 +2976,8 @@ span.coming-soon {
 }
 
 .vp-icon {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 14px;
     overflow: hidden;
     transition: transform 0.15s ease;
