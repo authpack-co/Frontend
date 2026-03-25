@@ -795,7 +795,7 @@ async function loadAccessOverview(pkg, activePreset) {
 
         if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline, joinedAt, renewsAt } = fetchOverview.result.data;
+        const { totalOnline, sessionsOnline, joinedAt, renewsAt, billingType } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
@@ -812,8 +812,14 @@ async function loadAccessOverview(pkg, activePreset) {
             joinedAtEl.textContent = '—';
         }
 
-        // Atualiza "Renova em"
+        // Atualiza "Renova em" / "Expira em"
         const renewsAtEl = activePreset.querySelector('.package-info-header .renews-at-value');
+        const renewsLabelEl = renewsAtEl ? renewsAtEl.previousElementSibling : null;
+
+        if (renewsLabelEl) {
+            renewsLabelEl.textContent = billingType === 'one_time' ? 'Expira em:' : 'Renova em:';
+        }
+
         if (renewsAtEl && renewsAt) {
             const renewDate = new Date(renewsAt);
             renewsAtEl.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
