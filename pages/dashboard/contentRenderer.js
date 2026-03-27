@@ -899,7 +899,9 @@ async function loadPackageStats(pkg, period) {
 
             // Calcula sessionsOnline a partir do accessHistory
             // Percorre todos os registros buscando acessos nos últimos 60 segundos
+            // Usa Set para deduplicar por userId (mesmo usuário reconectando não conta 2x)
             const now = new Date();
+            const sessionsOnlineUsers = {}; // sessionId -> Set<userId>
             Object.values(accessHistory).forEach(dayAccesses => {
                 dayAccesses.forEach(access => {
                     const accessDate = new Date(access.localDateTime);
@@ -907,13 +909,17 @@ async function loadPackageStats(pkg, period) {
                     const diffInSec = Math.floor((now - endTime) / 1000);
 
                     if (diffInSec < 60 && diffInSec >= 0) {
-                        if (!pkg.stats.sessionsOnline[access.sessionId]) {
-                            pkg.stats.sessionsOnline[access.sessionId] = 0;
+                        if (!sessionsOnlineUsers[access.sessionId]) {
+                            sessionsOnlineUsers[access.sessionId] = new Set();
                         }
-                        pkg.stats.sessionsOnline[access.sessionId]++;
+                        sessionsOnlineUsers[access.sessionId].add(access.userId);
                     }
                 });
             });
+            // Converte Sets para contagem de usuários únicos
+            for (const sessionId in sessionsOnlineUsers) {
+                pkg.stats.sessionsOnline[sessionId] = sessionsOnlineUsers[sessionId].size;
+            }
         }
     }
 
