@@ -615,7 +615,7 @@ function goToStep(stepNum) {
     // Update next button text
     const nextBtn = document.getElementById('product-step-next');
     if (stepNum === 6) {
-        nextBtn.innerHTML = '🚀 Publicar produto';
+        nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>Publicar produto';
     } else {
         nextBtn.textContent = 'Próximo';
     }

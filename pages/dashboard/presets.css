@@ -133,16 +133,16 @@
 
 .skeleton {
     background-image: linear-gradient(90deg,
-            rgba(32, 35, 37, 0.6) 25%,
-            rgba(27, 29, 30, 0.9) 50%,
-            rgba(32, 35, 37, 0.6) 75%);
+            rgba(40, 44, 48, 0.7) 25%,
+            rgba(50, 55, 60, 0.9) 50%,
+            rgba(40, 44, 48, 0.7) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 8px;
 }
 
 .dark-skeleton {
-    background-image: linear-gradient(90deg, rgba(44, 47, 49, 0.6) 25%, rgba(32, 35, 37, 0.9) 50%, rgba(44, 47, 49, 0.6) 75%);
+    background-image: linear-gradient(90deg, rgba(50, 54, 58, 0.7) 25%, rgba(40, 44, 48, 0.95) 50%, rgba(50, 54, 58, 0.7) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 8px;

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Sora:wght@100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Fira+Code:wght@400;500;600;700&display=swap');
 
 /* ============================================
    CSS Variables (Design System)
@@ -19,6 +19,7 @@
     /* Accent */
     --color-accent-subtle: rgba(24, 83, 153, 0.1);
     --color-accent-hover: #54a1e4;
+    --color-accent-primary: #4184e4;
 
     /* Error */
     --color-error: #f54e42;
@@ -46,6 +47,24 @@
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
+
+    /* Design System Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+
+    /* Design System Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+    /* Typography */
+    --font-data: 'Fira Code', monospace;
 
     --header-height: 80px;
 }
@@ -406,7 +425,7 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-    margin-left: 20px;
+    margin-left: var(--space-lg);
 }
 
 .activation-input>div {
@@ -430,7 +449,7 @@ body {
    ============================================ */
 .page-content {
     display: flex;
-    gap: 28px;
+    gap: var(--space-xl);
     padding: 100px 36px;
     align-items: flex-start;
     justify-content: center;
@@ -533,11 +552,10 @@ span.coming-soon {
 .content-card {
     border: 1px solid var(--color-border-primary);
     border-radius: var(--radius-xl);
-    padding: 28px 25px 18px 25px;
-    margin-bottom: 18px;
+    padding: var(--space-lg) var(--space-lg) var(--space-md) var(--space-lg);
+    margin-bottom: var(--space-md);
     background: #141619;
-    max-width: 1100px;
-    width: 95vw;
+    width: min(95vw, 1100px);
 }
 
 /* ============================================
@@ -696,23 +714,24 @@ span.coming-soon {
 .card-tab {
     font-size: 16px;
     font-weight: 500;
-    opacity: 0.6;
-    padding-bottom: 4px;
+    opacity: 0.5;
+    padding-bottom: 6px;
     cursor: pointer;
     color: var(--color-text-secondary);
     border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
 }
 
 .card-tab.active {
     opacity: 1;
     font-weight: 600;
-    border-bottom: 2px solid var(--color-bg-muted);
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-accent-primary);
 }
 
 .card-tab:hover {
-    opacity: 1;
-    border-bottom: 2px solid #35393b;
+    opacity: 0.85;
+    border-bottom: 2px solid rgba(65, 132, 228, 0.4);
 }
 
 .card-content {
@@ -871,6 +890,7 @@ span.coming-soon {
 }
 
 .access-title {
+    font-family: var(--font-data);
     font-size: 17px;
     font-weight: 500;
     color: var(--color-text-secondary);
@@ -1041,8 +1061,8 @@ span.coming-soon {
 }
 
 .stack-icon img {
-    width: 17px;
-    height: 17px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
 }
 
@@ -2290,12 +2310,14 @@ span.coming-soon {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-family: var(--font-data);
     font-size: 16px;
     font-weight: 600;
     color: var(--color-text-primary);
 }
 
 .stat-highlight {
+    font-family: var(--font-data);
     font-size: 20px;
     font-weight: 600;
 }
@@ -2364,7 +2386,7 @@ span.coming-soon {
 }
 
 .table-row:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .table-col {
@@ -2938,12 +2960,314 @@ span.coming-soon {
     transform: translateY(-1px);
 }
 
+/* ============================================
+   Vitrine Financial Dashboard
+   ============================================ */
+
+/* Section Title */
+.vt-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.vt-section-title svg {
+    color: var(--color-text-gray);
+    flex-shrink: 0;
+}
+
+/* KPI Stats Grid */
+.vt-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.vt-kpi-card {
+    background: #181d23;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease;
+}
+
+.vt-kpi-card:hover {
+    border-color: var(--color-border-secondary);
+}
+
+.vt-kpi-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.vt-kpi-value-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.vt-kpi-value {
+    font-family: var(--font-data);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+
+.vt-kpi-sublabel {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    font-weight: 400;
+}
+
+/* Change Indicator */
+.vt-change-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-data);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    line-height: 1;
+}
+
+.vt-change-indicator.positive {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.vt-change-indicator.negative {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.vt-change-indicator svg {
+    flex-shrink: 0;
+}
+
+.vt-change-indicator.negative svg {
+    transform: rotate(180deg);
+}
+
+/* Seller Info Panel */
+.vt-seller-panel {
+    background: #181d23;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.vt-seller-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vt-seller-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.vt-seller-status.active {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.vt-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Seller Detail Grid */
+.vt-seller-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+}
+
+.vt-seller-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vt-seller-label {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    font-weight: 500;
+}
+
+.vt-seller-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.vt-seller-value.mono {
+    font-family: var(--font-data);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+/* Payout Cards */
+.vt-payout-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.vt-payout-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 0.2s ease;
+}
+
+.vt-payout-card:hover {
+    border-color: var(--color-border-secondary);
+}
+
+.vt-payout-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.vt-payout-icon.last {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.vt-payout-icon.next {
+    background: rgba(65, 132, 228, 0.1);
+    color: #4184e4;
+}
+
+.vt-payout-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.vt-payout-label {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    font-weight: 500;
+}
+
+.vt-payout-amount {
+    font-family: var(--font-data);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+}
+
+.vt-payout-date {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+/* Stripe Dashboard Link */
+.vt-stripe-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-gray);
+    text-decoration: none;
+    padding: 8px 0;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.vt-stripe-link:hover {
+    color: var(--color-text-primary);
+}
+
+.vt-stripe-link svg {
+    flex-shrink: 0;
+}
+
+/* Products Section */
+.vt-products-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
 /* Product Cards Grid */
 .vitrine-products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
-    margin-top: 8px;
+    margin-top: 0;
+}
+
+/* Responsive: Financial Dashboard */
+@media (max-width: 900px) {
+    .vt-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .vt-seller-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .vt-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vt-payout-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .vt-seller-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vt-kpi-value {
+        font-size: 20px;
+    }
 }
 
 /* === New Product Card (vp-*) === */
@@ -3081,6 +3405,7 @@ span.coming-soon {
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -3626,4 +3951,56 @@ span.coming-soon {
         flex-direction: column;
         gap: 12px;
     }
+}
+
+/* ============================================
+   Focus-Visible (Accessibility)
+   ============================================ */
+:focus-visible {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+.btn:focus-visible,
+.card-tab:focus-visible,
+.nav-item:focus-visible,
+.session-card:focus-visible,
+.access-item:focus-visible {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 3px rgba(65, 132, 228, 0.15);
+}
+
+/* ============================================
+   Reduced Motion (Accessibility)
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ============================================
+   Data Typography (Fira Code for key data)
+   ============================================ */
+.key-value span,
+.chart-stats,
+.online-count-value,
+.session-card-usage-time,
+.table-col:last-child {
+    font-family: var(--font-data);
 }
