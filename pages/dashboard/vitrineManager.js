@@ -17,27 +17,7 @@ let createProductState = {
     stock: '',
 };
 
-/**
- * Among the given sessions, find the one whose darkPalette is the most
- * vibrant (highest chroma = max(r,g,b) - min(r,g,b)).
- * Returns [r, g, b] or null.
- */
-function getMostVibrantPaletteFromSessions(sessions) {
-    let best = null;
-    let bestChroma = -1;
-    for (const s of sessions) {
-        if (!s.darkPalette) continue;
-        try {
-            const [r, g, b] = JSON.parse(s.darkPalette);
-            const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-            if (chroma > bestChroma) {
-                bestChroma = chroma;
-                best = [r, g, b];
-            }
-        } catch { /* skip malformed */ }
-    }
-    return best;
-}
+
 
 // ============================================================================
 // SIDEBAR NAV — VIEW SWITCHING
@@ -189,60 +169,139 @@ function createVitrineProductCard(product) {
     const priceStr = priceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const slug = product.slug || product.id;
     const isInactive = product.status === 'inactive';
+    const sold = product.active_access_count || 0;
 
-    // === Icon header with layered blur effect ===
-    const iconHeader = document.createElement('div');
-    iconHeader.className = 'vp-icon-header';
+    // === Header: title + badge ===
+    const header = document.createElement('div');
+    header.className = 'vp-header';
 
-    // Layer 1 — background icons (blurred under the overlay, no layout influence)
-    const iconBackground = document.createElement('div');
-    iconBackground.className = 'vp-icon-background';
-    sessions.slice(0, 4).forEach(s => {
-        const icon = document.createElement('div');
-        icon.className = 'vp-icon';
-        const img = document.createElement('img');
-        img.src = s.icon;
-        img.alt = s.name;
-        icon.appendChild(img);
-        iconBackground.appendChild(icon);
-    });
-    iconHeader.appendChild(iconBackground);
+    const name = document.createElement('h3');
+    name.className = 'vp-name';
+    name.textContent = product.name;
+    header.appendChild(name);
 
-    // Apply dynamic gradient from the most vibrant icon's darkPalette
-    const vibrant = getMostVibrantPaletteFromSessions(sessions.slice(0, 4));
-    if (vibrant) {
-        const [r, g, b] = vibrant;
-        iconHeader.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.25), transparent)`;
-    }
-
-    // Layer 2 — frosted blur overlay
-    const blurOverlay = document.createElement('div');
-    blurOverlay.className = 'vp-blur-overlay';
-    iconHeader.appendChild(blurOverlay);
-
-    // Layer 3 — foreground icons (crisp, above the blur)
-    const iconForeground = document.createElement('div');
-    iconForeground.className = 'vp-icon-foreground';
-    sessions.slice(0, 4).forEach(s => {
-        const icon = document.createElement('div');
-        icon.className = 'vp-icon';
-        const img = document.createElement('img');
-        img.src = s.icon;
-        img.alt = s.name;
-        icon.appendChild(img);
-        iconForeground.appendChild(icon);
-    });
-    iconHeader.appendChild(iconForeground);
-
-    // Inactive badge
     if (isInactive) {
         const inactiveBadge = document.createElement('span');
         inactiveBadge.className = 'vp-inactive-badge';
         inactiveBadge.textContent = 'Inativo';
-        iconHeader.appendChild(inactiveBadge);
+        header.appendChild(inactiveBadge);
+    } else {
+        const badge = document.createElement('span');
+        badge.className = `vp-billing-badge ${billingType === 'subscription' ? 'subscription' : 'one-time'}`;
+        badge.textContent = billingType === 'subscription' ? 'Assinatura' : 'Pagamento único';
+        header.appendChild(badge);
     }
 
-    // Overlay actions (visible on hover)
+    card.appendChild(header);
+
+    // === Icons row (max 3 visible, +N badge if more) ===
+    if (sessions.length > 0) {
+        const iconsRow = document.createElement('div');
+        iconsRow.className = 'vp-icons-row';
+        const maxIcons = 3;
+        const visibleSessions = sessions.slice(0, maxIcons);
+        const remaining = sessions.length - maxIcons;
+
+        visibleSessions.forEach((s, i) => {
+            const icon = document.createElement('div');
+            icon.className = 'vp-icon';
+            const img = document.createElement('img');
+            img.src = s.icon;
+            img.alt = s.name;
+            icon.appendChild(img);
+
+            // Add +N badge on the last visible icon if there are more
+            if (i === visibleSessions.length - 1 && remaining > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'vp-icon-count';
+                badge.textContent = `+${remaining}`;
+                icon.appendChild(badge);
+            }
+
+            iconsRow.appendChild(icon);
+        });
+        card.appendChild(iconsRow);
+    }
+
+    // === Description ===
+    const desc = document.createElement('p');
+    desc.className = 'vp-desc';
+    desc.textContent = product.description || product.package_name || '';
+    card.appendChild(desc);
+
+    // === Price ===
+    const priceRow = document.createElement('div');
+    priceRow.className = 'vp-price-row';
+    const priceEl = document.createElement('span');
+    priceEl.className = 'vp-price';
+    priceEl.textContent = `R$ ${priceStr}`;
+    priceRow.appendChild(priceEl);
+
+    if (billingType === 'subscription') {
+        const period = document.createElement('span');
+        period.className = 'vp-period';
+        period.textContent = '/mês';
+        priceRow.appendChild(period);
+    }
+    card.appendChild(priceRow);
+
+    // === Stats row ===
+    const statsRow = document.createElement('div');
+    statsRow.className = 'vp-stats-row';
+
+    // Total sales stat
+    const salesStat = document.createElement('div');
+    salesStat.className = 'vp-stat';
+    salesStat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`;
+    salesStat.innerHTML += `<strong>${sold}</strong> vendas`;
+    statsRow.appendChild(salesStat);
+
+    // Active subscriptions (for subscription products)
+    if (billingType === 'subscription') {
+        const activeStat = document.createElement('div');
+        activeStat.className = 'vp-stat';
+        activeStat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+        activeStat.innerHTML += `<strong>${sold}</strong> ativos`;
+        statsRow.appendChild(activeStat);
+    }
+
+    card.appendChild(statsRow);
+
+    // === Stock progress bar (only if stock is limited) ===
+    if (product.stock != null) {
+        const stockBar = document.createElement('div');
+        stockBar.className = 'vp-stock-bar';
+
+        const track = document.createElement('div');
+        track.className = 'vp-stock-track';
+        const fill = document.createElement('div');
+        fill.className = 'vp-stock-fill';
+
+        const pct = Math.min(100, (sold / product.stock) * 100);
+        fill.style.width = `${pct}%`;
+        if (pct >= 100) fill.classList.add('depleted');
+        else if (pct >= 80) fill.classList.add('warning');
+
+        track.appendChild(fill);
+        stockBar.appendChild(track);
+
+        const label = document.createElement('span');
+        label.className = 'vp-stock-label';
+        label.innerHTML = `<strong>${sold}</strong>/${product.stock} vagas preenchidas`;
+        stockBar.appendChild(label);
+
+        card.appendChild(stockBar);
+    }
+
+    // === View button ===
+    const viewBtn = document.createElement('a');
+    viewBtn.className = 'vp-view-btn';
+    viewBtn.href = `/pages/vitrine/?slug=${slug}`;
+    viewBtn.target = '_blank';
+    viewBtn.textContent = 'Ver detalhes';
+    card.appendChild(viewBtn);
+
+    // === Overlay actions (hover options) ===
     const overlay = document.createElement('div');
     overlay.className = 'vp-overlay-actions';
 
@@ -257,7 +316,7 @@ function createVitrineProductCard(product) {
         navigator.clipboard.writeText(url).then(() => notify('success', 'Link copiado!'));
     });
 
-    // Options button (⋯) — follows package-options pattern
+    // Options button (⋯)
     const optionsBtn = document.createElement('button');
     optionsBtn.className = 'product-options-btn';
     optionsBtn.textContent = '⋯';
@@ -281,11 +340,9 @@ function createVitrineProductCard(product) {
         productOptions.classList.add('hidden');
         openEditProductModal(product);
     });
-
     productOptions.appendChild(editBtn);
 
     if (isInactive) {
-        // Reactivate option
         const reactivateBtn = document.createElement('button');
         reactivateBtn.className = 'reactivate-product-btn';
         reactivateBtn.innerHTML = `
@@ -314,7 +371,6 @@ function createVitrineProductCard(product) {
         });
         productOptions.appendChild(reactivateBtn);
     } else {
-        // Deactivate option
         const deactivateBtn = document.createElement('button');
         deactivateBtn.className = 'deactivate-product-btn';
         deactivateBtn.innerHTML = `
@@ -333,7 +389,6 @@ function createVitrineProductCard(product) {
         productOptions.appendChild(deactivateBtn);
     }
 
-    // Delete option (hard delete)
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-product-btn';
     deleteBtn.innerHTML = `
@@ -351,10 +406,8 @@ function createVitrineProductCard(product) {
     });
     productOptions.appendChild(deleteBtn);
 
-    // Toggle handler for options button
     optionsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Close all other open product-options
         document.querySelectorAll('.product-options:not(.hidden)').forEach(opt => {
             if (opt !== productOptions) opt.classList.add('hidden');
         });
@@ -363,73 +416,8 @@ function createVitrineProductCard(product) {
 
     overlay.appendChild(copyBtn);
     overlay.appendChild(optionsBtn);
-    iconHeader.appendChild(overlay);
-    iconHeader.appendChild(productOptions);
-
-    // === Body ===
-    const body = document.createElement('div');
-    body.className = 'vp-body';
-
-    const name = document.createElement('h3');
-    name.className = 'vp-name';
-    name.textContent = product.name;
-
-    const desc = document.createElement('p');
-    desc.className = 'vp-desc';
-    desc.textContent = product.description || product.package_name || '';
-
-    body.appendChild(name);
-    body.appendChild(desc);
-
-    // === Footer: price + stock ===
-    const footer = document.createElement('div');
-    footer.className = 'vp-footer';
-
-    const priceRow = document.createElement('div');
-    priceRow.className = 'vp-price-row';
-
-    const priceEl = document.createElement('span');
-    priceEl.className = 'vp-price';
-    if (billingType === 'subscription') {
-        priceEl.innerHTML = `R$ ${priceStr} <span class="vp-period">/ mês</span>`;
-    } else {
-        priceEl.textContent = `R$ ${priceStr}`;
-    }
-
-    priceRow.appendChild(priceEl);
-
-    // Stock badge
-    if (product.stock != null) {
-        const sold = product.active_access_count || 0;
-        const remaining = Math.max(0, product.stock - sold);
-        const stockBadge = document.createElement('span');
-        stockBadge.className = 'vp-stock';
-        stockBadge.textContent = `${remaining} de ${product.stock} disponíveis`;
-        if (remaining === 0) {
-            stockBadge.classList.add('out');
-            stockBadge.textContent = 'Esgotado';
-        }
-        priceRow.appendChild(stockBadge);
-    } else if (billingType === 'subscription') {
-        const typeBadge = document.createElement('span');
-        typeBadge.className = 'vp-billing-badge';
-        typeBadge.textContent = 'Assinatura mensal';
-        priceRow.appendChild(typeBadge);
-    }
-
-    // View button
-    const viewBtn = document.createElement('a');
-    viewBtn.className = 'vp-view-btn';
-    viewBtn.href = `/pages/vitrine/?slug=${slug}`;
-    viewBtn.target = '_blank';
-    viewBtn.textContent = 'Ver página do produto';
-
-    footer.appendChild(priceRow);
-    footer.appendChild(viewBtn);
-
-    card.appendChild(iconHeader);
-    card.appendChild(body);
-    card.appendChild(footer);
+    card.appendChild(overlay);
+    card.appendChild(productOptions);
 
     return card;
 }

@@ -3236,7 +3236,7 @@ span.coming-soon {
 /* Product Cards Grid */
 .vitrine-products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
     margin-top: 0;
 }
@@ -3270,7 +3270,7 @@ span.coming-soon {
     }
 }
 
-/* === New Product Card (vp-*) === */
+/* === Product Card (vp-*) === */
 .vp-card {
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border-primary);
@@ -3279,6 +3279,8 @@ span.coming-soon {
     transition: border-color 0.2s ease, transform 0.15s ease;
     display: flex;
     flex-direction: column;
+    padding: 20px;
+    position: relative;
 }
 
 .vp-card:hover {
@@ -3286,71 +3288,220 @@ span.coming-soon {
     transform: translateY(-2px);
 }
 
-/* Icon header */
-.vp-icon-header {
-    position: relative;
+/* Header: title + badge */
+.vp-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
     align-items: center;
-    padding: 24px 20px;
-    background: linear-gradient(145deg, rgba(52, 211, 153, 0.06), rgba(65, 132, 228, 0.08), rgba(129, 140, 248, 0.06));
-    min-height: 100px;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
-/* Frosted blur overlay between gradient bg and foreground icons */
-.vp-blur-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgb(26 26 26 / 70%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 1;
+.vp-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
 }
 
-/* Background icons layer — absolutely positioned, mirrors foreground layout */
-.vp-icon-background {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    align-items: center;
-    padding: 24px 20px;
+.vp-billing-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-/* Foreground icons layer — sits above the blur */
-.vp-icon-foreground {
-    position: relative;
-    z-index: 2;
+.vp-billing-badge.subscription {
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.vp-billing-badge.one-time {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+/* Icons row */
+.vp-icons-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
     align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
 }
 
 .vp-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    overflow: hidden;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    flex-shrink: 0;
     transition: transform 0.15s ease;
+    position: relative;
 }
 
 .vp-icon img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 10px;
 }
 
-/* Hover overlay actions */
+.vp-card:hover .vp-icon {
+    transform: scale(1.05);
+}
+
+.vp-icon-count {
+    position: absolute;
+    bottom: -7px;
+    right: -8px;
+    background: rgb(62 56 56);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px;
+    border-radius: 50%;
+    line-height: 1.3;
+    pointer-events: none;
+    border: 1px solid var(--color-bg-secondary);
+}
+
+/* Description */
+.vp-desc {
+    font-size: 13px;
+    color: var(--color-text-gray);
+    line-height: 1.5;
+    margin: 0 0 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Price */
+.vp-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.vp-price {
+    font-family: var(--font-data);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.vp-period {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-text-gray);
+}
+
+/* Stats row */
+.vp-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.vp-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--color-text-gray);
+}
+
+.vp-stat svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.vp-stat strong {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+/* Stock progress bar */
+.vp-stock-bar {
+    margin-bottom: 14px;
+}
+
+.vp-stock-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.vp-stock-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: #34d399;
+    transition: width 0.5s ease;
+}
+
+.vp-stock-fill.warning {
+    background: #fbbf24;
+}
+
+.vp-stock-fill.depleted {
+    background: #ef4444;
+}
+
+.vp-stock-label {
+    font-size: 12px;
+    color: var(--color-text-gray);
+}
+
+.vp-stock-label strong {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+/* View button */
+.vp-view-btn {
+    display: block;
+    text-align: center;
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: 10px;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    margin-top: auto;
+}
+
+.vp-view-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-gray);
+}
+
+/* Card overlay actions (options menu) */
 .vp-overlay-actions {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 12px;
+    right: 12px;
     display: flex;
     gap: 4px;
     opacity: 0;
@@ -3382,109 +3533,25 @@ span.coming-soon {
     color: #fff;
 }
 
-/* Body */
-.vp-body {
-    padding: 16px 18px 0;
-    flex: 1;
+/* Inactive card state */
+.vp-card.vp-inactive {
+    opacity: 0.55;
 }
 
-.vp-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin: 0 0 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.vp-card.vp-inactive:hover {
+    opacity: 0.75;
 }
 
-.vp-desc {
-    font-size: 13px;
-    color: var(--color-text-gray);
-    line-height: 1.4;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* Footer */
-.vp-footer {
-    padding: 14px 18px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.vp-price-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.vp-price {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-}
-
-.vp-period {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--color-text-gray);
-}
-
-.vp-stock {
+.vp-inactive-badge {
     font-size: 11px;
     font-weight: 500;
     padding: 3px 10px;
     border-radius: 20px;
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.1);
-    border: 1px solid rgba(52, 211, 153, 0.2);
+    color: #999;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     white-space: nowrap;
-}
-
-.vp-stock.out {
-    color: #f87171;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.2);
-}
-
-.vp-billing-badge {
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 20px;
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.1);
-    border: 1px solid rgba(52, 211, 153, 0.2);
-    white-space: nowrap;
-}
-
-.vp-view-btn {
-    display: block;
-    text-align: center;
-    width: 100%;
-    padding: 10px 16px;
-    background: transparent;
-    border: 1px solid var(--color-border-secondary);
-    border-radius: 10px;
-    color: var(--color-text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.15s ease;
-}
-
-.vp-view-btn:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--color-text-primary);
-    border-color: var(--color-text-gray);
+    flex-shrink: 0;
 }
 
 /* === Status Bars === */
@@ -3805,7 +3872,7 @@ span.coming-soon {
 .step-package-icons .stack-icon {
     width: 24px;
     height: 24px;
-    border-radius: 5px;
+    border-radius: 50%;
     overflow: hidden;
     border: 1px solid var(--color-border-primary);
 }
