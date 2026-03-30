@@ -49,63 +49,15 @@
         // Page title
         document.title = `${p.name} — AuthPack`;
 
-        // Stacked icons header — 3-layer blur effect
-        const header = document.getElementById('vt-icons-header');
         const sessions = p.sessions || [];
-        header.innerHTML = '';
-        const maxIcons = 4;
-        const visibleSessions = sessions.slice(0, maxIcons);
-        const remaining = sessions.length - maxIcons;
+        const billingType = p.billing_type || 'one_time';
+        const priceVal = (p.price_cents || 0) / 100;
+        const priceStr = priceVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Helper: build a set of stacked icons
-        const buildIcons = (container) => {
-            visibleSessions.forEach(s => {
-                const el = document.createElement('div');
-                el.className = 'vt-stacked-icon';
-                const img = document.createElement('img');
-                img.src = s.icon;
-                img.alt = s.name;
-                el.appendChild(img);
-                container.appendChild(el);
-            });
-        };
-
-        // Layer 1 — background icons (blurred under the overlay)
-        const iconBackground = document.createElement('div');
-        iconBackground.className = 'vt-icon-background';
-        buildIcons(iconBackground);
-        header.appendChild(iconBackground);
-
-        // Apply gradient tint from the most vibrant icon's darkPalette
-        const vibrant = getMostVibrantPalette(visibleSessions);
-        if (vibrant) {
-            const [r, g, b] = vibrant;
-            header.style.background = `linear-gradient(180deg, rgba(${r},${g},${b},0.25), #181a1e, #1c2129)`;
-        }
-
-        // Layer 2 — frosted blur overlay
-        const blurOverlay = document.createElement('div');
-        blurOverlay.className = 'vt-blur-overlay';
-        header.appendChild(blurOverlay);
-
-        // Layer 3 — foreground icons (crisp, above the blur)
-        const iconForeground = document.createElement('div');
-        iconForeground.className = 'vt-icon-foreground';
-        buildIcons(iconForeground);
-
-        if (remaining > 0) {
-            const more = document.createElement('div');
-            more.className = 'vt-more-badge';
-            more.innerHTML = `<span class="vt-more-num">+${remaining}</span><span class="vt-more-text">more</span>`;
-            iconForeground.appendChild(more);
-        }
-
-        header.appendChild(iconForeground);
-
-        // Product name
+        // === Product Name ===
         document.getElementById('vt-product-name').textContent = p.name;
 
-        // Description
+        // === Description ===
         const descEl = document.getElementById('vt-product-desc');
         if (p.description) {
             descEl.textContent = p.description;
@@ -114,37 +66,48 @@
             descEl.style.display = 'none';
         }
 
-        // Stock badge
-        const stockBadge = document.getElementById('vt-stock-badge');
-        if (p.stock != null) {
-            const sold = p.active_access_count || 0;
-            const remaining = Math.max(0, p.stock - sold);
-            stockBadge.textContent = `${remaining} de ${p.stock} disponíveis`;
-            stockBadge.classList.add('visible');
-            if (remaining === 0) {
-                stockBadge.classList.add('out-of-stock');
-                stockBadge.textContent = 'Esgotado';
-            }
+        // === Services Grid ===
+        const servicesSection = document.getElementById('vt-services-section');
+        const servicesGrid = document.getElementById('vt-services-grid');
+        if (sessions.length === 0) {
+            servicesSection.style.display = 'none';
+        } else {
+            servicesGrid.innerHTML = '';
+            sessions.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'vt-service-card';
+
+                const iconWrap = document.createElement('div');
+                iconWrap.className = 'vt-service-icon';
+                const img = document.createElement('img');
+                img.src = s.icon;
+                img.alt = s.name;
+                iconWrap.appendChild(img);
+
+                const name = document.createElement('span');
+                name.className = 'vt-service-name';
+                name.textContent = extractDomain(s.url) || s.name;
+
+                card.appendChild(iconWrap);
+                card.appendChild(name);
+                servicesGrid.appendChild(card);
+            });
         }
 
-        // Price
-        const billingType = p.billing_type || 'one_time';
-        const priceVal = (p.price_cents || 0) / 100;
-        const priceStr = priceVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // === Price ===
         const priceEl = document.getElementById('vt-price');
-
         if (billingType === 'subscription') {
             priceEl.innerHTML = `R$ ${priceStr} <span class="vt-price-period">/ mês</span>`;
         } else {
             priceEl.textContent = `R$ ${priceStr}`;
         }
 
-        // Billing badge
+        // === Billing Badge ===
         const badge = document.getElementById('vt-billing-badge');
         badge.className = `vt-billing-badge ${billingType}`;
         badge.textContent = billingType === 'subscription' ? 'Assinatura mensal' : 'Pagamento único';
 
-        // Seller
+        // === Seller ===
         const sellerName = p.creator_name || '';
         const sellerPic = p.creator_picture || '';
         document.getElementById('vt-seller-name').textContent = sellerName;
@@ -155,55 +118,43 @@
             picEl.style.display = 'none';
         }
 
-        // Marquee — Includes list
-        const track = document.getElementById('vt-marquee-track');
-        const wrap = document.querySelector('.vt-marquee-wrap');
-        const includesSection = document.getElementById('vt-includes-section');
-        if (sessions.length === 0) {
-            includesSection.style.display = 'none';
-        } else {
-            track.innerHTML = '';
-            const useMarquee = sessions.length > 4;
+        // === Stock ===
+        const stockSection = document.getElementById('vt-stock-section');
+        stockSection.innerHTML = '';
 
-            // Build one set of items
-            const buildItems = () => {
-                const frag = document.createDocumentFragment();
-                sessions.forEach(s => {
-                    const item = document.createElement('div');
-                    item.className = 'vt-marquee-item';
+        if (p.stock != null) {
+            const sold = p.active_access_count || 0;
+            const remainingStock = Math.max(0, p.stock - sold);
+            const pct = Math.min(100, (sold / p.stock) * 100);
 
-                    const iconWrap = document.createElement('div');
-                    iconWrap.className = 'vt-marquee-icon';
-                    const img = document.createElement('img');
-                    img.src = s.icon;
-                    img.alt = s.name;
-                    iconWrap.appendChild(img);
+            stockSection.className = 'vt-stock-section';
 
-                    const name = document.createElement('span');
-                    name.className = 'vt-marquee-name';
-                    // Always show domain host from URL
-                    name.textContent = extractDomain(s.url);
+            const track = document.createElement('div');
+            track.className = 'vt-stock-track';
+            const fill = document.createElement('div');
+            fill.className = 'vt-stock-fill';
+            fill.style.width = `${pct}%`;
+            if (pct >= 100) fill.classList.add('depleted');
+            else if (pct >= 80) fill.classList.add('warning');
+            track.appendChild(fill);
+            stockSection.appendChild(track);
 
-                    item.appendChild(iconWrap);
-                    item.appendChild(name);
-                    frag.appendChild(item);
-                });
-                return frag;
-            };
-
-            track.appendChild(buildItems());
-
-            if (useMarquee) {
-                // Duplicate for seamless looping
-                track.appendChild(buildItems());
+            const label = document.createElement('span');
+            label.className = 'vt-stock-label';
+            if (remainingStock === 0) {
+                label.innerHTML = `<strong>Esgotado</strong>`;
             } else {
-                // Static — no animation, no edge fades
-                track.style.animation = 'none';
-                wrap.classList.add('vt-marquee-static');
+                label.innerHTML = `<strong>${remainingStock}</strong> de ${p.stock} vagas restantes`;
             }
+            stockSection.appendChild(label);
+        } else {
+            const unlimited = document.createElement('div');
+            unlimited.className = 'vt-stock-unlimited';
+            unlimited.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8Z"/></svg> Sem limite de vagas`;
+            stockSection.appendChild(unlimited);
         }
 
-        // CTA button text
+        // === CTA Button Text ===
         const ctaBtn = document.getElementById('vt-cta-btn');
         if (billingType === 'subscription') {
             ctaBtn.textContent = 'Assinar agora';
@@ -224,28 +175,6 @@
     // ====================================================================
     // HELPERS
     // ====================================================================
-
-    /**
-     * Among the given sessions, find the one whose darkPalette is the most
-     * vibrant (highest chroma = max(r,g,b) - min(r,g,b)).
-     * Returns [r, g, b] or null.
-     */
-    function getMostVibrantPalette(sessions) {
-        let best = null;
-        let bestChroma = -1;
-        for (const s of sessions) {
-            if (!s.darkPalette) continue;
-            try {
-                const [r, g, b] = JSON.parse(s.darkPalette);
-                const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-                if (chroma > bestChroma) {
-                    bestChroma = chroma;
-                    best = [r, g, b];
-                }
-            } catch { /* skip malformed */ }
-        }
-        return best;
-    }
 
     function extractDomain(url) {
         if (!url) return '';
