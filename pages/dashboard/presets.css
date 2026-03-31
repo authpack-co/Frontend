@@ -84,41 +84,6 @@
 }
 
 /* ===== Vitrine States ===== */
-.preset-vitrine-locked {
-    display: none;
-}
-
-.vitrine-locked-state>.preset-vitrine-locked {
-    display: block;
-    animation: fadeIn 0.3s ease-in forwards;
-}
-
-.preset-vitrine-connect {
-    display: none;
-}
-
-.vitrine-connect-state>.preset-vitrine-connect {
-    display: block;
-    animation: fadeIn 0.3s ease-in forwards;
-}
-
-.preset-vitrine-pending {
-    display: none;
-}
-
-.vitrine-pending-state>.preset-vitrine-pending {
-    display: block;
-    animation: fadeIn 0.3s ease-in forwards;
-}
-
-.preset-vitrine-empty {
-    display: none;
-}
-
-.vitrine-empty-state>.preset-vitrine-empty {
-    display: block;
-    animation: fadeIn 0.3s ease-in forwards;
-}
 
 .preset-vitrine-content {
     display: none;

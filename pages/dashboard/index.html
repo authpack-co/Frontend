@@ -1397,109 +1397,81 @@
                         </div>
                     </div>
 
-                    <!-- LOCKED: user is NOT Plus -->
-                    <div class="preset preset-vitrine-locked">
-                        <div class="vitrine-locked-state-content">
-                            <div class="vitrine-locked-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                    <path d="M5 21h14" />
-                                </svg>
-                            </div>
-                            <h3>Vitrines é um recurso Plus</h3>
-                            <p class="vitrine-locked-desc">Crie uma vitrine para vender seus pacotes de forma automática, com pagamentos integrados.</p>
-                            <ul class="vitrine-locked-benefits">
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                                    Venda pacotes automaticamente
-                                </li>
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                                    Controle de quantidade de acessos
-                                </li>
-                                <li>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                                    Pagamento único ou assinatura
-                                </li>
-                            </ul>
-                            <button class="btn-vitrine-subscribe plus-subscribe-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                    <path d="M5 21h14" />
-                                </svg>
-                                Assinar AuthPack Plus
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- CONNECT: Plus but no Stripe -->
-                    <div class="preset preset-vitrine-connect">
-                        <div class="vitrine-connect-state-content">
-                            <div class="vitrine-connect-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-                                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-                                    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-                                </svg>
-                            </div>
-                            <h3>Conecte sua conta Stripe</h3>
-                            <p class="vitrine-connect-desc">Para começar a vender, conecte sua conta Stripe. O pagamento dos seus produtos será enviado diretamente para sua conta.</p>
-                            <button class="btn-vitrine-connect" id="btn-connect-stripe">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                </svg>
-                                Conectar com Stripe
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- PENDING: Stripe account exists but onboarding incomplete -->
-                    <div class="preset preset-vitrine-pending">
-                        <div class="vitrine-pending-state-content">
-                            <div class="vt-status-bar pending">
-                                <div class="vt-status-left">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <polyline points="12 6 12 12 16 14"/>
-                                    </svg>
-                                    <div>
-                                        <strong>Onboarding em andamento</strong>
-                                        <span>Complete a verificação da sua conta Stripe para começar a vender.</span>
-                                    </div>
-                                </div>
-                                <button class="vt-status-btn" id="btn-continue-onboarding">Continuar verificação</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- EMPTY: Plus + Stripe active but no products -->
-                    <div class="preset preset-vitrine-empty">
-                        <div class="vt-stripe-bar" style="display:none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                            <span>Conta Stripe conectada</span>
-                        </div>
-                        <div class="vitrine-header">
-                            <div>
-                                <h2>Vitrines</h2>
-                                <p class="vitrine-subtitle">Venda seus pacotes publicamente com uma página compartilhável.</p>
-                            </div>
-                        </div>
-                        <div class="collection-empty">
-                            <div class="empty-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg></div>
-                            <div class="empty-text">
-                                <h3>Você ainda não tem produtos na sua vitrine</h3>
-                                <p>Crie seu primeiro produto a partir de um pacote existente</p>
-                            </div>
-                            <button class="btn-create-product" id="btn-create-product-empty">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                Criar produto
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- CONTENT: Plus + Stripe + products -->
                     <div class="preset preset-vitrine-content">
+
+                        <!-- ── Gate Overlay (shown for free/not-connected users) ── -->
+                        <div class="vt-gate-overlay hidden" id="vt-gate-overlay">
+                            <div class="vt-gate-backdrop"></div>
+
+                            <!-- Gate Card: Locked (free users) -->
+                            <div class="vt-gate-card gate-locked hidden" id="vt-gate-locked">
+                                <div class="vt-gate-icon locked">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                                        <path d="M5 21h14" />
+                                    </svg>
+                                </div>
+                                <h3>Vitrines é um recurso Plus</h3>
+                                <p>Crie uma vitrine para vender seus pacotes de forma automática, com pagamentos integrados.</p>
+                                <ul class="vt-gate-benefits">
+                                    <li>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                                        Venda pacotes automaticamente
+                                    </li>
+                                    <li>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                                        Controle de quantidade de acessos
+                                    </li>
+                                    <li>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                                        Pagamento único ou assinatura
+                                    </li>
+                                </ul>
+                                <button class="vt-gate-btn locked plus-subscribe-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                                        <path d="M5 21h14" />
+                                    </svg>
+                                    Assinar AuthPack Plus
+                                </button>
+                            </div>
+
+                            <!-- Gate Card: Connect Stripe (plus users without Stripe) -->
+                            <div class="vt-gate-card gate-connect hidden" id="vt-gate-connect">
+                                <div class="vt-gate-icon connect">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                                        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                                        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                                    </svg>
+                                </div>
+                                <h3>Conecte sua conta Stripe</h3>
+                                <p>Para começar a vender, conecte sua conta para receber pagamentos diretamente.</p>
+                                <button class="vt-gate-btn connect" id="btn-connect-stripe">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                    </svg>
+                                    Conectar com Stripe
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ── Onboarding Banner (shown for pending users) ── -->
+                        <div class="vt-onboarding-banner hidden" id="vt-onboarding-banner">
+                            <div class="vt-onboarding-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <div>
+                                    <strong>Onboarding em andamento</strong>
+                                    <span>Complete a verificação da sua conta Stripe para ativar suas vendas.</span>
+                                </div>
+                            </div>
+                            <button class="vt-onboarding-btn" id="btn-continue-onboarding">Continuar verificação</button>
+                        </div>
 
                         <!-- ── Header ── -->
                         <div class="vitrine-header">
@@ -1521,30 +1493,26 @@
                             <div class="vt-kpi-card">
                                 <span class="vt-kpi-label">Receita do mês</span>
                                 <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-revenue">R$ 450,00</span>
-                                    <span class="vt-change-indicator positive">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-                                        15%
-                                    </span>
+                                    <span class="vt-kpi-value" id="kpi-revenue">R$ 0,00</span>
                                 </div>
                             </div>
                             <div class="vt-kpi-card">
                                 <span class="vt-kpi-label">Vendas este mês</span>
                                 <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-sales">12</span>
+                                    <span class="vt-kpi-value" id="kpi-sales">0</span>
                                 </div>
                             </div>
                             <div class="vt-kpi-card">
                                 <span class="vt-kpi-label">Assinaturas ativas</span>
                                 <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-subscriptions">8</span>
+                                    <span class="vt-kpi-value" id="kpi-subscriptions">0</span>
                                 </div>
                             </div>
                             <div class="vt-kpi-card">
                                 <span class="vt-kpi-label">Saldo disponível</span>
                                 <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-balance">R$ 120,00</span>
-                                    <span class="vt-kpi-sublabel" id="kpi-balance-pending">R$ 50,00 pendente</span>
+                                    <span class="vt-kpi-value" id="kpi-balance">R$ 0,00</span>
+                                    <span class="vt-kpi-sublabel" id="kpi-balance-pending">R$ 0,00 pendente</span>
                                 </div>
                             </div>
                         </div>
@@ -1566,15 +1534,15 @@
                             <div class="vt-seller-grid">
                                 <div class="vt-seller-row">
                                     <span class="vt-seller-label">Stripe ID</span>
-                                    <span class="vt-seller-value mono" id="seller-stripe-id">acct_1P•••••k7Qm</span>
+                                    <span class="vt-seller-value mono" id="seller-stripe-id">-</span>
                                 </div>
                                 <div class="vt-seller-row">
                                     <span class="vt-seller-label">Banco</span>
-                                    <span class="vt-seller-value" id="seller-bank">••••1234</span>
+                                    <span class="vt-seller-value" id="seller-bank">-</span>
                                 </div>
                                 <div class="vt-seller-row">
                                     <span class="vt-seller-label">País</span>
-                                    <span class="vt-seller-value" id="seller-country">BR</span>
+                                    <span class="vt-seller-value" id="seller-country">-</span>
                                 </div>
                             </div>
 
@@ -1586,8 +1554,8 @@
                                     </div>
                                     <div class="vt-payout-info">
                                         <span class="vt-payout-label">Último repasse</span>
-                                        <span class="vt-payout-amount" id="payout-last-amount">R$ 380,00</span>
-                                        <span class="vt-payout-date" id="payout-last-date">15 de março de 2026</span>
+                                        <span class="vt-payout-amount" id="payout-last-amount">R$ 0,00</span>
+                                        <span class="vt-payout-date" id="payout-last-date">-</span>
                                     </div>
                                 </div>
                                 <div class="vt-payout-card">
@@ -1596,8 +1564,8 @@
                                     </div>
                                     <div class="vt-payout-info">
                                         <span class="vt-payout-label">Próximo repasse</span>
-                                        <span class="vt-payout-amount" id="payout-next-amount">~R$ 120,00</span>
-                                        <span class="vt-payout-date" id="payout-next-date">Estimado: 29 de março</span>
+                                        <span class="vt-payout-amount" id="payout-next-amount">R$ 0,00</span>
+                                        <span class="vt-payout-date" id="payout-next-date">-</span>
                                     </div>
                                 </div>
                             </div>

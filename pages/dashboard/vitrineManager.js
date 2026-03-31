@@ -84,9 +84,15 @@ async function loadVitrineTab() {
     const container = document.getElementById('vitrine-container');
     setElementState(container, 'loading');
 
+    // Always hide gate + banner first
+    hideGate();
+    hideOnboardingBanner();
+
     // Check if user is Plus
     if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        setElementState(container, 'vitrine-locked');
+        // Free user: show content state with blurred gate
+        setElementState(container, 'vitrine-content');
+        showGate('locked');
         vitrineLoaded = true;
         return;
     }
@@ -98,7 +104,8 @@ async function loadVitrineTab() {
 
         // State 1: No connected account at all
         if (!accountRes.ok || !accountRes.result?.connected) {
-            setElementState(container, 'vitrine-connect');
+            setElementState(container, 'vitrine-content');
+            showGate('connect');
             vitrineLoaded = true;
             return;
         }
@@ -107,8 +114,15 @@ async function loadVitrineTab() {
 
         // State 2: Account exists but onboarding incomplete
         if (!accountData?.charges_enabled) {
-            // Show pending onboarding state
-            setElementState(container, 'vitrine-pending');
+            // Show real dashboard with onboarding banner
+            setElementState(container, 'vitrine-content');
+            showOnboardingBanner();
+            // Update seller status to pending
+            const statusEl = document.querySelector('.vt-seller-status');
+            if (statusEl) {
+                statusEl.className = 'vt-seller-status pending';
+                statusEl.innerHTML = '<span class="vt-status-dot"></span> Pendente';
+            }
             vitrineLoaded = true;
             return;
         }
@@ -120,19 +134,59 @@ async function loadVitrineTab() {
         console.log('[Vitrine] Products:', productsRes);
         vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
 
-        if (vitrineProducts.length === 0) {
-            setElementState(container, 'vitrine-empty');
-        } else {
+        if (vitrineProducts.length > 0) {
             renderVitrineProducts(vitrineProducts);
-            setElementState(container, 'vitrine-content');
         }
+        setElementState(container, 'vitrine-content');
 
         vitrineLoaded = true;
     } catch (err) {
         console.error('Error loading vitrine:', err);
-        setElementState(container, 'vitrine-connect');
+        setElementState(container, 'vitrine-content');
+        showGate('connect');
         vitrineLoaded = true;
     }
+}
+
+// ============================================================================
+// GATE OVERLAY HELPERS
+// ============================================================================
+
+function showGate(type) {
+    const overlay = document.getElementById('vt-gate-overlay');
+    const lockedCard = document.getElementById('vt-gate-locked');
+    const connectCard = document.getElementById('vt-gate-connect');
+
+    if (!overlay) return;
+
+    // Hide both cards first
+    lockedCard?.classList.add('hidden');
+    connectCard?.classList.add('hidden');
+
+    // Show the right card
+    if (type === 'locked') {
+        lockedCard?.classList.remove('hidden');
+    } else if (type === 'connect') {
+        connectCard?.classList.remove('hidden');
+    }
+
+    // Show overlay
+    overlay.classList.remove('hidden');
+}
+
+function hideGate() {
+    const overlay = document.getElementById('vt-gate-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function showOnboardingBanner() {
+    const banner = document.getElementById('vt-onboarding-banner');
+    if (banner) banner.classList.remove('hidden');
+}
+
+function hideOnboardingBanner() {
+    const banner = document.getElementById('vt-onboarding-banner');
+    if (banner) banner.classList.add('hidden');
 }
 
 function updateStripeStatusBar(active) {
@@ -764,7 +818,6 @@ async function submitCreateProduct() {
 
 // Modal open/close handlers
 document.getElementById('btn-create-product')?.addEventListener('click', openCreateProductModal);
-document.getElementById('btn-create-product-empty')?.addEventListener('click', openCreateProductModal);
 
 // Close modal handlers
 document.getElementById('createProductModal')?.addEventListener('click', (e) => {
