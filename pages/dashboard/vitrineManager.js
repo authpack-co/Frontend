@@ -139,6 +139,9 @@ async function loadVitrineTab() {
         }
         setElementState(container, 'vitrine-content');
 
+        // Load seller dashboard data (KPIs + seller info) in background
+        loadSellerDashboardData();
+
         vitrineLoaded = true;
     } catch (err) {
         console.error('Error loading vitrine:', err);
@@ -195,6 +198,404 @@ function updateStripeStatusBar(active) {
         bar.style.display = active ? 'flex' : 'none';
     });
 }
+
+// ============================================================================
+// SELLER DASHBOARD DATA (KPIs + Seller Info + Sales Chart)
+// Single fetch → client-side cache → JS recorte per period
+// ============================================================================
+
+function formatCentsToBRL(cents) {
+    const value = (cents || 0) / 100;
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// ── Cache ──
+const vitrineData = {
+    ordersByDate: null, // { "dd/mm/yyyy": [{ localDateTime, seller_amount_cents }] }
+};
+
+// ── Process raw orders: UTC → local timezone, group by local date key ──
+function processRawOrders(rawOrders) {
+    const pad = v => String(v).padStart(2, '0');
+    const result = {};
+
+    for (const order of rawOrders) {
+        const d = new Date(order.created_at); // UTC → local automatically
+        const key = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+
+        if (!result[key]) result[key] = [];
+        result[key].push({
+            localDateTime: d,
+            seller_amount_cents: order.seller_amount_cents || 0,
+        });
+    }
+
+    return result;
+}
+
+// ── Filter orders by last N days (same pattern as filterByLastDays in contentRenderer) ──
+function filterOrdersByLastDays(ordersByDate, days) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const cutoff = new Date(today);
+    cutoff.setDate(today.getDate() - days);
+
+    return Object.entries(ordersByDate)
+        .filter(([key]) => {
+            const [day, month, year] = key.split('/');
+            let date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            date.setHours(0, 0, 0, 0);
+            return date >= cutoff && date <= today;
+        })
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+}
+
+// ── Group today's orders by hour (same pattern as getDailyPackageUsage) ──
+function getHourlyOrders(ordersByDate) {
+    const pad = v => String(v).padStart(2, '0');
+    const today = new Date();
+    const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
+
+    const todayOrders = ordersByDate[todayKey];
+    const hourlyData = {};
+
+    if (todayOrders) {
+        for (const order of todayOrders) {
+            const hour = order.localDateTime.getHours();
+            const hourKey = `${pad(hour)}:00`;
+
+            if (!hourlyData[hourKey]) {
+                hourlyData[hourKey] = { revenue_cents: 0, count: 0 };
+            }
+            hourlyData[hourKey].revenue_cents += order.seller_amount_cents;
+            hourlyData[hourKey].count++;
+        }
+    }
+
+    return hourlyData;
+}
+
+// ── Aggregate daily totals from filtered orders (for chart) ──
+function getDailyTotals(filteredOrders) {
+    const result = {};
+    for (const [dateKey, orders] of Object.entries(filteredOrders)) {
+        let revenue_cents = 0;
+        let count = 0;
+        for (const order of orders) {
+            revenue_cents += order.seller_amount_cents;
+            count++;
+        }
+        // Use dd/mm as chart key (strip year)
+        const shortKey = dateKey.substring(0, 5); // "dd/mm"
+        result[shortKey] = { revenue_cents, count };
+    }
+    return result;
+}
+
+// ── Compute KPIs from filtered orders ──
+function computeKPIs(filteredOrders) {
+    let totalRevenue = 0;
+    let totalSales = 0;
+    for (const orders of Object.values(filteredOrders)) {
+        for (const order of orders) {
+            totalRevenue += order.seller_amount_cents;
+            totalSales++;
+        }
+    }
+    return { totalRevenue, totalSales };
+}
+
+// ============================================================================
+// MAIN LOAD + PERIOD UPDATE
+// ============================================================================
+
+async function loadSellerDashboardData() {
+    try {
+        showDashboardSkeletons(true);
+
+        const res = await fetchManager.getSellerDashboard();
+        console.log('[Vitrine] Dashboard data:', res);
+
+        if (!res.ok || !res.result) {
+            showDashboardSkeletons(false);
+            return;
+        }
+
+        const data = res.result;
+
+        // ── Process and cache raw orders ──
+        vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
+
+        // ── Seller Info (static, doesn't change with period) ──
+        const sellerStripeId = document.getElementById('seller-stripe-id');
+        if (sellerStripeId) sellerStripeId.textContent = data.stripe_account_id || '-';
+
+        const sellerBank = document.getElementById('seller-bank');
+        if (sellerBank) {
+            if (data.bank_name && data.bank_last4) {
+                sellerBank.textContent = `${data.bank_name} ****${data.bank_last4}`;
+            } else if (data.bank_name) {
+                sellerBank.textContent = data.bank_name;
+            } else {
+                sellerBank.textContent = '-';
+            }
+        }
+
+        const sellerCountry = document.getElementById('seller-country');
+        if (sellerCountry) sellerCountry.textContent = data.country || '-';
+
+        const statusEl = document.querySelector('.vt-seller-status');
+        if (statusEl) {
+            statusEl.className = 'vt-seller-status active';
+            statusEl.innerHTML = '<span class="vt-status-dot"></span> Ativo';
+        }
+
+        showDashboardSkeletons(false);
+
+        // ── Render default period (30 days) ──
+        const periodSelect = document.getElementById('vt-chart-period-select');
+        const defaultDays = periodSelect ? parseInt(periodSelect.value) || 30 : 30;
+        updateVitrinePeriod(defaultDays);
+
+    } catch (err) {
+        console.error('[Vitrine] Error loading dashboard data:', err);
+        showDashboardSkeletons(false);
+    }
+}
+
+function updateVitrinePeriod(days) {
+    if (!vitrineData.ordersByDate) return;
+
+    // ── Dynamic KPI labels ──
+    const kpiRevenueLabel = document.getElementById('kpi-revenue-label');
+    const kpiSalesLabel = document.getElementById('kpi-sales-label');
+    if (days <= 1) {
+        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita hoje';
+        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas hoje';
+    } else if (days <= 7) {
+        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita esta semana';
+        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas esta semana';
+    } else {
+        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita do mês';
+        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas este mês';
+    }
+
+    if (days <= 1) {
+        // ── Today: hourly chart ──
+        const hourlyData = getHourlyOrders(vitrineData.ordersByDate);
+
+        // Compute KPIs from today's data only
+        const pad = v => String(v).padStart(2, '0');
+        const today = new Date();
+        const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
+        const todayOrders = vitrineData.ordersByDate[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
+        const kpis = computeKPIs(todayOrders);
+
+        const kpiRevenue = document.getElementById('kpi-revenue');
+        if (kpiRevenue) kpiRevenue.textContent = formatCentsToBRL(kpis.totalRevenue);
+        const kpiSales = document.getElementById('kpi-sales');
+        if (kpiSales) kpiSales.textContent = kpis.totalSales;
+
+        loadVitrineSalesChart(hourlyData, true);
+    } else {
+        // ── 7d / 30d: daily chart ──
+        const filteredOrders = filterOrdersByLastDays(vitrineData.ordersByDate, days);
+        const kpis = computeKPIs(filteredOrders);
+
+        const kpiRevenue = document.getElementById('kpi-revenue');
+        if (kpiRevenue) kpiRevenue.textContent = formatCentsToBRL(kpis.totalRevenue);
+        const kpiSales = document.getElementById('kpi-sales');
+        if (kpiSales) kpiSales.textContent = kpis.totalSales;
+
+        const dailyTotals = getDailyTotals(filteredOrders);
+        loadVitrineSalesChart(dailyTotals, false);
+    }
+}
+
+function showDashboardSkeletons(show) {
+    const kpiValueEls = ['kpi-revenue', 'kpi-sales'];
+    kpiValueEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (show) {
+            el.dataset.originalText = el.textContent;
+            el.textContent = '';
+            el.classList.add('skeleton');
+            el.style.width = '80px';
+            el.style.height = '24px';
+            el.style.display = 'inline-block';
+        } else {
+            el.classList.remove('skeleton');
+            el.style.width = '';
+            el.style.height = '';
+            el.style.display = '';
+        }
+    });
+
+    const sellerEls = ['seller-stripe-id', 'seller-bank', 'seller-country'];
+    sellerEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (show) {
+            el.dataset.originalText = el.textContent;
+            el.textContent = '';
+            el.classList.add('skeleton');
+            el.style.width = '100px';
+            el.style.height = '16px';
+            el.style.display = 'inline-block';
+        } else {
+            el.classList.remove('skeleton');
+            el.style.width = '';
+            el.style.height = '';
+            el.style.display = '';
+        }
+    });
+}
+
+// ============================================================================
+// SALES CHART (Chart.js — matches loadUsageChart style)
+// Supports both daily (dd/mm labels) and hourly (HH:00 labels) modes
+// ============================================================================
+
+function loadVitrineSalesChart(dataObject, isHourly = false) {
+    const canvas = document.getElementById('vitrineSalesChart');
+    if (!canvas) return;
+
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) existingChart.destroy();
+
+    const ctx = canvas.getContext('2d');
+
+    const labels = Object.keys(dataObject);
+    const revenueData = labels.map(key => (dataObject[key].revenue_cents || 0) / 100);
+
+    // If no data, show empty state
+    if (labels.length === 0) {
+        const now = new Date();
+        const emptyLabel = isHourly ? '00:00' : `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+        labels.push(emptyLabel);
+        revenueData.push(0);
+    }
+
+    const maxValue = revenueData.length > 0 ? Math.max(...revenueData) : 0;
+    const yAxisMax = maxValue === 0 ? 10 : maxValue * 1.2;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                data: revenueData,
+                borderColor: '#4184e4',
+                backgroundColor: function (context) {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                    gradient.addColorStop(0, 'rgba(65, 132, 228, 0.3)');
+                    gradient.addColorStop(1, 'rgba(65, 132, 228, 0)');
+                    return gradient;
+                },
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#4184e4',
+                pointBorderColor: '#141619',
+                pointBorderWidth: 2,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: '#58a6ff',
+                pointHoverBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1c1f20',
+                    borderColor: '#333840',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#ccc',
+                    cornerRadius: 8,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: (items) => {
+                            const key = labels[items[0].dataIndex];
+                            return isHourly ? `🕐 ${key}` : `📅 ${key}`;
+                        },
+                        label: (item) => {
+                            const key = labels[item.dataIndex];
+                            const d = dataObject[key] || { revenue_cents: 0, count: 0 };
+                            const revenue = formatCentsToBRL(d.revenue_cents);
+                            return [`Receita: ${revenue}`, `Vendas: ${d.count}`];
+                        },
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#8e9091',
+                        font: { size: 11 },
+                        maxRotation: isHourly ? 45 : 0,
+                        minRotation: isHourly ? 45 : 0,
+                        maxTicksLimit: isHourly ? 24 : 10,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: yAxisMax,
+                    grid: { color: '#333840' },
+                    ticks: {
+                        color: '#8e9091',
+                        callback: v => `R$ ${v.toFixed(0)}`
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
+// ── Date range picker listener (pure JS recorte, no re-fetch) ──
+document.getElementById('vt-chart-period-select')?.addEventListener('change', (e) => {
+    const days = parseInt(e.target.value) || 30;
+    updateVitrinePeriod(days);
+});
+
+// ── Stripe Dashboard Link Button ──
+document.getElementById('btn-stripe-dashboard')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-stripe-dashboard');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Abrindo...`;
+
+    try {
+        const res = await fetchManager.getSellerDashboardLink();
+        if (res.ok && res.result?.url) {
+            window.open(res.result.url, '_blank');
+        } else {
+            console.error('[Vitrine] Failed to get dashboard link:', res);
+            notify('error', 'Erro ao abrir painel Stripe');
+        }
+    } catch (err) {
+        console.error('[Vitrine] Dashboard link error:', err);
+        notify('error', 'Erro de conexao');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});
 
 // ============================================================================
 // PRODUCT RENDERING

@@ -255,11 +255,11 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/extensions/build/chrome`, {
             method: "POST",
             credentials: "include",
-        }, true); // rawResponse = true → returns blob
+        }, true); // rawResponse = true
         return response;
     },
 
-    // Device Activation (universal — for CWS and build versions)
+    // Device Activation (universal)
 
     async activateDevice({ visitorId, requestId }) {
         const response = await fetchRoutes(`/api/devices/activate`, {
@@ -350,36 +350,16 @@ const fetchManager = {
         return response;
     },
 
-    // Seller Dashboard — TODO: wire to real backend endpoint
-    // When ready, uncomment the fetch and remove the mock return
     async getSellerDashboard() {
-        // const response = await fetchRoutes(`/api/marketplace/seller/dashboard`);
-        // return response;
+        const response = await fetchRoutes(`/api/marketplace/seller/dashboard`);
+        return response;
+    },
 
-        // Mock data — remove when backend is ready
-        return {
-            ok: true,
-            result: {
-                revenue_this_month: 45000,
-                revenue_change_pct: 15.2,
-                total_sales_this_month: 12,
-                active_subscriptions: 8,
-                stripe_balance_available: 12000,
-                stripe_balance_pending: 5000,
-                stripe_account_id: 'acct_1P•••••k7Qm',
-                bank_last4: '1234',
-                bank_name: 'Nubank',
-                country: 'BR',
-                last_payout: {
-                    amount: 38000,
-                    date: '2026-03-15T00:00:00Z',
-                    status: 'paid'
-                },
-                next_payout: {
-                    estimated_amount: 12000,
-                    estimated_date: '2026-03-29T00:00:00Z'
-                }
-            }
-        };
+    async getSellerDashboardLink() {
+        const response = await fetchRoutes(`/api/marketplace/seller/dashboard-link`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
     },
 }
