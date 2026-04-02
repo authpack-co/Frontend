@@ -2106,7 +2106,7 @@ span.coming-soon {
     background-color: #1c1f20;
 }
 
-.chart-period-select option {
+.chart-period-select option, .vt-chart-period-select option {
     background: #181d23;
     color: var(--color-text-secondary);
     padding: 8px;
@@ -3127,6 +3127,38 @@ span.coming-soon {
 
 .vt-kpi-card:hover {
     border-color: var(--color-border-secondary);
+}
+
+.vt-kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.vt-kpi-notice {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--color-text-gray);
+    font-weight: 500;
+}
+
+.vt-kpi-action-btn {
+    background: transparent;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vt-kpi-action-btn:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-text-primary);
 }
 
 .vt-kpi-label {
