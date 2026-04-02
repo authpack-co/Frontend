@@ -1,21 +1,21 @@
 // ============================================================================
-// Public Vitrine — Single Product Page
-// Loaded via /pages/vitrine/?slug=product-slug-xxx
+// Public Product Page — Single Product
+// Loaded via /pages/product/?slug=product-slug-xxx
 // ============================================================================
 
 (async function () {
-    const container = document.getElementById('vitrine-state');
+    const container = document.getElementById('product-state');
 
     // Get slug from URL path or query
     const params = new URLSearchParams(window.location.search);
     let slug = params.get('slug');
 
-    // Also support /pages/vitrine/slug-here via path
+    // Also support /pages/product/slug-here via path
     if (!slug) {
         const pathParts = window.location.pathname.split('/').filter(Boolean);
-        const vitrineIdx = pathParts.indexOf('vitrine');
-        if (vitrineIdx !== -1 && pathParts[vitrineIdx + 1]) {
-            slug = pathParts[vitrineIdx + 1];
+        const productIdx = pathParts.indexOf('product');
+        if (productIdx !== -1 && pathParts[productIdx + 1]) {
+            slug = pathParts[productIdx + 1];
         }
     }
 

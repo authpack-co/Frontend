@@ -55,16 +55,16 @@ let createProductState = {
                 const setupAlert = document.getElementById('setup-alert');
                 // Don't force-show setup alert; let its own logic manage visibility
 
-                // Hide vitrines
+                // Hide vitrine
                 if (vitrineSection) vitrineSection.style.display = 'none';
-            } else if (view === 'vitrines') {
+            } else if (view === 'vitrine') {
                 // Hide inicio sections
                 if (packagesSection) packagesSection.style.display = 'none';
                 if (packageDetails) packageDetails.style.display = 'none';
                 const setupAlert = document.getElementById('setup-alert');
                 if (setupAlert) setupAlert.style.display = 'none';
 
-                // Show vitrines
+                // Show vitrine
                 if (vitrineSection) vitrineSection.style.display = '';
 
                 // Load vitrine data if not yet loaded
@@ -751,7 +751,7 @@ function createVitrineProductCard(product) {
     // === View button ===
     const viewBtn = document.createElement('a');
     viewBtn.className = 'vp-view-btn';
-    viewBtn.href = `/pages/vitrine/?slug=${slug}`;
+    viewBtn.href = `/pages/product/?slug=${slug}`;
     viewBtn.target = '_blank';
     viewBtn.textContent = 'Ver detalhes';
     card.appendChild(viewBtn);
@@ -767,7 +767,7 @@ function createVitrineProductCard(product) {
     copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
     copyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const url = `${window.location.origin}/pages/vitrine/?slug=${slug}`;
+        const url = `${window.location.origin}/pages/product/?slug=${slug}`;
         navigator.clipboard.writeText(url).then(() => notify('success', 'Link copiado!'));
     });
 
