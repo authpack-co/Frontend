@@ -615,7 +615,7 @@ function renderVitrineProducts(products) {
 function createVitrineProductCard(product) {
     const card = document.createElement('div');
     card.className = 'vp-card';
-    if (product.status === 'inactive') card.classList.add('vp-inactive');
+    if (product.status === 'paused') card.classList.add('vp-paused');
     card.dataset.productId = product.id;
 
     const sessions = product.sessions || [];
@@ -623,7 +623,7 @@ function createVitrineProductCard(product) {
     const priceValue = parseFloat(product.price_cents || 0) / 100;
     const priceStr = priceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const slug = product.slug || product.id;
-    const isInactive = product.status === 'inactive';
+    const isPaused = product.status === 'paused';
     const sold = product.active_access_count || 0;
 
     // === Header: title + badge ===
@@ -635,11 +635,11 @@ function createVitrineProductCard(product) {
     name.textContent = product.name;
     header.appendChild(name);
 
-    if (isInactive) {
-        const inactiveBadge = document.createElement('span');
-        inactiveBadge.className = 'vp-inactive-badge';
-        inactiveBadge.textContent = 'Inativo';
-        header.appendChild(inactiveBadge);
+    if (isPaused) {
+        const pausedBadge = document.createElement('span');
+        pausedBadge.className = 'vp-paused-badge';
+        pausedBadge.textContent = 'Pausado';
+        header.appendChild(pausedBadge);
     } else {
         const badge = document.createElement('span');
         badge.className = `vp-billing-badge ${billingType === 'subscription' ? 'subscription' : 'one-time'}`;
@@ -795,54 +795,55 @@ function createVitrineProductCard(product) {
         productOptions.classList.add('hidden');
         openEditProductModal(product);
     });
-    productOptions.appendChild(editBtn);
-
-    if (isInactive) {
-        const reactivateBtn = document.createElement('button');
-        reactivateBtn.className = 'reactivate-product-btn';
-        reactivateBtn.innerHTML = `
+    // Dropdown order: Pausar/Retomar first, then Editar, then Excluir
+    if (isPaused) {
+        const resumeBtn = document.createElement('button');
+        resumeBtn.className = 'resume-product-btn';
+        resumeBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.5 2v6h-6"></path>
                 <path d="M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
             </svg>
         `;
-        reactivateBtn.appendChild(document.createTextNode('Reativar'));
-        reactivateBtn.addEventListener('click', async (e) => {
+        resumeBtn.appendChild(document.createTextNode('Retomar'));
+        resumeBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
             productOptions.classList.add('hidden');
             try {
                 const res = await fetchManager.reactivateProduct(product.id);
                 if (res.ok) {
-                    notify('success', 'Produto reativado');
+                    notify('success', 'Produto retomado');
                     vitrineLoaded = false;
                     await loadVitrineTab();
                 } else {
-                    notify('error', 'Erro ao reativar');
+                    notify('error', 'Erro ao retomar');
                 }
             } catch (err) {
-                console.error('Reactivate error:', err);
+                console.error('Resume error:', err);
                 notify('error', 'Erro de conexão');
             }
         });
-        productOptions.appendChild(reactivateBtn);
+        productOptions.appendChild(resumeBtn);
     } else {
-        const deactivateBtn = document.createElement('button');
-        deactivateBtn.className = 'deactivate-product-btn';
-        deactivateBtn.innerHTML = `
+        const pauseBtn = document.createElement('button');
+        pauseBtn.className = 'pause-product-btn';
+        pauseBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
-                <path d="m15 9-6 6"/>
-                <path d="m9 9 6 6"/>
+                <path d="M10 15V9"/>
+                <path d="M14 15V9"/>
             </svg>
         `;
-        deactivateBtn.appendChild(document.createTextNode('Desativar'));
-        deactivateBtn.addEventListener('click', (e) => {
+        pauseBtn.appendChild(document.createTextNode('Pausar'));
+        pauseBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             productOptions.classList.add('hidden');
             openDeleteProductModal(product);
         });
-        productOptions.appendChild(deactivateBtn);
+        productOptions.appendChild(pauseBtn);
     }
+
+    productOptions.appendChild(editBtn);
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-product-btn';
@@ -1030,6 +1031,11 @@ function renderStepPackages() {
             createProductState.packageId = pkg.id;
             createProductState.packageName = pkg.name;
             createProductState.sessions = pkg.sessions || [];
+
+            // Auto-fill product name with package name
+            createProductState.name = pkg.name;
+            const nameInput = document.getElementById('product-name');
+            if (nameInput) nameInput.value = pkg.name;
         });
 
         list.appendChild(item);
@@ -1259,13 +1265,13 @@ document.getElementById('confirm-delete-product')?.addEventListener('click', asy
         const res = await fetchManager.deleteProduct(deleteProductId);
         if (res.ok) {
             closeDeleteProductModal();
-            notify('success', 'Produto desativado');
+            notify('success', 'Produto pausado');
 
             // Reload
             vitrineLoaded = false;
             await loadVitrineTab();
         } else {
-            notify('error', 'Erro ao desativar produto');
+            notify('error', 'Erro ao pausar produto');
             setElementState(btnContainer, 'content');
         }
     } catch (err) {
@@ -1288,7 +1294,9 @@ let editProductData = null;
 
 function openEditProductModal(product) {
     editProductData = product;
-    document.getElementById('edit-product-name').value = product.name || '';
+    const editNameInput = document.getElementById('edit-product-name');
+    editNameInput.value = product.name || '';
+    editNameInput.readOnly = true;
     document.getElementById('edit-product-desc').value = product.description || '';
 
     const btnContainer = document.querySelector('#editProductModal .buttonContent');

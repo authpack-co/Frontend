@@ -3715,16 +3715,16 @@ span.coming-soon {
     color: #fff;
 }
 
-/* Inactive card state */
-.vp-card.vp-inactive {
+/* Paused card state */
+.vp-card.vp-paused {
     opacity: 0.55;
 }
 
-.vp-card.vp-inactive:hover {
+.vp-card.vp-paused:hover {
     opacity: 0.75;
 }
 
-.vp-inactive-badge {
+.vp-paused-badge {
     font-size: 11px;
     font-weight: 500;
     padding: 3px 10px;
@@ -3912,20 +3912,20 @@ span.coming-soon {
     background: #212830;
 }
 
-/* === Inactive Card === */
-.vp-card.vp-inactive {
+/* === Paused Card === */
+.vp-card.vp-paused {
     opacity: 0.55;
 }
 
-.vp-card.vp-inactive .vp-icon-header {
+.vp-card.vp-paused .vp-icon-header {
     filter: grayscale(0.7);
 }
 
-.vp-card.vp-inactive:hover {
+.vp-card.vp-paused:hover {
     opacity: 0.75;
 }
 
-.vp-inactive-badge {
+.vp-paused-badge {
     position: absolute;
     bottom: 8px;
     left: 8px;
