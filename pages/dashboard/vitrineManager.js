@@ -632,7 +632,7 @@ function createVitrineProductCard(product) {
 
     const name = document.createElement('h3');
     name.className = 'vp-name';
-    name.textContent = product.name;
+    name.textContent = product.package_name || product.name;
     header.appendChild(name);
 
     if (isPaused) {
@@ -937,7 +937,6 @@ function openCreateProductModal() {
         packageId: null,
         packageName: '',
         sessions: [],
-        name: '',
         description: '',
         billingType: 'one_time',
         price: '',
@@ -945,7 +944,6 @@ function openCreateProductModal() {
     };
 
     // Reset UI
-    document.getElementById('product-name').value = '';
     document.getElementById('product-description').value = '';
     document.getElementById('product-price').value = '';
     document.getElementById('product-stock').value = '';
@@ -1031,11 +1029,6 @@ function renderStepPackages() {
             createProductState.packageId = pkg.id;
             createProductState.packageName = pkg.name;
             createProductState.sessions = pkg.sessions || [];
-
-            // Auto-fill product name with package name
-            createProductState.name = pkg.name;
-            const nameInput = document.getElementById('product-name');
-            if (nameInput) nameInput.value = pkg.name;
         });
 
         list.appendChild(item);
@@ -1094,10 +1087,6 @@ function renderReviewSummary() {
             <span class="review-value">${escapeHtml(s.packageName)}</span>
         </div>
         <div class="review-row">
-            <span class="review-label">Nome</span>
-            <span class="review-value">${escapeHtml(s.name)}</span>
-        </div>
-        <div class="review-row">
             <span class="review-label">Tipo</span>
             <span class="review-value">${typeLabel}</span>
         </div>
@@ -1132,12 +1121,7 @@ document.getElementById('product-step-next')?.addEventListener('click', async ()
             }
             break;
         case 2:
-            createProductState.name = document.getElementById('product-name').value.trim();
             createProductState.description = document.getElementById('product-description').value.trim();
-            if (!createProductState.name) {
-                showCreateProductError('Digite o nome do produto');
-                return;
-            }
             break;
         case 3:
             // billingType already set via click handler
@@ -1197,7 +1181,6 @@ async function submitCreateProduct() {
         const s = createProductState;
         const res = await fetchManager.createProduct({
             package_id: s.packageId,
-            name: s.name,
             description: s.description,
             billing_type: s.billingType,
             price_cents: Math.round(parseFloat(s.price) * 100),
@@ -1240,7 +1223,7 @@ let deleteProductId = null;
 
 function openDeleteProductModal(product) {
     deleteProductId = product.id;
-    document.getElementById('delete-product-name').textContent = product.name;
+    document.getElementById('delete-product-name').textContent = product.package_name || product.name;
 
     const btnContainer = document.querySelector('#deleteProductModal .buttonContent');
     setElementState(btnContainer, 'content');
@@ -1294,9 +1277,6 @@ let editProductData = null;
 
 function openEditProductModal(product) {
     editProductData = product;
-    const editNameInput = document.getElementById('edit-product-name');
-    editNameInput.value = product.name || '';
-    editNameInput.readOnly = true;
     document.getElementById('edit-product-desc').value = product.description || '';
 
     const btnContainer = document.querySelector('#editProductModal .buttonContent');
@@ -1315,19 +1295,13 @@ function closeEditProductModal() {
 document.getElementById('confirm-edit-product')?.addEventListener('click', async () => {
     if (!editProductData) return;
 
-    const name = document.getElementById('edit-product-name').value.trim();
     const description = document.getElementById('edit-product-desc').value.trim();
-
-    if (!name) {
-        notify('error', 'O nome é obrigatório');
-        return;
-    }
 
     const btnContainer = document.querySelector('#editProductModal .buttonContent');
     setElementState(btnContainer, 'loading');
 
     try {
-        const res = await fetchManager.updateProduct(editProductData.id, { name, description });
+        const res = await fetchManager.updateProduct(editProductData.id, { description });
         if (res.ok) {
             closeEditProductModal();
             notify('success', 'Produto atualizado');
@@ -1359,7 +1333,7 @@ let hardDeleteProductId = null;
 
 function openHardDeleteProductModal(product) {
     hardDeleteProductId = product.id;
-    document.getElementById('hard-delete-product-name').textContent = product.name;
+    document.getElementById('hard-delete-product-name').textContent = product.package_name || product.name;
 
     const btnContainer = document.querySelector('#hardDeleteProductModal .buttonContent');
     setElementState(btnContainer, 'content');

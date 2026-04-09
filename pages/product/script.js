@@ -47,7 +47,7 @@
 
     function renderProduct(p) {
         // Page title
-        document.title = `${p.name} — AuthPack`;
+        document.title = `${p.package_name || p.name} — AuthPack`;
 
         const sessions = p.sessions || [];
         const billingType = p.billing_type || 'one_time';
@@ -55,7 +55,7 @@
         const priceStr = priceVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         // === Product Name ===
-        document.getElementById('vt-product-name').textContent = p.name;
+        document.getElementById('vt-product-name').textContent = p.package_name || p.name;
 
         // === Description ===
         const descEl = document.getElementById('vt-product-desc');
