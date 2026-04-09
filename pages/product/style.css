@@ -333,6 +333,61 @@ body {
     border: 1px solid rgba(52, 211, 153, 0.2);
 }
 
+/* Price Breakdown (iFood-style) */
+.vt-price-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.vt-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vt-breakdown-label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.vt-breakdown-value {
+    font-size: 13px;
+    font-family: var(--font-data);
+    color: var(--color-text-secondary);
+}
+
+.vt-breakdown-fee .vt-breakdown-label {
+    color: var(--color-text-muted);
+    font-size: 12px;
+}
+
+.vt-breakdown-fee .vt-breakdown-value {
+    color: var(--color-text-muted);
+    font-size: 12px;
+}
+
+.vt-breakdown-divider {
+    height: 1px;
+    background: var(--color-border);
+}
+
+.vt-breakdown-total .vt-breakdown-label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
+.vt-breakdown-total .vt-breakdown-value {
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
 /* Seller */
 .vt-seller {
     display: flex;

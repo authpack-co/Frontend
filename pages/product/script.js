@@ -94,12 +94,25 @@
             });
         }
 
-        // === Price ===
+        // === Price (total = product + R$2 service fee) ===
+        const SERVICE_FEE = 200; // R$2.00 in cents
+        const totalCents = (p.price_cents || 0) + SERVICE_FEE;
+        const totalVal = totalCents / 100;
+        const totalStr = totalVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
         const priceEl = document.getElementById('vt-price');
         if (billingType === 'subscription') {
-            priceEl.innerHTML = `R$ ${priceStr} <span class="vt-price-period">/ mês</span>`;
+            priceEl.innerHTML = `R$ ${totalStr} <span class="vt-price-period">/ mês</span>`;
         } else {
-            priceEl.textContent = `R$ ${priceStr}`;
+            priceEl.textContent = `R$ ${totalStr}`;
+        }
+
+        // === Price Breakdown (iFood-style) ===
+        const productPriceStr = priceVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('vt-breakdown-product-value').textContent = `R$ ${productPriceStr}`;
+        document.getElementById('vt-breakdown-total-value').textContent = `R$ ${totalStr}`;
+        if (billingType === 'subscription') {
+            document.getElementById('vt-breakdown-product-label').textContent = 'Assinatura mensal';
         }
 
         // === Billing Badge ===
