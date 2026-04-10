@@ -452,6 +452,23 @@
                 </div>
             </div>
         </div>
+        <!-- Sales History Modal -->
+        <div class="modal-overlay" id="salesHistoryModal">
+            <div class="modal sales-history-modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Histórico de vendas</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body custom-scrollbar" id="salesHistoryContent">
+                    <div class="spinner-container" style="height: 200px; display: none;" id="salesHistoryLoading">
+                        <div class="spinner large"></div>
+                    </div>
+                    <div id="salesHistoryWrap">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="notifications">
@@ -1657,7 +1674,7 @@
                             <div class="vt-kpi-card">
                                 <div class="vt-kpi-header">
                                     <span class="vt-kpi-label" id="kpi-sales-label">Vendas este mês</span>
-                                    <button class="vt-kpi-action-btn">
+                                    <button class="vt-kpi-action-btn" id="btn-sales-history">
                                         Ver histórico de vendas
                                     </button>
                                 </div>

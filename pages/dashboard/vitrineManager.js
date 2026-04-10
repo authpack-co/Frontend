@@ -1377,3 +1377,277 @@ document.getElementById('hardDeleteProductModal')?.addEventListener('click', (e)
     if (e.target === e.currentTarget) closeHardDeleteProductModal();
 });
 document.querySelector('#hardDeleteProductModal .cancel-btn')?.addEventListener('click', closeHardDeleteProductModal);
+
+
+// ============================================================================
+// SALES HISTORY MODAL
+// ============================================================================
+
+let allSalesHistory = [];
+
+async function openSalesHistoryModal() {
+    const modal = document.getElementById('salesHistoryModal');
+    if (!modal) return;
+    
+    modal.classList.add('show');
+    
+    const loadingEl = document.getElementById('salesHistoryLoading');
+    const wrapEl = document.getElementById('salesHistoryWrap');
+    
+    loadingEl.style.display = 'flex';
+    wrapEl.innerHTML = '';
+    
+    try {
+        const res = await fetchManager.getSellerSalesHistory();
+        if (res.ok && res.result?.orders) {
+            allSalesHistory = res.result.orders || [];
+            renderSalesHistory(allSalesHistory);
+        } else {
+            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar o histórico.</div>';
+        }
+    } catch (err) {
+        console.error('Falha ao carregar historico:', err);
+        wrapEl.innerHTML = '<div class="sh-empty-state">Erro de conexão.</div>';
+    } finally {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function closeSalesHistoryModal() {
+    const modal = document.getElementById('salesHistoryModal');
+    if (modal) modal.classList.remove('show');
+    allSalesHistory = [];
+}
+
+document.getElementById('btn-sales-history')?.addEventListener('click', openSalesHistoryModal);
+document.getElementById('salesHistoryModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeSalesHistoryModal();
+});
+document.querySelector('#salesHistoryModal .close-btn')?.addEventListener('click', closeSalesHistoryModal);
+
+// Helper for formatting currency
+function formatCents(cents) {
+    return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+const MONTH_NAMES = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+const MONTH_SHORT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+function renderSalesHistory(orders) {
+    const wrapEl = document.getElementById('salesHistoryWrap');
+    if (orders.length === 0) {
+        wrapEl.innerHTML = '<div class="sh-empty-state">Nenhuma venda realizada ainda.</div>';
+        return;
+    }
+
+    let totalRevenue = 0;
+    let totalSales = 0;
+
+    // 1) Agrupar por ano -> mês
+    const grouped = {};
+    orders.forEach(order => {
+        const d = new Date(order.created_at);
+        const y = d.getFullYear();
+        const m = d.getMonth(); // 0-11
+        
+        if (!grouped[y]) {
+            grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
+        }
+        if (!grouped[y].months[m]) {
+            grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
+        }
+        
+        const total = order.total_amount_cents || 0;
+        const platform = order.platform_fee_cents || 0;
+        const stripeFee = order.stripe_fee_cents || 0;
+        
+        const receita = total - platform;
+        const liquido = receita - stripeFee; // same as seller_amount_cents implicitly
+        
+        totalRevenue += receita;
+        totalSales++;
+
+        grouped[y].revenue += receita;
+        grouped[y].net += liquido;
+        grouped[y].sales++;
+        
+        grouped[y].months[m].revenue += receita;
+        grouped[y].months[m].net += liquido;
+        grouped[y].months[m].sales++;
+        
+        grouped[y].months[m].list.push({
+            ...order,
+            dateObj: d,
+            receita,
+            liquido
+        });
+    });
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 2) Gerar HTML
+    const yearsSorted = Object.keys(grouped).sort((a, b) => b - a); // Descending years
+    
+    wrapEl.innerHTML = '';
+    
+    yearsSorted.forEach(yStr => {
+        const yData = grouped[yStr];
+        const year = parseInt(yStr);
+        
+        const yearSection = document.createElement('div');
+        yearSection.className = 'sh-year-group';
+        
+        // Year header block
+        const yHeader = document.createElement('div');
+        yHeader.className = 'sh-year-header';
+        yHeader.innerHTML = `
+            <div class="sh-year-stats">
+                R$ ${formatCents(yData.revenue).replace('R$', '').trim()}
+                <div class="sh-year-divider"></div>
+                <div class="sh-year-sales">${yData.sales} ${yData.sales === 1 ? 'venda' : 'vendas'}</div>
+            </div>
+            <div class="sh-year-title" style="color: #9ca3af; font-weight: 500;">
+                ${year}
+            </div>
+        `;
+        yearSection.appendChild(yHeader);
+        
+        // Months sorted descending
+        const monthsSorted = Object.keys(yData.months).sort((a, b) => b - a);
+        
+        monthsSorted.forEach(mStr => {
+            const mData = yData.months[mStr];
+            const month = parseInt(mStr);
+            
+            const isCurrentMonth = (year === currentYear && month === currentMonth);
+            
+            const mGroup = document.createElement('div');
+            mGroup.className = `sh-month-group ${isCurrentMonth ? 'open' : ''}`;
+            
+            // Month toggle button
+            const mBtn = document.createElement('button');
+            mBtn.className = 'sh-month-btn';
+            mBtn.innerHTML = `
+                <div class="sh-month-title-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon"><path d="m6 9 6 6 6-6"/></svg>
+                    <span>${MONTH_NAMES[month]}</span>
+                    ${isCurrentMonth ? '<span class="sh-month-tag">(Esse mês)</span>' : ''}
+                    <span class="sh-month-val-green">R$ ${formatCents(mData.net).replace('R$', '').trim()}</span>
+                </div>
+                <div class="sh-month-stats">
+                    R$ ${formatCents(mData.revenue).replace('R$', '').trim()}
+                    <button class="sh-dots-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                    </button>
+                </div>
+            `;
+            
+            const mContent = document.createElement('div');
+            mContent.className = 'sh-month-content';
+            
+            // Render items logic with pagination
+            let currentLimit = 10;
+            const renderItems = () => {
+                mContent.innerHTML = '';
+                const itemsToShow = mData.list.slice(0, currentLimit);
+                
+                itemsToShow.forEach(order => {
+                    const item = document.createElement('div');
+                    item.className = 'sh-sale-item';
+                    
+                    const day = String(order.dateObj.getDate()).padStart(2, '0');
+                    const monthShort = MONTH_SHORT[order.dateObj.getMonth()];
+                    
+                    const pName = order.product_name || 'Produto';
+                    const splitP = pName.split(' ');
+                    const initialP = splitP[0] ? splitP[0][0].toUpperCase() : 'P';
+                    
+                    const buyerName = order.buyer_name || 'Usuário';
+                    const splitU = buyerName.split(' ');
+                    const initialU = splitU[0] ? splitU[0][0].toUpperCase() : 'U';
+
+                    const userAvatarHtml = order.buyer_picture 
+                        ? `<img src="${order.buyer_picture}" alt="${buyerName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">` 
+                        : initialU;
+
+                    const hours = String(order.dateObj.getHours()).padStart(2, '0');
+                    const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
+                    const timeStr = `${hours}:${mins}`;
+
+                    const saleNumber = mData.list.length - mData.list.indexOf(order);
+                    
+                    item.innerHTML = `
+                        <div class="sh-col sh-col-idx">Venda ${saleNumber}</div>
+                        
+                        <div class="sh-col sh-col-prod">
+                            <div class="sh-avatar prod-avatar">${initialP}</div>
+                            <div class="sh-texts">
+                                <span class="sh-title">${pName}</span>
+                                <span class="sh-sub">#${order.product_id.split('-')[0].toUpperCase()}</span>
+                                <span class="sh-sub date-sub">${day} ${monthShort} • ${timeStr}</span>
+                            </div>
+                        </div>
+
+                        <div class="sh-col sh-col-user">
+                            <div class="sh-avatar user-avatar" ${order.buyer_picture ? 'style="background: none;"' : ''}>${userAvatarHtml}</div>
+                            <div class="sh-texts">
+                                <span class="sh-title">${buyerName}</span>
+                                <span class="sh-sub">${order.buyer_email || ''}</span>
+                            </div>
+                        </div>
+
+                        <div class="sh-col sh-col-val">
+                            <div class="sh-sale-revenue">R$ ${formatCents(order.receita).replace('R$', '').trim()}</div>
+                            ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatCents(order.liquido).replace('R$', '').trim()}</div>` : ''}
+                        </div>
+                        
+                        <button class="sh-sale-actions">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </button>
+                    `;
+                    mContent.appendChild(item);
+                });
+                
+                if (currentLimit < mData.list.length) {
+                    const btnMore = document.createElement('button');
+                    btnMore.className = 'sh-load-more';
+                    btnMore.textContent = 'Carregar mais vendas';
+                    const wrapBtn = document.createElement('div');
+                    wrapBtn.style.padding = '0 16px 16px';
+                    wrapBtn.appendChild(btnMore);
+                    mContent.appendChild(wrapBtn);
+                    
+                    btnMore.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        currentLimit += 10;
+                        renderItems();
+                    });
+                }
+            };
+            
+            renderItems();
+            
+            // Toggle Logic
+            mBtn.addEventListener('click', () => {
+                mGroup.classList.toggle('open');
+                const svgIcon = mBtn.querySelector('.toggle-icon');
+                if (mGroup.classList.contains('open')) {
+                    svgIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    svgIcon.style.transform = 'none';
+                }
+            });
+            
+            mGroup.appendChild(mBtn);
+            mGroup.appendChild(mContent);
+            yearSection.appendChild(mGroup);
+        });
+        
+        wrapEl.appendChild(yearSection);
+    });
+}

@@ -362,4 +362,9 @@ const fetchManager = {
         });
         return response;
     },
+
+    async getSellerSalesHistory() {
+        const response = await fetchRoutes(`/api/marketplace/seller/sales-history`);
+        return response;
+    },
 }
