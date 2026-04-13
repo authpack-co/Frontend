@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
 
 :root {
-    --color-bg: #0f1114;
+    --color-bg: #181d23;
+    --color-bg-frame: #141619;
     --color-bg-card: #181d23;
     --color-border: rgba(255, 255, 255, 0.08);
     --color-border-hover: rgba(255, 255, 255, 0.14);
@@ -41,12 +42,17 @@ body {
    ============================ */
 .vt-header {
     width: 100%;
-    max-width: 1160px;
-    margin: 0 auto;
-    padding: 18px 30px;
+    padding: 18px 50px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: rgba(20, 22, 25, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .vt-logo {
@@ -83,14 +89,17 @@ body {
 }
 
 /* ============================
-   Main Container
+   Main Container (Dark frame wrapper)
    ============================ */
 .vt-main {
     flex: 1;
     max-width: 1100px;
     width: 100%;
-    margin: 0 auto;
+    margin: 32px auto;
     padding: 36px 30px 60px;
+    background: var(--color-bg-frame);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
 }
 
 /* ============================
@@ -603,6 +612,8 @@ body {
 
     .vt-main {
         padding: 24px 16px 40px;
+        margin: 16px 8px;
+        border-radius: 12px;
     }
 
     .vt-hero-banner {
