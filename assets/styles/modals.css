@@ -970,6 +970,10 @@
     color: #fff;
 }
 
+.sh-load-more-wrap {
+    padding: 0 16px 16px;
+}
+
 .sh-load-more {
     width: auto;
     padding: 10px 24px;

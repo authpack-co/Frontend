@@ -95,6 +95,7 @@
         }
 
         // === Price (total = product + R$2 service fee) ===
+        // Must match backend PLATFORM_FEE_CENTS in checkoutRoutes.js
         const SERVICE_FEE = 200; // R$2.00 in cents
         const totalCents = (p.price_cents || 0) + SERVICE_FEE;
         const totalVal = totalCents / 100;

@@ -1425,9 +1425,9 @@ document.getElementById('salesHistoryModal')?.addEventListener('click', (e) => {
 });
 document.querySelector('#salesHistoryModal .close-btn')?.addEventListener('click', closeSalesHistoryModal);
 
-// Helper for formatting currency
-function formatCents(cents) {
-    return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Helper for formatting currency value without symbol (e.g. "59,90")
+function formatBRLValue(cents) {
+    return ((cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 const MONTH_NAMES = [
@@ -1462,10 +1462,9 @@ function renderSalesHistory(orders) {
         
         const total = order.total_amount_cents || 0;
         const platform = order.platform_fee_cents || 0;
-        const stripeFee = order.stripe_fee_cents || 0;
         
         const receita = total - platform;
-        const liquido = receita - stripeFee; // same as seller_amount_cents implicitly
+        const liquido = order.seller_amount_cents || 0;
         
         totalRevenue += receita;
         totalSales++;
@@ -1507,7 +1506,7 @@ function renderSalesHistory(orders) {
         yHeader.className = 'sh-year-header';
         yHeader.innerHTML = `
             <div class="sh-year-stats">
-                R$ ${formatCents(yData.revenue).replace('R$', '').trim()}
+                R$ ${formatBRLValue(yData.revenue)}
                 <div class="sh-year-divider"></div>
                 <div class="sh-year-sales">${yData.sales} ${yData.sales === 1 ? 'venda' : 'vendas'}</div>
             </div>
@@ -1537,10 +1536,10 @@ function renderSalesHistory(orders) {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon"><path d="m6 9 6 6 6-6"/></svg>
                     <span>${MONTH_NAMES[month]}</span>
                     ${isCurrentMonth ? '<span class="sh-month-tag">(Esse mês)</span>' : ''}
-                    <span class="sh-month-val-green">R$ ${formatCents(mData.net).replace('R$', '').trim()}</span>
+                    <span class="sh-month-val-green">R$ ${formatBRLValue(mData.net)}</span>
                 </div>
                 <div class="sh-month-stats">
-                    R$ ${formatCents(mData.revenue).replace('R$', '').trim()}
+                    R$ ${formatBRLValue(mData.revenue)}
                     <button class="sh-dots-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                     </button>
@@ -1602,8 +1601,8 @@ function renderSalesHistory(orders) {
                         </div>
 
                         <div class="sh-col sh-col-val">
-                            <div class="sh-sale-revenue">R$ ${formatCents(order.receita).replace('R$', '').trim()}</div>
-                            ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatCents(order.liquido).replace('R$', '').trim()}</div>` : ''}
+                            <div class="sh-sale-revenue">R$ ${formatBRLValue(order.receita)}</div>
+                            ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatBRLValue(order.liquido)}</div>` : ''}
                         </div>
                         
                         <button class="sh-sale-actions">
@@ -1618,7 +1617,7 @@ function renderSalesHistory(orders) {
                     btnMore.className = 'sh-load-more';
                     btnMore.textContent = 'Carregar mais vendas';
                     const wrapBtn = document.createElement('div');
-                    wrapBtn.style.padding = '0 16px 16px';
+                    wrapBtn.className = 'sh-load-more-wrap';
                     wrapBtn.appendChild(btnMore);
                     mContent.appendChild(wrapBtn);
                     
@@ -1632,15 +1631,9 @@ function renderSalesHistory(orders) {
             
             renderItems();
             
-            // Toggle Logic
+            // Toggle Logic (rotation handled by CSS: .sh-month-group.open .toggle-icon)
             mBtn.addEventListener('click', () => {
                 mGroup.classList.toggle('open');
-                const svgIcon = mBtn.querySelector('.toggle-icon');
-                if (mGroup.classList.contains('open')) {
-                    svgIcon.style.transform = 'rotate(180deg)';
-                } else {
-                    svgIcon.style.transform = 'none';
-                }
             });
             
             mGroup.appendChild(mBtn);
