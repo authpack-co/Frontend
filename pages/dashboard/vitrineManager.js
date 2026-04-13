@@ -624,7 +624,8 @@ function createVitrineProductCard(product) {
     const priceStr = priceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const slug = product.slug || product.id;
     const isPaused = product.status === 'paused';
-    const sold = product.active_access_count || 0;
+    const totalSales = product.total_sales_count || 0;
+    const activeAccess = product.active_access_count || 0;
 
     // === Header: title + badge ===
     const header = document.createElement('div');
@@ -704,21 +705,19 @@ function createVitrineProductCard(product) {
     const statsRow = document.createElement('div');
     statsRow.className = 'vp-stats-row';
 
-    // Total sales stat
+    // Total sales stat (historical, never decreases)
     const salesStat = document.createElement('div');
     salesStat.className = 'vp-stat';
     salesStat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`;
-    salesStat.innerHTML += `<strong>${sold}</strong> vendas`;
+    salesStat.innerHTML += `<strong>${totalSales}</strong> vendas`;
     statsRow.appendChild(salesStat);
 
-    // Active subscriptions (for subscription products)
-    if (billingType === 'subscription') {
-        const activeStat = document.createElement('div');
-        activeStat.className = 'vp-stat';
-        activeStat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
-        activeStat.innerHTML += `<strong>${sold}</strong> ativos`;
-        statsRow.appendChild(activeStat);
-    }
+    // Active access stat (for all product types)
+    const activeStat = document.createElement('div');
+    activeStat.className = 'vp-stat';
+    activeStat.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+    activeStat.innerHTML += `<strong>${activeAccess}</strong> ativos`;
+    statsRow.appendChild(activeStat);
 
     card.appendChild(statsRow);
 
@@ -732,7 +731,7 @@ function createVitrineProductCard(product) {
         const fill = document.createElement('div');
         fill.className = 'vp-stock-fill';
 
-        const pct = Math.min(100, (sold / product.stock) * 100);
+        const pct = Math.min(100, (activeAccess / product.stock) * 100);
         fill.style.width = `${pct}%`;
         if (pct >= 100) fill.classList.add('depleted');
         else if (pct >= 80) fill.classList.add('warning');
@@ -742,7 +741,7 @@ function createVitrineProductCard(product) {
 
         const label = document.createElement('span');
         label.className = 'vp-stock-label';
-        label.innerHTML = `<strong>${sold}</strong>/${product.stock} vagas preenchidas`;
+        label.innerHTML = `<strong>${activeAccess}</strong>/${product.stock} vagas preenchidas`;
         stockBar.appendChild(label);
 
         card.appendChild(stockBar);
