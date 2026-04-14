@@ -1387,15 +1387,15 @@ let allSalesHistory = [];
 async function openSalesHistoryModal() {
     const modal = document.getElementById('salesHistoryModal');
     if (!modal) return;
-    
+
     modal.classList.add('show');
-    
+
     const loadingEl = document.getElementById('salesHistoryLoading');
     const wrapEl = document.getElementById('salesHistoryWrap');
-    
+
     loadingEl.style.display = 'flex';
     wrapEl.innerHTML = '';
-    
+
     try {
         const res = await fetchManager.getSellerSalesHistory();
         if (res.ok && res.result?.orders) {
@@ -1451,30 +1451,31 @@ function renderSalesHistory(orders) {
         const d = new Date(order.created_at);
         const y = d.getFullYear();
         const m = d.getMonth(); // 0-11
-        
+
         if (!grouped[y]) {
             grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
         }
         if (!grouped[y].months[m]) {
             grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
         }
-        
-        // receita = valor bruto (o que o comprador pagou)
-        // liquido = valor líquido (o que o seller recebe após todas as taxas)
-        const receita = order.total_amount_cents || 0;
+
+        // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma (2 BRL)
+        // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa stripe
+        const plataformaFeeCents = 200; // Taxa fixa de R$ 2,00 adicionada no checkout
+        const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
         const liquido = order.seller_amount_cents || 0;
-        
+
         totalRevenue += receita;
         totalSales++;
 
         grouped[y].revenue += receita;
         grouped[y].net += liquido;
         grouped[y].sales++;
-        
+
         grouped[y].months[m].revenue += receita;
         grouped[y].months[m].net += liquido;
         grouped[y].months[m].sales++;
-        
+
         grouped[y].months[m].list.push({
             ...order,
             dateObj: d,
@@ -1489,43 +1490,55 @@ function renderSalesHistory(orders) {
 
     // 2) Gerar HTML
     const yearsSorted = Object.keys(grouped).sort((a, b) => b - a); // Descending years
-    
+
     wrapEl.innerHTML = '';
-    
+
     yearsSorted.forEach(yStr => {
         const yData = grouped[yStr];
         const year = parseInt(yStr);
-        
+
         const yearSection = document.createElement('div');
         yearSection.className = 'sh-year-group';
-        
+
         // Year header block
         const yHeader = document.createElement('div');
         yHeader.className = 'sh-year-header';
         yHeader.innerHTML = `
             <div class="sh-year-stats">
-                R$ ${formatBRLValue(yData.net)}
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Receita Bruta</span>
+                    <span class="sh-year-stat-value">R$ ${formatBRLValue(yData.revenue)}</span>
+                </div>
                 <div class="sh-year-divider"></div>
-                <div class="sh-year-sales">${yData.sales} ${yData.sales === 1 ? 'venda' : 'vendas'}</div>
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Receita Líquida</span>
+                    <span class="sh-year-stat-value highlight">R$ ${formatBRLValue(yData.net)}</span>
+                </div>
+                <div class="sh-year-divider"></div>
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Vendas</span>
+                    <span class="sh-year-stat-value">${yData.sales}</span>
+                </div>
             </div>
-            <div class="sh-year-title" style="color: #9ca3af; font-weight: 500;">
+            <div class="sh-year-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                 ${year}
             </div>
         `;
         yearSection.appendChild(yHeader);
-        
+
         // Months sorted descending
         const monthsSorted = Object.keys(yData.months).sort((a, b) => b - a);
-        
+
         monthsSorted.forEach(mStr => {
             const mData = yData.months[mStr];
             const month = parseInt(mStr);
-            
+
             const isCurrentMonth = (year === currentYear && month === currentMonth);
-            
+
             const mGroup = document.createElement('div');
             mGroup.className = `sh-month-group ${isCurrentMonth ? 'open' : ''}`;
-            
+
             // Month toggle button
             const mBtn = document.createElement('button');
             mBtn.className = 'sh-month-btn';
@@ -1543,49 +1556,53 @@ function renderSalesHistory(orders) {
                     </button>
                 </div>
             `;
-            
+
             const mContent = document.createElement('div');
             mContent.className = 'sh-month-content';
-            
+
             // Render items logic with pagination
             let currentLimit = 10;
             const renderItems = () => {
-                mContent.innerHTML = '';
+                mContent.innerHTML = `
+                    <div class="sh-table-header">
+                        <div class="sh-col sh-col-id">ID</div>
+                        <div class="sh-col sh-col-prod">Produto</div>
+                        <div class="sh-col sh-col-user">Comprador</div>
+                        <div class="sh-col sh-col-val">Valor</div>
+                        <div style="width: 28px;"></div>
+                    </div>
+                `;
                 const itemsToShow = mData.list.slice(0, currentLimit);
-                
+
                 itemsToShow.forEach(order => {
                     const item = document.createElement('div');
                     item.className = 'sh-sale-item';
-                    
+
                     const day = String(order.dateObj.getDate()).padStart(2, '0');
                     const monthShort = MONTH_SHORT[order.dateObj.getMonth()];
-                    
+
                     const pName = order.product_name || 'Produto';
                     const splitP = pName.split(' ');
                     const initialP = splitP[0] ? splitP[0][0].toUpperCase() : 'P';
-                    
+
                     const buyerName = order.buyer_name || 'Usuário';
                     const splitU = buyerName.split(' ');
                     const initialU = splitU[0] ? splitU[0][0].toUpperCase() : 'U';
 
-                    const userAvatarHtml = order.buyer_picture 
-                        ? `<img src="${order.buyer_picture}" alt="${buyerName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">` 
+                    const userAvatarHtml = order.buyer_picture
+                        ? `<img src="${order.buyer_picture}" alt="${buyerName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">`
                         : initialU;
 
                     const hours = String(order.dateObj.getHours()).padStart(2, '0');
                     const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
                     const timeStr = `${hours}:${mins}`;
 
-                    const saleNumber = mData.list.length - mData.list.indexOf(order);
-                    
                     item.innerHTML = `
-                        <div class="sh-col sh-col-idx">Venda ${saleNumber}</div>
-                        
+                        <div class="sh-col sh-col-id">#${order.product_id.split('-')[0].toUpperCase()}</div>
+
                         <div class="sh-col sh-col-prod">
-                            <div class="sh-avatar prod-avatar">${initialP}</div>
                             <div class="sh-texts">
                                 <span class="sh-title">${pName}</span>
-                                <span class="sh-sub">#${order.product_id.split('-')[0].toUpperCase()}</span>
                                 <span class="sh-sub date-sub">${day} ${monthShort} • ${timeStr}</span>
                             </div>
                         </div>
@@ -1609,7 +1626,7 @@ function renderSalesHistory(orders) {
                     `;
                     mContent.appendChild(item);
                 });
-                
+
                 if (currentLimit < mData.list.length) {
                     const btnMore = document.createElement('button');
                     btnMore.className = 'sh-load-more';
@@ -1618,7 +1635,7 @@ function renderSalesHistory(orders) {
                     wrapBtn.className = 'sh-load-more-wrap';
                     wrapBtn.appendChild(btnMore);
                     mContent.appendChild(wrapBtn);
-                    
+
                     btnMore.addEventListener('click', (e) => {
                         e.stopPropagation();
                         currentLimit += 10;
@@ -1626,19 +1643,19 @@ function renderSalesHistory(orders) {
                     });
                 }
             };
-            
+
             renderItems();
-            
+
             // Toggle Logic (rotation handled by CSS: .sh-month-group.open .toggle-icon)
             mBtn.addEventListener('click', () => {
                 mGroup.classList.toggle('open');
             });
-            
+
             mGroup.appendChild(mBtn);
             mGroup.appendChild(mContent);
             yearSection.appendChild(mGroup);
         });
-        
+
         wrapEl.appendChild(yearSection);
     });
 }

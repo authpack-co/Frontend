@@ -712,7 +712,8 @@
     height: 85vh;
     display: flex;
     flex-direction: column;
-    background: #111315; /* darker bg from image 2 */
+    background: #111315;
+    /* darker bg from image 2 */
 }
 
 .sales-history-modal .modal-body {
@@ -737,31 +738,55 @@
     margin-bottom: 24px;
 }
 
-.sh-year-title {
-    font-size: 24px;
+.sh-year-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.sh-year-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sh-year-stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.sh-year-stat-value {
+    font-size: 17px;
     font-weight: 700;
     color: #fff;
+}
+
+.sh-year-stat-value.highlight {
+    color: #4ade80;
 }
 
 .sh-year-divider {
     width: 1px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
-    margin: 0 24px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 0 20px;
 }
 
-.sh-year-stats {
-    font-size: 18px;
-    font-weight: 700;
-    color: #fff;
-    display: flex;
+.sh-year-badge {
+    display: inline-flex;
     align-items: center;
-}
-
-.sh-year-sales {
-    font-size: 16px;
+    gap: 7px;
+    padding: 7px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 14px;
     font-weight: 600;
-    color: #fff;
+    color: #d1d5db;
+    flex-shrink: 0;
 }
 
 /* Month Dropdown */
@@ -829,16 +854,33 @@
 }
 
 .sh-month-content {
-    display: none;
+    max-height: 0;
+    overflow: hidden;
     padding: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid transparent;
+    transition: max-height 0.22s ease, border-color 0.22s ease;
 }
 
 .sh-month-group.open .sh-month-content {
-    display: block;
+    max-height: 4000px;
+    border-top-color: rgba(255, 255, 255, 0.05);
+    transition: max-height 0.28s ease, border-color 0.15s ease;
 }
 
 /* Sale Items using Flex Columns */
+.sh-table-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
 .sh-sale-item {
     display: flex;
     align-items: center;
@@ -857,13 +899,15 @@
     justify-content: center;
 }
 
-.sh-col-idx {
-    width: 70px;
+.sh-col-id {
+    width: 65px;
     flex-shrink: 0;
-    color: #fff;
-    font-size: 14px;
+    color: #9ca3af;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
     font-weight: 500;
 }
+
 
 .sh-col-prod {
     flex: 1.5;
@@ -901,10 +945,6 @@
     flex-shrink: 0;
 }
 
-.prod-avatar {
-    background: linear-gradient(135deg, #2563eb, #7c3aed); /* Target product blueish */
-    border-radius: 8px; /* Product usually has slightly rounded square */
-}
 
 .user-avatar {
     background: linear-gradient(135deg, #475569, #334155);
@@ -951,7 +991,8 @@
     margin-top: 2px;
 }
 
-.sh-sale-actions, .sh-dots-btn {
+.sh-sale-actions,
+.sh-dots-btn {
     background: none;
     border: none;
     color: #6b7280;
@@ -965,7 +1006,8 @@
     margin-left: 8px;
 }
 
-.sh-sale-actions:hover, .sh-dots-btn:hover {
+.sh-sale-actions:hover,
+.sh-dots-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
 }
