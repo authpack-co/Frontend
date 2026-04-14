@@ -1738,6 +1738,7 @@ function renderProductDetails(data, wrapEl) {
         : 'Ilimitado';
 
     const infoItems = [
+        { label: 'ID', value: '#' + product.id.split('-')[0].toUpperCase() },
         { label: 'Tipo', value: billingLabel },
         { label: 'Status', value: `<span class="pd-status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</span>`, isHtml: true },
         { label: 'Preço', value: `R$ ${priceStr}${priceSuffix}` },
@@ -1950,7 +1951,7 @@ function renderProductDetails(data, wrapEl) {
                     // Without the "Produto" column — we're in context
                     mContent.innerHTML = `
                         <div class="sh-table-header">
-                            <div class="sh-col sh-col-id">ID</div>
+                            <div class="sh-col sh-col-id" style="min-width: 110px;">Data</div>
                             <div class="sh-col sh-col-user">Comprador</div>
                             <div class="sh-col sh-col-val">Valor</div>
                             <div style="width: 28px;"></div>
@@ -1977,14 +1978,15 @@ function renderProductDetails(data, wrapEl) {
                             : initialU;
 
                         item.innerHTML = `
-                            <div class="sh-col sh-col-id">#${order.product_id.split('-')[0].toUpperCase()}</div>
+                            <div class="sh-col sh-col-id" style="min-width: 110px;">
+                                <span class="sh-sub" style="font-size: 13px;">${day} ${monthShort} • ${timeStr}</span>
+                            </div>
 
                             <div class="sh-col sh-col-user">
                                 <div class="sh-avatar user-avatar" ${order.buyer_picture ? 'style="background: none;"' : ''}>${userAvatarHtml}</div>
                                 <div class="sh-texts">
                                     <span class="sh-title">${buyerName}</span>
                                     <span class="sh-sub">${order.buyer_email || ''}</span>
-                                    <span class="sh-sub date-sub">${day} ${monthShort} • ${timeStr}</span>
                                 </div>
                             </div>
 
