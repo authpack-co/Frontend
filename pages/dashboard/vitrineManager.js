@@ -748,11 +748,13 @@ function createVitrineProductCard(product) {
     }
 
     // === View button ===
-    const viewBtn = document.createElement('a');
+    const viewBtn = document.createElement('button');
     viewBtn.className = 'vp-view-btn';
-    viewBtn.href = `/pages/product/?slug=${slug}`;
-    viewBtn.target = '_blank';
     viewBtn.textContent = 'Ver detalhes';
+    viewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openProductDetailsModal(product);
+    });
     card.appendChild(viewBtn);
 
     // === Overlay actions (hover options) ===
@@ -1658,4 +1660,377 @@ function renderSalesHistory(orders) {
 
         wrapEl.appendChild(yearSection);
     });
+}
+
+// ============================================================================
+// PRODUCT DETAILS MODAL
+// ============================================================================
+
+async function openProductDetailsModal(product) {
+    const modal = document.getElementById('productDetailsModal');
+    if (!modal) return;
+
+    // Set title
+    document.getElementById('pd-modal-title').textContent = product.package_name || product.name || 'Detalhes do produto';
+
+    modal.classList.add('show');
+
+    const loadingEl = document.getElementById('productDetailsLoading');
+    const wrapEl = document.getElementById('productDetailsWrap');
+
+    loadingEl.style.display = 'flex';
+    wrapEl.innerHTML = '';
+
+    try {
+        const res = await fetchManager.getProductDetails(product.id);
+        if (res.ok && res.result) {
+            renderProductDetails(res.result, wrapEl);
+        } else {
+            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar os detalhes.</div>';
+        }
+    } catch (err) {
+        console.error('Falha ao carregar detalhes do produto:', err);
+        wrapEl.innerHTML = '<div class="sh-empty-state">Erro de conexão.</div>';
+    } finally {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function closeProductDetailsModal() {
+    const modal = document.getElementById('productDetailsModal');
+    modal.classList.remove('show');
+}
+
+document.getElementById('productDetailsModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeProductDetailsModal();
+});
+document.querySelector('#productDetailsModal .close-btn')?.addEventListener('click', closeProductDetailsModal);
+
+function renderProductDetails(data, wrapEl) {
+    const { product, activeUsers, orders } = data;
+
+    // ── Section 1: Product Info ──
+    const infoSection = document.createElement('div');
+    infoSection.className = 'pd-section';
+
+    const infoTitle = document.createElement('h3');
+    infoTitle.className = 'pd-section-title';
+    infoTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> Informações`;
+    infoSection.appendChild(infoTitle);
+
+    const grid = document.createElement('div');
+    grid.className = 'pd-info-grid';
+
+    const billingLabel = product.billing_type === 'subscription' ? 'Assinatura mensal' : 'Pagamento único';
+    const priceStr = (parseFloat(product.price_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    const priceSuffix = product.billing_type === 'subscription' ? '/mês' : '';
+    const statusLabel = product.status === 'active' ? 'Ativo' : 'Pausado';
+    const statusClass = product.status === 'active' ? 'pd-status-active' : 'pd-status-paused';
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+    };
+
+    const stockLabel = product.stock != null
+        ? `${product.active_access_count || 0}/${product.stock}`
+        : 'Ilimitado';
+
+    const infoItems = [
+        { label: 'Tipo', value: billingLabel },
+        { label: 'Status', value: `<span class="pd-status-badge ${statusClass}"><span class="status-dot"></span>${statusLabel}</span>`, isHtml: true },
+        { label: 'Preço', value: `R$ ${priceStr}${priceSuffix}` },
+        { label: 'Pacote', value: product.package_name || '—' },
+        { label: 'Criado em', value: formatDate(product.created_at) },
+        { label: 'Última alteração', value: formatDate(product.updated_at) },
+        { label: 'Vagas', value: stockLabel },
+    ];
+
+    infoItems.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'pd-info-item';
+        el.innerHTML = `
+            <span class="pd-info-label">${item.label}</span>
+            <span class="pd-info-value">${item.isHtml ? item.value : escapeHtml(item.value)}</span>
+        `;
+        grid.appendChild(el);
+    });
+
+    infoSection.appendChild(grid);
+
+    // ── Top grid container (info + users side by side) ──
+    const topGrid = document.createElement('div');
+    topGrid.className = 'pd-top-grid';
+    topGrid.appendChild(infoSection);
+
+    // ── Section 2: Active Users ──
+    const usersSection = document.createElement('div');
+    usersSection.className = 'pd-section';
+
+    const usersTitle = document.createElement('h3');
+    usersTitle.className = 'pd-section-title';
+    usersTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Usuários ativos <span class="pd-count">${activeUsers.length}</span>`;
+    usersSection.appendChild(usersTitle);
+
+    if (activeUsers.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'sh-empty-state';
+        empty.textContent = 'Nenhum usuário ativo no momento.';
+        usersSection.appendChild(empty);
+    } else {
+        // Paginated user list
+        let userLimit = 10;
+        const userListContainer = document.createElement('div');
+        userListContainer.className = 'pd-user-list';
+        usersSection.appendChild(userListContainer);
+
+        const renderUserItems = () => {
+            userListContainer.innerHTML = '';
+            const visibleUsers = activeUsers.slice(0, userLimit);
+
+            visibleUsers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'pd-user-item';
+
+                const userName = user.name || 'Usuário';
+                const initials = userName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+                const avatarHtml = user.picture
+                    ? `<img src="${user.picture}" alt="${userName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">`
+                    : initials;
+
+                const grantedDate = user.granted_at ? new Date(user.granted_at) : null;
+                const dateStr = grantedDate
+                    ? `${String(grantedDate.getDate()).padStart(2, '0')} ${MONTH_SHORT[grantedDate.getMonth()]} ${grantedDate.getFullYear()}`
+                    : '—';
+
+                item.innerHTML = `
+                    <div class="sh-avatar user-avatar" ${user.picture ? 'style="background: none;"' : ''}>${avatarHtml}</div>
+                    <div class="pd-user-info">
+                        <span class="sh-title">${escapeHtml(userName)}</span>
+                        <span class="sh-sub">${escapeHtml(user.email || '')}</span>
+                    </div>
+                    <span class="pd-user-date">${dateStr}</span>
+                `;
+                userListContainer.appendChild(item);
+            });
+
+            if (userLimit < activeUsers.length) {
+                const wrapBtn = document.createElement('div');
+                wrapBtn.className = 'sh-load-more-wrap';
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'sh-load-more';
+                moreBtn.textContent = `Carregar mais (${activeUsers.length - userLimit} restantes)`;
+                moreBtn.addEventListener('click', () => {
+                    userLimit += 10;
+                    renderUserItems();
+                });
+                wrapBtn.appendChild(moreBtn);
+                userListContainer.appendChild(wrapBtn);
+            }
+        };
+        renderUserItems();
+    }
+
+    topGrid.appendChild(usersSection);
+    wrapEl.appendChild(topGrid);
+
+    // ── Section 3: Sales History ──
+    const salesSection = document.createElement('div');
+    salesSection.className = 'pd-section';
+
+    const salesTitle = document.createElement('h3');
+    salesTitle.className = 'pd-section-title';
+    salesTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Histórico de vendas`;
+    salesSection.appendChild(salesTitle);
+
+    if (orders.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'sh-empty-state';
+        empty.textContent = 'Nenhuma venda realizada ainda.';
+        salesSection.appendChild(empty);
+    } else {
+        // Reuse the same year→month grouping logic
+        const grouped = {};
+        orders.forEach(order => {
+            const d = new Date(order.created_at);
+            const y = d.getFullYear();
+            const m = d.getMonth();
+
+            if (!grouped[y]) grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
+            if (!grouped[y].months[m]) grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
+
+            const plataformaFeeCents = 200;
+            const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
+            const liquido = order.seller_amount_cents || 0;
+
+            grouped[y].revenue += receita;
+            grouped[y].net += liquido;
+            grouped[y].sales++;
+
+            grouped[y].months[m].revenue += receita;
+            grouped[y].months[m].net += liquido;
+            grouped[y].months[m].sales++;
+
+            grouped[y].months[m].list.push({ ...order, dateObj: d, receita, liquido });
+        });
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        const yearsSorted = Object.keys(grouped).sort((a, b) => b - a);
+
+        yearsSorted.forEach(yStr => {
+            const yData = grouped[yStr];
+            const year = parseInt(yStr);
+
+            const yearSection = document.createElement('div');
+            yearSection.className = 'sh-year-group';
+
+            const yHeader = document.createElement('div');
+            yHeader.className = 'sh-year-header';
+            yHeader.innerHTML = `
+                <div class="sh-year-stats">
+                    <div class="sh-year-stat">
+                        <span class="sh-year-stat-label">Receita Bruta</span>
+                        <span class="sh-year-stat-value">R$ ${formatBRLValue(yData.revenue)}</span>
+                    </div>
+                    <div class="sh-year-divider"></div>
+                    <div class="sh-year-stat">
+                        <span class="sh-year-stat-label">Receita Líquida</span>
+                        <span class="sh-year-stat-value highlight">R$ ${formatBRLValue(yData.net)}</span>
+                    </div>
+                    <div class="sh-year-divider"></div>
+                    <div class="sh-year-stat">
+                        <span class="sh-year-stat-label">Vendas</span>
+                        <span class="sh-year-stat-value">${yData.sales}</span>
+                    </div>
+                </div>
+                <div class="sh-year-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    ${year}
+                </div>
+            `;
+            yearSection.appendChild(yHeader);
+
+            const monthsSorted = Object.keys(yData.months).sort((a, b) => b - a);
+
+            monthsSorted.forEach(mStr => {
+                const mData = yData.months[mStr];
+                const month = parseInt(mStr);
+                const isCurrentMonth = (year === currentYear && month === currentMonth);
+
+                const mGroup = document.createElement('div');
+                mGroup.className = `sh-month-group ${isCurrentMonth ? 'open' : ''}`;
+
+                const mBtn = document.createElement('button');
+                mBtn.className = 'sh-month-btn';
+                mBtn.innerHTML = `
+                    <div class="sh-month-title-wrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon"><path d="m6 9 6 6 6-6"/></svg>
+                        <span>${MONTH_NAMES[month]}</span>
+                        ${isCurrentMonth ? '<span class="sh-month-tag">(Esse mês)</span>' : ''}
+                        <span class="sh-month-val-green">R$ ${formatBRLValue(mData.net)}</span>
+                    </div>
+                    <div class="sh-month-stats">
+                        R$ ${formatBRLValue(mData.revenue)}
+                        <button class="sh-dots-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </button>
+                    </div>
+                `;
+
+                const mContent = document.createElement('div');
+                mContent.className = 'sh-month-content';
+
+                let currentLimit = 10;
+                const renderItems = () => {
+                    // Without the "Produto" column — we're in context
+                    mContent.innerHTML = `
+                        <div class="sh-table-header">
+                            <div class="sh-col sh-col-id">ID</div>
+                            <div class="sh-col sh-col-user">Comprador</div>
+                            <div class="sh-col sh-col-val">Valor</div>
+                            <div style="width: 28px;"></div>
+                        </div>
+                    `;
+                    const itemsToShow = mData.list.slice(0, currentLimit);
+
+                    itemsToShow.forEach(order => {
+                        const item = document.createElement('div');
+                        item.className = 'sh-sale-item';
+
+                        const day = String(order.dateObj.getDate()).padStart(2, '0');
+                        const monthShort = MONTH_SHORT[order.dateObj.getMonth()];
+                        const hours = String(order.dateObj.getHours()).padStart(2, '0');
+                        const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
+                        const timeStr = `${hours}:${mins}`;
+
+                        const buyerName = order.buyer_name || 'Usuário';
+                        const splitU = buyerName.split(' ');
+                        const initialU = splitU[0] ? splitU[0][0].toUpperCase() : 'U';
+
+                        const userAvatarHtml = order.buyer_picture
+                            ? `<img src="${order.buyer_picture}" alt="${buyerName}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">`
+                            : initialU;
+
+                        item.innerHTML = `
+                            <div class="sh-col sh-col-id">#${order.product_id.split('-')[0].toUpperCase()}</div>
+
+                            <div class="sh-col sh-col-user">
+                                <div class="sh-avatar user-avatar" ${order.buyer_picture ? 'style="background: none;"' : ''}>${userAvatarHtml}</div>
+                                <div class="sh-texts">
+                                    <span class="sh-title">${buyerName}</span>
+                                    <span class="sh-sub">${order.buyer_email || ''}</span>
+                                    <span class="sh-sub date-sub">${day} ${monthShort} • ${timeStr}</span>
+                                </div>
+                            </div>
+
+                            <div class="sh-col sh-col-val">
+                                <div class="sh-sale-revenue">R$ ${formatBRLValue(order.receita)}</div>
+                                ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatBRLValue(order.liquido)}</div>` : ''}
+                            </div>
+
+                            <button class="sh-sale-actions">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                            </button>
+                        `;
+                        mContent.appendChild(item);
+                    });
+
+                    if (currentLimit < mData.list.length) {
+                        const btnMore = document.createElement('button');
+                        btnMore.className = 'sh-load-more';
+                        btnMore.textContent = 'Carregar mais vendas';
+                        const wrapBtn = document.createElement('div');
+                        wrapBtn.className = 'sh-load-more-wrap';
+                        wrapBtn.appendChild(btnMore);
+                        mContent.appendChild(wrapBtn);
+
+                        btnMore.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            currentLimit += 10;
+                            renderItems();
+                        });
+                    }
+                };
+
+                renderItems();
+
+                mBtn.addEventListener('click', () => {
+                    mGroup.classList.toggle('open');
+                });
+
+                mGroup.appendChild(mBtn);
+                mGroup.appendChild(mContent);
+                yearSection.appendChild(mGroup);
+            });
+
+            salesSection.appendChild(yearSection);
+        });
+    }
+
+    wrapEl.appendChild(salesSection);
 }

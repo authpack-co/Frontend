@@ -367,4 +367,9 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/marketplace/seller/sales-history`);
         return response;
     },
+
+    async getProductDetails(productId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/details`);
+        return response;
+    },
 }
