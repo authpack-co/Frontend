@@ -1459,10 +1459,9 @@ function renderSalesHistory(orders) {
             grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
         }
         
-        const total = order.total_amount_cents || 0;
-        const platform = order.platform_fee_cents || 0;
-        
-        const receita = total - platform;
+        // receita = valor bruto (o que o comprador pagou)
+        // liquido = valor líquido (o que o seller recebe após todas as taxas)
+        const receita = order.total_amount_cents || 0;
         const liquido = order.seller_amount_cents || 0;
         
         totalRevenue += receita;
@@ -1505,7 +1504,7 @@ function renderSalesHistory(orders) {
         yHeader.className = 'sh-year-header';
         yHeader.innerHTML = `
             <div class="sh-year-stats">
-                R$ ${formatBRLValue(yData.revenue)}
+                R$ ${formatBRLValue(yData.net)}
                 <div class="sh-year-divider"></div>
                 <div class="sh-year-sales">${yData.sales} ${yData.sales === 1 ? 'venda' : 'vendas'}</div>
             </div>
