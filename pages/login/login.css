@@ -14,6 +14,7 @@
     font-family: 'Inter', sans-serif;
     position: relative;
     box-sizing: border-box;
+    gap: 32px;
 }
 
 /* Login Card */
@@ -150,7 +151,7 @@
         padding: 32px 24px;
         max-width: 90%;
     }
-    
+
     .page-footer {
         flex-direction: column;
         gap: 12px;
