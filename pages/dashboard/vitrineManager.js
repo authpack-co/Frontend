@@ -1567,6 +1567,7 @@ function renderSalesHistory(orders) {
             const renderItems = () => {
                 mContent.innerHTML = `
                     <div class="sh-table-header">
+                        <div class="sh-col sh-col-date">Data</div>
                         <div class="sh-col sh-col-id">ID</div>
                         <div class="sh-col sh-col-prod">Produto</div>
                         <div class="sh-col sh-col-user">Comprador</div>
@@ -1597,15 +1598,16 @@ function renderSalesHistory(orders) {
 
                     const hours = String(order.dateObj.getHours()).padStart(2, '0');
                     const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
-                    const timeStr = `${hours}:${mins}`;
+                    const dateLabel = `${order.dateObj.getDate()} ${MONTH_SHORT[order.dateObj.getMonth()]}, ${hours}:${mins}`;
 
                     item.innerHTML = `
+                        <div class="sh-col sh-col-date">${dateLabel}</div>
+
                         <div class="sh-col sh-col-id">#${order.product_id.split('-')[0].toUpperCase()}</div>
 
                         <div class="sh-col sh-col-prod">
                             <div class="sh-texts">
                                 <span class="sh-title">${pName}</span>
-                                <span class="sh-sub date-sub">${day} ${monthShort} • ${timeStr}</span>
                             </div>
                         </div>
 
@@ -1963,11 +1965,9 @@ function renderProductDetails(data, wrapEl) {
                         const item = document.createElement('div');
                         item.className = 'sh-sale-item';
 
-                        const day = String(order.dateObj.getDate()).padStart(2, '0');
-                        const monthShort = MONTH_SHORT[order.dateObj.getMonth()];
                         const hours = String(order.dateObj.getHours()).padStart(2, '0');
                         const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
-                        const timeStr = `${hours}:${mins}`;
+                        const dateLabel = `${order.dateObj.getDate()} ${MONTH_SHORT[order.dateObj.getMonth()]}, ${hours}:${mins}`;
 
                         const buyerName = order.buyer_name || 'Usuário';
                         const splitU = buyerName.split(' ');
@@ -1978,9 +1978,7 @@ function renderProductDetails(data, wrapEl) {
                             : initialU;
 
                         item.innerHTML = `
-                            <div class="sh-col sh-col-id" style="min-width: 110px;">
-                                <span class="sh-sub" style="font-size: 13px;">${day} ${monthShort} • ${timeStr}</span>
-                            </div>
+                            <div class="sh-col sh-col-date">${dateLabel}</div>
 
                             <div class="sh-col sh-col-user">
                                 <div class="sh-avatar user-avatar" ${order.buyer_picture ? 'style="background: none;"' : ''}>${userAvatarHtml}</div>
