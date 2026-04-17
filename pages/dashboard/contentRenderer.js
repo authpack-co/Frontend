@@ -34,7 +34,13 @@ function createPackageElement(pkg, isAccess = false) {
     container.dataset.packageId = pkg.id;
     container.dataset.isActive = pkg.isActive !== false ? 'true' : 'false';
 
-    // Icon stack
+    // Title
+    const title = createElement('div', 'access-title');
+    title.textContent = pkg.name;
+
+    // Bottom row: icon stack + service count
+    const cardBottom = createElement('div', 'card-bottom');
+
     const iconStack = createElement('div', 'icon-stack');
     const sessions = pkg.sessions || [];
     sessions.slice(0, 3).forEach(session => {
@@ -46,9 +52,11 @@ function createPackageElement(pkg, isAccess = false) {
         iconStack.appendChild(stackIcon);
     });
 
-    // Title
-    const title = createElement('div', 'access-title');
-    title.textContent = pkg.name;
+    const serviceCount = createElement('span', 'access-service-count');
+    serviceCount.textContent = `${sessions.length} ${sessions.length === 1 ? 'Serviço' : 'Serviços'}`;
+
+    cardBottom.appendChild(iconStack);
+    cardBottom.appendChild(serviceCount);
 
     // Options button
     const optionsBtn = createElement('button', 'options-btn', '...');
@@ -104,8 +112,8 @@ function createPackageElement(pkg, isAccess = false) {
         packageOptions.appendChild(deleteBtn);
     }
 
-    container.appendChild(iconStack);
     container.appendChild(title);
+    container.appendChild(cardBottom);
     container.appendChild(optionsBtn);
     container.appendChild(packageOptions);
 
