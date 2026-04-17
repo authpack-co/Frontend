@@ -2072,7 +2072,8 @@ span.coming-soon {
     pointer-events: none;
 }
 
-.chart-period-select, .vt-chart-period-select {
+.chart-period-select,
+.vt-chart-period-select {
     color-scheme: dark;
 }
 
@@ -2106,7 +2107,8 @@ span.coming-soon {
     background-color: #1c1f20;
 }
 
-.chart-period-select option, .vt-chart-period-select option {
+.chart-period-select option,
+.vt-chart-period-select option {
     background: #181d23;
     color: var(--color-text-secondary);
     padding: 8px;
@@ -3951,6 +3953,10 @@ span.coming-soon {
     max-height: 420px;
 }
 
+#editProductModal .modal-body {
+    max-height: 460px;
+}
+
 .step-indicators {
     display: flex;
     gap: 6px;
@@ -4228,6 +4234,7 @@ textarea:focus-visible {
    Reduced Motion (Accessibility)
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {

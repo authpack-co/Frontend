@@ -1278,7 +1278,38 @@ let editProductData = null;
 
 function openEditProductModal(product) {
     editProductData = product;
+
+    // Description
     document.getElementById('edit-product-desc').value = product.description || '';
+
+    // Price — subscription products: keep original price (Stripe-locked)
+    const priceInput = document.getElementById('edit-product-price');
+    const priceHint = document.getElementById('edit-product-price-hint');
+    const isSubscription = product.billing_type === 'subscription';
+    priceInput.value = product.price_cents ? (product.price_cents / 100).toFixed(2) : '';
+    priceInput.disabled = isSubscription;
+    priceInput.style.opacity = isSubscription ? '0.5' : '';
+    if (priceHint) priceHint.classList.toggle('hidden', !isSubscription);
+
+    // Limit price to 2 decimal places on blur
+    priceInput.onblur = () => {
+        const v = parseFloat(priceInput.value);
+        if (!isNaN(v)) priceInput.value = v.toFixed(2);
+    };
+
+    // Stock — always editable; hint shows active user minimum if applicable
+    const stockInput = document.getElementById('edit-product-stock');
+    const stockHint = document.getElementById('edit-product-stock-hint');
+    stockInput.disabled = false;
+    stockInput.style.opacity = '';
+    stockInput.value = product.stock != null ? product.stock : '';
+    if (stockHint) {
+        const activeCount = parseInt(product.active_access_count) || 0;
+        stockHint.textContent = activeCount > 0
+            ? `Mínimo: ${activeCount} (usuários ativos no momento).`
+            : 'Deixe vazio para ilimitado.';
+        stockHint.classList.remove('hidden');
+    }
 
     const btnContainer = document.querySelector('#editProductModal .buttonContent');
     if (btnContainer) setElementState(btnContainer, 'content');
@@ -1298,11 +1329,40 @@ document.getElementById('confirm-edit-product')?.addEventListener('click', async
 
     const description = document.getElementById('edit-product-desc').value.trim();
 
+    // Price — only editable for one_time products
+    const isSubscription = editProductData.billing_type === 'subscription';
+    const priceRaw = document.getElementById('edit-product-price').value;
+    const priceFloat = parseFloat(priceRaw);
+    if (!isSubscription && (!priceRaw || priceFloat < 1)) {
+        notify('error', 'Defina um preço válido (mínimo R$ 1,00)');
+        return;
+    }
+    const priceCents = isSubscription ? editProductData.price_cents : Math.round(priceFloat * 100);
+
+    // Stock — empty = ilimitado (null); se preenchido, valida >= usuários ativos (pre-check)
+    const stockRaw = document.getElementById('edit-product-stock').value.trim();
+    const stockVal = stockRaw ? parseInt(stockRaw, 10) : null;
+    if (stockRaw) {
+        if (isNaN(stockVal) || stockVal < 1) {
+            notify('error', 'Quantidade deve ser pelo menos 1');
+            return;
+        }
+        const activeCount = parseInt(editProductData.active_access_count) || 0;
+        if (activeCount > 0 && stockVal < activeCount) {
+            notify('error', `Quantidade mínima é ${activeCount} (usuários ativos no produto).`);
+            return;
+        }
+    }
+
     const btnContainer = document.querySelector('#editProductModal .buttonContent');
     setElementState(btnContainer, 'loading');
 
     try {
-        const res = await fetchManager.updateProduct(editProductData.id, { description });
+        const res = await fetchManager.updateProduct(editProductData.id, {
+            description,
+            price_cents: priceCents,
+            stock: stockVal,
+        });
         if (res.ok) {
             closeEditProductModal();
             notify('success', 'Produto atualizado');
@@ -1310,7 +1370,13 @@ document.getElementById('confirm-edit-product')?.addEventListener('click', async
             vitrineLoaded = false;
             await loadVitrineTab();
         } else {
-            notify('error', res.result?.error || 'Erro ao atualizar');
+            const errCode = res.result?.error;
+            if (errCode === 'STOCK_BELOW_ACTIVE_USERS') {
+                const liveCount = res.result?.activeCount ?? '?';
+                notify('error', `Limite inferior aos usuários ativos (${liveCount}). Uma compra pode ter ocorrido agora.`);
+            } else {
+                notify('error', errCode || 'Erro ao atualizar');
+            }
             setElementState(btnContainer, 'content');
         }
     } catch (err) {
