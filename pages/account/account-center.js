@@ -407,23 +407,27 @@ const PlusModal = (() => {
     }
 
     async function handleCta() {
-        const btn = el('plus-modal-ac-cta');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Redirecionando...`;
-        }
-        try {
-            const res = await fetchManager.checkoutPlus();
-            if (res.ok && res.result?.url) {
-                window.location.href = res.result.url;
-            } else {
-                alert('Não foi possível iniciar o checkout. Tente novamente.');
-                if (btn) { btn.disabled = false; btn.innerHTML = '<span>🚀</span> Fazer upgrade para Plus'; }
-            }
-        } catch (err) {
-            console.error('[AccountCenter] checkoutPlus error:', err);
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span>🚀</span> Fazer upgrade para Plus'; }
-        }
+        PaymentModal.open({
+            title: 'Assinar AuthPack Plus',
+            amount: 1690,
+            period: '/ mês',
+            pixEnabled: false,
+            onSubmit: async (paymentData) => {
+                try {
+                    const res = await fetchManager.checkoutPlus(paymentData);
+                    if (!res.ok) {
+                        const msg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
+                            ? 'Você já possui uma assinatura ativa.'
+                            : res.result?.error || 'Erro ao processar assinatura.';
+                        throw new Error(msg);
+                    }
+                    PaymentModal.showSuccess('Assinatura confirmada!', 'Seu plano Plus está ativo. Recarregando...');
+                    setTimeout(() => window.location.reload(), 2000);
+                } catch (err) {
+                    throw err;
+                }
+            },
+        });
     }
 
     function init() {

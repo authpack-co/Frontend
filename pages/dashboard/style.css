@@ -3438,8 +3438,8 @@ span.coming-soon {
     height: 100% !important;
 }
 
-/* Stripe Dashboard Link */
-.vt-stripe-link {
+/* Gateway Dashboard (legacy, kept for reference) */
+.vt-gateway-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -3456,20 +3456,20 @@ span.coming-soon {
     margin-top: auto;
 }
 
-.vt-stripe-link:hover {
+.vt-gateway-link:hover {
     color: var(--color-text-primary);
 }
 
-.vt-stripe-link:disabled {
+.vt-gateway-link:disabled {
     opacity: 0.6;
     cursor: wait;
 }
 
-.vt-stripe-link:hover {
+.vt-gateway-link:hover {
     color: var(--color-text-primary);
 }
 
-.vt-stripe-link svg {
+.vt-gateway-link svg {
     flex-shrink: 0;
 }
 
@@ -3859,7 +3859,7 @@ span.coming-soon {
     background: rgba(251, 191, 36, 0.25);
 }
 
-.vt-stripe-bar {
+.vt-gateway-bar {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -3873,7 +3873,7 @@ span.coming-soon {
     margin-bottom: 16px;
 }
 
-.vt-stripe-bar svg {
+.vt-gateway-bar svg {
     flex-shrink: 0;
 }
 

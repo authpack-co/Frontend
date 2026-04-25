@@ -97,7 +97,7 @@ async function loadVitrineTab() {
         return;
     }
 
-    // User is Plus — check Stripe connected account status
+    // User is Plus — check gateway recipient status
     try {
         const accountRes = await fetchManager.getSellerAccountStatus();
         console.log('[Vitrine] Account status:', accountRes);
@@ -128,7 +128,7 @@ async function loadVitrineTab() {
         }
 
         // State 3: Account fully active — show products
-        updateStripeStatusBar(true);
+        updateGatewayStatusBar(true);
 
         const productsRes = await fetchManager.getSellerProducts();
         console.log('[Vitrine] Products:', productsRes);
@@ -192,8 +192,8 @@ function hideOnboardingBanner() {
     if (banner) banner.classList.add('hidden');
 }
 
-function updateStripeStatusBar(active) {
-    const bars = document.querySelectorAll('.vt-stripe-bar');
+function updateGatewayStatusBar(active) {
+    const bars = document.querySelectorAll('.vt-gateway-bar');
     bars.forEach(bar => {
         bar.style.display = active ? 'flex' : 'none';
     });
@@ -331,8 +331,8 @@ async function loadSellerDashboardData() {
         vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
         // ── Seller Info (static, doesn't change with period) ──
-        const sellerStripeId = document.getElementById('seller-stripe-id');
-        if (sellerStripeId) sellerStripeId.textContent = data.stripe_account_id || '-';
+        const sellerRecipientId = document.getElementById('seller-recipient-id');
+        if (sellerRecipientId) sellerRecipientId.textContent = data.gateway_recipient_id || data.stripe_account_id || '-';
 
         const sellerBank = document.getElementById('seller-bank');
         if (sellerBank) {
@@ -436,7 +436,7 @@ function showDashboardSkeletons(show) {
         }
     });
 
-    const sellerEls = ['seller-stripe-id', 'seller-bank', 'seller-country'];
+    const sellerEls = ['seller-recipient-id', 'seller-bank', 'seller-country'];
     sellerEls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -573,29 +573,7 @@ document.getElementById('vt-chart-period-select')?.addEventListener('change', (e
     updateVitrinePeriod(days);
 });
 
-// ── Stripe Dashboard Link Button ──
-document.getElementById('btn-stripe-dashboard')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-stripe-dashboard');
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Abrindo...`;
-
-    try {
-        const res = await fetchManager.getSellerDashboardLink();
-        if (res.ok && res.result?.url) {
-            window.open(res.result.url, '_blank');
-        } else {
-            console.error('[Vitrine] Failed to get dashboard link:', res);
-            notify('error', 'Erro ao abrir painel Stripe');
-        }
-    } catch (err) {
-        console.error('[Vitrine] Dashboard link error:', err);
-        notify('error', 'Erro de conexao');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-    }
-});
+// (Stripe dashboard link removed — Pagar.me seller manages account within AuthPack)
 
 // ============================================================================
 // PRODUCT RENDERING
@@ -881,48 +859,55 @@ function createVitrineProductCard(product) {
 
 
 // ============================================================================
-// STRIPE CONNECT
+// SELLER ONBOARDING (Pagar.me)
 // ============================================================================
 
-document.getElementById('btn-connect-stripe')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-connect-stripe');
+document.getElementById('btn-connect-seller')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-connect-seller');
     btn.disabled = true;
-    btn.textContent = 'Conectando...';
+    btn.textContent = 'Cadastrando...';
 
     try {
+        // Submit onboarding request — backend creates recipient on Pagar.me
         const res = await fetchManager.startSellerOnboarding();
         console.log('[Vitrine] Onboarding response:', res);
-        if (res.ok && res.result?.url) {
-            window.location.href = res.result.url;
+
+        if (res.ok) {
+            // Success: reload vitrine to show updated state
+            notify('success', 'Cadastro enviado com sucesso! Aguarde a aprovação.');
+            setTimeout(() => loadVitrine(), 1500);
         } else {
-            console.warn('[Vitrine] Onboarding failed, response:', res);
+            const errMsg = res.result?.error || 'Erro ao cadastrar. Tente novamente.';
+            notify('error', errMsg);
             btn.textContent = 'Erro — tente novamente';
             btn.disabled = false;
         }
     } catch (err) {
-        console.error('Stripe onboarding error:', err);
+        console.error('Seller onboarding error:', err);
         btn.textContent = 'Erro — tente novamente';
         btn.disabled = false;
     }
 });
 
-// Continue onboarding (pending state)
+// Check onboarding status (pending state)
 document.getElementById('btn-continue-onboarding')?.addEventListener('click', async () => {
     const btn = document.getElementById('btn-continue-onboarding');
     btn.disabled = true;
-    btn.textContent = 'Redirecionando...';
+    btn.textContent = 'Verificando...';
 
     try {
-        const res = await fetchManager.startSellerOnboarding();
-        if (res.ok && res.result?.url) {
-            window.location.href = res.result.url;
+        const res = await fetchManager.getSellerAccountStatus();
+        if (res.ok && res.result?.data?.charges_enabled) {
+            notify('success', 'Seu cadastro foi aprovado! Recarregando...');
+            setTimeout(() => loadVitrine(), 1500);
         } else {
-            btn.textContent = 'Erro — tente novamente';
+            notify('info', 'Seu cadastro ainda está em análise.');
+            btn.textContent = 'Ver status';
             btn.disabled = false;
         }
     } catch (err) {
-        console.error('Continue onboarding error:', err);
-        btn.textContent = 'Erro — tente novamente';
+        console.error('Onboarding status check error:', err);
+        btn.textContent = 'Ver status';
         btn.disabled = false;
     }
 });
@@ -1282,7 +1267,7 @@ function openEditProductModal(product) {
     // Description
     document.getElementById('edit-product-desc').value = product.description || '';
 
-    // Price — subscription products: keep original price (Stripe-locked)
+    // Price — subscription products: keep original price (gateway-locked)
     const priceInput = document.getElementById('edit-product-price');
     const priceHint = document.getElementById('edit-product-price-hint');
     const isSubscription = product.billing_type === 'subscription';
@@ -1528,7 +1513,7 @@ function renderSalesHistory(orders) {
         }
 
         // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma (2 BRL)
-        // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa stripe
+        // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa gateway
         const plataformaFeeCents = 200; // Taxa fixa de R$ 2,00 adicionada no checkout
         const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
         const liquido = order.seller_amount_cents || 0;

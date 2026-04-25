@@ -628,41 +628,39 @@ plusSubscribeBtns.forEach(btn => {
     });
 });
 
-// Plus CTA (checkout redirect)
+// Plus CTA (in-app payment via Pagar.me)
 const plusCtaBtn = document.querySelector('.plus-cta-btn');
 if (plusCtaBtn) {
     plusCtaBtn.addEventListener('click', async () => {
         // Previne duplo clique
         if (plusCtaBtn.disabled) return;
-        plusCtaBtn.disabled = true;
 
-        const originalText = plusCtaBtn.innerHTML;
-        plusCtaBtn.innerHTML = `<div class="spinner"></div>`;
+        PaymentModal.open({
+            title: 'Assinar AuthPack Plus',
+            amount: 1690, // R$ 16,90
+            period: '/ mês',
+            pixEnabled: false, // subscriptions = card only
+            onSubmit: async (paymentData) => {
+                try {
+                    const result = await fetchManager.checkoutPlus(paymentData);
 
-        try {
-            const result = await fetchManager.checkoutPlus();
+                    if (!result.ok) {
+                        const errorMsg = result.result?.error === "ALREADY_SUBSCRIBED_TO_THIS_PLAN"
+                            ? "Você já possui uma assinatura ativa."
+                            : result.result?.error || "Não foi possível processar a assinatura.";
+                        throw new Error(errorMsg);
+                    }
 
-            if (!result.ok) {
-                const errorMsg = result.result?.error === "ALREADY_SUBSCRIBED_TO_THIS_PLAN"
-                    ? "Você já possui uma assinatura ativa."
-                    : "Não foi possível iniciar o checkout.";
-                notify("error", errorMsg);
-                return;
-            }
-
-            const checkoutUrl = result.result?.url;
-            if (checkoutUrl) {
-                window.location.href = checkoutUrl;
-            } else {
-                notify("error", "URL de checkout não encontrada.");
-            }
-        } catch (err) {
-            console.error("Checkout error:", err);
-            notify("error", "Erro ao iniciar checkout.");
-        } finally {
-            plusCtaBtn.innerHTML = originalText;
-            plusCtaBtn.disabled = false;
-        }
+                    PaymentModal.showSuccess(
+                        'Assinatura confirmada!',
+                        'Seu plano Plus está ativo. Recarregando...'
+                    );
+                    setTimeout(() => window.location.reload(), 2000);
+                } catch (err) {
+                    throw err;
+                }
+            },
+        });
     });
 }
 

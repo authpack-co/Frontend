@@ -1,0 +1,391 @@
+/* ============================================================================
+   Payment Modal — Pagar.me card tokenization + Pix
+   Dark theme, matches AuthPack design system
+   ============================================================================ */
+
+.pm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.pm-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.pm-modal {
+    background: #1a1d1e;
+    border: 1px solid #2a2d2f;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.25s ease;
+}
+
+.pm-overlay.open .pm-modal {
+    transform: translateY(0) scale(1);
+}
+
+/* Header */
+.pm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 0;
+}
+
+.pm-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #f0f0f0;
+    margin: 0;
+}
+
+.pm-close {
+    background: none;
+    border: none;
+    color: #8e9091;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.pm-close:hover {
+    color: #f0f0f0;
+}
+
+/* Amount display */
+.pm-amount {
+    padding: 12px 24px 16px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.pm-amount .pm-period {
+    font-size: 14px;
+    font-weight: 400;
+    color: #8e9091;
+}
+
+/* Tabs */
+.pm-tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    border-bottom: 1px solid #2a2d2f;
+}
+
+.pm-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #8e9091;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.pm-tab:hover {
+    color: #ccc;
+}
+
+.pm-tab.active {
+    color: #fff;
+    border-bottom-color: #4184e4;
+}
+
+.pm-tab svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Tab content */
+.pm-tab-content {
+    display: none;
+    padding: 20px 24px 24px;
+}
+
+.pm-tab-content.active {
+    display: block;
+}
+
+/* Form */
+.pm-form-group {
+    margin-bottom: 14px;
+}
+
+.pm-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #8e9091;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pm-input {
+    width: 100%;
+    background: #141619;
+    border: 1px solid #333840;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #f0f0f0;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.pm-input::placeholder {
+    color: #555;
+}
+
+.pm-input:focus {
+    border-color: #4184e4;
+}
+
+.pm-input.error {
+    border-color: #e54141;
+}
+
+/* Two-column row */
+.pm-row {
+    display: flex;
+    gap: 12px;
+}
+
+.pm-row .pm-form-group {
+    flex: 1;
+}
+
+/* Submit button */
+.pm-submit {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4184e4, #3b6fd4);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.pm-submit:hover:not(:disabled) {
+    opacity: 0.92;
+}
+
+.pm-submit:active:not(:disabled) {
+    transform: scale(0.985);
+}
+
+.pm-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Spinner inside button */
+.pm-submit .pm-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: pm-spin 0.6s linear infinite;
+}
+
+@keyframes pm-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error message */
+.pm-error {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(229, 65, 65, 0.1);
+    border: 1px solid rgba(229, 65, 65, 0.25);
+    border-radius: 10px;
+    color: #f87171;
+    font-size: 13px;
+    display: none;
+}
+
+.pm-error.visible {
+    display: block;
+}
+
+/* Pix section */
+.pm-pix-info {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.pm-pix-info .pm-pix-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 16px;
+    background: rgba(0, 191, 143, 0.12);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pm-pix-info .pm-pix-icon svg {
+    color: #00bf8f;
+}
+
+.pm-pix-info p {
+    color: #b0b0b0;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.pm-pix-submit {
+    background: linear-gradient(135deg, #00bf8f, #00a67d);
+}
+
+/* Pix result (QR code display) */
+.pm-pix-result {
+    text-align: center;
+    padding: 12px 0;
+    display: none;
+}
+
+.pm-pix-result.visible {
+    display: block;
+}
+
+.pm-pix-result img {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+    padding: 8px;
+}
+
+.pm-pix-result .pm-pix-code {
+    background: #141619;
+    border: 1px solid #333840;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #8e9091;
+    word-break: break-all;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+}
+
+.pm-pix-result .pm-pix-code:hover {
+    border-color: #4184e4;
+}
+
+.pm-pix-result .pm-pix-code::after {
+    content: 'Clique para copiar';
+    position: absolute;
+    top: -22px;
+    right: 0;
+    font-size: 11px;
+    color: #666;
+}
+
+/* Success state */
+.pm-success {
+    text-align: center;
+    padding: 32px 24px;
+    display: none;
+}
+
+.pm-success.visible {
+    display: block;
+}
+
+.pm-success .pm-success-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    background: rgba(52, 199, 89, 0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pm-success .pm-success-icon svg {
+    color: #34c759;
+    width: 28px;
+    height: 28px;
+}
+
+.pm-success h3 {
+    color: #f0f0f0;
+    font-size: 18px;
+    margin: 0 0 8px;
+}
+
+.pm-success p {
+    color: #8e9091;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Footer secure note */
+.pm-secure {
+    padding: 12px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #555;
+    font-size: 12px;
+}
+
+.pm-secure svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .pm-modal {
+        max-width: 100%;
+        margin: 0 12px;
+        border-radius: 14px;
+    }
+}

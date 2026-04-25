@@ -206,28 +206,52 @@
 
     function setupCheckout(product) {
         const btn = document.getElementById('vt-cta-btn');
+        const billingType = product.billing_type || 'one_time';
+        const SERVICE_FEE = 200;
+        const totalCents = (product.price_cents || 0) + SERVICE_FEE;
+
         btn.addEventListener('click', async () => {
             if (btn.disabled) return;
-            btn.disabled = true;
-            btn.textContent = 'Redirecionando...';
 
-            try {
-                const res = await fetchManager.startCheckout({
-                    productId: product.id,
-                });
+            PaymentModal.open({
+                title: billingType === 'subscription' ? 'Assinar produto' : 'Comprar produto',
+                amount: totalCents,
+                period: billingType === 'subscription' ? '/ mês' : null,
+                pixEnabled: billingType !== 'subscription',
+                onSubmit: async (paymentData) => {
+                    try {
+                        const res = await fetchManager.startCheckout({
+                            productId: product.id,
+                            payment: paymentData,
+                        });
 
-                if (res.ok && res.result?.url) {
-                    window.location.href = res.result.url;
-                } else {
-                    console.warn('Checkout response:', res);
-                    btn.textContent = 'Erro — tente novamente';
-                    btn.disabled = false;
-                }
-            } catch (err) {
-                console.error('Checkout error:', err);
-                btn.textContent = 'Erro — tente novamente';
-                btn.disabled = false;
-            }
+                        if (!res.ok) {
+                            const errMsg = res.result?.error === 'ALREADY_HAS_ACCESS'
+                                ? 'Você já possui acesso a este produto.'
+                                : res.result?.error === 'PRODUCT_SOLD_OUT'
+                                    ? 'Este produto está esgotado.'
+                                    : res.result?.error || 'Erro ao processar pagamento.';
+                            throw new Error(errMsg);
+                        }
+
+                        // Check if Pix — show QR code
+                        const charges = res.result?.charges || [];
+                        const lastTx = charges[0]?.last_transaction;
+
+                        if (lastTx && lastTx.transaction_type === 'pix') {
+                            PaymentModal.showPixQR(lastTx.qr_code_url, lastTx.qr_code);
+                            return;
+                        }
+
+                        // Card success
+                        PaymentModal.showSuccess('Compra realizada!', 'Seu acesso já está ativo.');
+                        btn.disabled = true;
+                        btn.textContent = 'Compra realizada ✓';
+                    } catch (err) {
+                        throw err; // PaymentModal handles the error display
+                    }
+                },
+            });
         });
     }
 })();

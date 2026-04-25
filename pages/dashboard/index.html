@@ -430,7 +430,7 @@
                                     stroke-linejoin="round">
                                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                </svg> Pagamento seguro via Stripe</span>
+                                </svg> Pagamento seguro</span>
                             <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -1547,7 +1547,7 @@
                         </div>
                     </div>
 
-                    <!-- CONTENT: Plus + Stripe + products -->
+                    <!-- CONTENT: Plus + seller + products -->
                     <div class="preset preset-vitrine-content">
 
                         <!-- ── Gate Overlay (shown for free/not-connected users) ── -->
@@ -1606,7 +1606,7 @@
                                 </button>
                             </div>
 
-                            <!-- Gate Card: Connect Stripe (plus users without Stripe) -->
+                            <!-- Gate Card: Connect seller (plus users without recipient) -->
                             <div class="vt-gate-card gate-connect hidden" id="vt-gate-connect">
                                 <div class="vt-gate-icon connect">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
@@ -1617,16 +1617,17 @@
                                         <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
                                     </svg>
                                 </div>
-                                <h3>Conecte sua conta Stripe</h3>
-                                <p>Para começar a vender, conecte sua conta para receber pagamentos diretamente.</p>
-                                <button class="vt-gate-btn connect" id="btn-connect-stripe">
+                                <h3>Cadastre-se como vendedor</h3>
+                                <p>Para começar a vender, cadastre suas informações para receber pagamentos diretamente.
+                                </p>
+                                <button class="vt-gate-btn connect" id="btn-connect-seller">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
                                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                                     </svg>
-                                    Conectar com Stripe
+                                    Cadastrar recebedor
                                 </button>
                             </div>
                         </div>
@@ -1641,12 +1642,11 @@
                                     <polyline points="12 6 12 12 16 14" />
                                 </svg>
                                 <div>
-                                    <strong>Onboarding em andamento</strong>
-                                    <span>Complete a verificação da sua conta Stripe para ativar suas vendas.</span>
+                                    <strong>Cadastro em andamento</strong>
+                                    <span>Seu cadastro está em análise. Você será notificado quando for aprovado.</span>
                                 </div>
                             </div>
-                            <button class="vt-onboarding-btn" id="btn-continue-onboarding">Continuar
-                                verificação</button>
+                            <button class="vt-onboarding-btn" id="btn-continue-onboarding">Ver status</button>
                         </div>
 
                         <!-- ── Header ── -->
@@ -1673,8 +1673,7 @@
                             <div class="vt-kpi-card">
                                 <div class="vt-kpi-header">
                                     <span class="vt-kpi-label" id="kpi-revenue-label">Receita do mês</span>
-                                    <span class="vt-kpi-notice"
-                                        title="Para ver mais detalhes, visualize o painel Stripe.">
+                                    <span class="vt-kpi-notice" title="Ver detalhes">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info">
@@ -1682,7 +1681,7 @@
                                             <path d="M12 16v-4" />
                                             <path d="M12 8h.01" />
                                         </svg>
-                                        Ver painel Stripe para detalhes
+                                        Ver detalhes
                                     </span>
                                 </div>
                                 <div class="vt-kpi-value-row">
@@ -1737,8 +1736,8 @@
                                             </svg>
                                         </div>
                                         <div class="vt-seller-details">
-                                            <span class="vt-seller-label">Stripe ID</span>
-                                            <span class="vt-seller-value mono" id="seller-stripe-id">-</span>
+                                            <span class="vt-seller-label">ID do Recebedor</span>
+                                            <span class="vt-seller-value mono" id="seller-recipient-id">-</span>
                                         </div>
                                     </div>
                                     <div class="vt-seller-row">
@@ -1782,16 +1781,7 @@
                                     </div>
                                 </div>
 
-                                <button class="vt-stripe-link" id="btn-stripe-dashboard">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M15 3h6v6" />
-                                        <path d="M10 14 21 3" />
-                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                    </svg>
-                                    Ver painel Stripe
-                                </button>
+                                <!-- Seller manages their account within dashboard -->
                             </div>
 
                             <!-- Right: Sales Chart -->
@@ -1928,7 +1918,7 @@
                                     <path d="M9 18h6" />
                                     <path d="M10 22h4" />
                                 </svg></span>
-                            <span class="note">A cobrança será feita automaticamente a cada mês via Stripe</span>
+                            <span class="note">A cobrança será feita automaticamente a cada mês</span>
                         </div>
                     </div>
 
@@ -2118,8 +2108,10 @@
     </div>
 
     <!-- Scripts -->
+    <link rel="stylesheet" href="/assets/styles/paymentModal.css">
     <script src="/assets/scripts/envManager.js"></script>
     <script src="/assets/scripts/fetchManager.js"></script>
+    <script src="/assets/scripts/paymentModal.js"></script>
     <script src="/pages/dashboard/script.js"></script>
     <script src="/pages/dashboard/eventsHandler.js"></script>
     <script src="/pages/dashboard/contentRenderer.js"></script>

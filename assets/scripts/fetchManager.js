@@ -215,10 +215,11 @@ const fetchManager = {
 
     // Billing
 
-    async checkoutPlus() {
+    async checkoutPlus(paymentData) {
         const response = await fetchRoutes(`/api/subscription/checkout`, {
             method: "POST",
-            credentials: "include"
+            credentials: "include",
+            body: JSON.stringify({ payment: paymentData })
         });
         return response;
     },
@@ -277,10 +278,11 @@ const fetchManager = {
         return response;
     },
 
-    async startSellerOnboarding() {
+    async startSellerOnboarding(data) {
         const response = await fetchRoutes(`/api/marketplace/seller/onboarding`, {
             method: "POST",
-            credentials: "include"
+            credentials: "include",
+            body: data ? JSON.stringify(data) : undefined
         });
         return response;
     },
@@ -355,13 +357,7 @@ const fetchManager = {
         return response;
     },
 
-    async getSellerDashboardLink() {
-        const response = await fetchRoutes(`/api/marketplace/seller/dashboard-link`, {
-            method: "POST",
-            credentials: "include"
-        });
-        return response;
-    },
+
 
     async getSellerSalesHistory() {
         const response = await fetchRoutes(`/api/marketplace/seller/sales-history`);
