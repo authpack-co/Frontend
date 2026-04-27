@@ -23,6 +23,17 @@ const PaymentModal = (() => {
                     <button class="pm-close" id="pm-close">&times;</button>
                 </div>
                 <div class="pm-amount" id="pm-amount"></div>
+                
+                <div class="pm-row" id="pm-customer-fields">
+                    <div class="pm-form-group">
+                        <label class="pm-label">CPF ou CNPJ</label>
+                        <input class="pm-input" id="pm-doc" type="text" placeholder="000.000.000-00" maxlength="18" inputmode="numeric">
+                    </div>
+                    <div class="pm-form-group">
+                        <label class="pm-label">Celular (com DDD)</label>
+                        <input class="pm-input" id="pm-phone" type="text" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel">
+                    </div>
+                </div>
 
                 <div class="pm-tabs" id="pm-tabs">
                     <button class="pm-tab active" data-tab="card">
@@ -135,6 +146,32 @@ const PaymentModal = (() => {
             expiryInput.value = val;
         });
 
+        // Doc formatting
+        const docInput = _overlay.querySelector('#pm-doc');
+        docInput.addEventListener('input', () => {
+            let val = docInput.value.replace(/\D/g, '');
+            if (val.length <= 11) {
+                val = val.replace(/(\d{3})(\d)/, '$1.$2');
+                val = val.replace(/(\d{3})(\d)/, '$1.$2');
+                val = val.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                val = val.replace(/^(\d{2})(\d)/, '$1.$2');
+                val = val.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                val = val.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                val = val.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            docInput.value = val;
+        });
+
+        // Phone formatting
+        const phoneInput = _overlay.querySelector('#pm-phone');
+        phoneInput.addEventListener('input', () => {
+            let val = phoneInput.value.replace(/\D/g, '');
+            if (val.length > 2) val = '(' + val.substring(0, 2) + ') ' + val.substring(2);
+            if (val.length > 9) val = val.substring(0, 9) + '-' + val.substring(9);
+            phoneInput.value = val;
+        });
+
         // Card submit
         _overlay.querySelector('#pm-card-submit').addEventListener('click', handleCardSubmit);
 
@@ -177,6 +214,32 @@ const PaymentModal = (() => {
         return data.id; // card token
     }
 
+    // ── Extract Customer Data ──
+    function getCustomerPayload(tab) {
+        const rawDoc = _overlay.querySelector('#pm-doc').value.replace(/\D/g, '');
+        const rawPhone = _overlay.querySelector('#pm-phone').value.replace(/\D/g, '');
+
+        if (rawDoc.length < 11) {
+            showError(tab, 'CPF ou CNPJ inválido');
+            return null;
+        }
+        if (rawPhone.length < 10) {
+            showError(tab, 'Celular inválido (inclua o DDD)');
+            return null;
+        }
+
+        return {
+            document: rawDoc,
+            phones: {
+                mobile_phone: {
+                    country_code: "55",
+                    area_code: rawPhone.substring(0, 2),
+                    number: rawPhone.substring(2)
+                }
+            }
+        };
+    }
+
     // ── Card submit handler ──
     async function handleCardSubmit() {
         const btn = _overlay.querySelector('#pm-card-submit');
@@ -188,6 +251,10 @@ const PaymentModal = (() => {
         const holder = _overlay.querySelector('#pm-card-holder').value.trim();
         const expiry = _overlay.querySelector('#pm-card-expiry').value.trim();
         const cvv = _overlay.querySelector('#pm-card-cvv').value.trim();
+
+        // Validate customer
+        const customerPayload = getCustomerPayload('card');
+        if (!customerPayload) return;
 
         // Validate
         if (number.length < 13) return showError('card', 'Número do cartão inválido');
@@ -214,6 +281,7 @@ const PaymentModal = (() => {
             if (_onSubmit) {
                 await _onSubmit({
                     payment_method: 'credit_card',
+                    customer: customerPayload,
                     credit_card: {
                         card_token: cardToken,
                     },
@@ -235,10 +303,18 @@ const PaymentModal = (() => {
         btn.disabled = true;
         btn.innerHTML = '<div class="pm-spinner"></div> Gerando Pix...';
 
+        const customerPayload = getCustomerPayload('pix');
+        if (!customerPayload) {
+            btn.disabled = false;
+            btn.textContent = 'Gerar Pix';
+            return;
+        }
+
         try {
             if (_onSubmit) {
                 await _onSubmit({
                     payment_method: 'pix',
+                    customer: customerPayload
                 });
             }
         } catch (err) {
@@ -277,6 +353,7 @@ const PaymentModal = (() => {
     // ── Show success ──
     function showSuccess(title, msg) {
         // Hide tabs and tab content
+        _overlay.querySelector('#pm-customer-fields').style.display = 'none';
         _overlay.querySelector('#pm-tabs').style.display = 'none';
         _overlay.querySelectorAll('.pm-tab-content').forEach(c => c.style.display = 'none');
 
@@ -291,7 +368,7 @@ const PaymentModal = (() => {
         if (!_overlay) return;
 
         // Clear inputs
-        ['pm-card-number', 'pm-card-holder', 'pm-card-expiry', 'pm-card-cvv'].forEach(id => {
+        ['pm-doc', 'pm-phone', 'pm-card-number', 'pm-card-holder', 'pm-card-expiry', 'pm-card-cvv'].forEach(id => {
             const el = _overlay.querySelector(`#${id}`);
             if (el) el.value = '';
         });
@@ -321,6 +398,7 @@ const PaymentModal = (() => {
         _overlay.querySelector('#pm-success').style.display = 'none';
 
         // Reset tabs visibility
+        _overlay.querySelector('#pm-customer-fields').style.display = '';
         _overlay.querySelector('#pm-tabs').style.display = '';
         _overlay.querySelectorAll('.pm-tab-content').forEach(c => c.style.display = '');
 
