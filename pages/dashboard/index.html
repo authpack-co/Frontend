@@ -488,6 +488,383 @@
         </div>
     </div>
 
+    <!-- Seller Onboarding Modal -->
+    <div class="modal-overlay" id="sellerOnboardingModal">
+        <div class="modal onboarding-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Cadastro de recebedor</h2>
+                <button class="close-btn" id="close-onboarding-modal">×</button>
+            </div>
+            <div class="modal-body custom-scrollbar">
+                <div class="onboarding-tabs">
+                    <button class="onboarding-tab active" data-type="individual">Pessoa Física</button>
+                    <button class="onboarding-tab" data-type="corporation">Pessoa Jurídica</button>
+                </div>
+
+                <div class="onboarding-form">
+                    <div class="form-group">
+                        <label class="form-label">E-mail *</label>
+                        <input type="email" class="form-input" id="onb-email" placeholder="seu@email.com">
+                    </div>
+
+                    <!-- PF Fields -->
+                    <div id="onb-pf-fields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Nome completo *</label>
+                                <input type="text" class="form-input" id="onb-pf-name" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CPF *</label>
+                                <input type="text" class="form-input" id="onb-pf-document" placeholder="00000000000" maxlength="11">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Nome da mãe *</label>
+                                <input type="text" class="form-input" id="onb-pf-mother_name" placeholder="Nome da mãe">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Data de nascimento *</label>
+                                <input type="date" class="form-input" id="onb-pf-birthdate">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Renda mensal (centavos) *</label>
+                                <input type="number" class="form-input" id="onb-pf-monthly_income" placeholder="Ex: 300000 para R$ 3.000,00">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ocupação profissional *</label>
+                                <input type="text" class="form-input" id="onb-pf-professional_occupation" placeholder="Ex: Desenvolvedor">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Site (opcional)</label>
+                            <input type="url" class="form-input" id="onb-site_url" placeholder="https://seusite.com">
+                        </div>
+                        <h4 class="onboarding-section-title">Endereço *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">CEP *</label>
+                                <input type="text" class="form-input" id="onb-pf-zip_code" placeholder="00000000" maxlength="8">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Rua *</label>
+                                <input type="text" class="form-input" id="onb-pf-street" placeholder="Rua">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Número *</label>
+                                <input type="text" class="form-input" id="onb-pf-street_number" placeholder="Número">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Complemento *</label>
+                                <input type="text" class="form-input" id="onb-pf-complementary" placeholder="Apto, sala...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Bairro *</label>
+                                <input type="text" class="form-input" id="onb-pf-neighborhood" placeholder="Bairro">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cidade *</label>
+                                <input type="text" class="form-input" id="onb-pf-city" placeholder="Cidade">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Estado *</label>
+                                <input type="text" class="form-input" id="onb-pf-state" placeholder="UF" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ponto de referência *</label>
+                                <input type="text" class="form-input" id="onb-pf-reference_point" placeholder="Próximo a...">
+                            </div>
+                        </div>
+                        <h4 class="onboarding-section-title">Telefone *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">DDD *</label>
+                                <input type="text" class="form-input" id="onb-pf-phone_ddd" placeholder="11" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Número *</label>
+                                <input type="text" class="form-input" id="onb-pf-phone_number" placeholder="999999999">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PJ Fields -->
+                    <div id="onb-pj-fields" class="hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Razão social *</label>
+                                <input type="text" class="form-input" id="onb-pj-trading_name" placeholder="Razão social">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nome fantasia *</label>
+                                <input type="text" class="form-input" id="onb-pj-company_name" placeholder="Nome fantasia">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">CNPJ *</label>
+                                <input type="text" class="form-input" id="onb-pj-document" placeholder="00000000000000" maxlength="14">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Receita anual (centavos) *</label>
+                                <input type="number" class="form-input" id="onb-pj-annual_revenue" placeholder="Ex: 1000000">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Tipo da empresa *</label>
+                                <input type="text" class="form-input" id="onb-pj-corporation_type" placeholder="Ex: LTDA">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Data de fundação *</label>
+                                <input type="date" class="form-input" id="onb-pj-founding_date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Site (opcional)</label>
+                            <input type="url" class="form-input" id="onb-pj-site_url" placeholder="https://seusite.com">
+                        </div>
+                        <h4 class="onboarding-section-title">Endereço da empresa *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">CEP *</label>
+                                <input type="text" class="form-input" id="onb-pj-zip_code" placeholder="00000000" maxlength="8">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Rua *</label>
+                                <input type="text" class="form-input" id="onb-pj-street" placeholder="Rua">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Número *</label>
+                                <input type="text" class="form-input" id="onb-pj-street_number" placeholder="Número">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Complemento *</label>
+                                <input type="text" class="form-input" id="onb-pj-complementary" placeholder="Apto, sala...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Bairro *</label>
+                                <input type="text" class="form-input" id="onb-pj-neighborhood" placeholder="Bairro">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cidade *</label>
+                                <input type="text" class="form-input" id="onb-pj-city" placeholder="Cidade">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Estado *</label>
+                                <input type="text" class="form-input" id="onb-pj-state" placeholder="UF" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ponto de referência *</label>
+                                <input type="text" class="form-input" id="onb-pj-reference_point" placeholder="Próximo a...">
+                            </div>
+                        </div>
+                        <h4 class="onboarding-section-title">Telefone da empresa *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">DDD *</label>
+                                <input type="text" class="form-input" id="onb-pj-phone_ddd" placeholder="11" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Número *</label>
+                                <input type="text" class="form-input" id="onb-pj-phone_number" placeholder="999999999">
+                            </div>
+                        </div>
+                        <h4 class="onboarding-section-title">Representante Legal *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Nome *</label>
+                                <input type="text" class="form-input" id="onb-partner-name" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">E-mail *</label>
+                                <input type="email" class="form-input" id="onb-partner-email" placeholder="email@exemplo.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">CPF *</label>
+                                <input type="text" class="form-input" id="onb-partner-document" placeholder="00000000000" maxlength="11">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nome da mãe *</label>
+                                <input type="text" class="form-input" id="onb-partner-mother_name" placeholder="Nome da mãe">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Data de nascimento *</label>
+                                <input type="date" class="form-input" id="onb-partner-birthdate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Renda mensal (centavos) *</label>
+                                <input type="number" class="form-input" id="onb-partner-monthly_income" placeholder="Ex: 300000">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Ocupação profissional *</label>
+                                <input type="text" class="form-input" id="onb-partner-professional_occupation" placeholder="Ex: Gerente">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefone DDD *</label>
+                                <input type="text" class="form-input" id="onb-partner-phone_ddd" placeholder="11" maxlength="2">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone Número *</label>
+                            <input type="text" class="form-input" id="onb-partner-phone_number" placeholder="999999999">
+                        </div>
+                        <h4 class="onboarding-section-title">Endereço do representante *</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">CEP *</label>
+                                <input type="text" class="form-input" id="onb-partner-zip_code" placeholder="00000000" maxlength="8">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Rua *</label>
+                                <input type="text" class="form-input" id="onb-partner-street" placeholder="Rua">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Número *</label>
+                                <input type="text" class="form-input" id="onb-partner-street_number" placeholder="Número">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Complemento *</label>
+                                <input type="text" class="form-input" id="onb-partner-complementary" placeholder="Apto, sala...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Bairro *</label>
+                                <input type="text" class="form-input" id="onb-partner-neighborhood" placeholder="Bairro">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cidade *</label>
+                                <input type="text" class="form-input" id="onb-partner-city" placeholder="Cidade">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Estado *</label>
+                                <input type="text" class="form-input" id="onb-partner-state" placeholder="UF" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ponto de referência *</label>
+                                <input type="text" class="form-input" id="onb-partner-reference_point" placeholder="Próximo a...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Account -->
+                    <h4 class="onboarding-section-title">Conta bancária *</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nome do titular *</label>
+                            <input type="text" class="form-input" id="onb-bank-holder_name" placeholder="Nome do titular">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Documento do titular *</label>
+                            <input type="text" class="form-input" id="onb-bank-holder_document" placeholder="CPF/CNPJ do titular">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Tipo do titular *</label>
+                            <select class="form-input" id="onb-bank-holder_type">
+                                <option value="individual">Pessoa Física</option>
+                                <option value="company">Pessoa Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Banco *</label>
+                            <select class="form-input" id="onb-bank-bank">
+                                <option value="">Selecione...</option>
+                                <option value="001">001 - Banco do Brasil</option>
+                                <option value="033">033 - Santander</option>
+                                <option value="104">104 - Caixa Econômica Federal</option>
+                                <option value="237">237 - Bradesco</option>
+                                <option value="260">260 - Nubank</option>
+                                <option value="341">341 - Itaú</option>
+                                <option value="077">077 - Inter</option>
+                                <option value="212">212 - Banco Original</option>
+                                <option value="422">422 - Safra</option>
+                                <option value="745">745 - Citibank</option>
+                                <option value="041">041 - Banrisul</option>
+                                <option value="070">070 - BRB</option>
+                                <option value="121">121 - Agibank</option>
+                                <option value="136">136 - Unicred</option>
+                                <option value="748">748 - Sicredi</option>
+                                <option value="756">756 - Sicoob</option>
+                                <option value="other">Outro (digitar)</option>
+                            </select>
+                            <input type="text" class="form-input hidden" id="onb-bank-bank-other" placeholder="Código COMPE de 3 dígitos (ex: 341)">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Agência *</label>
+                            <input type="text" class="form-input" id="onb-bank-branch_number" placeholder="1234">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dígito da agência</label>
+                            <input type="text" class="form-input" id="onb-bank-branch_check_digit" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Número da conta *</label>
+                            <input type="text" class="form-input" id="onb-bank-account_number" placeholder="12345">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dígito da conta *</label>
+                            <input type="text" class="form-input" id="onb-bank-account_check_digit" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo da conta *</label>
+                        <select class="form-input" id="onb-bank-type">
+                            <option value="checking">Corrente</option>
+                            <option value="savings">Poupança</option>
+                        </select>
+                    </div>
+
+                    <span class="error-message hidden" id="onboarding-error"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="onboarding-cancel">Cancelar</button>
+                <div class="buttonContent content-state">
+                    <div class="preset-content">
+                        <button class="btn btn-primary" id="onboarding-submit">Cadastrar</button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-primary">
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="notifications">
         <div class="notification success">
             <div class="notification-icon">

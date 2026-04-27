@@ -862,30 +862,327 @@ function createVitrineProductCard(product) {
 // SELLER ONBOARDING (Pagar.me)
 // ============================================================================
 
-document.getElementById('btn-connect-seller')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-connect-seller');
-    btn.disabled = true;
-    btn.textContent = 'Cadastrando...';
+let onboardingType = 'individual';
+
+function openOnboardingModal() {
+    const modal = document.getElementById('sellerOnboardingModal');
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.removeAttribute('aria-hidden');
+    resetOnboardingForm();
+}
+
+function closeOnboardingModal() {
+    const modal = document.getElementById('sellerOnboardingModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function resetOnboardingForm() {
+    onboardingType = 'individual';
+    updateOnboardingTabs();
+    document.querySelectorAll('#sellerOnboardingModal input, #sellerOnboardingModal select').forEach(el => {
+        if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+        } else {
+            el.value = '';
+        }
+    });
+    const otherInput = document.getElementById('onb-bank-bank-other');
+    if (otherInput) otherInput.classList.add('hidden');
+    const errorEl = document.getElementById('onboarding-error');
+    if (errorEl) {
+        errorEl.classList.add('hidden');
+        errorEl.textContent = '';
+    }
+    const submitBtn = document.getElementById('onboarding-submit');
+    const btnContainer = submitBtn?.closest('.buttonContent');
+    if (btnContainer) setElementState(btnContainer, 'content');
+}
+
+function updateOnboardingTabs() {
+    document.querySelectorAll('.onboarding-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.type === onboardingType);
+    });
+    const pfFields = document.getElementById('onb-pf-fields');
+    const pjFields = document.getElementById('onb-pj-fields');
+    if (pfFields) pfFields.classList.toggle('hidden', onboardingType !== 'individual');
+    if (pjFields) pjFields.classList.toggle('hidden', onboardingType !== 'corporation');
+}
+
+function getOnboardingValue(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+}
+
+function getBankCode() {
+    const select = document.getElementById('onb-bank-bank');
+    if (!select) return '';
+    if (select.value === 'other') {
+        const otherInput = document.getElementById('onb-bank-bank-other');
+        return sanitizeNumbers(otherInput ? otherInput.value : '');
+    }
+    return select.value;
+}
+
+function sanitizeNumbers(str) {
+    return (str || '').replace(/\D/g, '');
+}
+
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function showOnboardingError(msg) {
+    const el = document.getElementById('onboarding-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+function validateAndBuildPayload() {
+    const email = getOnboardingValue('onb-email');
+    if (!email) return { error: 'Informe o e-mail.' };
+
+    const site_url = getOnboardingValue(onboardingType === 'individual' ? 'onb-site_url' : 'onb-pj-site_url') || undefined;
+
+    let register_information = { email, type: onboardingType };
+    if (site_url) register_information.site_url = site_url;
+
+    if (onboardingType === 'individual') {
+        const name = getOnboardingValue('onb-pf-name');
+        const document = sanitizeNumbers(getOnboardingValue('onb-pf-document'));
+        const mother_name = getOnboardingValue('onb-pf-mother_name');
+        const birthdate = formatDateBR(getOnboardingValue('onb-pf-birthdate'));
+        const monthly_income = parseInt(getOnboardingValue('onb-pf-monthly_income')) || 0;
+        const professional_occupation = getOnboardingValue('onb-pf-professional_occupation');
+        const phone_ddd = getOnboardingValue('onb-pf-phone_ddd');
+        const phone_number = getOnboardingValue('onb-pf-phone_number');
+
+        if (!name || !document || !mother_name || !birthdate || !monthly_income || !professional_occupation) {
+            return { error: 'Preencha todos os dados pessoais obrigatórios.' };
+        }
+        if (document.length !== 11) return { error: 'CPF deve ter 11 dígitos.' };
+
+        const address = {
+            street: getOnboardingValue('onb-pf-street'),
+            complementary: getOnboardingValue('onb-pf-complementary'),
+            street_number: getOnboardingValue('onb-pf-street_number'),
+            neighborhood: getOnboardingValue('onb-pf-neighborhood'),
+            city: getOnboardingValue('onb-pf-city'),
+            state: getOnboardingValue('onb-pf-state').toUpperCase(),
+            zip_code: sanitizeNumbers(getOnboardingValue('onb-pf-zip_code')),
+            reference_point: getOnboardingValue('onb-pf-reference_point'),
+        };
+        if (!address.street || !address.street_number || !address.neighborhood || !address.city || !address.state || !address.zip_code) {
+            return { error: 'Preencha todos os campos do endereço.' };
+        }
+
+        register_information = {
+            ...register_information,
+            name,
+            document,
+            mother_name,
+            birthdate,
+            monthly_income,
+            professional_occupation,
+            address,
+            phone_numbers: [{ ddd: phone_ddd, number: phone_number, type: 'mobile' }],
+        };
+    } else {
+        const company_name = getOnboardingValue('onb-pj-company_name');
+        const trading_name = getOnboardingValue('onb-pj-trading_name');
+        const document = sanitizeNumbers(getOnboardingValue('onb-pj-document'));
+        const annual_revenue = parseInt(getOnboardingValue('onb-pj-annual_revenue')) || 0;
+        const corporation_type = getOnboardingValue('onb-pj-corporation_type');
+        const founding_date = getOnboardingValue('onb-pj-founding_date');
+        const phone_ddd = getOnboardingValue('onb-pj-phone_ddd');
+        const phone_number = getOnboardingValue('onb-pj-phone_number');
+
+        if (!company_name || !trading_name || !document || !annual_revenue || !corporation_type || !founding_date) {
+            return { error: 'Preencha todos os dados da empresa obrigatórios.' };
+        }
+        if (document.length !== 14) return { error: 'CNPJ deve ter 14 dígitos.' };
+
+        const main_address = {
+            street: getOnboardingValue('onb-pj-street'),
+            complementary: getOnboardingValue('onb-pj-complementary'),
+            street_number: getOnboardingValue('onb-pj-street_number'),
+            neighborhood: getOnboardingValue('onb-pj-neighborhood'),
+            city: getOnboardingValue('onb-pj-city'),
+            state: getOnboardingValue('onb-pj-state').toUpperCase(),
+            zip_code: sanitizeNumbers(getOnboardingValue('onb-pj-zip_code')),
+            reference_point: getOnboardingValue('onb-pj-reference_point'),
+        };
+        if (!main_address.street || !main_address.street_number || !main_address.neighborhood || !main_address.city || !main_address.state || !main_address.zip_code) {
+            return { error: 'Preencha todos os campos do endereço da empresa.' };
+        }
+
+        const partnerName = getOnboardingValue('onb-partner-name');
+        const partnerEmail = getOnboardingValue('onb-partner-email');
+        const partnerDocument = sanitizeNumbers(getOnboardingValue('onb-partner-document'));
+        const partnerMother = getOnboardingValue('onb-partner-mother_name');
+        const partnerBirth = formatDateBR(getOnboardingValue('onb-partner-birthdate'));
+        const partnerIncome = parseInt(getOnboardingValue('onb-partner-monthly_income')) || 0;
+        const partnerJob = getOnboardingValue('onb-partner-professional_occupation');
+        const partnerPhoneDdd = getOnboardingValue('onb-partner-phone_ddd');
+        const partnerPhoneNum = getOnboardingValue('onb-partner-phone_number');
+
+        if (!partnerName || !partnerEmail || !partnerDocument || !partnerMother || !partnerBirth || !partnerIncome || !partnerJob) {
+            return { error: 'Preencha todos os dados do representante legal.' };
+        }
+        if (partnerDocument.length !== 11) return { error: 'CPF do representante deve ter 11 dígitos.' };
+
+        const partnerAddress = {
+            street: getOnboardingValue('onb-partner-street'),
+            complementary: getOnboardingValue('onb-partner-complementary'),
+            street_number: getOnboardingValue('onb-partner-street_number'),
+            neighborhood: getOnboardingValue('onb-partner-neighborhood'),
+            city: getOnboardingValue('onb-partner-city'),
+            state: getOnboardingValue('onb-partner-state').toUpperCase(),
+            zip_code: sanitizeNumbers(getOnboardingValue('onb-partner-zip_code')),
+            reference_point: getOnboardingValue('onb-partner-reference_point'),
+        };
+        if (!partnerAddress.street || !partnerAddress.street_number || !partnerAddress.neighborhood || !partnerAddress.city || !partnerAddress.state || !partnerAddress.zip_code) {
+            return { error: 'Preencha todos os campos do endereço do representante.' };
+        }
+
+        register_information = {
+            ...register_information,
+            company_name,
+            trading_name,
+            document,
+            annual_revenue,
+            corporation_type,
+            founding_date,
+            main_address,
+            phone_numbers: [{ ddd: phone_ddd, number: phone_number, type: 'mobile' }],
+            managing_partners: [{
+                name: partnerName,
+                email: partnerEmail,
+                document: partnerDocument,
+                type: 'individual',
+                mother_name: partnerMother,
+                birthdate: partnerBirth,
+                monthly_income: partnerIncome,
+                professional_occupation: partnerJob,
+                self_declared_legal_representative: true,
+                address: partnerAddress,
+                phone_numbers: [{ ddd: partnerPhoneDdd, number: partnerPhoneNum, type: 'mobile' }],
+            }],
+        };
+    }
+
+    const holder_name = getOnboardingValue('onb-bank-holder_name');
+    const holder_document = sanitizeNumbers(getOnboardingValue('onb-bank-holder_document'));
+    const holder_type = document.getElementById('onb-bank-holder_type')?.value || 'individual';
+    const bank = getBankCode();
+    const branch_number = sanitizeNumbers(getOnboardingValue('onb-bank-branch_number'));
+    const branch_check_digit = sanitizeNumbers(getOnboardingValue('onb-bank-branch_check_digit')) || undefined;
+    const account_number = sanitizeNumbers(getOnboardingValue('onb-bank-account_number'));
+    const account_check_digit = sanitizeNumbers(getOnboardingValue('onb-bank-account_check_digit'));
+    const accountType = document.getElementById('onb-bank-type')?.value || 'checking';
+
+    if (!holder_name || !holder_document || !bank || !branch_number || !account_number || !account_check_digit) {
+        return { error: 'Preencha todos os dados bancários obrigatórios.' };
+    }
+    if (bank.length !== 3) {
+        return { error: 'O código do banco deve ter 3 dígitos (código COMPE). Ex: 260 para Nubank, 341 para Itaú.' };
+    }
+
+    const default_bank_account = {
+        holder_name,
+        holder_type,
+        holder_document,
+        bank,
+        branch_number,
+        account_number,
+        account_check_digit,
+        type: accountType,
+    };
+    if (branch_check_digit) default_bank_account.branch_check_digit = branch_check_digit;
+
+    return { register_information, default_bank_account };
+}
+
+// Open modal on gate click
+document.getElementById('btn-connect-seller')?.addEventListener('click', () => {
+    openOnboardingModal();
+});
+
+// Modal close handlers
+document.getElementById('close-onboarding-modal')?.addEventListener('click', closeOnboardingModal);
+document.getElementById('onboarding-cancel')?.addEventListener('click', closeOnboardingModal);
+document.getElementById('sellerOnboardingModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeOnboardingModal();
+});
+
+// Tab switching
+document.querySelectorAll('.onboarding-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        onboardingType = tab.dataset.type;
+        updateOnboardingTabs();
+    });
+});
+
+// Bank select "other" toggle
+document.getElementById('onb-bank-bank')?.addEventListener('change', (e) => {
+    const otherInput = document.getElementById('onb-bank-bank-other');
+    if (otherInput) {
+        otherInput.classList.toggle('hidden', e.target.value !== 'other');
+        if (e.target.value !== 'other') otherInput.value = '';
+    }
+});
+
+// Submit handler
+document.getElementById('onboarding-submit')?.addEventListener('click', async () => {
+    const submitBtn = document.getElementById('onboarding-submit');
+    const btnContainer = submitBtn?.closest('.buttonContent');
+
+    const payload = validateAndBuildPayload();
+    if (payload.error) {
+        showOnboardingError(payload.error);
+        return;
+    }
+
+    if (btnContainer) setElementState(btnContainer, 'loading');
 
     try {
-        // Submit onboarding request — backend creates recipient on Pagar.me
-        const res = await fetchManager.startSellerOnboarding();
+        const res = await fetchManager.startSellerOnboarding(payload);
         console.log('[Vitrine] Onboarding response:', res);
 
         if (res.ok) {
-            // Success: reload vitrine to show updated state
+            closeOnboardingModal();
             notify('success', 'Cadastro enviado com sucesso! Aguarde a aprovação.');
-            setTimeout(() => loadVitrine(), 1500);
+            setTimeout(() => {
+                vitrineLoaded = false;
+                loadVitrineTab();
+            }, 1500);
         } else {
-            const errMsg = res.result?.error || 'Erro ao cadastrar. Tente novamente.';
-            notify('error', errMsg);
-            btn.textContent = 'Erro — tente novamente';
-            btn.disabled = false;
+            let errMsg = res.result?.error || 'Erro ao cadastrar. Tente novamente.';
+            // Append Pagar.me validation details if available
+            const details = res.result?.details;
+            if (details && typeof details === 'object') {
+                const detailMessages = Object.entries(details)
+                    .map(([field, msgs]) => {
+                        const msgText = Array.isArray(msgs) ? msgs.join(', ') : String(msgs);
+                        return `${field}: ${msgText}`;
+                    })
+                    .join(' | ');
+                if (detailMessages) errMsg += ` (${detailMessages})`;
+            } else if (details) {
+                errMsg += ` (${details})`;
+            }
+            showOnboardingError(errMsg);
+            if (btnContainer) setElementState(btnContainer, 'content');
         }
     } catch (err) {
         console.error('Seller onboarding error:', err);
-        btn.textContent = 'Erro — tente novamente';
-        btn.disabled = false;
+        showOnboardingError('Erro de conexão. Tente novamente.');
+        if (btnContainer) setElementState(btnContainer, 'content');
     }
 });
 
