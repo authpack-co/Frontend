@@ -234,6 +234,17 @@
                             throw new Error(errMsg);
                         }
 
+                        // Subscription success
+                        if (res.result?.subscriptionId) {
+                            PaymentModal.showSuccess(
+                                billingType === 'subscription' ? 'Assinatura realizada!' : 'Compra realizada!',
+                                'Seu acesso será ativado assim que o pagamento for confirmado.'
+                            );
+                            btn.disabled = true;
+                            btn.textContent = billingType === 'subscription' ? 'Assinatura realizada ✓' : 'Compra realizada ✓';
+                            return;
+                        }
+
                         // Check if Pix — show QR code
                         const charges = res.result?.charges || [];
                         const lastTx = charges[0]?.last_transaction;
@@ -243,7 +254,7 @@
                             return;
                         }
 
-                        // Card success
+                        // Card success (one-time)
                         PaymentModal.showSuccess('Compra realizada!', 'Seu acesso já está ativo.');
                         btn.disabled = true;
                         btn.textContent = 'Compra realizada ✓';
