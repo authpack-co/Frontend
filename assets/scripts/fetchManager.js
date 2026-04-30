@@ -368,4 +368,16 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/details`);
         return response;
     },
+
+    async getSellerKycStatus() {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/kyc-status`);
+        return response;
+    },
+
+    async generateKycLink() {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/kyc-link`, {
+            method: 'POST',
+        });
+        return response;
+    },
 }

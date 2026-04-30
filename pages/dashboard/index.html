@@ -2026,6 +2026,32 @@
                             <button class="vt-onboarding-btn" id="btn-continue-onboarding">Ver status</button>
                         </div>
 
+                        <!-- ── KYC Banner (shown when recipient is registered but KYC is pending) ── -->
+                        <div class="vt-kyc-banner vt-onboarding-banner hidden" id="vt-kyc-banner">
+                            <div class="vt-onboarding-left">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                                <div>
+                                    <strong>Finalize seu cadastro</strong>
+                                    <span>Faça a verificação de identidade (Prova de Vida) para começar a vender e realizar saques.</span>
+                                </div>
+                            </div>
+                            <div class="buttonContent content-state" id="btn-kyc-link-container">
+                                <div class="preset-content">
+                                    <button class="vt-onboarding-btn" id="btn-kyc-link">Verificar identidade</button>
+                                </div>
+                                <div class="preset-loading">
+                                    <button class="vt-onboarding-btn" disabled>
+                                        <div class="spinner" style="width:14px;height:14px;"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ── Header ── -->
                         <div class="vitrine-header">
                             <div class="vitrine-header-top">

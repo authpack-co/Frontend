@@ -84,9 +84,12 @@ async function loadVitrineTab() {
     const container = document.getElementById('vitrine-container');
     setElementState(container, 'loading');
 
-    // Always hide gate + banner first
+    // Always hide gate + banners first
     hideGate();
     hideOnboardingBanner();
+    hideKycBanner();
+    // Ensure "Criar produto" is visible by default (it may have been hidden in KYC state)
+    document.getElementById('btn-create-product')?.classList.remove('hidden');
 
     // Check if user is Plus
     if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
@@ -110,14 +113,17 @@ async function loadVitrineTab() {
             return;
         }
 
-        const accountData = accountRes.result.data;
+        // State 2: Account exists — check live KYC status
+        const kycRes = await fetchManager.getSellerKycStatus();
+        console.log('[Vitrine] KYC status:', kycRes);
 
-        // State 2: Account exists but onboarding incomplete
-        if (!accountData?.charges_enabled) {
-            // Show real dashboard with onboarding banner
+        if (!kycRes.ok || kycRes.result?.kyc_needed) {
+            // State 2: KYC pending — block selling until identity verified
             setElementState(container, 'vitrine-content');
-            showOnboardingBanner();
-            // Update seller status to pending
+            showKycBanner();
+            // Hide "Criar produto" button
+            document.getElementById('btn-create-product')?.classList.add('hidden');
+            // Update seller status badge
             const statusEl = document.querySelector('.vt-seller-status');
             if (statusEl) {
                 statusEl.className = 'vt-seller-status pending';
@@ -189,6 +195,16 @@ function showOnboardingBanner() {
 
 function hideOnboardingBanner() {
     const banner = document.getElementById('vt-onboarding-banner');
+    if (banner) banner.classList.add('hidden');
+}
+
+function showKycBanner() {
+    const banner = document.getElementById('vt-kyc-banner');
+    if (banner) banner.classList.remove('hidden');
+}
+
+function hideKycBanner() {
+    const banner = document.getElementById('vt-kyc-banner');
     if (banner) banner.classList.add('hidden');
 }
 
@@ -1206,6 +1222,28 @@ document.getElementById('btn-continue-onboarding')?.addEventListener('click', as
         console.error('Onboarding status check error:', err);
         btn.textContent = 'Ver status';
         btn.disabled = false;
+    }
+});
+
+// KYC link button — generate and open the Pagar.me biometric verification link
+document.getElementById('btn-kyc-link')?.addEventListener('click', async () => {
+    const btnContainer = document.getElementById('btn-kyc-link-container');
+    if (btnContainer) setElementState(btnContainer, 'loading');
+
+    try {
+        const res = await fetchManager.generateKycLink();
+        if (res.ok && res.result?.url) {
+            window.open(res.result.url, '_blank');
+            notify('info', 'Link de verificação aberto em nova aba. Volte aqui após concluir.');
+        } else {
+            const errMsg = res.result?.error || 'Erro ao gerar link de verificação.';
+            notify('error', errMsg);
+        }
+    } catch (err) {
+        console.error('KYC link generation error:', err);
+        notify('error', 'Erro de conexão. Tente novamente.');
+    } finally {
+        if (btnContainer) setElementState(btnContainer, 'content');
     }
 });
 
