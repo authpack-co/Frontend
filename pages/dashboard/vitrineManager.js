@@ -2420,3 +2420,229 @@ function renderProductDetails(data, wrapEl) {
 
     wrapEl.appendChild(salesSection);
 }
+
+// ============================================================================
+// WITHDRAWAL MODAL (Detalhes de Saque)
+// ============================================================================
+
+async function openWithdrawalModal() {
+    const modal = document.getElementById('withdrawalModal');
+    if (!modal) return;
+
+    modal.classList.add('show');
+
+    const loadingEl = document.getElementById('withdrawalLoading');
+    const wrapEl = document.getElementById('withdrawalWrap');
+
+    loadingEl.style.display = 'flex';
+    wrapEl.innerHTML = '';
+
+    try {
+        const res = await fetchManager.getWithdrawalInfo();
+        if (res.ok && res.result) {
+            renderWithdrawalInfo(res.result, wrapEl);
+        } else {
+            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar informações de saque.</div>';
+        }
+    } catch (err) {
+        console.error('openWithdrawalModal error:', err);
+        wrapEl.innerHTML = '<div class="sh-empty-state">Erro de conexão.</div>';
+    } finally {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function closeWithdrawalModal() {
+    const modal = document.getElementById('withdrawalModal');
+    if (modal) modal.classList.remove('show');
+}
+
+// Status badge helper for transfer status
+function _transferStatusBadge(status) {
+    const map = {
+        transferred: { label: 'Transferido', cls: 'wd-status-success' },
+        pending_transfer: { label: 'Pendente', cls: 'wd-status-pending' },
+        processing: { label: 'Processando', cls: 'wd-status-pending' },
+        failed: { label: 'Falhou', cls: 'wd-status-failed' },
+        canceled: { label: 'Cancelado', cls: 'wd-status-failed' },
+        created: { label: 'Criado', cls: 'wd-status-pending' },
+    };
+    const s = map[status] || { label: status || '—', cls: 'wd-status-pending' };
+    return `<span class="wd-status-badge ${s.cls}">${s.label}</span>`;
+}
+
+function renderWithdrawalInfo(data, wrapEl) {
+    const { balance, transfers, bank_name, bank_last4, next_transfer_date } = data;
+
+    const available = balance?.available_amount || 0;
+    const waiting = balance?.waiting_funds_amount || 0;
+
+    // Format next transfer date
+    let nextDateLabel = '—';
+    if (next_transfer_date) {
+        const d = new Date(next_transfer_date + 'T12:00:00');
+        nextDateLabel = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    // Bank label
+    const bankLabel = (bank_name && bank_last4)
+        ? `${bank_name} ****${bank_last4}`
+        : (bank_name || '—');
+
+    // ── Balance summary panel ──
+    const summaryEl = document.createElement('div');
+    summaryEl.className = 'wd-summary';
+    summaryEl.innerHTML = `
+        <div class="wd-balance-grid">
+            <div class="wd-balance-card available">
+                <div class="wd-balance-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="wd-balance-info">
+                    <span class="wd-balance-label">Disponível para saque</span>
+                    <span class="wd-balance-value available">R$ ${formatBRLValue(available)}</span>
+                </div>
+            </div>
+            <div class="wd-balance-card">
+                <div class="wd-balance-icon muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="wd-balance-info">
+                    <span class="wd-balance-label">Aguardando compensação</span>
+                    <span class="wd-balance-value">R$ ${formatBRLValue(waiting)}</span>
+                </div>
+            </div>
+            <div class="wd-balance-card">
+                <div class="wd-balance-icon muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                </div>
+                <div class="wd-balance-info">
+                    <span class="wd-balance-label">Próximo repasse automático</span>
+                    <span class="wd-balance-value">${nextDateLabel}</span>
+                </div>
+            </div>
+            <div class="wd-balance-card">
+                <div class="wd-balance-icon muted">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18v-7"/><path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></svg>
+                </div>
+                <div class="wd-balance-info">
+                    <span class="wd-balance-label">Conta destino</span>
+                    <span class="wd-balance-value">${bankLabel}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    wrapEl.appendChild(summaryEl);
+
+    // ── Withdraw button ──
+    const btnWrap = document.createElement('div');
+    btnWrap.className = 'wd-btn-wrap buttonContent content-state';
+    btnWrap.id = 'wd-btn-container';
+    btnWrap.innerHTML = `
+        <div class="preset-content">
+            <button class="btn btn-primary wd-withdraw-btn" id="btn-withdraw-now" ${available <= 0 ? 'disabled' : ''}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Sacar agora ${available > 0 ? '(R$ ' + formatBRLValue(available) + ')' : ''}
+            </button>
+            ${available <= 0 ? '<p class="wd-no-balance-note">Nenhum saldo disponível para saque no momento.</p>' : ''}
+        </div>
+        <div class="preset-loading">
+            <button class="btn btn-primary wd-withdraw-btn" disabled>
+                <div class="spinner" style="width:16px;height:16px;"></div>
+                Processando...
+            </button>
+        </div>
+    `;
+    wrapEl.appendChild(btnWrap);
+
+    // Withdraw button click handler
+    document.getElementById('btn-withdraw-now')?.addEventListener('click', async () => {
+        setElementState(btnWrap, 'loading');
+        try {
+            const res = await fetchManager.requestWithdrawal();
+            if (res.ok && res.result?.success) {
+                notify('success', `Saque de R$ ${formatBRLValue(res.result.amount_cents)} solicitado com sucesso!`);
+                closeWithdrawalModal();
+                setTimeout(() => openWithdrawalModal(), 300);
+            } else {
+                const errMsg = res.result?.error || 'Erro ao solicitar saque';
+                notify('error', errMsg);
+                setElementState(btnWrap, 'content');
+            }
+        } catch (err) {
+            console.error('requestWithdrawal error:', err);
+            notify('error', 'Erro de conexão ao solicitar saque');
+            setElementState(btnWrap, 'content');
+        }
+    });
+
+    // ── Transfer history ──
+    const historySection = document.createElement('div');
+    historySection.className = 'pd-section wd-history-section';
+
+    const historyTitle = document.createElement('h3');
+    historyTitle.className = 'pd-section-title';
+    historyTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg> Histórico de repasses`;
+    historySection.appendChild(historyTitle);
+
+    if (!transfers || transfers.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'sh-empty-state';
+        empty.textContent = 'Nenhum repasse realizado ainda.';
+        historySection.appendChild(empty);
+    } else {
+        const listEl = document.createElement('div');
+        listEl.className = 'wd-transfer-list';
+
+        // Table header
+        const headerEl = document.createElement('div');
+        headerEl.className = 'sh-table-header';
+        headerEl.innerHTML = `
+            <div class="sh-col" style="flex:1.5;">Data</div>
+            <div class="sh-col" style="flex:2;">Valor</div>
+            <div class="sh-col" style="flex:1.5;">Status</div>
+            <div class="sh-col" style="flex:2;">Previsão / Efetivado</div>
+        `;
+        listEl.appendChild(headerEl);
+
+        // Sort by newest first
+        const sorted = [...transfers].sort((a, b) =>
+            new Date(b.date_created || b.created_at || 0) - new Date(a.date_created || a.created_at || 0)
+        );
+
+        sorted.forEach(transfer => {
+            const createdAt = new Date(transfer.date_created || transfer.created_at);
+            const dateLabel = `${String(createdAt.getDate()).padStart(2, '0')} ${MONTH_SHORT[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
+
+            let fundingLabel = '—';
+            const fundingRaw = transfer.funding_date || transfer.funding_estimated_date;
+            if (fundingRaw) {
+                const fd = new Date(fundingRaw);
+                fundingLabel = `${String(fd.getDate()).padStart(2, '0')} ${MONTH_SHORT[fd.getMonth()]} ${fd.getFullYear()}`;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'sh-sale-item wd-transfer-row';
+            row.innerHTML = `
+                <div class="sh-col" style="flex:1.5;">${dateLabel}</div>
+                <div class="sh-col" style="flex:2;">
+                    <span class="wd-transfer-amount">R$ ${formatBRLValue(transfer.amount || 0)}</span>
+                </div>
+                <div class="sh-col" style="flex:1.5;">${_transferStatusBadge(transfer.status)}</div>
+                <div class="sh-col" style="flex:2;">${fundingLabel}</div>
+            `;
+            listEl.appendChild(row);
+        });
+
+        historySection.appendChild(listEl);
+    }
+
+    wrapEl.appendChild(historySection);
+}
+
+// Event listeners
+document.getElementById('btn-withdrawal-details')?.addEventListener('click', openWithdrawalModal);
+document.getElementById('withdrawalModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeWithdrawalModal();
+});
+document.querySelector('#withdrawalModal .close-btn')?.addEventListener('click', closeWithdrawalModal);

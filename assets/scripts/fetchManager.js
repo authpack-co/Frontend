@@ -380,4 +380,16 @@ const fetchManager = {
         });
         return response;
     },
+
+    async getWithdrawalInfo() {
+        const response = await fetchRoutes(`/api/marketplace/seller/withdrawal-info`);
+        return response;
+    },
+
+    async requestWithdrawal() {
+        const response = await fetchRoutes(`/api/marketplace/seller/withdraw`, {
+            method: 'POST',
+        });
+        return response;
+    },
 }
