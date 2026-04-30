@@ -2534,7 +2534,47 @@ function renderWithdrawalInfo(data, wrapEl) {
     `;
     wrapEl.appendChild(summaryEl);
 
-    // ── Withdraw button ──
+    // ── Payables breakdown (money on the way) ──
+    const { payable_groups } = data;
+    if (payable_groups && payable_groups.length > 0) {
+        const pgSection = document.createElement('div');
+        pgSection.className = 'wd-payables-section';
+
+        const pgTitle = document.createElement('div');
+        pgTitle.className = 'wd-payables-title';
+        pgTitle.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Recebíveis agendados
+        `;
+        pgSection.appendChild(pgTitle);
+
+        const pgList = document.createElement('div');
+        pgList.className = 'wd-payables-list';
+
+        payable_groups.forEach(pg => {
+            const d = new Date(pg.payment_date + 'T12:00:00');
+            const dateLabel = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+
+            const row = document.createElement('div');
+            row.className = 'wd-payable-row';
+            row.innerHTML = `
+                <div class="wd-payable-date">
+                    <span class="wd-payable-dot"></span>
+                    ${dateLabel}
+                </div>
+                <div class="wd-payable-right">
+                    <span class="wd-payable-amount">R$ ${formatBRLValue(pg.amount)}</span>
+                    <span class="wd-payable-count">${pg.count} ${pg.count === 1 ? 'transação' : 'transações'}</span>
+                </div>
+            `;
+            pgList.appendChild(row);
+        });
+
+        pgSection.appendChild(pgList);
+        wrapEl.appendChild(pgSection);
+    }
+
+
     const btnWrap = document.createElement('div');
     btnWrap.className = 'wd-btn-wrap buttonContent content-state';
     btnWrap.id = 'wd-btn-container';
