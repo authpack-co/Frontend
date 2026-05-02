@@ -392,4 +392,27 @@ const fetchManager = {
         });
         return response;
     },
+
+    // ==================== Checkout Orders ====================
+
+    async createCheckoutOrder(data) {
+        const response = await fetchRoutes(`/api/checkout-orders`, {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+        return response;
+    },
+
+    async getCheckoutOrder(orderId) {
+        const response = await fetchRoutes(`/api/checkout-orders/${orderId}`);
+        return response;
+    },
+
+    async payCheckoutOrder(orderId, paymentData) {
+        const response = await fetchRoutes(`/api/checkout-orders/${orderId}/pay`, {
+            method: "POST",
+            body: JSON.stringify({ payment: paymentData }),
+        });
+        return response;
+    },
 }

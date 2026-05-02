@@ -407,27 +407,46 @@ const PlusModal = (() => {
     }
 
     async function handleCta() {
-        PaymentModal.open({
-            title: 'Assinar AuthPack Plus',
-            amount: 1690,
-            period: '/ mês',
-            pixEnabled: false,
-            onSubmit: async (paymentData) => {
-                try {
-                    const res = await fetchManager.checkoutPlus(paymentData);
-                    if (!res.ok) {
-                        const msg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                            ? 'Você já possui uma assinatura ativa.'
-                            : res.result?.error || 'Erro ao processar assinatura.';
-                        throw new Error(msg);
-                    }
-                    PaymentModal.showSuccess('Assinatura confirmada!', 'Seu plano Plus está ativo. Recarregando...');
-                    setTimeout(() => window.location.reload(), 2000);
-                } catch (err) {
-                    throw err;
+        const ctaBtn = el('plus-modal-ac-cta');
+        if (ctaBtn) {
+            ctaBtn.disabled = true;
+            ctaBtn.textContent = 'Redirecionando...';
+        }
+
+        try {
+            const res = await fetchManager.createCheckoutOrder({ origin: 'platform' });
+
+            if (!res.ok) {
+                const msg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
+                    ? 'Você já possui uma assinatura ativa.'
+                    : res.result?.error || 'Erro ao iniciar checkout.';
+                alert(msg);
+                if (ctaBtn) {
+                    ctaBtn.disabled = false;
+                    ctaBtn.textContent = 'Assinar Plus';
                 }
-            },
-        });
+                return;
+            }
+
+            const orderId = res.result?.id;
+            if (!orderId) {
+                alert('Erro ao criar pedido. Tente novamente.');
+                if (ctaBtn) {
+                    ctaBtn.disabled = false;
+                    ctaBtn.textContent = 'Assinar Plus';
+                }
+                return;
+            }
+
+            window.location.href = `/pages/checkout/?orderId=${orderId}`;
+        } catch (err) {
+            console.error('Plus checkout redirect error:', err);
+            alert('Erro inesperado. Tente novamente.');
+            if (ctaBtn) {
+                ctaBtn.disabled = false;
+                ctaBtn.textContent = 'Assinar Plus';
+            }
+        }
     }
 
     function init() {
