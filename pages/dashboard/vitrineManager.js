@@ -875,47 +875,61 @@ function createVitrineProductCard(product) {
 
 
 // ============================================================================
-// SELLER ONBOARDING (Pagar.me)
+// SELLER ONBOARDING (Pagar.me) — Fullscreen preset inside vitrine-container
 // ============================================================================
 
 let onboardingType = 'individual';
 
-function openOnboardingModal() {
-    const modal = document.getElementById('sellerOnboardingModal');
-    if (!modal) return;
-    modal.classList.add('show');
-    modal.removeAttribute('aria-hidden');
+// ── Preset navigation ──────────────────────────────────────────────────────
+
+function openOnboardingPage() {
+    const container = document.getElementById('vitrine-container');
+    if (!container) return;
+    setElementState(container, 'vitrine-onboarding');
     resetOnboardingForm();
 }
 
-function closeOnboardingModal() {
-    const modal = document.getElementById('sellerOnboardingModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
+function closeOnboardingPage() {
+    const container = document.getElementById('vitrine-container');
+    if (!container) return;
+    // Return to content state (or loading if still loading)
+    const hasContent = container.classList.contains('vitrine-onboarding-state');
+    if (hasContent) {
+        setElementState(container, 'vitrine-content');
+    }
 }
+
+// ── Form reset ─────────────────────────────────────────────────────────────
 
 function resetOnboardingForm() {
     onboardingType = 'individual';
     updateOnboardingTabs();
-    document.querySelectorAll('#sellerOnboardingModal input, #sellerOnboardingModal select').forEach(el => {
+
+    // Reset all inputs and selects within the preset
+    document.querySelectorAll('.preset-vitrine-onboarding input, .preset-vitrine-onboarding select').forEach(el => {
         if (el.tagName === 'SELECT') {
             el.selectedIndex = 0;
         } else {
             el.value = '';
+            delete el.dataset.rawValue;
         }
     });
+
     const otherInput = document.getElementById('onb-bank-bank-other');
     if (otherInput) otherInput.classList.add('hidden');
+
     const errorEl = document.getElementById('onboarding-error');
     if (errorEl) {
         errorEl.classList.add('hidden');
         errorEl.textContent = '';
     }
+
     const submitBtn = document.getElementById('onboarding-submit');
     const btnContainer = submitBtn?.closest('.buttonContent');
     if (btnContainer) setElementState(btnContainer, 'content');
 }
+
+// ── Tab switching ──────────────────────────────────────────────────────────
 
 function updateOnboardingTabs() {
     document.querySelectorAll('.onboarding-tab').forEach(tab => {
@@ -927,9 +941,129 @@ function updateOnboardingTabs() {
     if (pjFields) pjFields.classList.toggle('hidden', onboardingType !== 'corporation');
 }
 
+// ── Input Masks ────────────────────────────────────────────────────────────
+
+function maskCPF(el) {
+    el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g, '').slice(0, 11);
+        if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+        else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+        else if (v.length > 3) v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+        el.value = v;
+    });
+}
+
+function maskCNPJ(el) {
+    el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g, '').slice(0, 14);
+        if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/, '$1.$2.$3/$4-$5');
+        else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, '$1.$2.$3/$4');
+        else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+        else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,3})$/, '$1.$2');
+        el.value = v;
+    });
+}
+
+function maskCPFCNPJ(el) {
+    el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g, '').slice(0, 14);
+        if (v.length <= 11) {
+            // CPF format
+            if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+            else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+            else if (v.length > 3) v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+        } else {
+            // CNPJ format
+            if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/, '$1.$2.$3/$4-$5');
+            else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, '$1.$2.$3/$4');
+            else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+            else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,3})$/, '$1.$2');
+        }
+        el.value = v;
+    });
+}
+
+function maskCEP(el) {
+    el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g, '').slice(0, 8);
+        if (v.length > 5) v = v.replace(/^(\d{5})(\d{1,3})$/, '$1-$2');
+        el.value = v;
+    });
+}
+
+function maskPhone(el) {
+    el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g, '').slice(0, 11);
+        if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+        else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4,5})(\d{0,4})$/, '($1) $2-$3');
+        else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,5})$/, '($1) $2');
+        else if (v.length > 0) v = v.replace(/^(\d{1,2})$/, '($1');
+        el.value = v;
+    });
+}
+
+function maskCurrency(el) {
+    el.addEventListener('input', () => {
+        // Allow only digits, commas and dots
+        let raw = el.value.replace(/[^\d,]/g, '');
+        // Store raw for payload
+        el.dataset.rawValue = raw;
+        // Format as Brazilian currency display
+        const numStr = raw.replace(',', '.');
+        const num = parseFloat(numStr);
+        if (!isNaN(num) && raw !== '') {
+            el.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    });
+}
+
+function applyInputMasks() {
+    const maskMap = {
+        'cpf': maskCPF,
+        'cnpj': maskCNPJ,
+        'cpf-cnpj': maskCPFCNPJ,
+        'cep': maskCEP,
+        'phone': maskPhone,
+        'currency': maskCurrency,
+    };
+    document.querySelectorAll('.preset-vitrine-onboarding [data-mask]').forEach(el => {
+        const maskFn = maskMap[el.dataset.mask];
+        if (maskFn) maskFn(el);
+    });
+}
+
+// Apply masks once DOM is ready
+applyInputMasks();
+
+// ── Helper: get raw digits from a masked field ──────────────────────────────
+
 function getOnboardingValue(id) {
     const el = document.getElementById(id);
     return el ? el.value.trim() : '';
+}
+
+function getRawDigits(id) {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    return el.value.replace(/\D/g, '');
+}
+
+function getCurrencyCents(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    // Value is shown as "5.000,00" — parse as float, multiply by 100
+    const raw = el.value.replace(/\./g, '').replace(',', '.');
+    const reais = parseFloat(raw) || 0;
+    return Math.round(reais * 100);
+}
+
+function getPhoneParts(id) {
+    // id is the unified phone field e.g. "onb-pf-phone"
+    const digits = getRawDigits(id);
+    return {
+        ddd: digits.slice(0, 2),
+        number: digits.slice(2),
+    };
 }
 
 function getBankCode() {
@@ -937,19 +1071,17 @@ function getBankCode() {
     if (!select) return '';
     if (select.value === 'other') {
         const otherInput = document.getElementById('onb-bank-bank-other');
-        return sanitizeNumbers(otherInput ? otherInput.value : '');
+        return otherInput ? otherInput.value.replace(/\D/g, '') : '';
     }
     return select.value;
-}
-
-function sanitizeNumbers(str) {
-    return (str || '').replace(/\D/g, '');
 }
 
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
+    // Clamp year to exactly 4 digits to avoid browser quirks (e.g. "20000")
+    const year = y ? y.slice(0, 4).padStart(4, '0') : '0000';
+    return `${d}/${m}/${year}`;
 }
 
 function showOnboardingError(msg) {
@@ -959,24 +1091,19 @@ function showOnboardingError(msg) {
     el.classList.remove('hidden');
 }
 
+// ── Payload builder ────────────────────────────────────────────────────────
+
 function validateAndBuildPayload() {
-    const email = getOnboardingValue('onb-email');
-    if (!email) return { error: 'Informe o e-mail.' };
-
-    const site_url = getOnboardingValue(onboardingType === 'individual' ? 'onb-site_url' : 'onb-pj-site_url') || undefined;
-
-    let register_information = { email, type: onboardingType };
-    if (site_url) register_information.site_url = site_url;
+    let register_information = { type: onboardingType };
 
     if (onboardingType === 'individual') {
         const name = getOnboardingValue('onb-pf-name');
-        const document = sanitizeNumbers(getOnboardingValue('onb-pf-document'));
+        const document = getRawDigits('onb-pf-document');
         const mother_name = getOnboardingValue('onb-pf-mother_name');
         const birthdate = formatDateBR(getOnboardingValue('onb-pf-birthdate'));
-        const monthly_income = parseInt(getOnboardingValue('onb-pf-monthly_income')) || 0;
+        const monthly_income = getCurrencyCents('onb-pf-monthly_income');
         const professional_occupation = getOnboardingValue('onb-pf-professional_occupation');
-        const phone_ddd = getOnboardingValue('onb-pf-phone_ddd');
-        const phone_number = getOnboardingValue('onb-pf-phone_number');
+        const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pf-phone');
 
         if (!name || !document || !mother_name || !birthdate || !monthly_income || !professional_occupation) {
             return { error: 'Preencha todos os dados pessoais obrigatórios.' };
@@ -990,7 +1117,7 @@ function validateAndBuildPayload() {
             neighborhood: getOnboardingValue('onb-pf-neighborhood'),
             city: getOnboardingValue('onb-pf-city'),
             state: getOnboardingValue('onb-pf-state').toUpperCase(),
-            zip_code: sanitizeNumbers(getOnboardingValue('onb-pf-zip_code')),
+            zip_code: getRawDigits('onb-pf-zip_code'),
             reference_point: getOnboardingValue('onb-pf-reference_point'),
         };
         if (!address.street || !address.street_number || !address.neighborhood || !address.city || !address.state || !address.zip_code) {
@@ -1011,12 +1138,11 @@ function validateAndBuildPayload() {
     } else {
         const company_name = getOnboardingValue('onb-pj-company_name');
         const trading_name = getOnboardingValue('onb-pj-trading_name');
-        const document = sanitizeNumbers(getOnboardingValue('onb-pj-document'));
-        const annual_revenue = parseInt(getOnboardingValue('onb-pj-annual_revenue')) || 0;
+        const document = getRawDigits('onb-pj-document');
+        const annual_revenue = getCurrencyCents('onb-pj-annual_revenue');
         const corporation_type = getOnboardingValue('onb-pj-corporation_type');
         const founding_date = getOnboardingValue('onb-pj-founding_date');
-        const phone_ddd = getOnboardingValue('onb-pj-phone_ddd');
-        const phone_number = getOnboardingValue('onb-pj-phone_number');
+        const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pj-phone');
 
         if (!company_name || !trading_name || !document || !annual_revenue || !corporation_type || !founding_date) {
             return { error: 'Preencha todos os dados da empresa obrigatórios.' };
@@ -1030,7 +1156,7 @@ function validateAndBuildPayload() {
             neighborhood: getOnboardingValue('onb-pj-neighborhood'),
             city: getOnboardingValue('onb-pj-city'),
             state: getOnboardingValue('onb-pj-state').toUpperCase(),
-            zip_code: sanitizeNumbers(getOnboardingValue('onb-pj-zip_code')),
+            zip_code: getRawDigits('onb-pj-zip_code'),
             reference_point: getOnboardingValue('onb-pj-reference_point'),
         };
         if (!main_address.street || !main_address.street_number || !main_address.neighborhood || !main_address.city || !main_address.state || !main_address.zip_code) {
@@ -1039,13 +1165,12 @@ function validateAndBuildPayload() {
 
         const partnerName = getOnboardingValue('onb-partner-name');
         const partnerEmail = getOnboardingValue('onb-partner-email');
-        const partnerDocument = sanitizeNumbers(getOnboardingValue('onb-partner-document'));
+        const partnerDocument = getRawDigits('onb-partner-document');
         const partnerMother = getOnboardingValue('onb-partner-mother_name');
         const partnerBirth = formatDateBR(getOnboardingValue('onb-partner-birthdate'));
-        const partnerIncome = parseInt(getOnboardingValue('onb-partner-monthly_income')) || 0;
+        const partnerIncome = getCurrencyCents('onb-partner-monthly_income');
         const partnerJob = getOnboardingValue('onb-partner-professional_occupation');
-        const partnerPhoneDdd = getOnboardingValue('onb-partner-phone_ddd');
-        const partnerPhoneNum = getOnboardingValue('onb-partner-phone_number');
+        const { ddd: partnerPhoneDdd, number: partnerPhoneNum } = getPhoneParts('onb-partner-phone');
 
         if (!partnerName || !partnerEmail || !partnerDocument || !partnerMother || !partnerBirth || !partnerIncome || !partnerJob) {
             return { error: 'Preencha todos os dados do representante legal.' };
@@ -1059,7 +1184,7 @@ function validateAndBuildPayload() {
             neighborhood: getOnboardingValue('onb-partner-neighborhood'),
             city: getOnboardingValue('onb-partner-city'),
             state: getOnboardingValue('onb-partner-state').toUpperCase(),
-            zip_code: sanitizeNumbers(getOnboardingValue('onb-partner-zip_code')),
+            zip_code: getRawDigits('onb-partner-zip_code'),
             reference_point: getOnboardingValue('onb-partner-reference_point'),
         };
         if (!partnerAddress.street || !partnerAddress.street_number || !partnerAddress.neighborhood || !partnerAddress.city || !partnerAddress.state || !partnerAddress.zip_code) {
@@ -1093,13 +1218,13 @@ function validateAndBuildPayload() {
     }
 
     const holder_name = getOnboardingValue('onb-bank-holder_name');
-    const holder_document = sanitizeNumbers(getOnboardingValue('onb-bank-holder_document'));
+    const holder_document = getRawDigits('onb-bank-holder_document');
     const holder_type = document.getElementById('onb-bank-holder_type')?.value || 'individual';
     const bank = getBankCode();
-    const branch_number = sanitizeNumbers(getOnboardingValue('onb-bank-branch_number'));
-    const branch_check_digit = sanitizeNumbers(getOnboardingValue('onb-bank-branch_check_digit')) || undefined;
-    const account_number = sanitizeNumbers(getOnboardingValue('onb-bank-account_number'));
-    const account_check_digit = sanitizeNumbers(getOnboardingValue('onb-bank-account_check_digit'));
+    const branch_number = getRawDigits('onb-bank-branch_number');
+    const branch_check_digit = getRawDigits('onb-bank-branch_check_digit') || undefined;
+    const account_number = getRawDigits('onb-bank-account_number');
+    const account_check_digit = getRawDigits('onb-bank-account_check_digit');
     const accountType = document.getElementById('onb-bank-type')?.value || 'checking';
 
     if (!holder_name || !holder_document || !bank || !branch_number || !account_number || !account_check_digit) {
@@ -1124,17 +1249,15 @@ function validateAndBuildPayload() {
     return { register_information, default_bank_account };
 }
 
-// Open modal on gate click
+// ── Event Listeners ────────────────────────────────────────────────────────
+
+// Open onboarding page on gate click
 document.getElementById('btn-connect-seller')?.addEventListener('click', () => {
-    openOnboardingModal();
+    openOnboardingPage();
 });
 
-// Modal close handlers
-document.getElementById('close-onboarding-modal')?.addEventListener('click', closeOnboardingModal);
-document.getElementById('onboarding-cancel')?.addEventListener('click', closeOnboardingModal);
-document.getElementById('sellerOnboardingModal')?.addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) closeOnboardingModal();
-});
+// Back button
+document.getElementById('onboarding-back-btn')?.addEventListener('click', closeOnboardingPage);
 
 // Tab switching
 document.querySelectorAll('.onboarding-tab').forEach(tab => {
@@ -1144,7 +1267,7 @@ document.querySelectorAll('.onboarding-tab').forEach(tab => {
     });
 });
 
-// Bank select "other" toggle
+// Bank "other" toggle
 document.getElementById('onb-bank-bank')?.addEventListener('change', (e) => {
     const otherInput = document.getElementById('onb-bank-bank-other');
     if (otherInput) {
@@ -1164,6 +1287,9 @@ document.getElementById('onboarding-submit')?.addEventListener('click', async ()
         return;
     }
 
+    const errorEl = document.getElementById('onboarding-error');
+    if (errorEl) { errorEl.classList.add('hidden'); errorEl.textContent = ''; }
+
     if (btnContainer) setElementState(btnContainer, 'loading');
 
     try {
@@ -1171,7 +1297,7 @@ document.getElementById('onboarding-submit')?.addEventListener('click', async ()
         console.log('[Vitrine] Onboarding response:', res);
 
         if (res.ok) {
-            closeOnboardingModal();
+            closeOnboardingPage();
             notify('success', 'Cadastro enviado com sucesso! Aguarde a aprovação.');
             setTimeout(() => {
                 vitrineLoaded = false;
@@ -1179,7 +1305,6 @@ document.getElementById('onboarding-submit')?.addEventListener('click', async ()
             }, 1500);
         } else {
             let errMsg = res.result?.error || 'Erro ao cadastrar. Tente novamente.';
-            // Append Pagar.me validation details if available
             const details = res.result?.details;
             if (details && typeof details === 'object') {
                 const detailMessages = Object.entries(details)
@@ -1201,6 +1326,9 @@ document.getElementById('onboarding-submit')?.addEventListener('click', async ()
         if (btnContainer) setElementState(btnContainer, 'content');
     }
 });
+
+
+
 
 // Check onboarding status (pending state)
 document.getElementById('btn-continue-onboarding')?.addEventListener('click', async () => {

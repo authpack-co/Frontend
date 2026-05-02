@@ -4315,6 +4315,7 @@ textarea:focus-visible {
 .table-col:last-child {
     font-family: var(--font-data);
 }
+
 /* ── Onboarding Modal ── */
 .onboarding-modal {
     max-width: 640px;
@@ -4387,4 +4388,161 @@ textarea:focus-visible {
 
 .hidden {
     display: none !important;
+}
+
+/* ============================================
+   Vitrine Onboarding Page (full-screen preset)
+   ============================================ */
+
+.vt-onboarding-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.vt-onboarding-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 18px 0;
+    border-bottom: 1px solid var(--color-border-primary);
+    margin-bottom: 24px;
+    flex-shrink: 0;
+}
+
+.vt-onboarding-page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vt-onboarding-page-title svg {
+    color: #58a6ff;
+    flex-shrink: 0;
+}
+
+.vt-onboarding-page-title h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.vt-onboarding-page-title p {
+    font-size: 13px;
+    color: var(--color-text-gray);
+    margin: 2px 0 0;
+}
+
+.vt-onboarding-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.vt-onboarding-back-btn:hover {
+    border-color: var(--color-border-secondary);
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.vt-onboarding-page-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 4px;
+}
+
+.vt-onboarding-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.vt-onboarding-col-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 14px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border-primary);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.vt-onboarding-col-title svg {
+    opacity: 0.7;
+}
+
+.vt-onboarding-page-footer {
+    padding: 18px 0 0 0;
+    margin-top: 20px;
+    border-top: 1px solid var(--color-border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.vt-onboarding-page-footer .error-message {
+    flex: 1;
+}
+
+/* Onboarding form inside the page uses the same form-group/form-input/form-row reused classes */
+.vt-onboarding-page .onboarding-form {
+    gap: 14px;
+}
+
+.vt-onboarding-page .onboarding-section-title {
+    margin-top: 12px;
+}
+
+/* Input hint — small gray label below input */
+.form-input-hint {
+    font-size: 11px;
+    color: var(--color-text-gray);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* Input with icon prefix (R$ for currency) */
+.input-prefix-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix-wrapper .input-prefix {
+    position: absolute;
+    left: 10px;
+    font-size: 13px;
+    color: var(--color-text-gray);
+    pointer-events: none;
+    user-select: none;
+}
+
+.input-prefix-wrapper .form-input {
+    padding-left: 30px;
+}
+
+@media (max-width: 900px) {
+    .vt-onboarding-columns {
+        grid-template-columns: 1fr;
+    }
 }

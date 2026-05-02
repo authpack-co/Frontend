@@ -71,7 +71,7 @@
 
 .user-overview-state>.preset-user-overview {
     display: block;
-    animation: fadeIn 0.3s ease-in forwards;    
+    animation: fadeIn 0.3s ease-in forwards;
 }
 
 .preset-session-overview {
@@ -80,7 +80,7 @@
 
 .session-overview-state>.preset-session-overview {
     display: block;
-    animation: fadeIn 0.3s ease-in forwards;    
+    animation: fadeIn 0.3s ease-in forwards;
 }
 
 /* ===== Vitrine States ===== */
@@ -92,6 +92,15 @@
 .vitrine-content-state>.preset-vitrine-content {
     display: block;
     animation: fadeIn 0.3s ease-in forwards;
+}
+
+.preset-vitrine-onboarding {
+    display: none;
+}
+
+.vitrine-onboarding-state>.preset-vitrine-onboarding {
+    display: block;
+    animation: fadeIn 0.25s ease-in forwards;
 }
 
 /* ===== Skeletons ====== */
