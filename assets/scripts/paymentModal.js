@@ -70,6 +70,29 @@ const PaymentModal = (() => {
                             <input class="pm-input" id="pm-card-cvv" type="text" placeholder="123" maxlength="4" inputmode="numeric" autocomplete="cc-csc">
                         </div>
                     </div>
+
+                    <div class="pm-form-group">
+                        <label class="pm-label">Endereço de cobrança</label>
+                        <div class="pm-row">
+                            <div class="pm-form-group" style="flex:1">
+                                <input class="pm-input" id="pm-zip" type="text" placeholder="CEP" maxlength="9" inputmode="numeric">
+                            </div>
+                            <div class="pm-form-group" style="flex:1">
+                                <input class="pm-input" id="pm-country" type="text" placeholder="País" maxlength="2" value="BR">
+                            </div>
+                        </div>
+                        <input class="pm-input" id="pm-line1" type="text" placeholder="Número, Rua, Bairro (separados por vírgula)">
+                        <input class="pm-input" id="pm-line2" type="text" placeholder="Complemento (opcional)">
+                        <div class="pm-row">
+                            <div class="pm-form-group" style="flex:1">
+                                <input class="pm-input" id="pm-city" type="text" placeholder="Cidade">
+                            </div>
+                            <div class="pm-form-group" style="flex:1">
+                                <input class="pm-input" id="pm-state" type="text" placeholder="UF" maxlength="2">
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="pm-submit" id="pm-card-submit">Pagar</button>
                     <div class="pm-error" id="pm-card-error"></div>
                 </div>
@@ -172,6 +195,16 @@ const PaymentModal = (() => {
             phoneInput.value = val;
         });
 
+        // Zip formatting
+        const zipInput = _overlay.querySelector('#pm-zip');
+        if (zipInput) {
+            zipInput.addEventListener('input', () => {
+                let val = zipInput.value.replace(/\D/g, '');
+                if (val.length > 5) val = val.substring(0, 5) + '-' + val.substring(5, 8);
+                zipInput.value = val;
+            });
+        }
+
         // Card submit
         _overlay.querySelector('#pm-card-submit').addEventListener('click', handleCardSubmit);
 
@@ -264,6 +297,10 @@ const PaymentModal = (() => {
 
         const [expMonth, expYear] = expiry.split('/');
 
+        // Billing address
+        const billingAddress = getBillingAddressPayload();
+        if (!billingAddress) return;
+
         // Loading state
         btn.disabled = true;
         btn.innerHTML = '<div class="pm-spinner"></div> Processando...';
@@ -284,6 +321,7 @@ const PaymentModal = (() => {
                     customer: customerPayload,
                     credit_card: {
                         card_token: cardToken,
+                        billing_address: billingAddress,
                     },
                 });
             }
@@ -363,15 +401,60 @@ const PaymentModal = (() => {
         successEl.style.display = 'block';
     }
 
+    // ── Extract Billing Address ──
+    function getBillingAddressPayload() {
+        const zip = _overlay.querySelector('#pm-zip').value.replace(/\D/g, '');
+        const line1 = _overlay.querySelector('#pm-line1').value.trim();
+        const line2 = _overlay.querySelector('#pm-line2').value.trim();
+        const city = _overlay.querySelector('#pm-city').value.trim();
+        const state = _overlay.querySelector('#pm-state').value.trim();
+        const country = _overlay.querySelector('#pm-country').value.trim().toUpperCase();
+
+        if (!zip || zip.length < 8) {
+            showError('card', 'CEP inválido');
+            return null;
+        }
+        if (!line1) {
+            showError('card', 'Endereço (rua, número e bairro) é obrigatório');
+            return null;
+        }
+        if (!city) {
+            showError('card', 'Cidade é obrigatória');
+            return null;
+        }
+        if (!state || state.length !== 2) {
+            showError('card', 'UF inválida');
+            return null;
+        }
+        if (!country || country.length !== 2) {
+            showError('card', 'País inválido');
+            return null;
+        }
+
+        const payload = {
+            line_1: line1,
+            zip_code: zip,
+            city: city,
+            state: state,
+            country: country,
+        };
+        if (line2) payload.line_2 = line2;
+        return payload;
+    }
+
     // ── Reset state ──
     function reset() {
         if (!_overlay) return;
 
         // Clear inputs
-        ['pm-doc', 'pm-phone', 'pm-card-number', 'pm-card-holder', 'pm-card-expiry', 'pm-card-cvv'].forEach(id => {
+        ['pm-doc', 'pm-phone', 'pm-card-number', 'pm-card-holder', 'pm-card-expiry', 'pm-card-cvv', 'pm-zip', 'pm-line1', 'pm-line2', 'pm-city', 'pm-state'].forEach(id => {
             const el = _overlay.querySelector(`#${id}`);
             if (el) el.value = '';
         });
+
+        // Reset country default
+        const countryEl = _overlay.querySelector('#pm-country');
+        if (countryEl) countryEl.value = 'BR';
 
         // Reset errors
         _overlay.querySelectorAll('.pm-error').forEach(el => {

@@ -235,6 +235,16 @@
             if (val.length > 9) val = val.substring(0, 10) + '-' + val.substring(10);
             phoneInput.value = val;
         });
+
+        // Zip code (CEP)
+        const zipInput = document.getElementById('ck-zip');
+        if (zipInput) {
+            zipInput.addEventListener('input', () => {
+                let val = zipInput.value.replace(/\D/g, '');
+                if (val.length > 5) val = val.substring(0, 5) + '-' + val.substring(5, 8);
+                zipInput.value = val;
+            });
+        }
     }
 
     // ====================================================================
@@ -270,6 +280,10 @@
 
         const [expMonth, expYear] = expiry.split('/');
 
+        // Billing address
+        const billingAddress = getBillingAddressPayload();
+        if (!billingAddress) return;
+
         btn.disabled = true;
         btn.innerHTML = '<div class="ck-btn-spinner"></div> Processando...';
 
@@ -287,7 +301,10 @@
             const res = await fetchManager.payCheckoutOrder(orderId, {
                 payment_method: 'credit_card',
                 customer: customerPayload,
-                credit_card: { card_token: cardToken },
+                credit_card: {
+                    card_token: cardToken,
+                    billing_address: billingAddress,
+                },
             });
 
             if (!res.ok) {
@@ -398,6 +415,48 @@
                 },
             },
         };
+    }
+
+    function getBillingAddressPayload() {
+        const zip = document.getElementById('ck-zip').value.replace(/\D/g, '');
+        const line1 = document.getElementById('ck-line1').value.trim();
+        const line2 = document.getElementById('ck-line2').value.trim();
+        const city = document.getElementById('ck-city').value.trim();
+        const state = document.getElementById('ck-state').value.trim();
+        const country = document.getElementById('ck-country').value.trim().toUpperCase();
+
+        if (!zip || zip.length < 8) {
+            displayError('CEP inválido');
+            return null;
+        }
+        if (!line1) {
+            displayError('Endereço (rua, número e bairro) é obrigatório');
+            return null;
+        }
+        if (!city) {
+            displayError('Cidade é obrigatória');
+            return null;
+        }
+        if (!state || state.length !== 2) {
+            displayError('UF inválida');
+            return null;
+        }
+        if (!country || country.length !== 2) {
+            displayError('País inválido');
+            return null;
+        }
+
+        const payload = {
+            line_1: line1,
+            zip_code: zip,
+            city: city,
+            state: state,
+            country: country,
+        };
+
+        if (line2) payload.line_2 = line2;
+
+        return payload;
     }
 
     // ====================================================================
