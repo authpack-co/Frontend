@@ -1975,9 +1975,9 @@ function renderSalesHistory(orders) {
             grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
         }
 
-        // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma (2 BRL)
+        // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma
         // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa gateway
-        const plataformaFeeCents = 200; // Taxa fixa de R$ 2,00 adicionada no checkout
+        const plataformaFeeCents = 99; // Taxa fixa de R$ 0,99 adicionada no checkout
         const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
         const liquido = order.seller_amount_cents || 0;
 
@@ -2378,7 +2378,7 @@ function renderProductDetails(data, wrapEl) {
             if (!grouped[y]) grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
             if (!grouped[y].months[m]) grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
 
-            const plataformaFeeCents = 200;
+            const plataformaFeeCents = 99;
             const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
             const liquido = order.seller_amount_cents || 0;
 
