@@ -59,6 +59,11 @@
             case 'canceled':
                 showError('Pagamento cancelado', 'Este pagamento foi cancelado.');
                 return;
+            case 'processing':
+                // Page refreshed while waiting for webhook — resume polling
+                showProcessingState();
+                pollCheckoutOrder(orderId);
+                return;
             case 'pending':
                 renderCheckout(_order);
                 setupEvents();
@@ -174,9 +179,19 @@
         document.getElementById('ck-submit').addEventListener('click', handleSubmit);
 
         // Pix code copy
-        document.getElementById('ck-pix-code').addEventListener('click', () => {
+        document.getElementById('ck-pix-copy-btn').addEventListener('click', () => {
             const code = document.getElementById('ck-pix-code').textContent;
-            navigator.clipboard.writeText(code).catch(() => { });
+            if (!code) return;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('ck-pix-copy-btn');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Copiado';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => { });
         });
     }
 
@@ -312,7 +327,26 @@
                 throw new Error(errMsg);
             }
 
-            // Success
+            // Gateway accepted the request — now wait for webhook confirmation
+            if (res.result?.processing) {
+                pollCheckoutOrder(res.result.orderId || orderId, {
+                    onPaid: () => showPaidState(),
+                    onFailed: () => {
+                        displayError('Pagamento recusado. Tente novamente ou use outro método.');
+                        btn.disabled = false;
+                        updateSubmitButton();
+                    },
+                    onExpired: () => setElementState(container, 'expired'),
+                    onTimeout: () => {
+                        displayError('Estamos aguardando confirmação do gateway. Tente novamente em alguns instantes.');
+                        btn.disabled = false;
+                        updateSubmitButton();
+                    },
+                });
+                return;
+            }
+
+            // Legacy fallback (direct success)
             showPaidState();
         } catch (err) {
             displayError(err.message || 'Erro ao processar pagamento');
@@ -338,13 +372,19 @@
                 throw new Error(errMsg);
             }
 
-            // Check for Pix QR code in response
+            // Check for Pix QR code in response (synchronous flow)
             const charges = res.result?.charges || [];
             const lastTx = charges[0]?.last_transaction;
 
             if (lastTx && lastTx.transaction_type === 'pix') {
                 showPixQR(lastTx.qr_code_url, lastTx.qr_code);
                 btn.style.display = 'none';
+                // Poll in background so page auto-updates when Pix is paid
+                pollCheckoutOrder(orderId, {
+                    onPaid: () => showPaidState(),
+                    onFailed: () => showError('Pagamento recusado', 'Houve um problema com seu Pix.'),
+                    onExpired: () => setElementState(container, 'expired'),
+                });
                 return;
             }
 
@@ -521,6 +561,88 @@
         el.textContent = '';
     }
 
+    // ====================================================================
+    // PROCESSING & POLLING
+    // ====================================================================
+
+    function showProcessingState() {
+        if (_expiryInterval) clearInterval(_expiryInterval);
+        setElementState(container, 'processing');
+    }
+
+    function updateProcessingMessage(msg) {
+        const el = document.getElementById('ck-processing-msg');
+        if (el) el.textContent = msg;
+    }
+
+    /**
+     * Polls the checkout order until it reaches a terminal state.
+     * Uses progressive backoff to avoid hammering the server.
+     * @param {string} pollOrderId
+     * @param {Object} [callbacks] - Optional callbacks: onPaid, onFailed, onExpired, onTimeout
+     */
+    async function pollCheckoutOrder(pollOrderId, callbacks = null) {
+        const maxAttempts = 60; // ~2 minutes total with backoff
+
+        // Progressive backoff intervals (ms)
+        const getInterval = (attempt) => {
+            if (attempt < 2) return 2000;
+            if (attempt < 4) return 3000;
+            if (attempt < 6) return 5000;
+            return 10000;
+        };
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            await new Promise((r) => setTimeout(r, getInterval(attempt)));
+
+            try {
+                const res = await fetchManager.getCheckoutOrder(pollOrderId);
+
+                if (!res.ok) {
+                    console.warn(`pollCheckoutOrder: HTTP ${res.status}, retrying...`);
+                    continue;
+                }
+
+                const order = res.result?.data;
+                const status = order?.status;
+
+                if (status === 'paid') {
+                    _order = order; // update local state
+                    if (callbacks?.onPaid) { callbacks.onPaid(order); return; }
+                    showPaidState();
+                    return;
+                }
+
+                if (status === 'failed') {
+                    if (callbacks?.onFailed) { callbacks.onFailed(order); return; }
+                    showError('Pagamento recusado', 'Houve um problema ao processar seu pagamento. Tente novamente ou use outro método.');
+                    return;
+                }
+
+                if (status === 'expired') {
+                    if (callbacks?.onExpired) { callbacks.onExpired(order); return; }
+                    setElementState(container, 'expired');
+                    return;
+                }
+
+                if (status === 'processing' && attempt === 3 && !callbacks) {
+                    updateProcessingMessage('Aguardando confirmação do gateway de pagamento...');
+                }
+
+                // "pending" or "processing" -> keep polling
+            } catch (err) {
+                console.warn('pollCheckoutOrder: network error, retrying...', err.message);
+            }
+        }
+
+        // Timeout
+        if (callbacks?.onTimeout) { callbacks.onTimeout(); return; }
+        updateProcessingMessage(
+            'Estamos aguardando a confirmação do gateway. ' +
+            'Você será notificado assim que o pagamento for confirmado.'
+        );
+    }
+
     function showPaidState() {
         if (_expiryInterval) clearInterval(_expiryInterval);
 
@@ -548,6 +670,11 @@
         if (qrCode) {
             document.getElementById('ck-pix-code').textContent = qrCode;
         }
+
+        const waitingEl = document.getElementById('ck-pix-waiting');
+        const paidEl = document.getElementById('ck-pix-paid');
+        if (waitingEl) waitingEl.style.display = 'flex';
+        if (paidEl) paidEl.style.display = 'none';
     }
 
     function getErrorMessage(res) {
