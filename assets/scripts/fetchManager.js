@@ -386,6 +386,11 @@ const fetchManager = {
         return response;
     },
 
+    async getSellerPersonalData() {
+        const response = await fetchRoutes(`/api/marketplace/seller/personal-data`);
+        return response;
+    },
+
     async requestWithdrawal(amountCents) {
         const response = await fetchRoutes(`/api/marketplace/seller/withdraw`, {
             method: 'POST',

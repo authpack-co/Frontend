@@ -2884,9 +2884,381 @@ function renderWithdrawalInfo(data, wrapEl) {
     wrapEl.appendChild(historySection);
 }
 
+// ============================================================================
+// PERSONAL DATA MODAL (Meus Dados Pessoais)
+// ============================================================================
+
+function _maskCPF(cpf) {
+    if (!cpf || cpf.length !== 11) return cpf || '—';
+    return `${cpf.slice(0,3)}.${cpf.slice(3,6)}.${cpf.slice(6,9)}-${cpf.slice(9,11)}`;
+}
+
+function _maskCNPJ(cnpj) {
+    if (!cnpj || cnpj.length !== 14) return cnpj || '—';
+    return `${cnpj.slice(0,2)}.${cnpj.slice(2,5)}.${cnpj.slice(5,8)}/${cnpj.slice(8,12)}-${cnpj.slice(12,14)}`;
+}
+
+function _formatDocument(doc, type) {
+    if (!doc) return '—';
+    if (type === 'company' || doc.length === 14) return _maskCNPJ(doc);
+    return _maskCPF(doc);
+}
+
+function _formatPhone(phone) {
+    if (!phone) return '—';
+    const ddd = phone.ddd || '';
+    const number = phone.number || '';
+    if (number.length === 9) return `(${ddd}) ${number.slice(0,5)}-${number.slice(5,9)}`;
+    if (number.length === 8) return `(${ddd}) ${number.slice(0,4)}-${number.slice(4,8)}`;
+    return `(${ddd}) ${number}`;
+}
+
+function _formatCEP(cep) {
+    if (!cep) return '—';
+    const c = String(cep).replace(/\D/g, '');
+    if (c.length === 8) return `${c.slice(0,5)}-${c.slice(5,8)}`;
+    return cep;
+}
+
+function _formatMoney(value) {
+    if (value === null || value === undefined) return '—';
+    const num = Number(value);
+    if (isNaN(num)) return '—';
+    // value comes in cents from backend (monthly_income etc are strings in cents from pagarme docs)
+    return `R$ ${(num / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function _formatDateBR(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+function _recipientStatusLabel(status) {
+    const map = {
+        active: 'Ativo',
+        registration: 'Em cadastro',
+        affiliation: 'Em afiliação',
+        refused: 'Recusado',
+        suspended: 'Suspenso',
+        blocked: 'Bloqueado',
+        inactive: 'Inativo',
+        pending: 'Pendente',
+    };
+    return map[status] || status || '—';
+}
+
+function _recipientTypeLabel(type) {
+    if (type === 'individual') return 'Pessoa Física';
+    if (type === 'company') return 'Pessoa Jurídica';
+    return type || '—';
+}
+
+function _bankTypeLabel(type) {
+    if (type === 'checking') return 'Corrente';
+    if (type === 'savings') return 'Poupança';
+    return type || '—';
+}
+
+function _transferIntervalLabel(interval) {
+    const map = { Daily: 'Diário', Weekly: 'Semanal', Monthly: 'Mensal' };
+    return map[interval] || interval || '—';
+}
+
+async function openPersonalDataModal() {
+    const modal = document.getElementById('personalDataModal');
+    if (!modal) return;
+
+    modal.classList.add('show');
+
+    const loadingEl = document.getElementById('personalDataLoading');
+    const wrapEl = document.getElementById('personalDataWrap');
+
+    loadingEl.style.display = 'flex';
+    wrapEl.innerHTML = '';
+
+    try {
+        const res = await fetchManager.getSellerPersonalData();
+        if (res.ok && res.result) {
+            renderPersonalData(res.result, wrapEl);
+        } else {
+            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar seus dados.</div>';
+        }
+    } catch (err) {
+        console.error('openPersonalDataModal error:', err);
+        wrapEl.innerHTML = '<div class="sh-empty-state">Erro de conexão.</div>';
+    } finally {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function closePersonalDataModal() {
+    const modal = document.getElementById('personalDataModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function _statusBadgeClass(status) {
+    const map = {
+        active: 'success',
+        registration: 'warning',
+        affiliation: 'warning',
+        refused: 'danger',
+        suspended: 'danger',
+        blocked: 'danger',
+        inactive: 'muted',
+        pending: 'warning',
+    };
+    return map[status] || 'muted';
+}
+
+function _getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function renderPersonalData(data, wrapEl) {
+    const { profile, recipient, bank_account, transfer_settings, register_information } = data;
+
+    const container = document.createElement('div');
+    container.className = 'pd-container';
+
+    // ── Profile Header ──
+    const statusClass = _statusBadgeClass(recipient?.status);
+    const statusLabel = _recipientStatusLabel(recipient?.status);
+    const initials = _getInitials(profile?.name || recipient?.name);
+
+    const profileHeader = document.createElement('div');
+    profileHeader.className = 'pd-profile-header';
+    profileHeader.innerHTML = `
+        <div class="pd-avatar">
+            ${profile?.picture
+                ? `<img src="${profile.picture}" alt="" class="pd-avatar-img">`
+                : `<span class="pd-avatar-fallback">${initials}</span>`
+            }
+        </div>
+        <div class="pd-profile-info">
+            <h3 class="pd-profile-name">${profile?.name || recipient?.name || '—'}</h3>
+            <p class="pd-profile-email">${profile?.email || recipient?.email || '—'}</p>
+            <span class="pd-status-badge ${statusClass}">
+                <span class="pd-status-dot"></span>
+                ${statusLabel}
+            </span>
+        </div>
+    `;
+    container.appendChild(profileHeader);
+
+    // ── Section: Account Data ──
+    const accountSection = document.createElement('div');
+    accountSection.className = 'pd-card';
+    accountSection.innerHTML = `
+        <div class="pd-card-header">
+            <div class="pd-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <span class="pd-card-title">Dados da Conta</span>
+        </div>
+        <div class="pd-card-body">
+            <div class="pd-data-row">
+                <span class="pd-data-label">Nome</span>
+                <span class="pd-data-value">${recipient?.name || '—'}</span>
+            </div>
+            <div class="pd-data-row">
+                <span class="pd-data-label">E-mail</span>
+                <span class="pd-data-value">${recipient?.email || '—'}</span>
+            </div>
+            <div class="pd-data-row">
+                <span class="pd-data-label">CPF/CNPJ</span>
+                <span class="pd-data-value">${_formatDocument(recipient?.document, recipient?.type)}</span>
+            </div>
+            <div class="pd-data-row">
+                <span class="pd-data-label">Tipo</span>
+                <span class="pd-data-value">${_recipientTypeLabel(recipient?.type)}</span>
+            </div>
+            <div class="pd-data-row">
+                <span class="pd-data-label">ID do Recebedor</span>
+                <span class="pd-data-value mono">${recipient?.id || '—'}</span>
+            </div>
+        </div>
+    `;
+    container.appendChild(accountSection);
+
+    // ── Section: Bank Account ──
+    if (bank_account) {
+        const bankSection = document.createElement('div');
+        bankSection.className = 'pd-card';
+        const bankName = bank_account.bank || '—';
+        const agency = bank_account.branch_number
+            ? `${bank_account.branch_number}${bank_account.branch_check_digit ? '-' + bank_account.branch_check_digit : ''}`
+            : '—';
+        const account = bank_account.account_number
+            ? `${bank_account.account_number}${bank_account.account_check_digit ? '-' + bank_account.account_check_digit : ''}`
+            : '—';
+        bankSection.innerHTML = `
+            <div class="pd-card-header">
+                <div class="pd-card-icon accent-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 18v-7"/><path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M3 22h18"/><path d="M6 18v-7"/></svg>
+                </div>
+                <span class="pd-card-title">Dados Bancários</span>
+            </div>
+            <div class="pd-card-body">
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Banco</span>
+                    <span class="pd-data-value">${bankName}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Agência</span>
+                    <span class="pd-data-value">${agency}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Conta</span>
+                    <span class="pd-data-value">${account}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Tipo</span>
+                    <span class="pd-data-value">${_bankTypeLabel(bank_account.type)}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Titular</span>
+                    <span class="pd-data-value">${bank_account.holder_name || '—'}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Documento do Titular</span>
+                    <span class="pd-data-value">${_formatDocument(bank_account.holder_document, bank_account.holder_type)}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(bankSection);
+    }
+
+    // ── Section: Transfer Settings ──
+    if (transfer_settings) {
+        const tsSection = document.createElement('div');
+        tsSection.className = 'pd-card';
+        tsSection.innerHTML = `
+            <div class="pd-card-header">
+                <div class="pd-card-icon accent-blue">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4H7"/><path d="M12 2v20"/></svg>
+                </div>
+                <span class="pd-card-title">Configuração de Transferência</span>
+            </div>
+            <div class="pd-card-body">
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Repasse automático</span>
+                    <span class="pd-data-value">${transfer_settings.transfer_enabled ? 'Sim' : 'Não'}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Frequência</span>
+                    <span class="pd-data-value">${_transferIntervalLabel(transfer_settings.transfer_interval)}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Dia do repasse</span>
+                    <span class="pd-data-value">${transfer_settings.transfer_day ?? '—'}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(tsSection);
+    }
+
+    // ── Section: Address ──
+    const addr = register_information?.address || register_information?.main_address;
+    if (addr) {
+        const addrSection = document.createElement('div');
+        addrSection.className = 'pd-card';
+        addrSection.innerHTML = `
+            <div class="pd-card-header">
+                <div class="pd-card-icon accent-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <span class="pd-card-title">Endereço</span>
+            </div>
+            <div class="pd-card-body">
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Rua</span>
+                    <span class="pd-data-value">${addr.street || '—'}${addr.street_number ? ', ' + addr.street_number : ''}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Complemento</span>
+                    <span class="pd-data-value">${addr.complementary || '—'}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Bairro</span>
+                    <span class="pd-data-value">${addr.neighborhood || '—'}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Cidade/UF</span>
+                    <span class="pd-data-value">${addr.city || '—'}${addr.state ? ' - ' + addr.state : ''}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">CEP</span>
+                    <span class="pd-data-value">${_formatCEP(addr.zip_code)}</span>
+                </div>
+                <div class="pd-data-row">
+                    <span class="pd-data-label">Ponto de referência</span>
+                    <span class="pd-data-value">${addr.reference_point || '—'}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(addrSection);
+    }
+
+    // ── Section: Contact / Register Info ──
+    if (register_information) {
+        const regSection = document.createElement('div');
+        regSection.className = 'pd-card';
+
+        const phones = register_information.phone_numbers || [];
+        const phonesHtml = phones.length > 0
+            ? phones.map(p => `<span class="pd-data-value">${_formatPhone(p)}</span>`).join('<span class="pd-phone-sep">•</span>')
+            : '';
+
+        // PF specific
+        const pfRows = [];
+        if (register_information.mother_name) pfRows.push(`<div class="pd-data-row"><span class="pd-data-label">Nome da mãe</span><span class="pd-data-value">${register_information.mother_name}</span></div>`);
+        if (register_information.birthdate) pfRows.push(`<div class="pd-data-row"><span class="pd-data-label">Data de nascimento</span><span class="pd-data-value">${register_information.birthdate}</span></div>`);
+        if (register_information.monthly_income) pfRows.push(`<div class="pd-data-row"><span class="pd-data-label">Renda mensal</span><span class="pd-data-value">${_formatMoney(register_information.monthly_income)}</span></div>`);
+        if (register_information.professional_occupation) pfRows.push(`<div class="pd-data-row"><span class="pd-data-label">Ocupação profissional</span><span class="pd-data-value">${register_information.professional_occupation}</span></div>`);
+
+        // PJ specific
+        const pjRows = [];
+        if (register_information.company_name) pjRows.push(`<div class="pd-data-row"><span class="pd-data-label">Razão social</span><span class="pd-data-value">${register_information.company_name}</span></div>`);
+        if (register_information.trading_name) pjRows.push(`<div class="pd-data-row"><span class="pd-data-label">Nome fantasia</span><span class="pd-data-value">${register_information.trading_name}</span></div>`);
+        if (register_information.annual_revenue) pjRows.push(`<div class="pd-data-row"><span class="pd-data-label">Faturamento anual</span><span class="pd-data-value">${_formatMoney(register_information.annual_revenue)}</span></div>`);
+        if (register_information.founding_date) pjRows.push(`<div class="pd-data-row"><span class="pd-data-label">Data de fundação</span><span class="pd-data-value">${register_information.founding_date}</span></div>`);
+        if (register_information.cnae) pjRows.push(`<div class="pd-data-row"><span class="pd-data-label">CNAE</span><span class="pd-data-value">${register_information.cnae}</span></div>`);
+
+        regSection.innerHTML = `
+            <div class="pd-card-header">
+                <div class="pd-card-icon accent-purple">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+                </div>
+                <span class="pd-card-title">Informações Cadastrais</span>
+            </div>
+            <div class="pd-card-body">
+                ${register_information.name ? `<div class="pd-data-row"><span class="pd-data-label">Nome completo</span><span class="pd-data-value">${register_information.name}</span></div>` : ''}
+                ${register_information.site_url ? `<div class="pd-data-row"><span class="pd-data-label">Site</span><span class="pd-data-value">${register_information.site_url}</span></div>` : ''}
+                ${pfRows.join('')}
+                ${pjRows.join('')}
+                ${phonesHtml ? `<div class="pd-data-row"><span class="pd-data-label">Telefone(s)</span><span class="pd-data-value">${phonesHtml}</span></div>` : ''}
+            </div>
+        `;
+        container.appendChild(regSection);
+    }
+
+    wrapEl.appendChild(container);
+}
+
 // Event listeners
 document.getElementById('btn-withdrawal-details')?.addEventListener('click', openWithdrawalModal);
 document.getElementById('withdrawalModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeWithdrawalModal();
 });
 document.querySelector('#withdrawalModal .close-btn')?.addEventListener('click', closeWithdrawalModal);
+
+document.getElementById('btn-personal-data')?.addEventListener('click', openPersonalDataModal);
+document.getElementById('personalDataModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closePersonalDataModal();
+});
+document.querySelector('#personalDataModal .close-btn')?.addEventListener('click', closePersonalDataModal);

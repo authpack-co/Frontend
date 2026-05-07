@@ -2364,6 +2364,10 @@
                                 </div>
 
                                 <!-- Seller manages their account within dashboard -->
+                                <button class="vt-personal-data-btn" id="btn-personal-data">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Meus dados pessoais
+                                </button>
                             </div>
 
                             <!-- Right: Sales Chart -->
@@ -2685,6 +2689,22 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Data Modal -->
+    <div class="modal-overlay" id="personalDataModal">
+        <div class="modal sales-history-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Meus Dados Pessoais</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body custom-scrollbar">
+                <div id="personalDataLoading" style="display:none; justify-content:center; align-items:center; padding: 40px 0;">
+                    <div class="spinner large"></div>
+                </div>
+                <div id="personalDataWrap"></div>
             </div>
         </div>
     </div>

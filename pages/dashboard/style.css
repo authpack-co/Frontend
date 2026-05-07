@@ -4546,3 +4546,324 @@ textarea:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================================
+   Personal Data Button & Modal (Meus Dados Pessoais)
+   ============================================================================ */
+
+/* ── Button ── */
+.vt-personal-data-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: var(--radius-md);
+    color: #a5b4fc;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.vt-personal-data-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.vt-personal-data-btn:hover {
+    border-color: rgba(99, 102, 241, 0.45);
+    color: #c7d2fe;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+}
+
+.vt-personal-data-btn:hover::before {
+    opacity: 1;
+}
+
+.vt-personal-data-btn:active {
+    transform: translateY(0);
+}
+
+.vt-personal-data-btn svg {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+.vt-personal-data-btn span,
+.vt-personal-data-btn {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Modal Container ── */
+.pd-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 4px;
+}
+
+@media (min-width: 640px) {
+    .pd-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pd-container > .pd-profile-header,
+    .pd-container > .pd-card:only-child,
+    .pd-container > .pd-card:nth-last-child(1):nth-child(odd) {
+        /* full width on last odd card if needed */
+    }
+}
+
+/* ── Profile Header ── */
+.pd-profile-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(168, 85, 247, 0.04) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pd-profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #6366f1 100%);
+    opacity: 0.6;
+}
+
+.pd-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.pd-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pd-avatar-fallback {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.05em;
+}
+
+.pd-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.pd-profile-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pd-profile-email {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Status Badge ── */
+.pd-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    width: fit-content;
+    margin-top: 2px;
+}
+
+.pd-status-badge.success {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.pd-status-badge.warning {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.pd-status-badge.danger {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.pd-status-badge.muted {
+    color: #6b7280;
+    background: rgba(107, 114, 128, 0.1);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.pd-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ── Data Card ── */
+.pd-card {
+    background: #181d23;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pd-card:hover {
+    border-color: var(--color-border-secondary);
+}
+
+.pd-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pd-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.06);
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.pd-card-icon.accent-green {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.pd-card-icon.accent-blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.pd-card-icon.accent-orange {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.pd-card-icon.accent-purple {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.pd-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.pd-card-body {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 16px;
+}
+
+/* ── Data Row ── */
+.pd-data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.pd-data-row:last-child {
+    border-bottom: none;
+}
+
+.pd-data-label {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    font-weight: 500;
+    flex-shrink: 0;
+    min-width: 100px;
+    padding-top: 1px;
+}
+
+.pd-data-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    text-align: right;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.pd-data-value.mono {
+    font-family: var(--font-data);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: #d1d5db;
+}
+
+.pd-phone-sep {
+    color: var(--color-text-gray);
+    margin: 0 6px;
+    font-size: 10px;
+}
+
+/* ── Single column override for cards that should be full width ── */
+@media (min-width: 640px) {
+    .pd-card:only-child,
+    .pd-profile-header {
+        grid-column: 1 / -1;
+    }
+}
