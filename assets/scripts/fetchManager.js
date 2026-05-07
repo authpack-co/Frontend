@@ -250,16 +250,6 @@ const fetchManager = {
         return response;
     },
 
-    // Extension
-
-    async downloadExtension() {
-        const response = await fetchRoutes(`/api/extensions/build/chrome`, {
-            method: "POST",
-            credentials: "include",
-        }, true); // rawResponse = true
-        return response;
-    },
-
     // Device Activation (universal)
 
     async activateDevice({ visitorId, requestId }) {
