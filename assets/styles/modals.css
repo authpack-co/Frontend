@@ -1489,6 +1489,8 @@
 .wd-transfer-list {
     display: flex;
     flex-direction: column;
+    overflow: auto;
+    max-height: 400px;
 }
 
 .wd-transfer-row {

@@ -2815,7 +2815,7 @@ function renderWithdrawalInfo(data, wrapEl) {
         historySection.appendChild(empty);
     } else {
         const listEl = document.createElement('div');
-        listEl.className = 'wd-transfer-list';
+        listEl.className = 'wd-transfer-list custom-scrollbar';
 
         // Table header
         const headerEl = document.createElement('div');
@@ -2833,29 +2833,50 @@ function renderWithdrawalInfo(data, wrapEl) {
             new Date(b.date_created || b.created_at || 0) - new Date(a.date_created || a.created_at || 0)
         );
 
-        sorted.forEach(transfer => {
-            const createdAt = new Date(transfer.date_created || transfer.created_at);
-            const dateLabel = `${String(createdAt.getDate()).padStart(2, '0')} ${MONTH_SHORT[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
+        let transferLimit = 10;
+        const renderTransfers = () => {
+            // Remove existing rows (keep header)
+            while (listEl.children.length > 1) listEl.removeChild(listEl.lastChild);
 
-            let fundingLabel = '—';
-            const fundingRaw = transfer.funding_date || transfer.funding_estimated_date;
-            if (fundingRaw) {
-                const fd = new Date(fundingRaw);
-                fundingLabel = `${String(fd.getDate()).padStart(2, '0')} ${MONTH_SHORT[fd.getMonth()]} ${fd.getFullYear()}`;
+            sorted.slice(0, transferLimit).forEach(transfer => {
+                const createdAt = new Date(transfer.date_created || transfer.created_at);
+                const dateLabel = `${String(createdAt.getDate()).padStart(2, '0')} ${MONTH_SHORT[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
+
+                let fundingLabel = '—';
+                const fundingRaw = transfer.funding_date || transfer.funding_estimated_date;
+                if (fundingRaw) {
+                    const fd = new Date(fundingRaw);
+                    fundingLabel = `${String(fd.getDate()).padStart(2, '0')} ${MONTH_SHORT[fd.getMonth()]} ${fd.getFullYear()}`;
+                }
+
+                const row = document.createElement('div');
+                row.className = 'sh-sale-item wd-transfer-row';
+                row.innerHTML = `
+                    <div class="sh-col" style="flex:1.5;">${dateLabel}</div>
+                    <div class="sh-col" style="flex:2;">
+                        <span class="wd-transfer-amount">R$ ${formatBRLValue(transfer.amount || 0)}</span>
+                    </div>
+                    <div class="sh-col" style="flex:1.5;">${_transferStatusBadge(transfer.status)}</div>
+                    <div class="sh-col" style="flex:2;">${fundingLabel}</div>
+                `;
+                listEl.appendChild(row);
+            });
+
+            if (transferLimit < sorted.length) {
+                const wrapBtn = document.createElement('div');
+                wrapBtn.className = 'sh-load-more-wrap';
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'sh-load-more';
+                moreBtn.textContent = `Carregar mais (${sorted.length - transferLimit} restantes)`;
+                moreBtn.addEventListener('click', () => {
+                    transferLimit += 10;
+                    renderTransfers();
+                });
+                wrapBtn.appendChild(moreBtn);
+                listEl.appendChild(wrapBtn);
             }
-
-            const row = document.createElement('div');
-            row.className = 'sh-sale-item wd-transfer-row';
-            row.innerHTML = `
-                <div class="sh-col" style="flex:1.5;">${dateLabel}</div>
-                <div class="sh-col" style="flex:2;">
-                    <span class="wd-transfer-amount">R$ ${formatBRLValue(transfer.amount || 0)}</span>
-                </div>
-                <div class="sh-col" style="flex:1.5;">${_transferStatusBadge(transfer.status)}</div>
-                <div class="sh-col" style="flex:2;">${fundingLabel}</div>
-            `;
-            listEl.appendChild(row);
-        });
+        };
+        renderTransfers();
 
         historySection.appendChild(listEl);
     }
