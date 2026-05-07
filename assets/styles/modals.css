@@ -1343,12 +1343,123 @@
     color: #4ade80;
 }
 
-/* Withdraw button */
-.wd-btn-wrap {
+/* Withdraw steps */
+.wd-step {
     margin-bottom: 24px;
+}
+
+.wd-step-1 {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+/* Confirmation panel */
+.wd-confirm-panel {
+    background: #181b20;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.wd-confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.wd-confirm-header svg {
+    color: #facc15;
+}
+
+.wd-confirm-breakdown {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wd-confirm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.wd-confirm-label {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.wd-confirm-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.wd-confirm-fee .wd-confirm-label {
+    color: #6b7280;
+}
+
+.wd-fee {
+    color: #f87171;
+}
+
+.wd-confirm-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.07);
+    margin: 2px 0;
+}
+
+.wd-confirm-total .wd-confirm-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d1d5db;
+}
+
+.wd-net {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4ade80;
+}
+
+.wd-confirm-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.wd-cancel-btn {
+    flex: 0 0 auto;
+    padding: 0 20px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wd-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #e5e7eb;
+}
+
+.wd-confirm-btn-wrap {
+    flex: 1;
 }
 
 .wd-withdraw-btn {

@@ -386,9 +386,10 @@ const fetchManager = {
         return response;
     },
 
-    async requestWithdrawal() {
+    async requestWithdrawal(amountCents) {
         const response = await fetchRoutes(`/api/marketplace/seller/withdraw`, {
             method: 'POST',
+            body: JSON.stringify({ amount_cents: amountCents }),
         });
         return response;
     },

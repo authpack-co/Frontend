@@ -2605,6 +2605,10 @@ function renderWithdrawalInfo(data, wrapEl) {
     const available = balance?.available_amount || 0;
     const waiting = balance?.waiting_funds_amount || 0;
 
+    // Net values provided by the backend (TED fee already accounted for)
+    const TED_FEE = data.ted_fee_cents ?? 367;
+    const netAmount = data.net_withdrawable_cents ?? Math.max(0, available - TED_FEE);
+
     // Format next transfer date
     let nextDateLabel = '—';
     if (next_transfer_date) {
@@ -2703,31 +2707,82 @@ function renderWithdrawalInfo(data, wrapEl) {
     }
 
 
-    const btnWrap = document.createElement('div');
-    btnWrap.className = 'wd-btn-wrap buttonContent content-state';
-    btnWrap.id = 'wd-btn-container';
-    btnWrap.innerHTML = `
-        <div class="preset-content">
-            <button class="btn btn-primary wd-withdraw-btn" id="btn-withdraw-now" ${available <= 0 ? 'disabled' : ''}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                Sacar agora ${available > 0 ? '(R$ ' + formatBRLValue(available) + ')' : ''}
-            </button>
-            ${available <= 0 ? '<p class="wd-no-balance-note">Nenhum saldo disponível para saque no momento.</p>' : ''}
-        </div>
-        <div class="preset-loading">
-            <button class="btn btn-primary wd-withdraw-btn" disabled>
-                <div class="spinner" style="width:16px;height:16px;"></div>
-                Processando...
-            </button>
+    // ── Step 1: Withdraw trigger button ──
+    const step1 = document.createElement('div');
+    step1.className = 'wd-step wd-step-1';
+    step1.innerHTML = `
+        <button class="btn btn-primary wd-withdraw-btn" id="btn-withdraw-now" ${netAmount <= 0 ? 'disabled' : ''}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Sacar agora ${netAmount > 0 ? '(R$ ' + formatBRLValue(netAmount) + ')' : ''}
+        </button>
+        ${netAmount <= 0 ? '<p class="wd-no-balance-note">Saldo insuficiente para cobrir a taxa TED de R$3,67.</p>' : ''}
+    `;
+    wrapEl.appendChild(step1);
+
+    // ── Step 2: Confirmation panel (hidden initially) ──
+    const step2 = document.createElement('div');
+    step2.className = 'wd-step wd-step-2';
+    step2.style.display = 'none';
+    step2.innerHTML = `
+        <div class="wd-confirm-panel">
+            <div class="wd-confirm-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Confirmar saque
+            </div>
+            <div class="wd-confirm-breakdown">
+                <div class="wd-confirm-row">
+                    <span class="wd-confirm-label">Saldo disponível</span>
+                    <span class="wd-confirm-value">R$ ${formatBRLValue(available)}</span>
+                </div>
+                <div class="wd-confirm-row wd-confirm-fee">
+                    <span class="wd-confirm-label">Taxa TED (transferência bancária)</span>
+                    <span class="wd-confirm-value wd-fee">− R$ ${formatBRLValue(TED_FEE)}</span>
+                </div>
+                <div class="wd-confirm-divider"></div>
+                <div class="wd-confirm-row wd-confirm-total">
+                    <span class="wd-confirm-label">Você receberá</span>
+                    <span class="wd-confirm-value wd-net">R$ ${formatBRLValue(netAmount)}</span>
+                </div>
+            </div>
+            <div class="wd-confirm-actions">
+                <button class="btn btn-secondary wd-cancel-btn" id="btn-withdraw-cancel">Cancelar</button>
+                <div class="wd-confirm-btn-wrap buttonContent content-state" id="wd-confirm-btn-wrap">
+                    <div class="preset-content">
+                        <button class="btn btn-primary wd-withdraw-btn" id="btn-withdraw-confirm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Confirmar
+                        </button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-primary wd-withdraw-btn" disabled>
+                            <div class="spinner" style="width:16px;height:16px;"></div>
+                            Processando...
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
-    wrapEl.appendChild(btnWrap);
+    wrapEl.appendChild(step2);
 
-    // Withdraw button click handler
-    document.getElementById('btn-withdraw-now')?.addEventListener('click', async () => {
-        setElementState(btnWrap, 'loading');
+    // ── Event: "Sacar agora" → show confirmation panel ──
+    document.getElementById('btn-withdraw-now')?.addEventListener('click', () => {
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+    });
+
+    // ── Event: "Cancelar" → back to step 1 ──
+    document.getElementById('btn-withdraw-cancel')?.addEventListener('click', () => {
+        step2.style.display = 'none';
+        step1.style.display = 'block';
+    });
+
+    // ── Event: "Confirmar" → execute withdrawal ──
+    const confirmBtnWrap = document.getElementById('wd-confirm-btn-wrap');
+    document.getElementById('btn-withdraw-confirm')?.addEventListener('click', async () => {
+        setElementState(confirmBtnWrap, 'loading');
         try {
-            const res = await fetchManager.requestWithdrawal();
+            const res = await fetchManager.requestWithdrawal(netAmount);
             if (res.ok && res.result?.success) {
                 notify('success', `Saque de R$ ${formatBRLValue(res.result.amount_cents)} solicitado com sucesso!`);
                 closeWithdrawalModal();
@@ -2735,12 +2790,12 @@ function renderWithdrawalInfo(data, wrapEl) {
             } else {
                 const errMsg = res.result?.error || 'Erro ao solicitar saque';
                 notify('error', errMsg);
-                setElementState(btnWrap, 'content');
+                setElementState(confirmBtnWrap, 'content');
             }
         } catch (err) {
             console.error('requestWithdrawal error:', err);
             notify('error', 'Erro de conexão ao solicitar saque');
-            setElementState(btnWrap, 'content');
+            setElementState(confirmBtnWrap, 'content');
         }
     });
 
