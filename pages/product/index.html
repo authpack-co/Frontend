@@ -7,8 +7,20 @@
     <title>Produto — AuthPack</title>
     <meta name="description" content="Adquira este produto no AuthPack">
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/assets/styles/elementState.css">
+        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+<link rel="stylesheet" href="/assets/styles/elementState.css">
     <link rel="stylesheet" href="/pages/product/style.css">
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function(){
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
 <body>

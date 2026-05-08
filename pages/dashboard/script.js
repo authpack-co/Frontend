@@ -232,6 +232,15 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
     const maxValue = validHours.length > 0 ? Math.max(...validHours) : 0;
     const yAxisMax = maxValue === 0 ? 1 : maxValue * 1.2;
 
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    const chartPointBorder = isDarkTheme ? '#141619' : '#ffffff';
+    const tooltipBg = isDarkTheme ? '#1c1f20' : '#ffffff';
+    const tooltipBorder = isDarkTheme ? '#333840' : '#e5e7eb';
+    const tooltipText = isDarkTheme ? '#fff' : '#111827';
+    const gridColor = isDarkTheme ? '#333840' : '#e5e7eb';
+    const tickColor = isDarkTheme ? '#8e9091' : '#6b7280';
+    const tooltipDivider = isDarkTheme ? '#333840' : '#e5e7eb';
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -251,7 +260,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                 tension: 0.4,
                 pointRadius: 4,
                 pointBackgroundColor: '#4184e4',
-                pointBorderColor: '#141619',
+                pointBorderColor: chartPointBorder,
                 pointBorderWidth: 2,
                 pointHoverRadius: 6,
                 pointHoverBackgroundColor: '#58a6ff',
@@ -274,10 +283,10 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                             tooltipEl = document.createElement('div');
                             tooltipEl.className = 'custom-scrollbar';
                             tooltipEl.id = 'chartjs-tooltip';
-                            tooltipEl.style.background = '#1c1f20';
-                            tooltipEl.style.border = '1px solid #333840';
+                            tooltipEl.style.background = tooltipBg;
+                            tooltipEl.style.border = '1px solid ' + tooltipBorder;
                             tooltipEl.style.borderRadius = '8px';
-                            tooltipEl.style.color = '#fff';
+                            tooltipEl.style.color = tooltipText;
                             tooltipEl.style.opacity = 0;
                             tooltipEl.style.pointerEvents = 'none';
                             tooltipEl.style.position = 'absolute';
@@ -339,7 +348,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                             const prefix = isDaily ? '🕐' : '📅';
 
                             let innerHtml = `
-                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #333840;">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid ${tooltipDivider};">
                                 <span style="font-size:16px;">${prefix}</span>
                                 <strong>${originalLabel}</strong>
                                 </div>
@@ -419,7 +428,7 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        color: '#8e9091',
+                        color: tickColor,
                         font: { size: 11 },
                         // Adapta a rotação dos labels se for visualização diária
                         maxRotation: isDaily ? 45 : 0,
@@ -429,9 +438,9 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
                 y: {
                     beginAtZero: true,
                     max: yAxisMax,
-                    grid: { color: '#333840' },
+                    grid: { color: gridColor },
                     ticks: {
-                        color: '#8e9091',
+                        color: tickColor,
                         callback: v => formatHours(v)
                     }
                 }

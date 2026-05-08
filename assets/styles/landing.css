@@ -3,31 +3,7 @@
 /* ============================================
    CSS Variables (Landing Design System)
    ============================================ */
-:root {
-    --lp-bg: #181d23;
-    --lp-bg-card: #141619;
-    --lp-bg-card-subtle: rgba(255, 255, 255, 0.025);
-    --lp-bg-icon: rgba(79, 125, 243, 0.1);
-
-    --lp-accent: #4f7df3;
-    --lp-accent-hover: #6690ff;
-    --lp-green: #22c55e;
-
-    --lp-text-primary: #e8e6e3;
-    --lp-text-secondary: rgba(255, 255, 255, 0.55);
-    --lp-text-muted: rgba(255, 255, 255, 0.35);
-
-    --lp-border: rgba(255, 255, 255, 0.06);
-    --lp-border-hover: rgba(255, 255, 255, 0.12);
-
-    --lp-radius-btn: 10px;
-    --lp-radius-card: 14px;
-    --lp-radius-pill: 999px;
-    --lp-radius-icon: 12px;
-
-    --lp-container: 1120px;
-    --lp-nav-height: 72px;
-}
+/* Design tokens: /assets/styles/theme-tokens.css */
 
 /* ============================================
    Reset & Base
@@ -44,8 +20,8 @@ html {
 
 body {
     font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color: var(--lp-text-primary);
-    background: var(--lp-bg);
+    color: var(--ap-text-primary);
+    background: var(--ap-bg-page);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -77,12 +53,12 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--ap-scrollbar-thumb);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.14);
+    background: var(--ap-scrollbar-thumb-hover);
 }
 
 /* ============================================
@@ -99,19 +75,19 @@ img {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--lp-accent);
-    color: #fff;
+    background: var(--ap-accent);
+    color: #ffffff;
     border: none;
     font-size: 15px;
     font-weight: 600;
     padding: 10px 22px;
-    border-radius: var(--lp-radius-btn);
+    border-radius: var(--ap-radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .lp-btn-primary:hover {
-    background: var(--lp-accent-hover);
+    background: var(--ap-accent-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 16px rgba(79, 125, 243, 0.25);
 }
@@ -121,19 +97,19 @@ img {
     align-items: center;
     gap: 8px;
     background: transparent;
-    color: var(--lp-text-primary);
-    border: 1px solid var(--lp-border-hover);
+    color: var(--ap-text-primary);
+    border: 1px solid var(--ap-border-hover);
     font-size: 15px;
     font-weight: 500;
     padding: 10px 22px;
-    border-radius: var(--lp-radius-btn);
+    border-radius: var(--ap-radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .lp-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.18);
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
     transform: translateY(-1px);
 }
 
@@ -156,21 +132,21 @@ img {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--lp-radius-pill);
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
     padding: 6px 18px;
     margin-bottom: 28px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--lp-text-secondary);
+    color: var(--ap-text-secondary);
 }
 
 .lp-announcement-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--lp-green);
+    background: var(--ap-success);
     animation: lp-pulse 2s ease-in-out infinite;
 }
 
@@ -200,20 +176,20 @@ img {
     font-size: 3.5rem;
     font-weight: 700;
     line-height: 1.12;
-    color: var(--lp-text-primary);
+    color: var(--ap-text-primary);
     margin-bottom: 24px;
     letter-spacing: -0.03em;
 }
 
 .lp-hero-headline .lp-highlight {
-    color: var(--lp-accent);
+    color: var(--ap-accent);
 }
 
 .lp-hero-subtitle {
     font-size: 1.125rem;
     font-weight: 400;
     line-height: 1.65;
-    color: var(--lp-text-secondary);
+    color: var(--ap-text-secondary);
     max-width: 480px;
     margin-bottom: 36px;
 }
@@ -253,13 +229,13 @@ img {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: var(--lp-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .lp-trust-badge svg {
     width: 18px;
     height: 18px;
-    color: var(--lp-green);
+    color: var(--ap-success);
     flex-shrink: 0;
 }
 

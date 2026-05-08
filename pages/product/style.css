@@ -1,25 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
 
-:root {
-    --color-bg: #181d23;
-    --color-bg-frame: #141619;
-    --color-bg-card: #181d23;
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-border-hover: rgba(255, 255, 255, 0.14);
-    --color-text-primary: #e8e6e3;
-    --color-text-secondary: #b0ada8;
-    --color-text-muted: #6d7a85;
-    --color-accent: #4184e4;
-    --color-accent-hover: #3572cc;
-    --color-green: #34d399;
-    --color-yellow: #fbbf24;
-    --color-red: #f87171;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-data: 'Fira Code', monospace;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 16px;
-}
+/* Design tokens: /assets/styles/theme-tokens.css */
 
 * {
     padding: 0;
@@ -29,9 +10,9 @@
 
 body {
     min-height: 100vh;
-    font-family: var(--font-body);
-    color: var(--color-text-secondary);
-    background: var(--color-bg);
+    font-family: var(--ap-font-body);
+    color: var(--ap-text-secondary);
+    background: var(--ap-bg-page);
     -webkit-font-smoothing: antialiased;
     display: flex;
     flex-direction: column;
@@ -46,10 +27,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(20, 22, 25, 0.85);
+    background: var(--ap-bg-header);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--ap-border);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -61,7 +42,7 @@ body {
     gap: 10px;
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     text-decoration: none;
     transition: opacity 0.2s;
 }
@@ -81,7 +62,7 @@ body {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .vt-secure svg {
@@ -97,8 +78,8 @@ body {
     width: 100%;
     margin: 32px auto;
     padding: 36px 30px 60px;
-    background: var(--color-bg-frame);
-    border: 1px solid var(--color-border);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
     border-radius: 16px;
 }
 
@@ -115,8 +96,8 @@ body {
 .vt-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.08);
-    border-top-color: var(--color-accent);
+    border: 3px solid var(--ap-border);
+    border-top-color: var(--ap-accent);
     border-radius: 50%;
     animation: vtSpin 0.7s linear infinite;
 }
@@ -138,12 +119,12 @@ body {
 .vt-empty h2 {
     font-size: 20px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     margin-bottom: 8px;
 }
 
 .vt-empty p {
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     font-size: 14px;
 }
 
@@ -172,9 +153,9 @@ body {
 /* Hero Banner */
 .vt-hero-banner {
     position: relative;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
     padding: 36px 32px 32px;
     overflow: hidden;
 }
@@ -195,7 +176,7 @@ body {
     position: relative;
     font-size: 28px;
     font-weight: 800;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     line-height: 1.25;
     letter-spacing: -0.02em;
     margin-bottom: 12px;
@@ -204,14 +185,14 @@ body {
 .vt-product-desc {
     position: relative;
     font-size: 15px;
-    color: var(--color-text-secondary);
+    color: var(--ap-text-secondary);
     line-height: 1.65;
 }
 
 /* Divider */
 .vt-divider {
     height: 1px;
-    background: var(--color-border);
+    background: var(--ap-border);
 }
 
 /* Services Section */
@@ -225,7 +206,7 @@ body {
 .vt-services-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -245,14 +226,14 @@ body {
     align-items: center;
     gap: 10px;
     padding: 12px 14px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
     transition: border-color 0.2s ease;
 }
 
 .vt-service-card:hover {
-    border-color: var(--color-border-hover);
+    border-color: var(--ap-border-hover);
 }
 
 .vt-service-icon {
@@ -272,7 +253,7 @@ body {
 .vt-service-name {
     font-size: 13px;
     font-weight: 500;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -284,9 +265,9 @@ body {
 .vt-purchase-card {
     position: sticky;
     top: 24px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
     padding: 28px 24px;
     display: flex;
     flex-direction: column;
@@ -307,18 +288,18 @@ body {
 }
 
 .vt-price {
-    font-family: var(--font-data);
+    font-family: var(--ap-font-data);
     font-size: 28px;
     font-weight: 800;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     line-height: 1;
 }
 
 .vt-price-period {
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
     font-size: 15px;
     font-weight: 400;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .vt-billing-badge {
@@ -331,13 +312,13 @@ body {
 }
 
 .vt-billing-badge.one_time {
-    color: #60a5fa;
-    background: rgba(96, 165, 250, 0.1);
-    border: 1px solid rgba(96, 165, 250, 0.2);
+    color: var(--ap-accent);
+    background: var(--ap-accent-light);
+    border: 1px solid var(--ap-accent-muted);
 }
 
 .vt-billing-badge.subscription {
-    color: var(--color-green);
+    color: var(--ap-success);
     background: rgba(52, 211, 153, 0.1);
     border: 1px solid rgba(52, 211, 153, 0.2);
 }
@@ -349,8 +330,8 @@ body {
     gap: 10px;
     padding: 14px 16px;
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
 }
 
 .vt-breakdown-row {
@@ -361,39 +342,39 @@ body {
 
 .vt-breakdown-label {
     font-size: 13px;
-    color: var(--color-text-secondary);
+    color: var(--ap-text-secondary);
 }
 
 .vt-breakdown-value {
     font-size: 13px;
-    font-family: var(--font-data);
-    color: var(--color-text-secondary);
+    font-family: var(--ap-font-data);
+    color: var(--ap-text-secondary);
 }
 
 .vt-breakdown-fee .vt-breakdown-label {
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     font-size: 12px;
 }
 
 .vt-breakdown-fee .vt-breakdown-value {
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     font-size: 12px;
 }
 
 .vt-breakdown-divider {
     height: 1px;
-    background: var(--color-border);
+    background: var(--ap-border);
 }
 
 .vt-breakdown-total .vt-breakdown-label {
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     font-size: 14px;
 }
 
 .vt-breakdown-total .vt-breakdown-value {
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     font-size: 14px;
 }
 
@@ -403,8 +384,8 @@ body {
     align-items: center;
     gap: 10px;
     padding: 14px 0;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    border-top: 1px solid var(--ap-border);
+    border-bottom: 1px solid var(--ap-border);
 }
 
 .vt-seller-pic {
@@ -412,7 +393,7 @@ body {
     height: 36px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--color-border);
+    border: 2px solid var(--ap-border);
 }
 
 .vt-seller-info {
@@ -423,12 +404,12 @@ body {
 .vt-seller-name {
     font-size: 14px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
 }
 
 .vt-seller-label {
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 /* Stock Progress */
@@ -449,38 +430,38 @@ body {
 .vt-stock-fill {
     height: 100%;
     border-radius: 3px;
-    background: var(--color-green);
+    background: var(--ap-success);
     transition: width 0.5s ease;
 }
 
 .vt-stock-fill.warning {
-    background: var(--color-yellow);
+    background: var(--ap-warning);
 }
 
 .vt-stock-fill.depleted {
-    background: var(--color-red);
+    background: var(--ap-danger);
 }
 
 .vt-stock-label {
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .vt-stock-label strong {
-    color: var(--color-text-secondary);
+    color: var(--ap-text-secondary);
     font-weight: 600;
 }
 
 .vt-stock-unlimited {
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .vt-stock-unlimited svg {
-    color: var(--color-green);
+    color: var(--ap-success);
     flex-shrink: 0;
 }
 
@@ -488,21 +469,21 @@ body {
 .vt-cta-btn {
     width: 100%;
     padding: 15px 32px;
-    background: linear-gradient(135deg, #5a6bff, var(--color-accent));
-    color: #fff;
+    background: linear-gradient(135deg, var(--ap-accent-hover), var(--ap-accent));
+    color: #ffffff;
     border: none;
     border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
 }
 
 .vt-cta-btn:hover {
-    background: linear-gradient(135deg, #4f5fee, var(--color-accent-hover));
+    background: linear-gradient(135deg, var(--ap-accent), var(--ap-accent-hover));
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(65, 132, 228, 0.3);
+    box-shadow: 0 6px 24px rgba(79, 125, 243, 0.3);
 }
 
 .vt-cta-btn:disabled {
@@ -514,7 +495,7 @@ body {
 
 .vt-cta-sub {
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     text-align: center;
 }
 
@@ -532,21 +513,21 @@ body {
     align-items: center;
     gap: 12px;
     padding: 16px 18px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
 }
 
 .vt-trust-icon {
     width: 36px;
     height: 36px;
-    border-radius: var(--radius-md);
+    border-radius: var(--ap-radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     background: rgba(65, 132, 228, 0.08);
-    color: var(--color-accent);
+    color: var(--ap-accent);
 }
 
 .vt-trust-text {
@@ -558,12 +539,12 @@ body {
 .vt-trust-text strong {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
 }
 
 .vt-trust-text span {
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     line-height: 1.4;
 }
 

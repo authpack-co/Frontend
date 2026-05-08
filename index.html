@@ -9,7 +9,8 @@
         content="Compartilhe e gerencie sessões com controle total. Crie, organize e distribua acessos de forma automatizada, segura e escalável.">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/assets/styles/landing.css">
+        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+<link rel="stylesheet" href="/assets/styles/landing.css">
     <link rel="stylesheet" href="/assets/styles/header.css">
 
     <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
@@ -52,6 +53,17 @@
                 });
         })();
     </script>
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function(){
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
 <body>

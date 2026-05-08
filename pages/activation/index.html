@@ -67,8 +67,20 @@
     <title>Ativação de dispositivo - AuthPack</title>
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/pages/activation/activation.css">
+        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+<link rel="stylesheet" href="/pages/activation/activation.css">
     <link rel="stylesheet" href="/assets/styles/animations.css">
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function(){
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
 <body>

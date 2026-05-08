@@ -9,9 +9,21 @@
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
     
     <!-- Navbar styles from landing page -->
-    <link rel="stylesheet" href="/assets/styles/landing.css">
+        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+<link rel="stylesheet" href="/assets/styles/landing.css">
     <!-- Component styles for this page -->
     <link rel="stylesheet" href="/pages/login/login.css">
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function(){
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 <body class="login-page">
 

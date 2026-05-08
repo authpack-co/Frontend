@@ -1,0 +1,176 @@
+/* ============================================================================
+   AuthPack — Design Tokens (Theme System)
+   
+   All visual theming is controlled from this single file.
+   Light theme is the default; Dark theme is activated via data-theme="dark"
+   on the <html> element.
+   
+   Naming convention: --ap-{category}-{property}
+   ============================================================================ */
+
+/* ============================================
+   LIGHT THEME (Default)
+   ============================================ */
+:root {
+    /* ── Backgrounds ── */
+    --ap-bg-page: #f4f6f9;
+    --ap-bg-card: #ffffff;
+    --ap-bg-card-alt: #f9fafb;
+    --ap-bg-input: #f3f4f6;
+    --ap-bg-hover: #f0f1f3;
+    --ap-bg-muted: #e5e7eb;
+    --ap-bg-overlay: rgba(0, 0, 0, 0.3);
+    --ap-bg-header: rgba(255, 255, 255, 0.88);
+    --ap-bg-sidebar: #ffffff;
+    --ap-bg-dropdown: #ffffff;
+    --ap-bg-modal: #ffffff;
+    --ap-bg-skeleton-from: rgba(229, 231, 235, 0.7);
+    --ap-bg-skeleton-via: rgba(209, 213, 219, 0.9);
+
+    /* ── Text ── */
+    --ap-text-primary: #111827;
+    --ap-text-secondary: #374151;
+    --ap-text-muted: #6b7280;
+    --ap-text-placeholder: #9ca3af;
+    --ap-text-inverse: #ffffff;
+
+    /* ── Borders ── */
+    --ap-border: #e5e7eb;
+    --ap-border-hover: #d1d5db;
+    --ap-border-focus: #60a5fa;
+    --ap-border-muted: #d1d5db;
+
+    /* ── Accent (Blue — Shazam-style) ── */
+    --ap-accent: #60a5fa;
+    --ap-accent-hover: #4f90e8;
+    --ap-accent-light: #eff6ff;
+    --ap-accent-muted: #dbeafe;
+    --ap-accent-subtle: rgba(37, 99, 235, 0.08);
+
+    /* ── Success ── */
+    --ap-success: #16a34a;
+    --ap-success-light: #f0fdf4;
+    --ap-success-border: #bbf7d0;
+    --ap-success-text: #15803d;
+
+    /* ── Warning ── */
+    --ap-warning: #d97706;
+    --ap-warning-light: #fffbeb;
+    --ap-warning-border: #fde68a;
+    --ap-warning-text: #b45309;
+
+    /* ── Danger / Error ── */
+    --ap-danger: #dc2626;
+    --ap-danger-light: #fef2f2;
+    --ap-danger-border: #fca5a5;
+    --ap-danger-text: #b91c1c;
+
+    /* ── Shadows ── */
+    --ap-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --ap-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
+    --ap-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.06);
+    --ap-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
+
+    /* ── Scrollbar ── */
+    --ap-scrollbar-thumb: #d1d5db;
+    --ap-scrollbar-track: #f3f4f6;
+    --ap-scrollbar-thumb-hover: #9ca3af;
+
+    /* ── Shared (non-theme) ── */
+    --ap-font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --ap-font-heading: 'Sora', 'Inter', sans-serif;
+    --ap-font-data: 'Fira Code', monospace;
+
+    --ap-radius-xs: 4px;
+    --ap-radius-sm: 6px;
+    --ap-radius-md: 8px;
+    --ap-radius-lg: 12px;
+    --ap-radius-xl: 16px;
+    --ap-radius-2xl: 20px;
+    --ap-radius-full: 9999px;
+
+    --ap-space-xs: 4px;
+    --ap-space-sm: 8px;
+    --ap-space-md: 16px;
+    --ap-space-lg: 24px;
+    --ap-space-xl: 32px;
+    --ap-space-2xl: 48px;
+    --ap-space-3xl: 64px;
+
+    --ap-nav-height: 72px;
+    --ap-header-height: 80px;
+
+    /* ── Theme transition (disabled — will be removed with dark theme) ── */
+}
+
+
+/* ============================================
+   DARK THEME
+   ============================================ */
+:root[data-theme="dark"] {
+    /* ── Backgrounds ── */
+    --ap-bg-page: #181d23;
+    --ap-bg-card: #141619;
+    --ap-bg-card-alt: #1c1f20;
+    --ap-bg-input: #0d1117;
+    --ap-bg-hover: #212830;
+    --ap-bg-muted: #26292b;
+    --ap-bg-overlay: rgba(0, 0, 0, 0.65);
+    --ap-bg-header: rgba(20, 22, 25, 0.85);
+    --ap-bg-sidebar: #141619;
+    --ap-bg-dropdown: #1c1f20;
+    --ap-bg-modal: #181d23;
+    --ap-bg-skeleton-from: rgba(40, 44, 48, 0.7);
+    --ap-bg-skeleton-via: rgba(50, 55, 60, 0.9);
+
+    /* ── Text ── */
+    --ap-text-primary: #e8e6e3;
+    --ap-text-secondary: #d6d3cd;
+    --ap-text-muted: #9d9488;
+    --ap-text-placeholder: #8e9091;
+    --ap-text-inverse: #111827;
+
+    /* ── Borders ── */
+    --ap-border: #333840;
+    --ap-border-hover: #3b3f42;
+    --ap-border-focus: #4184e4;
+    --ap-border-muted: #6d655a;
+
+    /* ── Accent ── */
+    --ap-accent: #4184e4;
+    --ap-accent-hover: #54a1e4;
+    --ap-accent-light: rgba(24, 83, 153, 0.1);
+    --ap-accent-muted: rgba(65, 132, 228, 0.15);
+    --ap-accent-subtle: rgba(24, 83, 153, 0.1);
+
+    /* ── Success ── */
+    --ap-success: #4ade80;
+    --ap-success-light: rgba(76, 175, 80, 0.1);
+    --ap-success-border: rgba(76, 175, 80, 0.3);
+    --ap-success-text: #4ade80;
+
+    /* ── Warning ── */
+    --ap-warning: #fbbf24;
+    --ap-warning-light: rgba(245, 158, 11, 0.1);
+    --ap-warning-border: rgba(245, 158, 11, 0.3);
+    --ap-warning-text: #fbbf24;
+
+    /* ── Danger / Error ── */
+    --ap-danger: #f54e42;
+    --ap-danger-light: rgba(169, 20, 9, 0.2);
+    --ap-danger-border: rgba(245, 78, 66, 0.3);
+    --ap-danger-text: #f87171;
+
+    /* ── Shadows ── */
+    --ap-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --ap-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --ap-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+    --ap-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+
+    /* ── Scrollbar ── */
+    --ap-scrollbar-thumb: #3b3f42;
+    --ap-scrollbar-track: #26292b;
+    --ap-scrollbar-thumb-hover: #333840;
+}
+
+

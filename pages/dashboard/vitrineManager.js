@@ -500,6 +500,15 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
     const maxValue = revenueData.length > 0 ? Math.max(...revenueData) : 0;
     const yAxisMax = maxValue === 0 ? 10 : maxValue * 1.2;
 
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    const chartPointBorder = isDarkTheme ? '#141619' : '#ffffff';
+    const tooltipBg = isDarkTheme ? '#1c1f20' : '#ffffff';
+    const tooltipBorder = isDarkTheme ? '#333840' : '#e5e7eb';
+    const tooltipTitle = isDarkTheme ? '#fff' : '#111827';
+    const tooltipBody = isDarkTheme ? '#ccc' : '#374151';
+    const gridColor = isDarkTheme ? '#333840' : '#e5e7eb';
+    const tickColor = isDarkTheme ? '#8e9091' : '#6b7280';
+
     new Chart(ctx, {
         type: 'line',
         data: {
@@ -519,7 +528,7 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
                 tension: 0.4,
                 pointRadius: 3,
                 pointBackgroundColor: '#4184e4',
-                pointBorderColor: '#141619',
+                pointBorderColor: chartPointBorder,
                 pointBorderWidth: 2,
                 pointHoverRadius: 5,
                 pointHoverBackgroundColor: '#58a6ff',
@@ -532,11 +541,11 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1c1f20',
-                    borderColor: '#333840',
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
                     borderWidth: 1,
-                    titleColor: '#fff',
-                    bodyColor: '#ccc',
+                    titleColor: tooltipTitle,
+                    bodyColor: tooltipBody,
                     cornerRadius: 8,
                     padding: 12,
                     displayColors: false,
@@ -558,7 +567,7 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        color: '#8e9091',
+                        color: tickColor,
                         font: { size: 11 },
                         maxRotation: isHourly ? 45 : 0,
                         minRotation: isHourly ? 45 : 0,
@@ -568,9 +577,9 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
                 y: {
                     beginAtZero: true,
                     max: yAxisMax,
-                    grid: { color: '#333840' },
+                    grid: { color: gridColor },
                     ticks: {
-                        color: '#8e9091',
+                        color: tickColor,
                         callback: v => `R$ ${v.toFixed(0)}`
                     }
                 }

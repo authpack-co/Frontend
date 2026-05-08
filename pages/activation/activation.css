@@ -1,48 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Sora:wght@100..800&display=swap');
 
-:root {
-    /* Base */
-    --color-bg-primary: #181a1b;
-    --color-bg-secondary: #1c1f20;
-    --color-bg-tertiary: #232627;
-    --color-bg-muted: #26292b;
-    --color-bg-transparent: rgba(24, 26, 27, 0);
-
-    --color-text-primary: #e8e6e3;
-    --color-text-secondary: #d6d3cd;
-    --color-text-muted: #9d9488;
-
-    /* Accent */
-    --color-accent: #4a9eff;
-    --color-accent-subtle: rgba(74, 158, 255, 0.1);
-    --color-accent-hover: #54a1e4;
-
-    /* Success */
-    --color-success: #4caf50;
-    --color-success-bg: rgba(76, 175, 80, 0.1);
-
-    /* Error */
-    --color-error: #f54e42;
-    --color-danger: #e74c3c;
-    --color-error-bg: rgba(245, 78, 66, 0.1);
-
-    /* Border */
-    --color-border-primary: #333840;
-    --color-border-secondary: #3b3f42;
-    --color-border-muted: #6d655a;
-
-    /* Measurement */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-}
+/* Design tokens: /assets/styles/theme-tokens.css */
 
 /* ============================================
     Reset & Base Styles
@@ -61,8 +19,8 @@ body {
     min-height: 100vh;
     width: 100vw;
     font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    color: var(--color-text-secondary);
-    background: linear-gradient(135deg, #181d23 0%, #1a1f26 100%);
+    color: var(--ap-text-secondary);
+    background: var(--ap-bg-page);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
@@ -107,29 +65,29 @@ body {
     z-index: 1;
     width: 90%;
     max-width: 480px;
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border-primary);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
+    padding: var(--ap-space-xl);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 /* Logo */
 .logo {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--ap-space-xl);
 }
 
 .logo-text {
     font-family: 'Sora', sans-serif;
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     letter-spacing: -0.5px;
 }
 
 .logo-accent {
-    color: var(--color-accent);
+    color: var(--ap-accent);
 }
 
 /* Content Area */
@@ -141,7 +99,7 @@ body {
 .icon-container {
     width: 120px;
     height: 120px;
-    margin: 0 auto var(--spacing-lg);
+    margin: 0 auto var(--ap-space-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -158,8 +116,8 @@ body {
 .spinner {
     width: 100%;
     height: 100%;
-    border: 3px solid var(--color-bg-muted);
-    border-top: 3px solid var(--color-accent);
+    border: 3px solid var(--ap-bg-muted);
+    border-top: 3px solid var(--ap-accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -177,7 +135,7 @@ body {
     transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
-    border: 2px solid var(--color-accent);
+    border: 2px solid var(--ap-accent);
     border-radius: 50%;
     opacity: 0;
     animation: pulse 2s ease-out infinite;
@@ -210,7 +168,7 @@ body {
     transform: translate(-50%, -50%);
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-md);
+    border-radius: var(--ap-radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -251,8 +209,8 @@ body {
 .success-icon {
     width: 80px;
     height: 80px;
-    background: var(--color-success-bg);
-    border: 3px solid var(--color-success);
+    background: var(--ap-success-light);
+    border: 3px solid var(--ap-success);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -285,7 +243,7 @@ body {
     top: 6px;
     width: 12px;
     height: 24px;
-    border: solid var(--color-success);
+    border: solid var(--ap-success);
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);
     animation: checkmark 0.5s ease-in-out 0.3s both;
@@ -305,8 +263,8 @@ body {
 .error-icon {
     width: 80px;
     height: 80px;
-    background: var(--color-error-bg);
-    border: 3px solid var(--color-error);
+    background: var(--ap-danger-light);
+    border: 3px solid var(--ap-danger);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -352,7 +310,7 @@ body {
     top: 50%;
     width: 3px;
     height: 30px;
-    background: var(--color-error);
+    background: var(--ap-danger);
     transform-origin: center;
 }
 
@@ -380,15 +338,15 @@ body {
 .status-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-sm);
+    color: var(--ap-text-primary);
+    margin-bottom: var(--ap-space-sm);
 }
 
 .status-description {
     font-size: 0.95rem;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     line-height: 1.5;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--ap-space-lg);
 }
 
 /* Loading Dots Animation */
@@ -425,20 +383,20 @@ body {
 /* Button */
 .action-button {
     width: 100%;
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--color-accent);
+    padding: var(--ap-space-md) var(--ap-space-lg);
+    background: var(--ap-accent);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--ap-radius-md);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: var(--spacing-md);
+    margin-top: var(--ap-space-md);
 }
 
 .action-button:hover {
-    background: var(--color-accent-hover);
+    background: var(--ap-accent-hover);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(74, 158, 255, 0.3);
 }
@@ -448,12 +406,12 @@ body {
 }
 
 .action-button.secondary {
-    background: var(--color-bg-muted);
-    color: var(--color-text-primary);
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-primary);
 }
 
 .action-button.secondary:hover {
-    background: var(--color-bg-tertiary);
+    background: var(--ap-bg-muted);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -486,13 +444,13 @@ body {
 .login-icon {
     width: 80px;
     height: 80px;
-    background: var(--color-accent-subtle);
-    border: 3px solid var(--color-accent);
+    background: var(--ap-accent-subtle);
+    border: 3px solid var(--ap-accent);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-accent);
+    color: var(--ap-accent);
     animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -503,20 +461,20 @@ body {
     justify-content: center;
     gap: 0.75rem;
     text-decoration: none;
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-border-secondary);
-    color: var(--color-text-primary);
+    background: var(--ap-bg-muted);
+    border: 1px solid var(--ap-border-hover);
+    color: var(--ap-text-primary);
     font-size: 0.95rem;
     font-weight: 500;
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--radius-md);
+    padding: var(--ap-space-md) var(--ap-space-lg);
+    border-radius: var(--ap-radius-md);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .google-btn:hover {
-    background: var(--color-bg-tertiary);
-    border-color: var(--color-border-muted);
+    background: var(--ap-bg-muted);
+    border-color: var(--ap-border-muted);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }

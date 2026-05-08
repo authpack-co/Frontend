@@ -68,9 +68,21 @@
     <meta name="description" content="Gerencie sua identidade Google e dispositivos conectados no AuthPack.">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/assets/styles/header.css">
+        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+<link rel="stylesheet" href="/assets/styles/header.css">
     <link rel="stylesheet" href="/pages/account/account-center.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function(){
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            } catch(e){}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
 <body>

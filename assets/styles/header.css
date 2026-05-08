@@ -5,46 +5,30 @@
 /* CSS Variables specific to Header */
 :root {
     --nav-height: 72px;
-    --nav-bg-dark: rgba(11, 14, 19, 0.85);
-    --nav-border-dark: rgba(255, 255, 255, 0.06);
-    --nav-text-dark: #e8e6e3;
-    --nav-text-muted-dark: rgba(255, 255, 255, 0.55);
-    --nav-accent: #4f7df3;
-    --nav-accent-hover: #6690ff;
-    
-    --nav-bg-light: #ffffff;
-    --nav-border-light: #e5e7eb;
-    --nav-text-light: #111827;
-    --nav-text-muted-light: #6b7280;
-    --nav-accent-light: #2563eb;
-    --nav-accent-hover-light: #1d4ed8;
-
-    --nav-border-hover-dark: rgba(255, 255, 255, 0.12);
-    --nav-border-hover-light: #d1d5db;
 }
 
-/* Base Navbar (Dark Theme by default) */
+/* Base Navbar — uses theme tokens */
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: var(--nav-height);
-    background: var(--nav-bg-dark);
+    background: var(--ap-bg-header);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--nav-border-dark);
+    border-bottom: 1px solid var(--ap-border);
     z-index: 100;
     display: flex;
     align-items: center;
     transition: all 0.2s ease;
 }
 
-/* Light Theme Overrides */
+/* Deprecated: .navbar-light kept for backwards compatibility */
 .navbar.navbar-light {
-    background: var(--nav-bg-light);
-    border-bottom: 1px solid var(--nav-border-light);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    background: var(--ap-bg-header);
+    border-bottom: 1px solid var(--ap-border);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .navbar-container {
@@ -75,12 +59,12 @@
 .navbar-brand span {
     font-size: 1.35rem;
     font-weight: 700;
-    color: var(--nav-text-dark);
+    color: var(--ap-text-primary);
     letter-spacing: -0.02em;
 }
 
 .navbar.navbar-light .navbar-brand span {
-    color: var(--nav-text-light);
+    color: var(--ap-text-primary);
     font-size: 1.125rem; /* Account page logo size */
 }
 
@@ -99,21 +83,21 @@
 .navbar-links a {
     font-size: 15px;
     font-weight: 500;
-    color: var(--nav-text-muted-dark);
+    color: var(--ap-text-muted);
     transition: color 0.2s ease;
     text-decoration: none;
 }
 
 .navbar-links a:hover {
-    color: var(--nav-text-dark);
+    color: var(--ap-text-primary);
 }
 
 .navbar.navbar-light .navbar-links a {
-    color: var(--nav-text-muted-light);
+    color: var(--ap-text-muted);
 }
 
 .navbar.navbar-light .navbar-links a:hover {
-    color: var(--nav-text-light);
+    color: var(--ap-text-primary);
 }
 
 /* Actions */
@@ -172,11 +156,7 @@ body.user-logged-in .nav-user {
 }
 
 .nav-profile:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.navbar.navbar-light .nav-profile:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--ap-bg-hover);
 }
 
 /* Profile name — matches dashboard .profile-name */
@@ -184,12 +164,12 @@ body.user-logged-in .nav-user {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 15px;
     font-weight: 500;
-    color: var(--nav-text-dark);
+    color: var(--ap-text-primary);
     white-space: nowrap;
 }
 
 .navbar.navbar-light .nav-profile-name {
-    color: var(--nav-text-light);
+    color: var(--ap-text-primary);
 }
 
 /* Profile picture — matches dashboard .profile-picture */
@@ -229,7 +209,7 @@ body.user-logged-in .nav-user {
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: #93c5fd;
-    background: #141619;
+    background: var(--ap-bg-card);
     border: 1px solid rgba(59, 130, 246, 0.35);
     border-radius: 4px;
     padding: 2px 6px;
@@ -252,8 +232,8 @@ body.user-logged-in .nav-user {
     top: calc(100% + 10px);
     right: 0;
     min-width: 200px;
-    background: #1c1f20;
-    border: 1px solid #333840;
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 6px;
@@ -301,7 +281,7 @@ body.user-logged-in .nav-user {
 .nav-dropdown-name {
     font-size: 14px;
     font-weight: 600;
-    color: #e8e6e3;
+    color: var(--ap-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -313,14 +293,14 @@ body.user-logged-in .nav-user {
 
 .nav-dropdown-email {
     font-size: 13px;
-    color: #8e9091;
+    color: var(--ap-text-placeholder);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
 }
 
-.navbar.navbar-light .nav-dropdown-email { color: #9ca3af; }
+.navbar.navbar-light .nav-dropdown-email { color: var(--ap-text-muted); }
 
 .nav-dropdown-divider {
     height: 1px;
@@ -336,14 +316,14 @@ body.user-logged-in .nav-user {
     gap: 10px;
     padding: 8px 16px;
     border-radius: 6px;
-    color: #d6d3cd;
+    color: var(--ap-text-secondary);
     text-decoration: none;
     font-size: 14px;
     font-weight: 400;
     transition: background 0.15s ease, color 0.15s ease;
 }
 
-.nav-dropdown-item:hover { background: #212830; color: #e8e6e3; }
+.nav-dropdown-item:hover { background: var(--ap-bg-hover); color: var(--ap-text-primary); }
 
 .navbar.navbar-light .nav-dropdown-item { color: #374151; }
 
@@ -355,7 +335,7 @@ body.user-logged-in .nav-user {
 .nav-btn-ghost {
     background: transparent;
     border: none;
-    color: var(--nav-text-muted-dark);
+    color: var(--ap-text-muted);
     font-size: 15px;
     font-weight: 500;
     padding: 10px 16px;
@@ -367,23 +347,23 @@ body.user-logged-in .nav-user {
 }
 
 .nav-btn-ghost:hover {
-    color: var(--nav-text-dark);
+    color: var(--ap-text-primary);
 }
 
 .navbar.navbar-light .nav-btn-ghost {
-    color: var(--nav-text-muted-light);
+    color: var(--ap-text-muted);
 }
 
 .navbar.navbar-light .nav-btn-ghost:hover {
-    color: var(--nav-text-light);
+    color: var(--ap-text-primary);
 }
 
 .nav-btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--nav-accent);
-    color: #fff;
+    background: var(--ap-accent);
+    color: #ffffff;
     border: none;
     font-size: 15px;
     font-weight: 600;
@@ -396,20 +376,20 @@ body.user-logged-in .nav-user {
 }
 
 .nav-btn-primary:hover {
-    background: var(--nav-accent-hover);
+    background: var(--ap-accent-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 16px rgba(79, 125, 243, 0.25);
 }
 
 .navbar.navbar-light .nav-btn-primary {
-    background: var(--nav-accent-light);
+    background: var(--ap-accent);
     font-size: 13.5px;
     padding: 8px 16px;
     border-radius: 8px;
 }
 
 .navbar.navbar-light .nav-btn-primary:hover {
-    background: var(--nav-accent-hover-light);
+    background: var(--ap-accent-hover);
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 

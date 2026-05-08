@@ -1,11 +1,11 @@
 /* Container for the page, offset by navbar */
 .dl-page {
-    background-color: var(--lp-bg);
+    background-color: var(--ap-bg-page);
 }
 
 .dl-main {
     min-height: 100vh;
-    padding-top: var(--lp-nav-height);
+    padding-top: var(--ap-nav-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,20 +15,20 @@
 
 /* Download Card */
 .dl-card {
-    background-color: #17181c;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background-color: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
     border-radius: 20px;
     padding: 48px;
     width: 100%;
     max-width: 680px;
     text-align: center;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--ap-shadow-xl);
 }
 
 .dl-title {
     font-size: 32px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--ap-text-primary);
     margin-bottom: 12px;
     font-family: 'Sora', 'Inter', sans-serif;
     letter-spacing: -0.01em;
@@ -36,7 +36,7 @@
 
 .dl-subtitle {
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--ap-text-muted);
     margin-bottom: 36px;
     font-weight: 400;
 }
@@ -55,7 +55,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-color: #4f7df3;
+    background-color: var(--ap-accent);
     color: #ffffff;
     font-size: 15px;
     font-weight: 600;
@@ -66,13 +66,13 @@
     width: 100%;
     max-width: 380px;
     transition: all 0.2s ease;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 4px 14px rgba(79, 125, 243, 0.4);
+    box-shadow: 0 4px 14px rgba(79, 125, 243, 0.4);
 }
 
 .dl-btn-primary:hover {
-    background-color: #5d88f6;
+    background-color: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 6px 20px rgba(79, 125, 243, 0.5);
+    box-shadow: 0 6px 20px rgba(79, 125, 243, 0.5);
 }
 
 .dl-btn-primary:disabled {
@@ -86,13 +86,13 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-color: rgba(255, 255, 255, 0.03);
-    color: #e8e6e3;
+    background-color: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
     font-size: 15px;
     font-weight: 500;
     padding: 13px 24px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--ap-border);
     cursor: pointer;
     width: 100%;
     max-width: 380px;
@@ -100,26 +100,26 @@
 }
 
 .dl-btn-ghost:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--ap-bg-muted);
+    border-color: var(--ap-border-hover);
 }
 
 .dl-meta {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--ap-text-muted);
     margin-bottom: 40px;
     font-weight: 500;
 }
 
 .dl-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--ap-border);
     margin: 0 0 28px 0;
     width: 100%;
 }
 
 .fade-divider {
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.06) 20%, rgba(255, 255, 255, 0.06) 80%, transparent);
+    background: linear-gradient(to right, transparent, var(--ap-border) 20%, var(--ap-border) 80%, transparent);
 }
 
 .dl-features {
@@ -136,7 +136,7 @@
     gap: 8px;
     font-size: 13.5px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--ap-text-secondary);
 }
 
 .dl-feature .emoji {
@@ -145,7 +145,7 @@
 
 .dl-footer-note {
     font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--ap-text-muted);
 }
 
 /* Spinner for download button */
@@ -203,11 +203,11 @@
     position: relative;
     width: 100%;
     max-width: 490px;
-    background: #1a1d21;
+    background: var(--ap-bg-card);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: var(--ap-shadow-xl);
+    border: 1px solid var(--ap-border);
 
     transform: scale(0.94) translateY(12px);
     transition: transform 0.28s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.25s ease;
@@ -223,8 +223,8 @@
     top: 14px;
     right: 16px;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-primary);
     border: none;
     border-radius: 8px;
     padding: 6px 14px;
@@ -236,14 +236,14 @@
 }
 
 .ig-skip-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--ap-bg-hover);
 }
 
 /* Image area (top section of card) */
 .ig-image-area {
     width: 100%;
     height: 300px;
-    background: #111316;
+    background: var(--ap-bg-page);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -275,27 +275,27 @@
 .ig-step-content .step-title {
     font-size: 1.2rem;
     font-weight: 700;
-    color: #f0efed;
+    color: var(--ap-text-primary);
     margin-bottom: 8px;
     line-height: 1.3;
 }
 
 .ig-step-content .step-description {
     font-size: 14.5px;
-    color: #9da3ae;
+    color: var(--ap-text-muted);
     line-height: 1.6;
 }
 
 .ig-step-content .step-code {
     display: inline-block;
     margin-top: 10px;
-    background: #111316;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--ap-bg-page);
+    border: 1px solid var(--ap-border);
     border-radius: 7px;
     padding: 6px 12px;
     font-family: 'Courier New', monospace;
     font-size: 13px;
-    color: #60a5fa;
+    color: var(--ap-accent);
 }
 
 /* Dots */
@@ -310,13 +310,13 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--ap-border-hover);
     transition: background 0.2s ease, transform 0.2s ease;
     cursor: pointer;
 }
 
 .ig-dot.ig-dot--active {
-    background: #fff;
+    background: var(--ap-text-primary);
     transform: scale(1.2);
 }
 
@@ -342,23 +342,23 @@
 
 .ig-nav-btn--ghost {
     background: transparent;
-    color: #9da3ae;
+    color: var(--ap-text-muted);
 }
 
 .ig-nav-btn--ghost:hover {
-    color: #f0efed;
-    background: rgba(255, 255, 255, 0.07);
+    color: var(--ap-text-primary);
+    background: var(--ap-bg-hover);
 }
 
 .ig-nav-btn--primary {
-    background: #2563eb;
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.45);
+    background: var(--ap-accent);
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(79, 125, 243, 0.45);
 }
 
 .ig-nav-btn--primary:hover {
-    background: #1d4ed8;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.55);
+    background: var(--ap-accent-hover);
+    box-shadow: 0 4px 14px rgba(79, 125, 243, 0.55);
 }
 
 /* Content transition helper */

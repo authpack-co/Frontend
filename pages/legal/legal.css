@@ -17,8 +17,8 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 15px;
     line-height: 1.7;
-    color: #374151;
-    background: #f9fafb;
+    color: var(--ap-text-secondary);
+    background: var(--ap-bg-page);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -28,8 +28,8 @@ a { text-decoration: none; color: inherit; }
    Hero
    ============================================ */
 .legal-hero {
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background: var(--ap-bg-card);
+    border-bottom: 1px solid var(--ap-border);
     padding-top: calc(72px + 64px);
     padding-bottom: 56px;
 }
@@ -45,23 +45,23 @@ a { text-decoration: none; color: inherit; }
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #9ca3af;
+    color: var(--ap-text-placeholder);
     margin-bottom: 24px;
 }
 
 .legal-breadcrumb a {
-    color: #6b7280;
+    color: var(--ap-text-muted);
     transition: color 0.15s;
 }
 
-.legal-breadcrumb a:hover { color: #111827; }
+.legal-breadcrumb a:hover { color: var(--ap-text-primary); }
 
-.legal-breadcrumb svg { color: #d1d5db; }
+.legal-breadcrumb svg { color: var(--ap-border-hover); }
 
 .legal-hero h1 {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--ap-text-primary);
     letter-spacing: -0.6px;
     line-height: 1.15;
     margin-bottom: 12px;
@@ -69,7 +69,7 @@ a { text-decoration: none; color: inherit; }
 
 .legal-hero > .legal-hero-inner > p {
     font-size: 1.0625rem;
-    color: #6b7280;
+    color: var(--ap-text-muted);
     max-width: 520px;
     line-height: 1.6;
     margin-bottom: 24px;
@@ -88,16 +88,16 @@ a { text-decoration: none; color: inherit; }
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #2563eb;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    color: var(--ap-accent);
+    background: var(--ap-accent-light);
+    border: 1px solid var(--ap-accent-muted);
     border-radius: 6px;
     padding: 3px 9px;
 }
 
 .legal-updated {
     font-size: 13px;
-    color: #9ca3af;
+    color: var(--ap-text-placeholder);
 }
 
 /* ============================================
@@ -123,8 +123,8 @@ a { text-decoration: none; color: inherit; }
 
 .legal-toc {
     padding: 20px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
     border-radius: 12px;
 }
 
@@ -134,7 +134,7 @@ a { text-decoration: none; color: inherit; }
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #9ca3af;
+    color: var(--ap-text-placeholder);
     margin-bottom: 14px;
 }
 
@@ -149,20 +149,20 @@ a { text-decoration: none; color: inherit; }
     display: block;
     font-size: 13px;
     font-weight: 500;
-    color: #6b7280;
+    color: var(--ap-text-muted);
     padding: 5px 10px;
     border-radius: 7px;
     transition: all 0.15s;
 }
 
 .legal-toc-link:hover {
-    color: #111827;
-    background: #f3f4f6;
+    color: var(--ap-text-primary);
+    background: var(--ap-bg-hover);
 }
 
 .legal-toc-link.active {
-    color: #2563eb;
-    background: #eff6ff;
+    color: var(--ap-accent);
+    background: var(--ap-accent-light);
 }
 
 /* ============================================
@@ -174,16 +174,16 @@ a { text-decoration: none; color: inherit; }
 
 .legal-lead {
     font-size: 1.0625rem;
-    color: #374151;
+    color: var(--ap-text-secondary);
     line-height: 1.75;
     margin-bottom: 48px;
     padding-bottom: 40px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--ap-border);
 }
 
 .legal-section {
     padding: 40px 0;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--ap-border);
 }
 
 .legal-section:last-child {
@@ -196,7 +196,7 @@ a { text-decoration: none; color: inherit; }
     gap: 14px;
     font-size: 1.125rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--ap-text-primary);
     margin-bottom: 20px;
     letter-spacing: -0.2px;
 }
@@ -205,7 +205,7 @@ a { text-decoration: none; color: inherit; }
     font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: #9ca3af;
+    color: var(--ap-text-placeholder);
     font-variant-numeric: tabular-nums;
     flex-shrink: 0;
     padding-top: 2px;
@@ -213,7 +213,7 @@ a { text-decoration: none; color: inherit; }
 
 .legal-section p {
     font-size: 15px;
-    color: #4b5563;
+    color: var(--ap-text-secondary);
     line-height: 1.75;
     margin-bottom: 16px;
 }
@@ -221,12 +221,12 @@ a { text-decoration: none; color: inherit; }
 .legal-section p:last-child { margin-bottom: 0; }
 
 .legal-section p strong {
-    color: #111827;
+    color: var(--ap-text-primary);
     font-weight: 600;
 }
 
 .legal-section p em {
-    color: #374151;
+    color: var(--ap-text-secondary);
 }
 
 .legal-list {
@@ -239,7 +239,7 @@ a { text-decoration: none; color: inherit; }
 
 .legal-list li {
     font-size: 15px;
-    color: #4b5563;
+    color: var(--ap-text-secondary);
     line-height: 1.6;
     padding-left: 20px;
     position: relative;
@@ -253,7 +253,7 @@ a { text-decoration: none; color: inherit; }
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #d1d5db;
+    background: var(--ap-border-hover);
 }
 
 .legal-contact-link {
@@ -263,17 +263,17 @@ a { text-decoration: none; color: inherit; }
     margin-top: 12px;
     font-size: 14.5px;
     font-weight: 600;
-    color: #2563eb;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    color: var(--ap-accent);
+    background: var(--ap-accent-light);
+    border: 1px solid var(--ap-accent-muted);
     border-radius: 9px;
     padding: 10px 18px;
     transition: all 0.15s;
 }
 
 .legal-contact-link:hover {
-    background: #dbeafe;
-    border-color: #93c5fd;
+    background: var(--ap-accent-muted);
+    border-color: var(--ap-accent);
     transform: translateY(-1px);
     box-shadow: 0 3px 12px rgba(37, 99, 235, 0.15);
 }

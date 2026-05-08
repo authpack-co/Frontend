@@ -1,28 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
 
-:root {
-    --color-bg: #0f1114;
-    --color-bg-frame: #141619;
-    --color-bg-card: #181d23;
-    --color-bg-input: #111316;
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-border-hover: rgba(255, 255, 255, 0.14);
-    --color-border-focus: #4184e4;
-    --color-text-primary: #e8e6e3;
-    --color-text-secondary: #b0ada8;
-    --color-text-muted: #6d7a85;
-    --color-accent: #4184e4;
-    --color-accent-hover: #3572cc;
-    --color-green: #34d399;
-    --color-yellow: #fbbf24;
-    --color-red: #f87171;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-data: 'Fira Code', monospace;
-    --radius-sm: 8px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 16px;
-}
+/* Design tokens: /assets/styles/theme-tokens.css */
 
 * {
     padding: 0;
@@ -32,9 +10,9 @@
 
 body {
     min-height: 100vh;
-    font-family: var(--font-body);
-    color: var(--color-text-secondary);
-    background: var(--color-bg);
+    font-family: var(--ap-font-body);
+    color: var(--ap-text-secondary);
+    background: var(--ap-bg-page);
     -webkit-font-smoothing: antialiased;
     display: flex;
     flex-direction: column;
@@ -49,10 +27,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(20, 22, 25, 0.85);
+    background: var(--ap-bg-header);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--ap-border);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -64,7 +42,7 @@ body {
     gap: 10px;
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     text-decoration: none;
     transition: opacity 0.2s;
 }
@@ -84,7 +62,7 @@ body {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .ck-secure-badge svg {
@@ -116,14 +94,14 @@ body {
 
 .ck-loading-wrap p {
     font-size: 14px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .ck-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.08);
-    border-top-color: var(--color-accent);
+    border: 3px solid var(--ap-border);
+    border-top-color: var(--ap-accent);
     border-radius: 50%;
     animation: ckSpin 0.7s linear infinite;
 }
@@ -140,9 +118,9 @@ body {
     margin: 80px auto;
     text-align: center;
     padding: 48px 32px;
-    background: var(--color-bg-frame);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
 }
 
 .ck-status-icon {
@@ -157,29 +135,29 @@ body {
 
 .ck-status-error {
     background: rgba(248, 113, 113, 0.1);
-    color: var(--color-red);
+    color: var(--ap-danger);
 }
 
 .ck-status-warning {
     background: rgba(251, 191, 36, 0.1);
-    color: var(--color-yellow);
+    color: var(--ap-warning);
 }
 
 .ck-status-success {
     background: rgba(52, 211, 153, 0.1);
-    color: var(--color-green);
+    color: var(--ap-success);
 }
 
 .ck-status-processing {
     background: rgba(65, 132, 228, 0.1);
-    color: var(--color-accent);
+    color: var(--ap-accent);
 }
 
 .ck-spinner-large {
     width: 48px;
     height: 48px;
-    border: 4px solid rgba(255, 255, 255, 0.08);
-    border-top-color: var(--color-accent);
+    border: 4px solid var(--ap-border);
+    border-top-color: var(--ap-accent);
     border-radius: 50%;
     animation: ckSpin 0.7s linear infinite;
 }
@@ -187,13 +165,13 @@ body {
 .ck-status-card h2 {
     font-size: 20px;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     margin-bottom: 10px;
 }
 
 .ck-status-card p {
     font-size: 14px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     line-height: 1.6;
     margin-bottom: 24px;
 }
@@ -201,10 +179,10 @@ body {
 .ck-status-btn {
     display: inline-block;
     padding: 12px 28px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-primary);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    color: var(--ap-text-primary);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -212,19 +190,19 @@ body {
 }
 
 .ck-status-btn:hover {
-    border-color: var(--color-border-hover);
-    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--ap-border-hover);
+    background: var(--ap-bg-hover);
 }
 
 .ck-status-btn-success {
-    background: linear-gradient(135deg, #4184e4, #3b6fd4);
+    background: linear-gradient(135deg, var(--ap-accent), var(--ap-accent-hover));
     border: none;
-    color: #fff;
+    color: #ffffff;
 }
 
 .ck-status-btn-success:hover {
     opacity: 0.9;
-    background: linear-gradient(135deg, #4184e4, #3b6fd4);
+    background: linear-gradient(135deg, var(--ap-accent), var(--ap-accent-hover));
 }
 
 /* ============================
@@ -249,7 +227,7 @@ body {
 .ck-section-title {
     font-size: 22px;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     letter-spacing: -0.02em;
 }
 
@@ -266,26 +244,26 @@ body {
     justify-content: center;
     gap: 8px;
     padding: 14px 16px;
-    background: var(--color-bg-frame);
-    border: 1.5px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    color: var(--color-text-muted);
+    background: var(--ap-bg-card);
+    border: 1.5px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    color: var(--ap-text-muted);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
 }
 
 .ck-method:hover {
-    border-color: var(--color-border-hover);
-    color: var(--color-text-secondary);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-secondary);
 }
 
 .ck-method.active {
-    border-color: var(--color-accent);
+    border-color: var(--ap-accent);
     background: rgba(65, 132, 228, 0.06);
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
 }
 
 .ck-method svg {
@@ -312,31 +290,31 @@ body {
 .ck-label {
     font-size: 12px;
     font-weight: 500;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .ck-input {
     width: 100%;
-    background: var(--color-bg-input);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-md);
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
     padding: 13px 14px;
     font-size: 15px;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     outline: none;
     transition: border-color 0.2s;
     box-sizing: border-box;
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
 }
 
 .ck-input::placeholder {
-    color: #444;
+    color: var(--ap-text-placeholder);
 }
 
 .ck-input:focus {
-    border-color: var(--color-border-focus);
+    border-color: var(--ap-border-focus);
 }
 
 /* Error */
@@ -344,8 +322,8 @@ body {
     padding: 10px 14px;
     background: rgba(229, 65, 65, 0.08);
     border: 1px solid rgba(229, 65, 65, 0.2);
-    border-radius: var(--radius-md);
-    color: #f87171;
+    border-radius: var(--ap-radius-md);
+    color: var(--ap-danger-text);
     font-size: 13px;
     display: none;
 }
@@ -360,13 +338,13 @@ body {
     padding: 15px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #5a6bff, var(--color-accent));
-    color: #fff;
+    background: linear-gradient(135deg, #5a6bff, var(--ap-accent));
+    color: var(--ap-text-inverse);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -375,7 +353,7 @@ body {
 }
 
 .ck-submit:hover:not(:disabled) {
-    background: linear-gradient(135deg, #4f5fee, var(--color-accent-hover));
+    background: linear-gradient(135deg, #4f5fee, var(--ap-accent-hover));
     transform: translateY(-1px);
     box-shadow: 0 6px 24px rgba(65, 132, 228, 0.3);
 }
@@ -396,7 +374,7 @@ body {
     width: 18px;
     height: 18px;
     border: 2px solid rgba(255, 255, 255, 0.25);
-    border-top-color: #fff;
+    border-top-color: var(--ap-text-primary);
     border-radius: 50%;
     animation: ckSpin 0.6s linear infinite;
 }
@@ -417,7 +395,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    color: #444;
+    color: var(--ap-text-muted);
     font-size: 12px;
 }
 
@@ -440,7 +418,7 @@ body {
 }
 
 .ck-pix-info p {
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     font-size: 14px;
     line-height: 1.6;
 }
@@ -455,9 +433,9 @@ body {
 
 /* Pix payment card */
 .ck-pix-card {
-    background: var(--color-bg-frame);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
     padding: 32px 24px;
     display: flex;
     flex-direction: column;
@@ -466,9 +444,9 @@ body {
 }
 
 .ck-pix-qr-wrap {
-    background: #fff;
+    background: var(--ap-bg-card);
     padding: 16px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--ap-radius-lg);
     line-height: 0;
 }
 
@@ -488,7 +466,7 @@ body {
     display: block;
     font-size: 11px;
     font-weight: 600;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -498,17 +476,17 @@ body {
     display: flex;
     gap: 8px;
     align-items: stretch;
-    background: var(--color-bg-input);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-md);
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
     padding: 4px;
 }
 
 .ck-pix-code-box code {
     flex: 1;
-    font-family: var(--font-data);
+    font-family: var(--ap-font-data);
     font-size: 12px;
-    color: var(--color-text-secondary);
+    color: var(--ap-text-secondary);
     word-break: break-all;
     padding: 8px 10px;
     line-height: 1.5;
@@ -521,28 +499,28 @@ body {
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-primary);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-sm);
+    color: var(--ap-text-primary);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    font-family: var(--font-body);
+    font-family: var(--ap-font-body);
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .ck-pix-copy-btn:hover {
-    border-color: var(--color-accent);
+    border-color: var(--ap-accent);
     background: rgba(65, 132, 228, 0.08);
 }
 
 .ck-pix-copy-btn.copied {
     background: rgba(52, 211, 153, 0.1);
-    border-color: var(--color-green);
-    color: var(--color-green);
+    border-color: var(--ap-success);
+    color: var(--ap-success);
 }
 
 .ck-pix-waiting {
@@ -551,13 +529,13 @@ body {
     gap: 10px;
     font-size: 14px;
     font-weight: 500;
-    color: #00bf8f;
+    color: var(--ap-success);
 }
 
 .ck-pix-dot {
     width: 8px;
     height: 8px;
-    background: #00bf8f;
+    background: var(--ap-success);
     border-radius: 50%;
     animation: ckPixPulse 1.5s ease-in-out infinite;
 }
@@ -573,7 +551,7 @@ body {
     gap: 8px;
     font-size: 15px;
     font-weight: 600;
-    color: var(--color-green);
+    color: var(--ap-success);
 }
 
 /* ============================
@@ -585,9 +563,9 @@ body {
 }
 
 .ck-summary-card {
-    background: var(--color-bg-frame);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
     padding: 28px 24px;
     display: flex;
     flex-direction: column;
@@ -597,7 +575,7 @@ body {
 .ck-summary-title {
     font-size: 14px;
     font-weight: 600;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -612,13 +590,13 @@ body {
 .ck-product-name {
     font-size: 18px;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     line-height: 1.3;
 }
 
 .ck-product-desc {
     font-size: 13px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     line-height: 1.5;
     display: none;
 }
@@ -634,13 +612,13 @@ body {
 }
 
 .ck-billing-badge.one_time {
-    color: #60a5fa;
-    background: rgba(96, 165, 250, 0.1);
-    border: 1px solid rgba(96, 165, 250, 0.2);
+    color: var(--ap-accent);
+    background: var(--ap-accent-light);
+    border: 1px solid var(--ap-accent-muted);
 }
 
 .ck-billing-badge.subscription {
-    color: var(--color-green);
+    color: var(--ap-success);
     background: rgba(52, 211, 153, 0.1);
     border: 1px solid rgba(52, 211, 153, 0.2);
 }
@@ -648,7 +626,7 @@ body {
 /* Divider */
 .ck-summary-divider {
     height: 1px;
-    background: var(--color-border);
+    background: var(--ap-border);
 }
 
 /* Price breakdown */
@@ -666,35 +644,35 @@ body {
 
 .ck-breakdown-label {
     font-size: 13px;
-    color: var(--color-text-secondary);
+    color: var(--ap-text-secondary);
 }
 
 .ck-breakdown-value {
     font-size: 13px;
-    font-family: var(--font-data);
-    color: var(--color-text-secondary);
+    font-family: var(--ap-font-data);
+    color: var(--ap-text-secondary);
 }
 
 .ck-breakdown-fee .ck-breakdown-label,
 .ck-breakdown-fee .ck-breakdown-value {
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
     font-size: 12px;
 }
 
 .ck-breakdown-divider {
     height: 1px;
-    background: var(--color-border);
+    background: var(--ap-border);
 }
 
 .ck-breakdown-total .ck-breakdown-label {
     font-weight: 600;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     font-size: 15px;
 }
 
 .ck-breakdown-total .ck-breakdown-value {
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: var(--ap-text-primary);
     font-size: 15px;
 }
 
@@ -704,7 +682,7 @@ body {
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--ap-text-muted);
 }
 
 .ck-expiry svg {
@@ -713,12 +691,12 @@ body {
 }
 
 .ck-expiry.ck-expiry-urgent {
-    color: var(--color-yellow);
+    color: var(--ap-warning);
 }
 
 .ck-expiry.ck-expiry-urgent svg {
     opacity: 1;
-    color: var(--color-yellow);
+    color: var(--ap-warning);
 }
 
 /* ============================

@@ -155,12 +155,6 @@ function createCollectionSessionCardElement(session) {
     const card = createElement('div', 'session-card');
     card.dataset.sessionId = session.id;
 
-    // Aplica glow se tiver darkPalette
-    if (session.darkPalette) {
-        const [r, g, b] = JSON.parse(session.darkPalette);
-        card.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
-    }
-
     // Actions no canto superior direito: relógio + 3 pontinhos
     const actions = createElement('div', 'session-card-actions');
 
@@ -279,13 +273,8 @@ function createSessionCardElement(session) {
     const card = createElement('div', 'session-card');
     card.dataset.sessionId = session.id;
 
-    // Aplica glow se tiver darkPalette
-    if (session.darkPalette) {
-        const [r, g, b] = JSON.parse(session.darkPalette);
-        card.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
-    }
+    // Content wrapper
 
-    // Content wrapper (z-index acima do ::before glow)
     const content = createElement('div', 'session-card-content');
 
     // Header: ícone + nome + domínio
@@ -717,16 +706,6 @@ async function renderPackageDetails(pkg, isCollection = true) {
         loadPackageStats(pkg, period);
     }
 
-    // Aplica glow nos session-cards usando darkPalette
-    for (const session of pkg.sessions) {
-        if (session.darkPalette) {
-            const sessionCard = activePreset.querySelector(`.session-card[data-session-id="${session.id}"]`);
-            if (sessionCard) {
-                const [r, g, b] = JSON.parse(session.darkPalette);
-                sessionCard.style.setProperty('--glow-color', `${r}, ${g}, ${b}`);
-            }
-        }
-    }
 }
 
 // Seleciona um pacote
@@ -1182,13 +1161,6 @@ function renderSessionDetails(session, pkg, period) {
     const sessionLogo = serviceCard.querySelector(".service-card-icon");
     const sessionName = serviceCard.querySelector(".service-name");
     const sessionDomain = serviceCard.querySelector(".service-domain");
-
-    if (session.darkPalette) {
-        const [r, g, b] = JSON.parse(session.darkPalette);
-        serviceCard.style.setProperty("--glow-color", `${r}, ${g}, ${b}`);
-    } else {
-        serviceCard.style.removeProperty("--glow-color");
-    }
 
     headerTitle.textContent = pkg.name;
 

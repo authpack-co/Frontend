@@ -107,16 +107,19 @@
 
 .skeleton {
     background-image: linear-gradient(90deg,
-            rgba(40, 44, 48, 0.7) 25%,
-            rgba(50, 55, 60, 0.9) 50%,
-            rgba(40, 44, 48, 0.7) 75%);
+            var(--ap-bg-skeleton-from) 25%,
+            var(--ap-bg-skeleton-via) 50%,
+            var(--ap-bg-skeleton-from) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 8px;
 }
 
 .dark-skeleton {
-    background-image: linear-gradient(90deg, rgba(50, 54, 58, 0.7) 25%, rgba(40, 44, 48, 0.95) 50%, rgba(50, 54, 58, 0.7) 75%);
+    background-image: linear-gradient(90deg,
+            var(--ap-bg-skeleton-from) 25%,
+            var(--ap-bg-skeleton-via) 50%,
+            var(--ap-bg-skeleton-from) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 8px;
