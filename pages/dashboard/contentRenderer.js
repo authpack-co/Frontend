@@ -919,9 +919,11 @@ async function loadPackageStats(pkg, period) {
     }
 
     // Stats container
+    const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
 
     // New users stats
-    const newUsersTitle = newUsersStat.querySelector(".access-title");
+    const newUsersValue = newUsersStat.querySelector(".stat-metric-value");
+    const newUsersSub = newUsersStat.querySelector(".stat-metric-sublabel");
     const newUsersFiltered = filterByLastDays(pkg.stats.newUsersByDate, period);
     const newUsersCount = Object.values(newUsersFiltered).reduce((acc, curr) => acc + curr, 0);
 
@@ -935,27 +937,33 @@ async function loadPackageStats(pkg, period) {
         percentageIncrease = "0";
     }
 
-    newUsersTitle.textContent = `${newUsersCount} (+${percentageIncrease}%)`;
+    newUsersValue.textContent = String(newUsersCount);
+    newUsersSub.textContent = `(+${percentageIncrease}%)`;
 
     // Sessions stats
-    const sessionsTitle = sessionsStat.querySelector(".access-title");
+    const sessionsValue = sessionsStat.querySelector(".stat-metric-value");
+    const sessionsSub = sessionsStat.querySelector(".stat-metric-sublabel");
     const totalSessions = pkg.stats ? pkg.stats.totalSessions : 0;
-    const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
-    sessionsTitle.textContent = isFreePlanBasicPkg
-        ? `${totalSessions}/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
-        : String(totalSessions);
+    sessionsValue.textContent = String(totalSessions);
+    sessionsSub.textContent = isFreePlanBasicPkg
+        ? `/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
+        : "";
 
     // Users stats
-    const usersTitle = usersStat.querySelector(".access-title");
-    usersTitle.textContent = isFreePlanBasicPkg
-        ? `${totalUsers}/${FREE_PLAN_LIMITS.usersPerBasicPackage}`
-        : String(totalUsers);
+    const usersValue = usersStat.querySelector(".stat-metric-value");
+    const usersSub = usersStat.querySelector(".stat-metric-sublabel");
+    usersValue.textContent = String(totalUsers);
+    usersSub.textContent = isFreePlanBasicPkg
+        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage}`
+        : "";
 
     // Online users stat
     const onlineStat = contentPreset.querySelector(".online-users-stat");
     if (onlineStat) {
-        const onlineTitle = onlineStat.querySelector(".access-title");
-        onlineTitle.textContent = pkg.stats ? String(pkg.stats.totalUsersOnline) : "0";
+        const onlineValue = onlineStat.querySelector(".stat-metric-value");
+        const onlineSub = onlineStat.querySelector(".stat-metric-sublabel");
+        onlineValue.textContent = pkg.stats ? String(pkg.stats.totalUsersOnline) : "0";
+        onlineSub.textContent = "";
     }
 
     // Atualiza contagem online no header
