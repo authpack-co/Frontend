@@ -961,59 +961,74 @@ span.coming-soon {
 .package-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--ap-border);
+    gap: var(--ap-space-md);
+    padding: 0 0 var(--ap-space-lg) 0;
 }
 
 .stat-metric {
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    padding: var(--ap-space-lg);
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 0 16px;
-    position: relative;
-    text-align: center;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    position: static;
+    text-align: left;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.stat-metric:hover {
+    border-color: var(--ap-border-hover);
+    transform: translateY(-1px);
 }
 
 .stat-metric:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 20%;
-    bottom: 20%;
-    width: 1px;
-    background: var(--ap-border);
+    display: none;
 }
 
-.stat-metric-header {
-    display: inline-flex;
+.stat-metric-icon {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 600;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ap-radius-md);
+    flex-shrink: 0;
+}
+
+.stat-metric-icon.green {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.stat-metric-icon.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-metric-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.stat-metric-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.stat-metric-label {
+    font-size: 12px;
+    font-weight: 500;
     color: var(--ap-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 4px;
-}
-
-.stat-metric-header svg {
-    width: 14px;
-    height: 14px;
-}
-
-.stat-metric-header.green {
-    color: var(--ap-success);
-}
-
-.stat-metric-header.blue {
-    color: var(--ap-accent);
 }
 
 .stat-metric-value {
     font-family: var(--ap-font-data);
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--ap-text-primary);
     line-height: 1.2;
@@ -1021,10 +1036,10 @@ span.coming-soon {
 }
 
 .stat-metric-sublabel {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--ap-text-muted);
-    min-height: 18px;
+    min-height: 16px;
 }
 
 .online-pulse-dot {
@@ -1046,31 +1061,22 @@ span.coming-soon {
 }
 
 @keyframes online-pulse {
-    0% { transform: scale(1); opacity: 0.35; }
-    100% { transform: scale(2.2); opacity: 0; }
+    0% {
+        transform: scale(1);
+        opacity: 0.35;
+    }
+
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
 }
 
 @media (max-width: 640px) {
     .package-stats {
         grid-template-columns: repeat(2, 1fr);
-        gap: 16px 0;
-        padding: 16px 0;
-    }
-    .stat-metric:nth-child(2)::after {
-        display: none;
-    }
-    .stat-metric:nth-child(1)::after,
-    .stat-metric:nth-child(3)::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 20%;
-        bottom: 20%;
-        width: 1px;
-        background: var(--ap-border);
-    }
-    .stat-metric-value {
-        font-size: 22px;
+        gap: var(--ap-space-sm);
+        padding: 0 0 var(--ap-space-md) 0;
     }
 }
 
@@ -1645,71 +1651,343 @@ span.coming-soon {
 }
 
 /* ============================================
-   Collection Content Layout (2-column)
+   Collection Content Layout
    ============================================ */
 .collection-content-layout {
     display: flex;
+    flex-direction: column;
     gap: 1.5rem;
 }
 
-.collection-left-column {
-    flex: 1;
+/* Chart + Users row — altura fixa de 260px em ambas as colunas */
+.collection-chart-users-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr;
+    grid-template-rows: 260px;
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+/* ── Chart column ── */
+.collection-chart-col {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    height: 260px;
+    overflow: hidden;
 }
 
-.collection-right-column {
-    width: 280px;
-    flex-shrink: 0;
-    position: relative;
-}
-
-.collection-right-column .users-panel-container {
-    position: absolute;
-    inset: 0;
+/* usage-chart-container cresce para preencher chart-col */
+.collection-chart-col .usage-chart-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    gap: var(--ap-space-sm);
     min-height: 0;
 }
 
-.collection-right-column .users-panel-container.content-state .preset-content,
-.collection-right-column .users-panel-container.empty-state .preset-empty {
+.collection-chart-col .chart-header {
+    margin-bottom: 0;
+    flex-shrink: 0;
+}
+
+.collection-chart-col .chart-wrapper {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-chart-col .chart-wrapper.content-state>.preset-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-chart-col .chart-wrapper canvas {
+    flex: 1;
+    height: auto !important;
+    max-height: none;
+}
+
+/* ── Users column ── */
+.collection-users-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 260px;
+    /* sem overflow:hidden → permite que itens expandidos empurrem a scrollable-list */
+}
+
+.collection-users-col .users-panel-container {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-.collection-right-column .users-panel {
+.collection-users-col .users-panel-container.content-state .preset-content,
+.collection-users-col .users-panel-container.empty-state .preset-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.collection-users-col .users-panel {
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 0;
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
-    padding: 16px;
+    padding: 12px;
+    /* sem overflow:hidden → a scrollable-list interna faz o scroll */
 }
 
-.collection-right-column .scrollable-list {
+.collection-users-col .panel-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ap-border);
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+
+.collection-users-col .scrollable-list {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+    background: transparent;
+    gap: 1px;
+    padding: 2px 0;
+    border-radius: 0;
+}
+
+/* ── Compact user list items (within collection-users-col) ── */
+.collection-users-col .list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    height: auto;
+    min-height: 0;
+    border-bottom: none;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.collection-users-col .list-item:hover {
+    background: var(--ap-bg-hover);
+}
+
+.collection-users-col .item-info {
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.collection-users-col .item-icon img,
+.collection-users-col .item-icon svg {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.collection-users-col .item-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ap-border);
+    flex-shrink: 0;
+    overflow: hidden;
+    background: var(--ap-bg-page);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ap-text-muted);
+}
+
+.collection-users-col .item-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.collection-users-col .user-id {
+    font-size: 11px;
+    color: var(--ap-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collection-users-col .item-actions {
+    /*  Flex container apenas para segurar espaço do details-btn no estado normal.
+        SEM position:relative — positioning absoluto dos filhos é relativo ao .user */
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ── Status label em repouso (visto por último / Nunca usou) ──
+   .item-details é filho direto de .user e fica no lado direito via absolute.
+   O .user já tem position:relative (definido em .list-item). */
+.collection-users-col .user .item-details {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ap-text-muted);
+    background: none;
+    padding: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    z-index: 1;
+}
+
+/* Some no hover e quando expandido */
+.collection-users-col .user:hover .item-details,
+.collection-users-col .user.expanded .item-details {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* ── "Ver detalhes" — invisível por padrão, surge no hover ── */
+.collection-users-col .user .details-btn {
+    /* normal flow no item-actions */
+    position: static;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(4px);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--ap-bg-page);
+    color: var(--ap-text-secondary);
+    border: 1px solid var(--ap-border);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease,
+        background 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+}
+
+.collection-users-col .user:hover .details-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.collection-users-col .user .details-btn:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+
+/* ── Indicador online no avatar ── */
+.collection-users-col .user.online .item-info::after {
+    left: 20px;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--ap-bg-card);
+}
+
+/* ══════════════════════════════════════════
+   EXPAND — estado expandido do usuário
+   ══════════════════════════════════════════
+   O .user tem position:relative (herdado de .list-item).
+   Ambos os botões ficam absolute em relação a ele:
+     • management-actions → canto SUPERIOR DIREITO
+     • details-btn        → canto INFERIOR DIREITO              */
+
+.collection-users-col .user {
+    transition: background 0.2s ease, padding-bottom 0.25s ease;
+}
+
+.collection-users-col .user.expanded {
+    padding-bottom: 42px;
+    background: var(--ap-bg-hover);
+}
+
+/* Esconde o botão inline de detalhes quando expandido
+   (ele reaparece posicionado no canto inferior direito) */
+.collection-users-col .user.expanded .item-actions .details-btn {
+    position: absolute;
+    /* canto INFERIOR DIREITO do .user */
+    bottom: 8px;
+    right: 8px;
+    top: auto;
+    left: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    animation: compactDetailsBtnIn 0.22s ease 0.08s forwards;
+}
+
+@keyframes compactDetailsBtnIn {
+    to {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* Remover usuário — canto SUPERIOR DIREITO do .user */
+.collection-users-col .user .management-actions {
+    display: flex;
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.22s ease 0.06s, visibility 0.22s ease 0.06s, transform 0.22s ease 0.06s;
+    z-index: 2;
+}
+
+.collection-users-col .user.expanded .management-actions {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 @media (max-width: 900px) {
-    .collection-content-layout {
-        flex-direction: column;
+    .collection-chart-users-row {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
     }
 
-    .collection-right-column {
-        width: 100%;
-        position: static;
+    .collection-chart-col,
+    .collection-users-col {
+        height: auto;
     }
 
-    .collection-right-column .users-panel-container {
-        position: static;
+    .collection-users-col .users-panel {
+        min-height: 220px;
     }
 }
 
@@ -5181,7 +5459,7 @@ textarea:focus-visible {
     gap: 12px;
 }
 
-.fin-chart-header > div:first-child {
+.fin-chart-header>div:first-child {
     display: flex;
     align-items: center;
     gap: 8px;

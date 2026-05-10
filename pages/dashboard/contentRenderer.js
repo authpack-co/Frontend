@@ -353,8 +353,10 @@ function createUserElement(user) {
     info.appendChild(pictureWrapper);
     info.appendChild(nameEl);
 
-    // REMOVE BUTTON
+    // ACTIONS wrapper (remove btn + details btn)
     const actions = createElement('div', 'item-actions');
+
+    // REMOVE BUTTON (inside management-actions)
     const managementActions = createElement('div', 'management-actions');
     const removeBtn = createElement('div', 'remove-user-access-btn actionBtn');
     removeBtn.title = 'Remover';
@@ -377,9 +379,15 @@ function createUserElement(user) {
     const seeDetailsBtn = createElement('button', 'btn btn-small details-btn', 'Ver detalhes');
     actions.appendChild(seeDetailsBtn);
 
+    // STATUS LABEL (.item-details) — always present, updated by loadPackageStats
+    const itemDetails = createElement('div', 'item-details');
+    const lastSeenAt = createElement('span', 'last-seen-at', '');
+    itemDetails.appendChild(lastSeenAt);
+
     // APPEND EVERYTHING
     container.appendChild(info);
     container.appendChild(actions);
+    container.appendChild(itemDetails);
 
     return container;
 }
@@ -1040,29 +1048,23 @@ async function loadPackageStats(pkg, period) {
         }
     });
 
-    // Users panel
+    // Users panel — atualiza label de status (.item-details) para todos os usuários
     const usersEl = document.querySelectorAll("#package-details .preset-collection .users-panel .user");
     usersEl.forEach(user => {
         const userId = user.getAttribute("data-user-id");
-        const userLastUsage = pkg.users.find(u => u.id === userId).lastUsage;
+        const pkgUser = pkg.users.find(u => u.id === userId);
+        const userLastUsage = pkgUser?.lastUsage;
 
-        if (!userLastUsage) return;
+        const lastSeenEl = user.querySelector(".item-details .last-seen-at");
+        if (!lastSeenEl) return;
 
-        const userLastUsageFormatted = timeAgo(userLastUsage);
-
-        // Se já existe itemDetails, atualiza
-        if (user.querySelector(".item-details")) {
-            user.querySelector(".item-details").querySelector(".last-seen-at").textContent = userLastUsageFormatted;
+        if (!userLastUsage) {
+            lastSeenEl.textContent = "Nunca usou";
             return;
         }
 
-        const itemDetails = createElement('div', 'item-details');
-        const lastSeenAt = createElement('div', 'last-seen-at');
-
-        lastSeenAt.textContent = userLastUsageFormatted;
-        itemDetails.appendChild(lastSeenAt);
-
-        user.appendChild(itemDetails);
+        const userLastUsageFormatted = timeAgo(userLastUsage);
+        lastSeenEl.textContent = userLastUsageFormatted;
 
         if (userLastUsageFormatted === "agora mesmo") {
             user.classList.add("online");
