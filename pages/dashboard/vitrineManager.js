@@ -574,9 +574,18 @@ function updateVitrinePeriod(days) {
     const kpiSales = document.getElementById('kpi-sales');
     if (kpiSales) kpiSales.textContent = kpis.totalSales;
 
-    // ── Fees in quick summary ──
-    const finFees = document.getElementById('fin-total-fees');
-    if (finFees) finFees.textContent = formatCentsToBRL(kpis.totalFees || 0);
+    // ── Quick summary panel ──
+    const finGross = document.getElementById('fin-gross-revenue');
+    if (finGross) {
+        const grossFromHistory = computeGrossFromHistory(days);
+        finGross.textContent = formatCentsToBRL(
+            grossFromHistory !== null ? grossFromHistory : (kpis.totalGross || kpis.totalRevenue)
+        );
+    }
+    const finNet = document.getElementById('fin-net-revenue');
+    if (finNet) finNet.textContent = formatCentsToBRL(kpis.totalRevenue);
+    const finSalesCount = document.getElementById('fin-sales-count');
+    if (finSalesCount) finSalesCount.textContent = kpis.totalSales;
 
 
 }
@@ -681,23 +690,22 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
     const ctx = canvas.getContext('2d');
 
     const labels = Object.keys(dataObject);
+    const salesCountData = labels.map(key => dataObject[key].count || 0);
     const grossData = labels.map(key => (dataObject[key].gross_cents || 0) / 100);
-    const netData = labels.map(key => (dataObject[key].net_cents || 0) / 100);
-    const transferData = transfersData ? labels.map(key => (transfersData[key] || 0) / 100) : labels.map(() => 0);
 
     // If no data, show empty state
     if (labels.length === 0) {
         const now = new Date();
         const emptyLabel = isHourly ? '00:00' : `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
         labels.push(emptyLabel);
+        salesCountData.push(0);
         grossData.push(0);
-        netData.push(0);
-        transferData.push(0);
     }
 
-    const allValues = [...grossData, ...netData, ...transferData];
-    const maxValue = allValues.length > 0 ? Math.max(...allValues) : 0;
-    const yAxisMax = maxValue === 0 ? 10 : maxValue * 1.2;
+    const maxCount = salesCountData.length > 0 ? Math.max(...salesCountData) : 0;
+    const maxGross = grossData.length > 0 ? Math.max(...grossData) : 0;
+    const yCountMax = maxCount === 0 ? 5 : Math.ceil(maxCount * 1.3);
+    const yGrossMax = maxGross === 0 ? 10 : maxGross * 1.2;
 
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
     const chartPointBorder = isDarkTheme ? '#141619' : '#ffffff';
@@ -716,34 +724,12 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
                 {
                     label: 'Receita bruta',
                     data: grossData,
-                    borderColor: '#4184e4',
-                    backgroundColor: function (context) {
-                        const chartCtx = context.chart.ctx;
-                        const gradient = chartCtx.createLinearGradient(0, 0, 0, 200);
-                        gradient.addColorStop(0, 'rgba(65, 132, 228, 0.15)');
-                        gradient.addColorStop(1, 'rgba(65, 132, 228, 0)');
-                        return gradient;
-                    },
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#4184e4',
-                    pointBorderColor: chartPointBorder,
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: '#58a6ff',
-                    pointHoverBorderWidth: 2,
-                    order: 1
-                },
-                {
-                    label: 'Receita líquida',
-                    data: netData,
+                    yAxisID: 'y',
                     borderColor: '#22c55e',
                     backgroundColor: function (context) {
                         const chartCtx = context.chart.ctx;
                         const gradient = chartCtx.createLinearGradient(0, 0, 0, 200);
-                        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.15)');
+                        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.18)');
                         gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
                         return gradient;
                     },
@@ -757,25 +743,26 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
                     pointHoverRadius: 5,
                     pointHoverBackgroundColor: '#4ade80',
                     pointHoverBorderWidth: 2,
-                    order: 2
+                    order: 1
                 },
                 {
-                    label: 'Saques realizados',
-                    data: transferData,
-                    borderColor: '#a855f7',
+                    label: 'Nº de vendas',
+                    data: salesCountData,
+                    yAxisID: 'y1',
+                    borderColor: '#4184e4',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
-                    borderDash: [5, 5],
+                    borderDash: [5, 4],
                     fill: false,
                     tension: 0.4,
                     pointRadius: 3,
-                    pointBackgroundColor: '#a855f7',
+                    pointBackgroundColor: '#4184e4',
                     pointBorderColor: chartPointBorder,
                     pointBorderWidth: 2,
                     pointHoverRadius: 5,
-                    pointHoverBackgroundColor: '#c084fc',
+                    pointHoverBackgroundColor: '#58a6ff',
                     pointHoverBorderWidth: 2,
-                    order: 3
+                    order: 2
                 }
             ]
         },
@@ -802,16 +789,10 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
                             return isHourly ? `🕐 ${key}` : `📅 ${key}`;
                         },
                         label: (item) => {
-                            const value = formatCentsToBRL(item.raw * 100);
-                            return `${item.dataset.label}: ${value}`;
-                        },
-                        afterBody: (items) => {
-                            const key = labels[items[0].dataIndex];
-                            const d = dataObject[key];
-                            if (d && d.count > 0) {
-                                return `Vendas: ${d.count}`;
+                            if (item.dataset.label === 'Receita bruta') {
+                                return `Receita bruta: ${formatCentsToBRL(item.raw * 100)}`;
                             }
-                            return '';
+                            return `Vendas: ${item.raw}`;
                         }
                     }
                 }
@@ -829,11 +810,23 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
                 },
                 y: {
                     beginAtZero: true,
-                    max: yAxisMax,
+                    max: yGrossMax,
+                    position: 'left',
                     grid: { color: gridColor },
                     ticks: {
                         color: tickColor,
                         callback: v => `R$ ${v.toFixed(0)}`
+                    }
+                },
+                y1: {
+                    beginAtZero: true,
+                    max: yCountMax,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        color: tickColor,
+                        stepSize: 1,
+                        callback: v => Number.isInteger(v) ? v : ''
                     }
                 }
             },
@@ -898,18 +891,9 @@ function updateQuickSummary(data) {
         });
     }
 
-    // Painel lateral (sumário rápido)
+    // Painel lateral (sumário rápido) — usa mesma lógica do KPI: apenas saques confirmados
     const finTotalWithdrawn = document.getElementById('fin-total-withdrawn');
-    if (finTotalWithdrawn) finTotalWithdrawn.textContent = formatCentsToBRL(totalWithdrawnAll);
-
-    const finReceivedBank = document.getElementById('fin-received-bank');
-    if (finReceivedBank) {
-        const received = Math.max(0, totalWithdrawnAll + available - waiting);
-        finReceivedBank.textContent = formatCentsToBRL(received);
-    }
-
-    const finWithdrawalsCount = document.getElementById('fin-withdrawals-count');
-    if (finWithdrawalsCount) finWithdrawalsCount.textContent = withdrawalCount;
+    if (finTotalWithdrawn) finTotalWithdrawn.textContent = formatCentsToBRL(totalWithdrawnSuccess);
 
     // KPI card "Total sacado no mês" — apenas saques confirmados
     const kpiWithdrawn = document.getElementById('kpi-withdrawn');
