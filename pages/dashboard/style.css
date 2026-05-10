@@ -2250,54 +2250,95 @@ span.coming-soon {
     position: fixed;
     top: 30px;
     right: 30px;
-    width: 220px;
+    width: 280px;
+    min-height: 60px;
     gap: 14px;
     background: var(--ap-bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--ap-border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-    border-radius: 14px;
-    padding: 12px 15px;
-    font-size: 15px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--ap-text-primary);
-    z-index: 10;
+    z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(30px);
-    transition: all 0.35s cubic-bezier(.4, 1.4, .6, 1);
+    transform: translateX(40px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+}
+
+.notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    pointer-events: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .notification.show {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
 }
 
 .notification .notification-icon {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.13);
+    position: relative;
+    z-index: 1;
 }
 
 .notification.success {
-    border-color: var(--ap-accent);
-    color: var(--ap-text-primary);
+    border-left: 4px solid var(--ap-accent);
+}
+
+.notification.success .notification-icon {
+    background: color-mix(in srgb, var(--ap-accent) 20%, transparent);
+    color: var(--ap-accent);
+}
+
+.notification.success .notification-icon svg {
+    stroke: var(--ap-accent);
 }
 
 .notification.error {
-    border-color: var(--ap-danger);
-    color: var(--ap-text-primary);
+    border-left: 4px solid var(--ap-danger);
+}
+
+.notification.error .notification-icon {
+    background: color-mix(in srgb, var(--ap-danger) 20%, transparent);
+    color: var(--ap-danger);
+}
+
+.notification.error .notification-icon svg {
+    stroke: var(--ap-danger);
 }
 
 .notification.info {
-    border-color: var(--ap-accent);
-    color: var(--ap-text-primary);
+    border-left: 4px solid var(--ap-accent);
+}
+
+.notification.info .notification-icon {
+    background: color-mix(in srgb, var(--ap-accent) 20%, transparent);
+    color: var(--ap-accent);
+}
+
+.notification.info .notification-icon svg {
+    stroke: var(--ap-accent);
 }
 
 .notification .notification-message {
@@ -2305,9 +2346,48 @@ span.coming-soon {
     min-width: 0;
     word-break: break-word;
     color: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.01em;
+    line-height: 1.4;
+    z-index: 1;
+}
+
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    transform: scaleX(1);
+    opacity: 0.8;
+}
+
+.notification.success .notification-progress {
+    background: var(--ap-accent);
+}
+
+.notification.error .notification-progress {
+    background: var(--ap-danger);
+}
+
+.notification.info .notification-progress {
+    background: var(--ap-accent);
+}
+
+.notification.show .notification-progress {
+    animation: shrinkProgress 2.5s linear forwards;
+}
+
+@keyframes shrinkProgress {
+    0% {
+        transform: scaleX(1);
+    }
+
+    100% {
+        transform: scaleX(0);
+    }
 }
 
 /* Botão Hamburger (Hidden por padrão no desktop) */

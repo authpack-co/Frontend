@@ -167,9 +167,9 @@ async function notify(type, msg) {
 
     await Promise.all([...activeNotifications].map(notification => {
         return new Promise(resolve => {
-            // Garante que a animação ocorra e remova ao fim
+            // Wait for the exit transition to finish (0.4s)
             notification.classList.remove("show");
-            notification.addEventListener("animationend", resolve, { once: true });
+            setTimeout(resolve, 400);
         });
     }));
 
@@ -181,11 +181,19 @@ async function notify(type, msg) {
     // Mostra notificação
     selectedNotification.classList.add("show");
 
-    setTimeout(() => {
+    // Clear existing timeout to restart the timer
+    const existingTimer = selectedNotification.getAttribute("data-timer");
+    if (existingTimer) {
+        clearTimeout(parseInt(existingTimer));
+    }
+
+    const newTimer = setTimeout(() => {
         if (selectedNotification.classList.contains("show")) {
             selectedNotification.classList.remove("show");
         }
     }, 2500);
+
+    selectedNotification.setAttribute("data-timer", newTimer);
 };
 
 // ============================================

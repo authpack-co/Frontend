@@ -513,6 +513,7 @@
                 </svg>
             </div>
             <div class="notification-message">Pacote criado com sucesso!</div>
+            <div class="notification-progress"></div>
         </div>
 
         <div class="notification info">
@@ -526,6 +527,7 @@
                 </svg>
             </div>
             <div class="notification-message">Esta é uma mensagem de informação.</div>
+            <div class="notification-progress"></div>
         </div>
 
         <div class="notification error">
@@ -538,6 +540,7 @@
                 </svg>
             </div>
             <div class="notification-message">Ocorreu um erro ao criar o pacote.</div>
+            <div class="notification-progress"></div>
         </div>
     </div>
 
@@ -1005,7 +1008,8 @@
                                                         <div class="stat-metric-value skeleton"
                                                             style="width: 60%; height: 22px; border-radius: 4px;"></div>
                                                         <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;"></div>
+                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="stat-metric users-stat">
@@ -1025,7 +1029,8 @@
                                                         <div class="stat-metric-value skeleton"
                                                             style="width: 60%; height: 22px; border-radius: 4px;"></div>
                                                         <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;"></div>
+                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="stat-metric sessions-stat">
@@ -1044,7 +1049,8 @@
                                                         <div class="stat-metric-value skeleton"
                                                             style="width: 60%; height: 22px; border-radius: 4px;"></div>
                                                         <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;"></div>
+                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="stat-metric online-users-stat">
@@ -1056,7 +1062,8 @@
                                                         <div class="stat-metric-value skeleton"
                                                             style="width: 60%; height: 22px; border-radius: 4px;"></div>
                                                         <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;"></div>
+                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1072,14 +1079,16 @@
                                                 <div class="usage-chart-container">
                                                     <div class="chart-header">
                                                         <div>
-                                                            <h3 class="chart-title">Uso do pacote nos últimos 7 dias</h3>
+                                                            <h3 class="chart-title">Uso do pacote nos últimos 7 dias
+                                                            </h3>
                                                             <p class="chart-subtitle">Horas de uso por dia</p>
                                                         </div>
                                                         <div class="chart-period-wrapper">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                                stroke-width="2" stroke-linecap="round"
-                                                                stroke-linejoin="round" class="lucide lucide-calendar">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                                                height="16" viewBox="0 0 24 24" fill="none"
+                                                                stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round"
+                                                                class="lucide lucide-calendar">
                                                                 <path d="M8 2v4" />
                                                                 <path d="M16 2v4" />
                                                                 <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -1123,7 +1132,8 @@
                                                             <div class="nothing-here-container"
                                                                 style="height: 100%;max-height: 100%;">
                                                                 <div class="nothing-here-content">
-                                                                    <h3 class="nothing-here-title">Compartilhe seu pacote
+                                                                    <h3 class="nothing-here-title">Compartilhe seu
+                                                                        pacote
                                                                     </h3>
                                                                     <p class="nothing-here-text">
                                                                         Compartilhe seu pacote com outras pessoas
@@ -2324,8 +2334,14 @@
                                 <div class="fin-hero-value" id="fin-available-balance">R$ 0,00</div>
                                 <div class="fin-hero-sub">Receita líquida pronta para saque</div>
                                 <div class="fin-hero-pending-hint" id="fin-pending-hint" style="display:none;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <span>mais <span id="fin-pending-amount">R$ 0,00</span> aguardando compensação</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                    <span>mais <span id="fin-pending-amount">R$ 0,00</span> aguardando
+                                        compensação</span>
                                 </div>
                                 <div class="fin-next-transfer" id="fin-next-transfer" style="display:none;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
@@ -2404,7 +2420,8 @@
                                             </div>
                                             <div class="fin-seller-mini-col">
                                                 <span class="fin-seller-mini-label">ID Recebedor</span>
-                                                <span class="fin-seller-mini-value mono" id="fin-seller-recipient">—</span>
+                                                <span class="fin-seller-mini-value mono"
+                                                    id="fin-seller-recipient">—</span>
                                             </div>
                                         </div>
                                     </div>
@@ -2455,9 +2472,9 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                        <polyline points="7 10 12 15 17 10"/>
-                                        <line x1="12" x2="12" y1="15" y2="3"/>
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" x2="12" y1="15" y2="3" />
                                     </svg>
                                 </div>
                                 <div class="fin-kpi-info">
@@ -2505,8 +2522,10 @@
                                         </button>
                                     </div>
                                     <div class="fin-chart-legend">
-                                        <span class="fin-legend-dot" style="background:#22c55e;"></span><span>Receita bruta</span>
-                                        <span class="fin-legend-dot" style="background:#4184e4;"></span><span>Nº de vendas</span>
+                                        <span class="fin-legend-dot" style="background:#22c55e;"></span><span>Receita
+                                            bruta</span>
+                                        <span class="fin-legend-dot" style="background:#4184e4;"></span><span>Nº de
+                                            vendas</span>
                                         <div class="chart-period-wrapper">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
