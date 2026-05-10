@@ -25,11 +25,6 @@ let createProductState = {
 
 (function initVitrineNav() {
     const navItems = document.querySelectorAll('.nav-item[data-view]');
-    const inicioSections = [
-        document.getElementById('setup-alert'),
-        document.querySelector('#packages-list')?.closest('.content-card'),
-        document.getElementById('package-details'),
-    ].filter(Boolean);
 
     // Find parent sections more reliably
     const packagesSection = document.querySelector('.content-card:has(#packages-list)') ||
@@ -52,8 +47,6 @@ let createProductState = {
                 // Show inicio sections
                 if (packagesSection) packagesSection.style.display = '';
                 if (packageDetails) packageDetails.style.display = '';
-                const setupAlert = document.getElementById('setup-alert');
-                // Don't force-show setup alert; let its own logic manage visibility
 
                 // Hide vitrine
                 if (vitrineSection) vitrineSection.style.display = 'none';
@@ -66,6 +59,10 @@ let createProductState = {
 
                 // Show vitrine
                 if (vitrineSection) vitrineSection.style.display = '';
+                const productsSection = document.querySelector('.vt-products-section');
+                if (productsSection) productsSection.style.display = '';
+                // Show the dashboard financial widgets
+                _setVitrineDashboardVisible(true);
 
                 // Load vitrine data if not yet loaded
                 if (!vitrineLoaded) {
@@ -75,6 +72,21 @@ let createProductState = {
         });
     });
 })();
+
+// Helper: show/hide the main vitrine dashboard widgets (hero, KPIs, chart row, seller panel, info bar)
+function _setVitrineDashboardVisible(visible) {
+    const d = visible ? '' : 'none';
+    const finHero = document.getElementById('fin-hero');
+    if (finHero) finHero.style.display = d;
+    const finKpiRow = document.getElementById('fin-kpi-row');
+    if (finKpiRow) finKpiRow.style.display = d;
+    const finDashRow = document.getElementById('fin-dashboard-row');
+    if (finDashRow) finDashRow.style.display = d;
+    const infoBar = document.querySelector('.fin-info-bar');
+    if (infoBar) infoBar.style.display = d;
+    const vitrinHdr = document.querySelector('.vitrine-header');
+    if (vitrinHdr) vitrinHdr.style.display = d;
+}
 
 // ============================================================================
 // VITRINE TAB LOADING
@@ -124,10 +136,10 @@ async function loadVitrineTab() {
             // Hide "Criar produto" button
             document.getElementById('btn-create-product')?.classList.add('hidden');
             // Update seller status badge
-            const statusEl = document.querySelector('.vt-seller-status');
+            const statusEl = document.getElementById('fin-seller-status');
             if (statusEl) {
-                statusEl.className = 'vt-seller-status pending';
-                statusEl.innerHTML = '<span class="vt-status-dot"></span> Pendente';
+                statusEl.className = 'fin-seller-mini-status pending';
+                statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Pendente';
             }
             vitrineLoaded = true;
             return;
@@ -243,6 +255,9 @@ function processRawOrders(rawOrders) {
         result[key].push({
             localDateTime: d,
             seller_amount_cents: order.seller_amount_cents || 0,
+            total_amount_cents: order.total_amount_cents || order.amount || 0,
+            gateway_fee_cents: order.gateway_fee_cents || 0,
+            platform_fee_cents: order.platform_fee_cents || 0,
         });
     }
 
@@ -285,9 +300,10 @@ function getHourlyOrders(ordersByDate) {
             const hourKey = `${pad(hour)}:00`;
 
             if (!hourlyData[hourKey]) {
-                hourlyData[hourKey] = { revenue_cents: 0, count: 0 };
+                hourlyData[hourKey] = { gross_cents: 0, net_cents: 0, count: 0 };
             }
-            hourlyData[hourKey].revenue_cents += order.seller_amount_cents;
+            hourlyData[hourKey].gross_cents += order.total_amount_cents || order.seller_amount_cents;
+            hourlyData[hourKey].net_cents += order.seller_amount_cents;
             hourlyData[hourKey].count++;
         }
     }
@@ -299,30 +315,81 @@ function getHourlyOrders(ordersByDate) {
 function getDailyTotals(filteredOrders) {
     const result = {};
     for (const [dateKey, orders] of Object.entries(filteredOrders)) {
-        let revenue_cents = 0;
+        let gross_cents = 0;
+        let net_cents = 0;
         let count = 0;
         for (const order of orders) {
-            revenue_cents += order.seller_amount_cents;
+            gross_cents += order.total_amount_cents || order.seller_amount_cents;
+            net_cents += order.seller_amount_cents;
             count++;
         }
         // Use dd/mm as chart key (strip year)
         const shortKey = dateKey.substring(0, 5); // "dd/mm"
-        result[shortKey] = { revenue_cents, count };
+        result[shortKey] = { gross_cents, net_cents, count };
     }
     return result;
 }
 
+// ── Receita bruta do período usando dados completos do sales-history ──
+// Mesma fórmula do modal: total_amount_cents - R$0,99 (taxa fixa de plataforma)
+function computeGrossFromHistory(days) {
+    if (!allSalesHistory || allSalesHistory.length === 0) return null;
+
+    const PLATFORM_FEE = 99;
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(23, 59, 59, 999);
+
+    let gross = 0;
+
+    if (days <= 1) {
+        // Apenas hoje
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0);
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d >= startOfDay && d <= today) {
+                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            }
+        });
+    } else {
+        // Últimos N dias
+        const cutoff = new Date(now);
+        cutoff.setDate(cutoff.getDate() - days);
+        cutoff.setHours(0, 0, 0, 0);
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d >= cutoff && d <= today) {
+                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            }
+        });
+    }
+
+    return gross;
+}
+
 // ── Compute KPIs from filtered orders ──
 function computeKPIs(filteredOrders) {
-    let totalRevenue = 0;
+    let totalRevenue = 0;  // net (seller_amount_cents)
+    let totalGross = 0;    // total_amount_cents (bruto)
+    let totalFees = 0;     // gateway + platform fees
     let totalSales = 0;
     for (const orders of Object.values(filteredOrders)) {
         for (const order of orders) {
             totalRevenue += order.seller_amount_cents;
+            // Receita bruta = total pago pelo comprador menos a taxa fixa de plataforma (R$0,99)
+            // — mesma lógica usada no modal de histórico de vendas
+            const PLATFORM_FEE = 99;
+            const gatewayFee = order.gateway_fee_cents || 0;
+            const platformFee = order.platform_fee_cents || 0;
+            totalGross += order.total_amount_cents
+                ? Math.max(0, order.total_amount_cents - PLATFORM_FEE)
+                : Math.max(0, order.seller_amount_cents + gatewayFee);
+            totalFees += gatewayFee + platformFee;
             totalSales++;
         }
     }
-    return { totalRevenue, totalSales };
+    return { totalRevenue, totalGross, totalFees, totalSales };
 }
 
 // ============================================================================
@@ -333,41 +400,112 @@ async function loadSellerDashboardData() {
     try {
         showDashboardSkeletons(true);
 
-        const res = await fetchManager.getSellerDashboard();
-        console.log('[Vitrine] Dashboard data:', res);
+        // Load dashboard, withdrawal info e sales history em paralelo
+        const [dashRes, withdrawalRes, salesHistRes] = await Promise.all([
+            fetchManager.getSellerDashboard(),
+            fetchManager.getWithdrawalInfo(),
+            fetchManager.getSellerSalesHistory()
+        ]);
 
-        if (!res.ok || !res.result) {
+        console.log('[Vitrine] Dashboard data:', dashRes);
+        console.log('[Vitrine] Withdrawal info:', withdrawalRes);
+
+        if (!dashRes.ok || !dashRes.result) {
             showDashboardSkeletons(false);
             return;
         }
 
-        const data = res.result;
+        const data = dashRes.result;
 
         // ── Process and cache raw orders ──
         vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
-        // ── Seller Info (static, doesn't change with period) ──
-        const sellerRecipientId = document.getElementById('seller-recipient-id');
-        if (sellerRecipientId) sellerRecipientId.textContent = data.gateway_recipient_id || data.stripe_account_id || '-';
-
-        const sellerBank = document.getElementById('seller-bank');
-        if (sellerBank) {
-            if (data.bank_name && data.bank_last4) {
-                sellerBank.textContent = `${data.bank_name} ****${data.bank_last4}`;
-            } else if (data.bank_name) {
-                sellerBank.textContent = data.bank_name;
-            } else {
-                sellerBank.textContent = '-';
-            }
+        // ── Pré-popula allSalesHistory para cálculo correto de receita bruta ──
+        // /sales-history retorna os pedidos com total_amount_cents completo
+        if (salesHistRes.ok && salesHistRes.result?.orders) {
+            allSalesHistory = salesHistRes.result.orders;
         }
 
-        const sellerCountry = document.getElementById('seller-country');
-        if (sellerCountry) sellerCountry.textContent = data.country || '-';
-
-        const statusEl = document.querySelector('.vt-seller-status');
+        // ── Update mini seller card ──
+        const statusEl = document.getElementById('fin-seller-status');
         if (statusEl) {
-            statusEl.className = 'vt-seller-status active';
-            statusEl.innerHTML = '<span class="vt-status-dot"></span> Ativo';
+            statusEl.className = 'fin-seller-mini-status active';
+            statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
+        }
+
+        // ── Update mini seller card ──
+        const finSellerName = document.getElementById('fin-seller-name');
+        if (finSellerName) finSellerName.textContent = currentUserInfo?.name || 'Vendedor';
+
+        const finSellerEmail = document.getElementById('fin-seller-email');
+        if (finSellerEmail) finSellerEmail.textContent = currentUserInfo?.email || '';
+
+        const finSellerAvatar = document.getElementById('fin-seller-avatar');
+        if (finSellerAvatar && currentUserInfo?.picture) {
+            finSellerAvatar.innerHTML = `<img src="${currentUserInfo.picture}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+        }
+
+        const finSellerBank = document.getElementById('fin-seller-bank');
+        if (finSellerBank) finSellerBank.textContent = data.bank_name || '—';
+
+        const finSellerAccount = document.getElementById('fin-seller-account');
+        if (finSellerAccount) finSellerAccount.textContent = data.bank_last4 ? `****${data.bank_last4}` : '—';
+
+        const finSellerCountry = document.getElementById('fin-seller-country');
+        if (finSellerCountry) finSellerCountry.textContent = data.country || '—';
+
+        const finSellerRecipient = document.getElementById('fin-seller-recipient');
+        if (finSellerRecipient) {
+            const rid = data.gateway_recipient_id || data.stripe_account_id || '—';
+            finSellerRecipient.textContent = rid.length > 14 ? rid.slice(0, 11) + '…' : rid;
+            finSellerRecipient.title = rid;
+        }
+
+        // ── Process withdrawal data (balance + transfers) ──
+        if (withdrawalRes.ok && withdrawalRes.result) {
+            financialCenterData.balance = withdrawalRes.result.balance;
+            financialCenterData.transfers = withdrawalRes.result.transfers || [];
+
+            // Update hero balance
+            const available = withdrawalRes.result.balance?.available_amount || 0;
+            const waiting = withdrawalRes.result.balance?.waiting_funds_amount || 0;
+
+            const finAvailable = document.getElementById('fin-available-balance');
+            if (finAvailable) finAvailable.textContent = formatCentsToBRL(available);
+
+            // Hint "aguardando compensação" discreto abaixo do saldo disponível
+            const pendingHint = document.getElementById('fin-pending-hint');
+            const pendingAmount = document.getElementById('fin-pending-amount');
+            if (pendingHint && pendingAmount) {
+                if (waiting > 0) {
+                    pendingAmount.textContent = formatCentsToBRL(waiting);
+                    pendingHint.style.display = '';
+                } else {
+                    pendingHint.style.display = 'none';
+                }
+            }
+
+            // Update next transfer date (hero + seller card)
+            const nextTransferEl = document.getElementById('fin-next-transfer');
+            const nextTransferLabel = document.getElementById('fin-next-transfer-label');
+            if (nextTransferEl && nextTransferLabel && withdrawalRes.result.next_transfer_date) {
+                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
+                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+                nextTransferLabel.textContent = `Próximo repasse automático: ${dateStr}`;
+                nextTransferEl.style.display = '';
+            }
+
+            const sellerNextWrap = document.getElementById('fin-seller-next-wrap');
+            const sellerNextLabel = document.getElementById('fin-seller-next-label');
+            if (sellerNextWrap && sellerNextLabel && withdrawalRes.result.next_transfer_date) {
+                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
+                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+                sellerNextLabel.textContent = `Próximo repasse: ${dateStr}`;
+                sellerNextWrap.style.display = '';
+            }
+
+            // Update quick summary panel
+            updateQuickSummary(withdrawalRes.result);
         }
 
         showDashboardSkeletons(false);
@@ -386,54 +524,65 @@ async function loadSellerDashboardData() {
 function updateVitrinePeriod(days) {
     if (!vitrineData.ordersByDate) return;
 
-    // ── Dynamic KPI labels ──
-    const kpiRevenueLabel = document.getElementById('kpi-revenue-label');
+    // ── Dynamic KPI label for sales ──
     const kpiSalesLabel = document.getElementById('kpi-sales-label');
     if (days <= 1) {
-        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita hoje';
         if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas hoje';
     } else if (days <= 7) {
-        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita esta semana';
         if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas esta semana';
     } else {
-        if (kpiRevenueLabel) kpiRevenueLabel.textContent = 'Receita do mês';
         if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas este mês';
     }
 
+    let kpis;
+    let chartData;
+    let transferData = null;
+
     if (days <= 1) {
         // ── Today: hourly chart ──
-        const hourlyData = getHourlyOrders(vitrineData.ordersByDate);
+        chartData = getHourlyOrders(vitrineData.ordersByDate);
+        transferData = getHourlyTransfers(financialCenterData.transfers);
 
         // Compute KPIs from today's data only
         const pad = v => String(v).padStart(2, '0');
         const today = new Date();
         const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
         const todayOrders = vitrineData.ordersByDate[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
-        const kpis = computeKPIs(todayOrders);
-
-        const kpiRevenue = document.getElementById('kpi-revenue');
-        if (kpiRevenue) kpiRevenue.textContent = formatCentsToBRL(kpis.totalRevenue);
-        const kpiSales = document.getElementById('kpi-sales');
-        if (kpiSales) kpiSales.textContent = kpis.totalSales;
-
-        loadVitrineSalesChart(hourlyData, true);
+        kpis = computeKPIs(todayOrders);
+        loadVitrineSalesChart(chartData, transferData, true);
     } else {
         // ── 7d / 30d: daily chart ──
         const filteredOrders = filterOrdersByLastDays(vitrineData.ordersByDate, days);
-        const kpis = computeKPIs(filteredOrders);
-
-        const kpiRevenue = document.getElementById('kpi-revenue');
-        if (kpiRevenue) kpiRevenue.textContent = formatCentsToBRL(kpis.totalRevenue);
-        const kpiSales = document.getElementById('kpi-sales');
-        if (kpiSales) kpiSales.textContent = kpis.totalSales;
-
-        const dailyTotals = getDailyTotals(filteredOrders);
-        loadVitrineSalesChart(dailyTotals, false);
+        kpis = computeKPIs(filteredOrders);
+        chartData = getDailyTotals(filteredOrders);
+        transferData = getDailyTransfers(financialCenterData.transfers, days);
+        loadVitrineSalesChart(chartData, transferData, false);
     }
+
+    // ── Update new KPI cards ──
+    const kpiGross = document.getElementById('kpi-gross-revenue');
+    if (kpiGross) {
+        // Usa dados completos do sales-history (que tem total_amount_cents correto).
+        // Fallback para kpis.totalGross se o sales-history ainda não estiver disponível.
+        const grossFromHistory = computeGrossFromHistory(days);
+        kpiGross.textContent = formatCentsToBRL(
+            grossFromHistory !== null ? grossFromHistory : (kpis.totalGross || kpis.totalRevenue)
+        );
+    }
+    const kpiNet = document.getElementById('kpi-net-revenue');
+    if (kpiNet) kpiNet.textContent = formatCentsToBRL(kpis.totalRevenue);
+    const kpiSales = document.getElementById('kpi-sales');
+    if (kpiSales) kpiSales.textContent = kpis.totalSales;
+
+    // ── Fees in quick summary ──
+    const finFees = document.getElementById('fin-total-fees');
+    if (finFees) finFees.textContent = formatCentsToBRL(kpis.totalFees || 0);
+
+
 }
 
 function showDashboardSkeletons(show) {
-    const kpiValueEls = ['kpi-revenue', 'kpi-sales'];
+    const kpiValueEls = ['kpi-gross-revenue', 'kpi-net-revenue', 'kpi-withdrawn', 'kpi-sales', 'fin-available-balance'];
     kpiValueEls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -441,8 +590,8 @@ function showDashboardSkeletons(show) {
             el.dataset.originalText = el.textContent;
             el.textContent = '';
             el.classList.add('skeleton');
-            el.style.width = '80px';
-            el.style.height = '24px';
+            el.style.width = id === 'fin-available-balance' ? '160px' : '80px';
+            el.style.height = id === 'fin-available-balance' ? '36px' : '24px';
             el.style.display = 'inline-block';
         } else {
             el.classList.remove('skeleton');
@@ -452,16 +601,23 @@ function showDashboardSkeletons(show) {
         }
     });
 
-    const sellerEls = ['seller-recipient-id', 'seller-bank', 'seller-country'];
-    sellerEls.forEach(id => {
+    const sellerMiniEls = [
+        { id: 'fin-seller-name', w: '120px', h: '18px' },
+        { id: 'fin-seller-email', w: '140px', h: '14px' },
+        { id: 'fin-seller-bank', w: '80px', h: '14px' },
+        { id: 'fin-seller-account', w: '60px', h: '14px' },
+        { id: 'fin-seller-country', w: '60px', h: '14px' },
+        { id: 'fin-seller-recipient', w: '80px', h: '14px' },
+    ];
+    sellerMiniEls.forEach(({ id, w, h }) => {
         const el = document.getElementById(id);
         if (!el) return;
         if (show) {
             el.dataset.originalText = el.textContent;
             el.textContent = '';
             el.classList.add('skeleton');
-            el.style.width = '100px';
-            el.style.height = '16px';
+            el.style.width = w;
+            el.style.height = h;
             el.style.display = 'inline-block';
         } else {
             el.classList.remove('skeleton');
@@ -477,7 +633,45 @@ function showDashboardSkeletons(show) {
 // Supports both daily (dd/mm labels) and hourly (HH:00 labels) modes
 // ============================================================================
 
-function loadVitrineSalesChart(dataObject, isHourly = false) {
+// ── Aggregate transfer data by day for chart ──
+function getDailyTransfers(transfers, days) {
+    const result = {};
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    cutoff.setHours(0, 0, 0, 0);
+
+    if (!transfers) return result;
+
+    transfers.forEach(t => {
+        const d = new Date(t.date_created || t.created_at || 0);
+        if (d < cutoff) return;
+        const key = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (!result[key]) result[key] = 0;
+        result[key] += (t.amount || 0);
+    });
+    return result;
+}
+
+function getHourlyTransfers(transfers) {
+    const result = {};
+    const pad = v => String(v).padStart(2, '0');
+    const today = new Date();
+    const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
+
+    if (!transfers) return result;
+
+    transfers.forEach(t => {
+        const d = new Date(t.date_created || t.created_at || 0);
+        const tKey = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+        if (tKey !== todayKey) return;
+        const hourKey = `${pad(d.getHours())}:00`;
+        if (!result[hourKey]) result[hourKey] = 0;
+        result[hourKey] += (t.amount || 0);
+    });
+    return result;
+}
+
+function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = false) {
     const canvas = document.getElementById('vitrineSalesChart');
     if (!canvas) return;
 
@@ -487,17 +681,22 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
     const ctx = canvas.getContext('2d');
 
     const labels = Object.keys(dataObject);
-    const revenueData = labels.map(key => (dataObject[key].revenue_cents || 0) / 100);
+    const grossData = labels.map(key => (dataObject[key].gross_cents || 0) / 100);
+    const netData = labels.map(key => (dataObject[key].net_cents || 0) / 100);
+    const transferData = transfersData ? labels.map(key => (transfersData[key] || 0) / 100) : labels.map(() => 0);
 
     // If no data, show empty state
     if (labels.length === 0) {
         const now = new Date();
         const emptyLabel = isHourly ? '00:00' : `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
         labels.push(emptyLabel);
-        revenueData.push(0);
+        grossData.push(0);
+        netData.push(0);
+        transferData.push(0);
     }
 
-    const maxValue = revenueData.length > 0 ? Math.max(...revenueData) : 0;
+    const allValues = [...grossData, ...netData, ...transferData];
+    const maxValue = allValues.length > 0 ? Math.max(...allValues) : 0;
     const yAxisMax = maxValue === 0 ? 10 : maxValue * 1.2;
 
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -513,27 +712,72 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                data: revenueData,
-                borderColor: '#4184e4',
-                backgroundColor: function (context) {
-                    const ctx = context.chart.ctx;
-                    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-                    gradient.addColorStop(0, 'rgba(65, 132, 228, 0.3)');
-                    gradient.addColorStop(1, 'rgba(65, 132, 228, 0)');
-                    return gradient;
+            datasets: [
+                {
+                    label: 'Receita bruta',
+                    data: grossData,
+                    borderColor: '#4184e4',
+                    backgroundColor: function (context) {
+                        const chartCtx = context.chart.ctx;
+                        const gradient = chartCtx.createLinearGradient(0, 0, 0, 200);
+                        gradient.addColorStop(0, 'rgba(65, 132, 228, 0.15)');
+                        gradient.addColorStop(1, 'rgba(65, 132, 228, 0)');
+                        return gradient;
+                    },
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#4184e4',
+                    pointBorderColor: chartPointBorder,
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#58a6ff',
+                    pointHoverBorderWidth: 2,
+                    order: 1
                 },
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 3,
-                pointBackgroundColor: '#4184e4',
-                pointBorderColor: chartPointBorder,
-                pointBorderWidth: 2,
-                pointHoverRadius: 5,
-                pointHoverBackgroundColor: '#58a6ff',
-                pointHoverBorderWidth: 2
-            }]
+                {
+                    label: 'Receita líquida',
+                    data: netData,
+                    borderColor: '#22c55e',
+                    backgroundColor: function (context) {
+                        const chartCtx = context.chart.ctx;
+                        const gradient = chartCtx.createLinearGradient(0, 0, 0, 200);
+                        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.15)');
+                        gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+                        return gradient;
+                    },
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#22c55e',
+                    pointBorderColor: chartPointBorder,
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#4ade80',
+                    pointHoverBorderWidth: 2,
+                    order: 2
+                },
+                {
+                    label: 'Saques realizados',
+                    data: transferData,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#a855f7',
+                    pointBorderColor: chartPointBorder,
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#c084fc',
+                    pointHoverBorderWidth: 2,
+                    order: 3
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -548,18 +792,27 @@ function loadVitrineSalesChart(dataObject, isHourly = false) {
                     bodyColor: tooltipBody,
                     cornerRadius: 8,
                     padding: 12,
-                    displayColors: false,
+                    displayColors: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    usePointStyle: true,
                     callbacks: {
                         title: (items) => {
                             const key = labels[items[0].dataIndex];
                             return isHourly ? `🕐 ${key}` : `📅 ${key}`;
                         },
                         label: (item) => {
-                            const key = labels[item.dataIndex];
-                            const d = dataObject[key] || { revenue_cents: 0, count: 0 };
-                            const revenue = formatCentsToBRL(d.revenue_cents);
-                            return [`Receita: ${revenue}`, `Vendas: ${d.count}`];
+                            const value = formatCentsToBRL(item.raw * 100);
+                            return `${item.dataset.label}: ${value}`;
                         },
+                        afterBody: (items) => {
+                            const key = labels[items[0].dataIndex];
+                            const d = dataObject[key];
+                            if (d && d.count > 0) {
+                                return `Vendas: ${d.count}`;
+                            }
+                            return '';
+                        }
                     }
                 }
             },
@@ -599,6 +852,78 @@ document.getElementById('vt-chart-period-select')?.addEventListener('change', (e
 });
 
 // (Stripe dashboard link removed — Pagar.me seller manages account within AuthPack)
+
+// ============================================================================
+// FINANCIAL CENTER
+// ============================================================================
+
+let financialCenterData = {
+    ordersByDate: null,
+    transfers: [],
+    balance: null,
+};
+
+function updateQuickSummary(data) {
+    const { balance, transfers } = data;
+    const available = balance?.available_amount || 0;
+    const waiting = balance?.waiting_funds_amount || 0;
+
+    // Taxa TED por saque (fornecida pelo backend ou padrão R$3,67)
+    const TED_FEE = data.ted_fee_cents ?? 367;
+
+    // Contagem geral de saques do mês (todos os status) — para o painel lateral
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    let totalWithdrawnAll = 0;
+    let withdrawalCount = 0;
+
+    // Somente saques com status "transferred" (confirmados) — para o KPI card
+    let totalWithdrawnSuccess = 0;
+    let withdrawalSuccessCount = 0;
+
+    if (transfers) {
+        transfers.forEach(t => {
+            const d = new Date(t.date_created || t.created_at || 0);
+            if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+                totalWithdrawnAll += (t.amount || 0);
+                withdrawalCount++;
+                if (t.status === 'transferred') {
+                    // t.amount = valor recebido na conta (já descontado o TED)
+                    // valor solicitado = t.amount + TED_FEE
+                    totalWithdrawnSuccess += (t.amount || 0) + TED_FEE;
+                    withdrawalSuccessCount++;
+                }
+            }
+        });
+    }
+
+    // Painel lateral (sumário rápido)
+    const finTotalWithdrawn = document.getElementById('fin-total-withdrawn');
+    if (finTotalWithdrawn) finTotalWithdrawn.textContent = formatCentsToBRL(totalWithdrawnAll);
+
+    const finReceivedBank = document.getElementById('fin-received-bank');
+    if (finReceivedBank) {
+        const received = Math.max(0, totalWithdrawnAll + available - waiting);
+        finReceivedBank.textContent = formatCentsToBRL(received);
+    }
+
+    const finWithdrawalsCount = document.getElementById('fin-withdrawals-count');
+    if (finWithdrawalsCount) finWithdrawalsCount.textContent = withdrawalCount;
+
+    // KPI card "Total sacado no mês" — apenas saques confirmados
+    const kpiWithdrawn = document.getElementById('kpi-withdrawn');
+    if (kpiWithdrawn) kpiWithdrawn.textContent = formatCentsToBRL(totalWithdrawnSuccess);
+
+    // "recebido X" = total sacado (confirmado) - taxa TED de cada saque
+    const kpiWithdrawnReceived = document.getElementById('kpi-withdrawn-received');
+    if (kpiWithdrawnReceived) {
+        // netReceived = totalWithdrawnSuccess - (TED_FEE × quantidade)
+        // pois totalWithdrawnSuccess já somou (amount + TED_FEE) por saque
+        const netReceived = Math.max(0, totalWithdrawnSuccess - (TED_FEE * withdrawalSuccessCount));
+        kpiWithdrawnReceived.textContent = `recebido ${formatCentsToBRL(netReceived)}`;
+    }
+}
 
 // ============================================================================
 // PRODUCT RENDERING
@@ -1943,7 +2268,7 @@ function closeSalesHistoryModal() {
     allSalesHistory = [];
 }
 
-document.getElementById('btn-sales-history')?.addEventListener('click', openSalesHistoryModal);
+
 document.getElementById('salesHistoryModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeSalesHistoryModal();
 });
@@ -2899,12 +3224,12 @@ function renderWithdrawalInfo(data, wrapEl) {
 
 function _maskCPF(cpf) {
     if (!cpf || cpf.length !== 11) return cpf || '—';
-    return `${cpf.slice(0,3)}.${cpf.slice(3,6)}.${cpf.slice(6,9)}-${cpf.slice(9,11)}`;
+    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
 }
 
 function _maskCNPJ(cnpj) {
     if (!cnpj || cnpj.length !== 14) return cnpj || '—';
-    return `${cnpj.slice(0,2)}.${cnpj.slice(2,5)}.${cnpj.slice(5,8)}/${cnpj.slice(8,12)}-${cnpj.slice(12,14)}`;
+    return `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12, 14)}`;
 }
 
 function _formatDocument(doc, type) {
@@ -2917,15 +3242,15 @@ function _formatPhone(phone) {
     if (!phone) return '—';
     const ddd = phone.ddd || '';
     const number = phone.number || '';
-    if (number.length === 9) return `(${ddd}) ${number.slice(0,5)}-${number.slice(5,9)}`;
-    if (number.length === 8) return `(${ddd}) ${number.slice(0,4)}-${number.slice(4,8)}`;
+    if (number.length === 9) return `(${ddd}) ${number.slice(0, 5)}-${number.slice(5, 9)}`;
+    if (number.length === 8) return `(${ddd}) ${number.slice(0, 4)}-${number.slice(4, 8)}`;
     return `(${ddd}) ${number}`;
 }
 
 function _formatCEP(cep) {
     if (!cep) return '—';
     const c = String(cep).replace(/\D/g, '');
-    if (c.length === 8) return `${c.slice(0,5)}-${c.slice(5,8)}`;
+    if (c.length === 8) return `${c.slice(0, 5)}-${c.slice(5, 8)}`;
     return cep;
 }
 
@@ -2941,7 +3266,7 @@ function _formatDateBR(dateStr) {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
 function _recipientStatusLabel(status) {
@@ -3044,9 +3369,9 @@ function renderPersonalData(data, wrapEl) {
     profileHeader.innerHTML = `
         <div class="pd-avatar">
             ${profile?.picture
-                ? `<img src="${profile.picture}" alt="" class="pd-avatar-img">`
-                : `<span class="pd-avatar-fallback">${initials}</span>`
-            }
+            ? `<img src="${profile.picture}" alt="" class="pd-avatar-img">`
+            : `<span class="pd-avatar-fallback">${initials}</span>`
+        }
         </div>
         <div class="pd-profile-info">
             <h3 class="pd-profile-name">${profile?.name || recipient?.name || '—'}</h3>
@@ -3260,7 +3585,7 @@ function renderPersonalData(data, wrapEl) {
 }
 
 // Event listeners
-document.getElementById('btn-withdrawal-details')?.addEventListener('click', openWithdrawalModal);
+
 document.getElementById('withdrawalModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeWithdrawalModal();
 });
@@ -3271,3 +3596,13 @@ document.getElementById('personalDataModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closePersonalDataModal();
 });
 document.querySelector('#personalDataModal .close-btn')?.addEventListener('click', closePersonalDataModal);
+
+
+// "Sacar agora" buttons
+document.getElementById('btn-sacar-agora')?.addEventListener('click', openWithdrawalModal);
+
+// "Ver histórico de saques" (Minha Vitrine)
+document.getElementById('btn-ver-financeiro')?.addEventListener('click', openWithdrawalModal);
+
+// "Ver histórico de vendas" (Minha Vitrine)
+document.getElementById('btn-ver-financeiro-3')?.addEventListener('click', openSalesHistoryModal);

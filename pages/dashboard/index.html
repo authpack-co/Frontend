@@ -960,7 +960,8 @@
                                                             stroke-width="2.5" stroke-linecap="round"
                                                             stroke-linejoin="round">
                                                             <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                            <path
+                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                                                         </svg>
                                                         <span>Sessões</span>
                                                     </div>
@@ -992,8 +993,11 @@
                                                         </svg>
                                                         <span>Novos Usuários</span>
                                                     </div>
-                                                    <div class="stat-metric-value skeleton" style="width: 60%; height: 28px; border-radius: 4px;"></div>
-                                                    <div class="stat-metric-sublabel skeleton" style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;"></div>
+                                                    <div class="stat-metric-value skeleton"
+                                                        style="width: 60%; height: 28px; border-radius: 4px;"></div>
+                                                    <div class="stat-metric-sublabel skeleton"
+                                                        style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;">
+                                                    </div>
                                                 </div>
                                                 <div class="stat-metric users-stat">
                                                     <div class="stat-metric-header blue">
@@ -1008,8 +1012,11 @@
                                                         </svg>
                                                         <span>Usuários</span>
                                                     </div>
-                                                    <div class="stat-metric-value skeleton" style="width: 60%; height: 28px; border-radius: 4px;"></div>
-                                                    <div class="stat-metric-sublabel skeleton" style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;"></div>
+                                                    <div class="stat-metric-value skeleton"
+                                                        style="width: 60%; height: 28px; border-radius: 4px;"></div>
+                                                    <div class="stat-metric-sublabel skeleton"
+                                                        style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;">
+                                                    </div>
                                                 </div>
                                                 <div class="stat-metric sessions-stat">
                                                     <div class="stat-metric-header blue">
@@ -1018,20 +1025,27 @@
                                                             stroke-width="2.5" stroke-linecap="round"
                                                             stroke-linejoin="round">
                                                             <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                            <path
+                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
                                                         </svg>
                                                         <span>Sessões</span>
                                                     </div>
-                                                    <div class="stat-metric-value skeleton" style="width: 60%; height: 28px; border-radius: 4px;"></div>
-                                                    <div class="stat-metric-sublabel skeleton" style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;"></div>
+                                                    <div class="stat-metric-value skeleton"
+                                                        style="width: 60%; height: 28px; border-radius: 4px;"></div>
+                                                    <div class="stat-metric-sublabel skeleton"
+                                                        style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;">
+                                                    </div>
                                                 </div>
                                                 <div class="stat-metric online-users-stat">
                                                     <div class="stat-metric-header green">
                                                         <span class="online-pulse-dot"></span>
                                                         <span>Usuários Online</span>
                                                     </div>
-                                                    <div class="stat-metric-value skeleton" style="width: 60%; height: 28px; border-radius: 4px;"></div>
-                                                    <div class="stat-metric-sublabel skeleton" style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;"></div>
+                                                    <div class="stat-metric-value skeleton"
+                                                        style="width: 60%; height: 28px; border-radius: 4px;"></div>
+                                                    <div class="stat-metric-sublabel skeleton"
+                                                        style="width: 40%; height: 14px; border-radius: 4px; margin-top: 4px;">
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -2275,77 +2289,267 @@
                             </div>
                         </div>
 
-                        <!-- ── KPI Stats Row ── -->
-                        <div class="vt-kpi-grid" id="vt-kpi-grid">
-                            <div class="vt-kpi-card">
-                                <div class="vt-kpi-header">
-                                    <span class="vt-kpi-label" id="kpi-revenue-label">Receita do mês</span>
-                                    <button class="vt-kpi-action-btn" id="btn-withdrawal-details">
-                                        Ver detalhes de saque
+                        <!-- ── Hero Balance Card ── -->
+                        <div class="fin-hero" id="fin-hero">
+                            <div class="fin-hero-left">
+                                <div class="fin-hero-label-row">
+                                    <span class="fin-hero-label">Saldo disponível para saque</span>
+                                    <button class="fin-hero-tooltip-btn" id="fin-hero-tooltip-btn"
+                                        title="O que é este valor?" aria-label="O que é este valor?">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="M12 16v-4" />
+                                            <path d="M12 8h.01" />
+                                        </svg>
                                     </button>
                                 </div>
-                                <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-revenue">R$ 0,00</span>
+                                <div class="fin-hero-value" id="fin-available-balance">R$ 0,00</div>
+                                <div class="fin-hero-sub">Receita líquida pronta para saque</div>
+                                <div class="fin-hero-pending-hint" id="fin-pending-hint" style="display:none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span>mais <span id="fin-pending-amount">R$ 0,00</span> aguardando compensação</span>
+                                </div>
+                                <div class="fin-next-transfer" id="fin-next-transfer" style="display:none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                                        <path d="M16 2v4" />
+                                        <path d="M8 2v4" />
+                                        <path d="M3 10h18" />
+                                    </svg>
+                                    <span id="fin-next-transfer-label">Próximo repasse automático: —</span>
+                                </div>
+                                <div class="fin-hero-actions">
+                                    <button class="btn btn-primary fin-sacar-btn" id="btn-sacar-agora">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <polyline points="7 10 12 15 17 10" />
+                                            <line x1="12" x2="12" y1="15" y2="3" />
+                                        </svg>
+                                        Sacar agora
+                                    </button>
+                                    <button class="btn btn-secondary fin-ver-btn" id="btn-ver-financeiro">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 3v18h18" />
+                                            <path d="m19 9-5 5-4-4-3 3" />
+                                        </svg>
+                                        Ver histórico de saques
+                                    </button>
                                 </div>
                             </div>
-                            <div class="vt-kpi-card">
-                                <div class="vt-kpi-header">
-                                    <span class="vt-kpi-label" id="kpi-sales-label">Vendas este mês</span>
-                                    <button class="vt-kpi-action-btn" id="btn-sales-history">
-                                        Ver histórico de vendas
+                            <div class="fin-hero-right">
+                                <div class="fin-seller-mini" id="fin-seller-mini">
+                                    <!-- Header: avatar + nome + email + status -->
+                                    <div class="fin-seller-mini-header">
+                                        <div class="fin-seller-mini-avatar" id="fin-seller-avatar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                        </div>
+                                        <div class="fin-seller-mini-info">
+                                            <span class="fin-seller-mini-name" id="fin-seller-name">—</span>
+                                            <span class="fin-seller-mini-email" id="fin-seller-email">—</span>
+                                            <span class="fin-seller-mini-status active" id="fin-seller-status">
+                                                <span class="fin-seller-mini-dot"></span> Ativo
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="fin-seller-mini-divider"></div>
+
+                                    <!-- Dados bancários -->
+                                    <div class="fin-seller-mini-section">
+                                        <span class="fin-seller-mini-section-title">Dados bancários</span>
+                                        <div class="fin-seller-mini-row">
+                                            <div class="fin-seller-mini-col">
+                                                <span class="fin-seller-mini-label">Banco</span>
+                                                <span class="fin-seller-mini-value" id="fin-seller-bank">—</span>
+                                            </div>
+                                            <div class="fin-seller-mini-col">
+                                                <span class="fin-seller-mini-label">Conta</span>
+                                                <span class="fin-seller-mini-value" id="fin-seller-account">—</span>
+                                            </div>
+                                        </div>
+                                        <div class="fin-seller-mini-row">
+                                            <div class="fin-seller-mini-col">
+                                                <span class="fin-seller-mini-label">País</span>
+                                                <span class="fin-seller-mini-value" id="fin-seller-country">—</span>
+                                            </div>
+                                            <div class="fin-seller-mini-col">
+                                                <span class="fin-seller-mini-label">ID Recebedor</span>
+                                                <span class="fin-seller-mini-value mono" id="fin-seller-recipient">—</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button class="fin-seller-mini-btn" id="btn-personal-data">
+                                        Ver meus dados completos
                                     </button>
-                                </div>
-                                <div class="vt-kpi-value-row">
-                                    <span class="vt-kpi-value" id="kpi-sales">0</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ── Seller Info + Sales Chart Row ── -->
-                        <div class="vt-dashboard-row" id="vt-dashboard-row">
-                            <!-- Left: Seller Info -->
-                            <div class="vt-seller-panel" id="vt-seller-panel">
-                                <div class="vt-seller-header">
-                                    <h3 class="vt-section-title">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                            <circle cx="12" cy="7" r="4" />
-                                        </svg>
-                                        Informações do vendedor
-                                    </h3>
-                                    <span class="vt-seller-status active">
-                                        <span class="vt-status-dot"></span>
-                                        Ativo
-                                    </span>
+                        <!-- ── 4 Secondary KPI Cards ── -->
+                        <div class="fin-kpi-row" id="fin-kpi-row">
+                            <div class="fin-kpi-card">
+                                <div class="fin-kpi-icon fin-icon-blue">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
+                                        <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
+                                        <path d="M12 3v6" />
+                                    </svg>
                                 </div>
+                                <div class="fin-kpi-info">
+                                    <span class="fin-kpi-label">Receita bruta do mês</span>
+                                    <span class="fin-kpi-value" id="kpi-gross-revenue">R$ 0,00</span>
+                                    <span class="fin-kpi-sub">Total vendido sem taxas</span>
+                                    <span class="fin-kpi-change" id="kpi-gross-change"></span>
+                                </div>
+                            </div>
+                            <div class="fin-kpi-card">
+                                <div class="fin-kpi-icon fin-icon-green">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                    </svg>
+                                </div>
+                                <div class="fin-kpi-info">
+                                    <span class="fin-kpi-label">Receita líquida do mês</span>
+                                    <span class="fin-kpi-value" id="kpi-net-revenue">R$ 0,00</span>
+                                    <span class="fin-kpi-sub">Após taxas de transação</span>
+                                    <span class="fin-kpi-change" id="kpi-net-change"></span>
+                                </div>
+                            </div>
+                            <div class="fin-kpi-card">
+                                <div class="fin-kpi-icon fin-icon-teal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" x2="12" y1="15" y2="3"/>
+                                    </svg>
+                                </div>
+                                <div class="fin-kpi-info">
+                                    <span class="fin-kpi-label">Total sacado no mês</span>
+                                    <span class="fin-kpi-value" id="kpi-withdrawn">R$ 0,00</span>
+                                    <span class="fin-kpi-sub" id="kpi-withdrawn-received">recebido R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div class="fin-kpi-card">
+                                <div class="fin-kpi-icon fin-icon-purple">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+                                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                        <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+                                        <path d="M2 7h20" />
+                                    </svg>
+                                </div>
+                                <div class="fin-kpi-info">
+                                    <span class="fin-kpi-label" id="kpi-sales-label">Vendas no mês</span>
+                                    <span class="fin-kpi-value" id="kpi-sales">0</span>
+                                    <span class="fin-kpi-sub">Vendas realizadas</span>
+                                    <span class="fin-kpi-change" id="kpi-sales-change"></span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <div class="vt-seller-grid">
-                                    <div class="vt-seller-row">
-                                        <div class="vt-seller-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                        <!-- ── Chart + Quick Summary Row ── -->
+                        <div class="fin-dashboard-row" id="fin-dashboard-row">
+                            <!-- Chart panel -->
+                            <div class="fin-chart-panel">
+                                <div class="fin-chart-header">
+                                    <div>
+                                        <h3 class="fin-section-title">Evolução financeira</h3>
+                                        <button class="fin-chart-info-btn"
+                                            title="Os dados são calculados por período selecionado" aria-label="Info">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="lucide lucide-id-card">
-                                                <path d="M16 10h2" />
-                                                <path d="M16 14h2" />
-                                                <path d="M6.17 15a3 3 0 0 1 5.66 0" />
-                                                <circle cx="9" cy="11" r="2" />
-                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <path d="M12 16v-4" />
+                                                <path d="M12 8h.01" />
                                             </svg>
-                                        </div>
-                                        <div class="vt-seller-details">
-                                            <span class="vt-seller-label">ID do Recebedor</span>
-                                            <span class="vt-seller-value mono" id="seller-recipient-id">-</span>
+                                        </button>
+                                    </div>
+                                    <div class="fin-chart-legend">
+                                        <span class="fin-legend-dot" style="background:#4184e4;"></span><span>Receita
+                                            bruta</span>
+                                        <span class="fin-legend-dot" style="background:#22c55e;"></span><span>Receita
+                                            líquida</span>
+                                        <span class="fin-legend-dot" style="background:#a855f7;"></span><span>Saques
+                                            realizados</span>
+                                        <div class="chart-period-wrapper">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M8 2v4" />
+                                                <path d="M16 2v4" />
+                                                <rect width="18" height="18" x="3" y="4" rx="2" />
+                                                <path d="M3 10h18" />
+                                            </svg>
+                                            <select class="vt-chart-period-select" id="vt-chart-period-select">
+                                                <option value="1">Hoje</option>
+                                                <option value="7">Últimos 7 dias</option>
+                                                <option value="30" selected>Últimos 30 dias</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="vt-seller-row">
-                                        <div class="vt-seller-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                </div>
+                                <div class="vt-chart-wrapper" id="vt-chart-wrapper">
+                                    <canvas id="vitrineSalesChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- Quick summary panel -->
+                            <div class="fin-summary-panel">
+                                <h3 class="fin-section-title">Resumo rápido</h3>
+                                <div class="fin-summary-list">
+                                    <div class="fin-summary-row">
+                                        <div class="fin-summary-label">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="lucide lucide-landmark">
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                <polyline points="7 10 12 15 17 10" />
+                                                <line x1="12" x2="12" y1="15" y2="3" />
+                                            </svg>
+                                            Total sacado no mês
+                                        </div>
+                                        <span class="fin-summary-value" id="fin-total-withdrawn">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-summary-row">
+                                        <div class="fin-summary-label">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                            </svg>
+                                            Taxas pagas no mês
+                                        </div>
+                                        <span class="fin-summary-value fin-summary-fee" id="fin-total-fees">R$
+                                            0,00</span>
+                                    </div>
+                                    <div class="fin-summary-row">
+                                        <div class="fin-summary-label">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M10 18v-7" />
                                                 <path
                                                     d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z" />
@@ -2354,69 +2558,34 @@
                                                 <path d="M3 22h18" />
                                                 <path d="M6 18v-7" />
                                             </svg>
+                                            Valor recebido no banco
                                         </div>
-                                        <div class="vt-seller-details">
-                                            <span class="vt-seller-label">Banco</span>
-                                            <span class="vt-seller-value" id="seller-bank">-</span>
-                                        </div>
+                                        <span class="fin-summary-value" id="fin-received-bank">R$ 0,00</span>
                                     </div>
-                                    <div class="vt-seller-row">
-                                        <div class="vt-seller-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                    <div class="fin-summary-row">
+                                        <div class="fin-summary-label">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="lucide lucide-map-pin-house">
-                                                <path
-                                                    d="M15 22a1 1 0 0 1-1-1v-4a1 1 0 0 1 .445-.832l3-2a1 1 0 0 1 1.11 0l3 2A1 1 0 0 1 22 17v4a1 1 0 0 1-1 1z" />
-                                                <path
-                                                    d="M18 10a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 .601.2" />
-                                                <path d="M18 22v-3" />
-                                                <circle cx="10" cy="10" r="3" />
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <rect width="18" height="18" x="3" y="4" rx="2" />
+                                                <path d="M16 2v4" />
+                                                <path d="M8 2v4" />
+                                                <path d="M3 10h18" />
                                             </svg>
+                                            Saques realizados
                                         </div>
-                                        <div class="vt-seller-details">
-                                            <span class="vt-seller-label">País</span>
-                                            <span class="vt-seller-value" id="seller-country">-</span>
-                                        </div>
+                                        <span class="fin-summary-value" id="fin-withdrawals-count">0</span>
                                     </div>
                                 </div>
-
-                                <!-- Seller manages their account within dashboard -->
-                                <button class="vt-personal-data-btn" id="btn-personal-data">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                <button class="fin-summary-link" id="btn-ver-financeiro-3">
+                                    Ver histórico de vendas
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
-                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
+                                        <path d="M5 12h14" />
+                                        <path d="m12 5 7 7-7 7" />
                                     </svg>
-                                    Meus dados pessoais
                                 </button>
-                            </div>
-
-                            <!-- Right: Sales Chart -->
-                            <div class="vt-chart-panel" id="vt-chart-panel">
-                                <div class="vt-chart-header">
-                                    <h3 class="vt-section-title">Gráfico de Vendas</h3>
-                                    <div class="chart-period-wrapper">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="lucide lucide-calendar">
-                                            <path d="M8 2v4" />
-                                            <path d="M16 2v4" />
-                                            <rect width="18" height="18" x="3" y="4" rx="2" />
-                                            <path d="M3 10h18" />
-                                        </svg>
-                                        <select class="vt-chart-period-select" id="vt-chart-period-select">
-                                            <option value="1">Hoje</option>
-                                            <option value="7">Últimos 7 dias</option>
-                                            <option value="30" selected>Últimos 30 dias</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="vt-chart-wrapper" id="vt-chart-wrapper">
-                                    <canvas id="vitrineSalesChart"></canvas>
-                                </div>
                             </div>
                         </div>
 
