@@ -2925,6 +2925,57 @@
         </div>
     </div>
 
+    <!-- Withdraw Confirm Modal -->
+    <div class="modal-overlay" id="withdrawConfirmModal">
+        <div class="modal wc-modal">
+            <button class="close-btn wc-close-btn">&times;</button>
+
+            <div class="wc-icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+            </div>
+
+            <div class="wc-header">
+                <h2 class="wc-title">Confirmar saque</h2>
+                <p class="wc-subtitle">Revise os valores antes de confirmar</p>
+            </div>
+
+            <div class="wc-body">
+                <div class="wc-row">
+                    <span class="wc-label">Valor solicitado</span>
+                    <span class="wc-value" id="wc-requested">—</span>
+                </div>
+                <div class="wc-row wc-row-fee">
+                    <span class="wc-label">
+                        Taxa TED
+                        <span class="wc-fee-badge">Transferência bancária</span>
+                    </span>
+                    <span class="wc-value wc-value-fee" id="wc-ted-fee">—</span>
+                </div>
+                <div class="wc-separator"></div>
+                <div class="wc-row wc-row-net">
+                    <span class="wc-label-net">Você recebe</span>
+                    <span class="wc-value-net" id="wc-net">—</span>
+                </div>
+            </div>
+
+            <div class="wc-footer">
+                <button class="wc-btn wc-btn-cancel" id="wc-cancel-btn">Cancelar</button>
+                <button class="wc-btn wc-btn-confirm" id="wc-confirm-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Confirmar saque
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Withdrawal Modal -->
     <div class="modal-overlay" id="withdrawalModal">
         <div class="modal sales-history-modal">

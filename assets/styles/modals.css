@@ -1614,3 +1614,201 @@
     padding: 2px 6px;
     border-radius: 4px;
 }
+
+/* ── Withdraw Confirm Modal ── */
+.wc-modal {
+    position: relative;
+    max-width: 400px;
+    width: 100%;
+    padding: 0;
+    border-radius: var(--ap-radius-xl);
+    overflow: hidden;
+}
+
+.wc-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: var(--ap-bg-hover);
+    border: none;
+    color: var(--ap-text-muted);
+    font-size: 18px;
+    line-height: 1;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--ap-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    z-index: 1;
+}
+
+.wc-close-btn:hover {
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-primary);
+}
+
+.wc-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-accent-muted);
+    color: var(--ap-accent);
+    margin: 32px auto 0;
+}
+
+.wc-header {
+    text-align: center;
+    padding: 16px 28px 0;
+}
+
+.wc-title {
+    font-family: var(--ap-font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    margin: 0 0 6px;
+}
+
+.wc-subtitle {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+    margin: 0;
+}
+
+.wc-body {
+    padding: 24px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.wc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: var(--ap-radius-md);
+}
+
+.wc-row:hover {
+    background: var(--ap-bg-hover);
+}
+
+.wc-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--ap-text-secondary);
+}
+
+.wc-fee-badge {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-muted);
+    padding: 2px 7px;
+    border-radius: var(--ap-radius-full);
+    letter-spacing: 0.01em;
+}
+
+.wc-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.wc-value-fee {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-danger);
+    font-variant-numeric: tabular-nums;
+}
+
+.wc-separator {
+    height: 1px;
+    background: var(--ap-border);
+    margin: 8px 14px;
+}
+
+.wc-row-net {
+    margin-top: 4px;
+    background: var(--ap-success-light);
+    border-radius: var(--ap-radius-md);
+    padding: 14px;
+}
+
+.wc-row-net:hover {
+    background: var(--ap-success-light);
+}
+
+.wc-label-net {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ap-success-text);
+}
+
+.wc-value-net {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ap-success);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+}
+
+.wc-footer {
+    display: flex;
+    gap: 10px;
+    padding: 0 28px 28px;
+}
+
+.wc-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 16px;
+    border-radius: var(--ap-radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+
+.wc-btn:active {
+    transform: scale(0.98);
+}
+
+.wc-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wc-btn-cancel {
+    background: var(--ap-bg-input);
+    color: var(--ap-text-secondary);
+    border: 1px solid var(--ap-border);
+}
+
+.wc-btn-cancel:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+}
+
+.wc-btn-confirm {
+    background: var(--ap-accent);
+    color: #fff;
+    flex: 1.6;
+}
+
+.wc-btn-confirm:hover:not(:disabled) {
+    background: var(--ap-accent-hover);
+}

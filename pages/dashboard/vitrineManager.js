@@ -465,6 +465,8 @@ async function loadSellerDashboardData() {
         if (withdrawalRes.ok && withdrawalRes.result) {
             financialCenterData.balance = withdrawalRes.result.balance;
             financialCenterData.transfers = withdrawalRes.result.transfers || [];
+            financialCenterData.tedFeeCents = withdrawalRes.result.ted_fee_cents ?? 367;
+            financialCenterData.netWithdrawableCents = withdrawalRes.result.net_withdrawable_cents ?? Math.max(0, (withdrawalRes.result.balance?.available_amount || 0) - (withdrawalRes.result.ted_fee_cents ?? 367));
 
             // Update hero balance
             const available = withdrawalRes.result.balance?.available_amount || 0;
@@ -3568,6 +3570,58 @@ function renderPersonalData(data, wrapEl) {
     wrapEl.appendChild(container);
 }
 
+// ============================================================================
+// WITHDRAW CONFIRM MODAL
+// ============================================================================
+
+function openWithdrawConfirmModal() {
+    const modal = document.getElementById('withdrawConfirmModal');
+    if (!modal) return;
+
+    const available = financialCenterData.balance?.available_amount ?? 0;
+    const tedFee = financialCenterData.tedFeeCents ?? 367;
+    const net = financialCenterData.netWithdrawableCents ?? Math.max(0, available - tedFee);
+
+    document.getElementById('wc-requested').textContent = formatCentsToBRL(available);
+    document.getElementById('wc-ted-fee').textContent = formatCentsToBRL(tedFee);
+    document.getElementById('wc-net').textContent = formatCentsToBRL(net);
+
+    const confirmBtn = document.getElementById('wc-confirm-btn');
+    confirmBtn.disabled = net <= 0;
+
+    modal.classList.add('show');
+}
+
+function closeWithdrawConfirmModal() {
+    const modal = document.getElementById('withdrawConfirmModal');
+    if (modal) modal.classList.remove('show');
+}
+
+async function confirmWithdrawal() {
+    const available = financialCenterData.balance?.available_amount ?? 0;
+    if (available <= 0) return;
+
+    const confirmBtn = document.getElementById('wc-confirm-btn');
+    const cancelBtn = document.getElementById('wc-cancel-btn');
+    confirmBtn.disabled = true;
+    cancelBtn.disabled = true;
+    confirmBtn.textContent = 'Aguarde…';
+
+    try {
+        const res = await fetchManager.requestWithdrawal(available);
+        closeWithdrawConfirmModal();
+        if (res.ok) {
+            showToast?.('Saque solicitado com sucesso!', 'success');
+        } else {
+            showToast?.('Erro ao solicitar saque. Tente novamente.', 'error');
+        }
+    } catch (err) {
+        console.error('confirmWithdrawal error:', err);
+        closeWithdrawConfirmModal();
+        showToast?.('Erro de conexão. Tente novamente.', 'error');
+    }
+}
+
 // Event listeners
 
 document.getElementById('withdrawalModal')?.addEventListener('click', (e) => {
@@ -3582,8 +3636,14 @@ document.getElementById('personalDataModal')?.addEventListener('click', (e) => {
 document.querySelector('#personalDataModal .close-btn')?.addEventListener('click', closePersonalDataModal);
 
 
-// "Sacar agora" buttons
-document.getElementById('btn-sacar-agora')?.addEventListener('click', openWithdrawalModal);
+// "Sacar agora" button → opens confirmation modal
+document.getElementById('btn-sacar-agora')?.addEventListener('click', openWithdrawConfirmModal);
+document.getElementById('withdrawConfirmModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeWithdrawConfirmModal();
+});
+document.querySelector('#withdrawConfirmModal .wc-close-btn')?.addEventListener('click', closeWithdrawConfirmModal);
+document.getElementById('wc-cancel-btn')?.addEventListener('click', closeWithdrawConfirmModal);
+document.getElementById('wc-confirm-btn')?.addEventListener('click', confirmWithdrawal);
 
 // "Ver histórico de saques" (Minha Vitrine)
 document.getElementById('btn-ver-financeiro')?.addEventListener('click', openWithdrawalModal);
