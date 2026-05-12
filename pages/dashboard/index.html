@@ -73,6 +73,7 @@
     <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
     <link rel="stylesheet" href="/pages/dashboard/style.css">
     <link rel="stylesheet" href="/pages/dashboard/presets.css">
+    <link rel="stylesheet" href="/pages/dashboard/settings.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
     <link rel="stylesheet" href="/assets/styles/animations.css">
 
@@ -635,13 +636,44 @@
             </button>
 
             <!-- User Profile -->
-            <div class="profile" id="sidebar-profile">
-                <span class="profile-picture">
-                    <img>
-                </span>
-                <div class="sidebar-profile-info">
-                    <span class="profile-name"></span>
-                    <span class="sidebar-profile-email"></span>
+            <div class="sidebar-profile-wrapper">
+                <div class="profile" id="sidebar-profile">
+                    <span class="profile-picture">
+                        <img>
+                    </span>
+                    <div class="sidebar-profile-info">
+                        <span class="profile-name"></span>
+                        <span class="sidebar-profile-email"></span>
+                    </div>
+                    <svg class="sidebar-profile-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m18 15-6-6-6 6" />
+                    </svg>
+                </div>
+                <!-- Profile popup menu -->
+                <div class="sidebar-profile-menu" id="sidebar-profile-menu">
+                    <button class="sidebar-profile-menu-item" id="btn-open-settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        Configurações
+                    </button>
+                    <div class="sidebar-profile-menu-divider"></div>
+                    <button class="sidebar-profile-menu-item sidebar-profile-menu-item--danger" id="btn-logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Sair
+                    </button>
                 </div>
             </div>
         </div>
@@ -2910,7 +2942,7 @@
                     <span class="wc-label">
                         Taxa TED
                         <span class="wc-fee-badge">Transferência bancária</span>
-                    </span>
+                    an>
                     <span class="wc-value wc-value-fee" id="wc-ted-fee">—</span>
                 </div>
                 <div class="wc-separator"></div>
@@ -2950,6 +2982,155 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="settings-overlay" id="settingsModal">
+        <div class="settings-modal">
+
+            <!-- Sidebar -->
+            <aside class="settings-sidebar">
+                <div class="settings-sidebar-header">
+                    <span class="settings-sidebar-title">Configurações</span>
+                    <button class="settings-close-btn" id="settings-close-btn" title="Fechar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="settings-nav">
+                    <button class="settings-nav-item active" data-view="conta">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                        Conta
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Content -->
+            <div class="settings-content">
+
+                <!-- Loading -->
+                <div class="sc-loading" id="sc-loading">
+                    <div class="spinner large"></div>
+                </div>
+
+                <!-- View: Conta -->
+                <div class="settings-view" id="settings-view-conta">
+                    <div class="settings-view-header">
+                        <h2>Conta</h2>
+                        <p>Gerencie sua conta Google e dispositivos conectados.</p>
+                    </div>
+
+                    <!-- Top row: Google + Plan -->
+                    <div class="settings-top-row">
+
+                        <!-- Google Account Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon settings-card-icon--google">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="none">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                    </svg>
+                                </div>
+                                <span class="settings-card-title">Conta Google</span>
+                            </div>
+                            <div class="settings-card-body sc-profile-body">
+                                <div class="sc-google-row">
+                                    <div class="sc-google-avatar">
+                                        <img id="sc-gc-avatar" src="" alt="Avatar">
+                                    </div>
+                                    <div class="sc-google-info">
+                                        <div class="sc-google-name" id="sc-gc-name"></div>
+                                        <div class="sc-google-email" id="sc-gc-email"></div>
+                                    </div>
+                                </div>
+                                <button class="sc-full-btn btn-danger" id="sc-btn-disconnect">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16 17 21 12 16 7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                    Desconectar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Plan Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-icon settings-card-icon--star">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                        <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8l-6.2 3.3 1.2-6.9L2 9.3l6.9-1z"/>
+                                    </svg>
+                                </div>
+                                <span class="settings-card-title">Plano</span>
+                            </div>
+                            <div class="settings-card-body sc-plan-body">
+
+                                <!-- Free -->
+                                <div class="sc-plan-state" id="sc-plan-state-free" style="display:none">
+                                    <p class="sc-plan-text">Você está no plano <strong>Free</strong>.</p>
+                                    <p class="sc-plan-sub">Acesso básico à plataforma.</p>
+                                    <button class="sc-full-btn btn-primary" id="sc-btn-assinar-plus" style="margin-top:auto">
+                                        Ver benefícios Plus
+                                    </button>
+                                </div>
+
+                                <!-- Plus active -->
+                                <div class="sc-plan-state" id="sc-plan-state-plus" style="display:none">
+                                    <p class="sc-plan-text">Você está no plano <strong>Plus</strong>.</p>
+                                    <p class="sc-plan-sub" id="sc-plan-renews-at"></p>
+                                    <button class="sc-full-btn btn-danger" id="sc-btn-cancel-plan" style="margin-top:auto">
+                                        Cancelar assinatura
+                                    </button>
+                                </div>
+
+                                <!-- Plus canceled -->
+                                <div class="sc-plan-state" id="sc-plan-state-canceled" style="display:none">
+                                    <p class="sc-plan-canceled-title">Assinatura cancelada</p>
+                                    <p class="sc-plan-sub" id="sc-plan-canceled-until"></p>
+                                    <p class="sc-plan-note">Seu acesso Plus permanece ativo até o fim do período pago.</p>
+                                    <button class="sc-full-btn btn-primary" id="sc-btn-reactivate-plan" style="margin-top:auto">
+                                        Reativar
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div><!-- /.settings-top-row -->
+
+                    <!-- Devices Card -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                    <polyline points="8 21 16 21"/>
+                                    <line x1="12" y1="17" x2="12" y2="21"/>
+                                </svg>
+                            </div>
+                            <span class="settings-card-title">Dispositivos conectados</span>
+                        </div>
+                        <div class="settings-card-body">
+                            <div id="sc-devices-list"></div>
+                            <div id="sc-devices-empty" style="display:none">
+                                <p style="font-size:13px;color:var(--ap-text-muted);text-align:center;padding:12px 0;">
+                                    Nenhum dispositivo conectado.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /#settings-view-conta -->
+
+            </div><!-- /.settings-content -->
+        </div><!-- /.settings-modal -->
+    </div><!-- /#settingsModal -->
+
     <!-- Scripts -->
     <link rel="stylesheet" href="/assets/styles/paymentModal.css">
     <script src="/assets/scripts/envManager.js"></script>
@@ -2959,6 +3140,7 @@
     <script src="/pages/dashboard/eventsHandler.js"></script>
     <script src="/pages/dashboard/contentRenderer.js"></script>
     <script src="/pages/dashboard/vitrineManager.js"></script>
+    <script src="/pages/dashboard/settings.js"></script>
 </body>
 
 </html>
