@@ -73,11 +73,7 @@ document.querySelectorAll('.preset-collection, .preset-access').forEach(containe
 
 // Função para inicializar o menu responsivo
 function initResponsiveMenu() {
-    // Criar botão hamburger no header
-    const header = document.querySelector('.main-header');
-    const logo = header.querySelector('.logo');
-
-    // Criar botão hamburger
+    // Criar botão hamburger fixo (sem depender do header)
     const hamburgerBtn = document.createElement('button');
     hamburgerBtn.className = 'hamburger-btn';
     hamburgerBtn.setAttribute('aria-label', 'Menu');
@@ -89,8 +85,8 @@ function initResponsiveMenu() {
         </div>
     `;
 
-    // Inserir botão após o logo
-    logo.insertAdjacentElement('afterend', hamburgerBtn);
+    // Inserir no body (é position: fixed via CSS)
+    document.body.appendChild(hamburgerBtn);
 
     // Criar overlay
     const overlay = document.createElement('div');

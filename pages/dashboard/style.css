@@ -143,14 +143,15 @@ body {
     /* Reset margin from sidebar version */
 }
 
-/* Sidebar Footer (Mobile Only by default, hidden on Desktop) */
+/* Sidebar Footer */
 .sidebar-footer {
-    display: none;
+    display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 4px;
     margin-top: auto;
-    padding-top: 16px;
+    padding: 10px 8px;
     border-top: 1px solid var(--ap-border);
+    flex-shrink: 0;
 }
 
 .profile {
@@ -386,28 +387,109 @@ body {
 .page-content {
     display: flex;
     gap: var(--ap-space-xl);
-    padding: 100px 36px;
+    padding: 20px 28px;
+    margin-left: 240px;
     align-items: flex-start;
     justify-content: center;
+    min-height: 100vh;
 }
 
+/* ============================================
+   Sidebar (Fixed)
+   ============================================ */
 .navigation-sidebar {
-    width: 220px;
-    height: 288px;
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-xl);
-    padding: 18px 12px;
-    background: var(--ap-bg-card);
+    width: 240px;
+    height: 100vh;
+    background: var(--ap-bg-sidebar);
+    border-right: 1px solid var(--ap-border);
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 100px;
-    /* Header (80px) + 20px clearance */
-    z-index: 10;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Sidebar Brand */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--ap-border);
+    flex-shrink: 0;
+}
+
+.sidebar-brand img {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.sidebar-brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    user-select: none;
+    letter-spacing: -0.01em;
+}
+
+/* Sidebar Nav */
+.sidebar-nav {
+    flex: 1;
+    padding: 10px 8px;
+    overflow-y: auto;
+}
+
+/* Sidebar Upgrade Card */
+.sidebar-upgrade-card {
+    background: var(--ap-bg-muted);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    padding: 12px 14px;
+    margin-bottom: 4px;
+}
+
+.sidebar-upgrade-card.hidden {
+    display: none;
+}
+
+.sidebar-upgrade-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 5px;
+}
+
+.sidebar-upgrade-header svg {
+    color: #fbbf24;
+    flex-shrink: 0;
+}
+
+.sidebar-upgrade-header span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+}
+
+.sidebar-upgrade-desc {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+    margin: 0 0 10px 0;
+    line-height: 1.4;
+}
+
+.sidebar-upgrade-btn {
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+    margin-top: 0 !important;
 }
 
 .plus-subscribe-btn {
-    margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -435,7 +517,7 @@ body {
 
 .nav-menu {
     list-style: none;
-    padding: 8px 4px;
+    padding: 2px 0;
     margin: 0;
 }
 
@@ -443,11 +525,22 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     border-radius: var(--ap-radius-md);
     color: var(--ap-text-muted);
     cursor: pointer;
-    font-size: 15px;
+    font-size: 14px;
+    transition: background 0.15s ease, color 0.15s ease;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+}
+
+.nav-item:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-secondary);
 }
 
 .nav-item.active {
@@ -482,7 +575,8 @@ span.coming-soon {
 .main-content {
     flex: 1;
     min-height: 200px;
-    max-width: 1100px;
+    max-width: 1300px;
+    width: 100%;
 }
 
 /* ============================================
@@ -494,7 +588,7 @@ span.coming-soon {
     padding: var(--ap-space-lg) var(--ap-space-lg) var(--ap-space-md) var(--ap-space-lg);
     margin-bottom: var(--ap-space-md);
     background: var(--ap-bg-card);
-    width: min(95vw, 1100px);
+    width: 100%;
 }
 
 /* ============================================
@@ -2393,13 +2487,19 @@ span.coming-soon {
 /* Botão Hamburger (Hidden por padrão no desktop) */
 .hamburger-btn {
     display: none;
-    background: transparent;
-    border: none;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
     cursor: pointer;
     padding: 8px;
     color: var(--ap-text-primary);
-    position: relative;
+    position: fixed;
+    top: 14px;
+    left: 14px;
     z-index: 1001;
+    box-shadow: var(--ap-shadow-sm);
+    align-items: center;
+    justify-content: center;
 }
 
 .hamburger-icon {
@@ -2882,58 +2982,28 @@ span.coming-soon {
         display: flex;
     }
 
-    /* Sidebar vira menu mobile */
+    /* Sidebar desliza para fora em mobile */
     .navigation-sidebar {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 280px;
-        z-index: 1000;
-        border-radius: 0;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        box-shadow: none;
+        z-index: 1000;
     }
 
     /* Sidebar aberta */
     .navigation-sidebar.active {
         transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     }
 
-    .nav-links {
-        display: block;
-    }
-
-    /* Ajustar padding do conteúdo principal */
+    /* Conteúdo ocupa a tela toda sem a sidebar */
     .page-content {
-        padding: 100px 20px;
+        margin-left: 0;
+        padding: 60px 20px 20px;
     }
 
     .main-content {
         width: 100%;
-    }
-
-    /* Ajustar header no mobile */
-    .main-header {
-        padding: 20px 20px;
-    }
-
-    .main-header .header-actions,
-    .main-header nav {
-        display: none;
-    }
-
-    .sidebar-footer {
-        display: flex;
-    }
-
-    .header-actions a {
-        margin-left: 15px;
-        font-size: 14px;
     }
 }
 
@@ -2942,16 +3012,8 @@ span.coming-soon {
         width: 260px;
     }
 
-    .main-header {
-        padding: 15px;
-    }
-
-    .main-header .logo {
-        font-size: 1.25rem;
-    }
-
     .page-content {
-        padding: 90px 12px;
+        padding: 60px 12px 20px;
     }
 
     .content-card {
@@ -3005,11 +3067,6 @@ span.coming-soon {
 @media (max-width: 580px) {
     .navigation-sidebar {
         width: 240px;
-    }
-
-    .header-actions a:first-child {
-        display: none;
-        /* Esconde "Docs" em telas muito pequenas */
     }
 
     .btn-download {

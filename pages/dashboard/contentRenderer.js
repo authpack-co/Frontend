@@ -2238,6 +2238,10 @@ function renderUserInfo(userInfo) {
             btn.style.display = 'none';
         });
 
+        // Hide sidebar upgrade card entirely for Plus users
+        const sidebarPlusCard = document.getElementById('sidebar-plus-card');
+        if (sidebarPlusCard) sidebarPlusCard.style.display = 'none';
+
         // Add premium blue border to profile pictures
         if (profilePictureWrapper) {
             profilePictureWrapper.classList.add('plus-avatar');

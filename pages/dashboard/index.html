@@ -561,72 +561,20 @@
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="main-header">
-        <div class="logo">
+    <!-- Sidebar -->
+    <aside class="navigation-sidebar">
+        <!-- Brand -->
+        <div class="sidebar-brand">
             <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
-            <span>AuthPack</span>
+            <span class="sidebar-brand-name">AuthPack</span>
         </div>
-        <nav></nav>
-        <div class="header-actions">
-            <div class="header-nav-items">
-                <button class="plus-subscribe-btn header-plus-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="lucide lucide-crown-icon lucide-crown">
-                        <path
-                            d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                        <path d="M5 21h14" />
-                    </svg>
-                    Assinar Plus
-                </button>
-            </div>
-            <div class="profile-dropdown-wrapper">
-                <div class="profile" id="profile-trigger">
-                    <span class="profile-name">Thales Wendel</span>
-                    <span class="profile-picture">
-                        <img src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
-                            alt="Thales Wendel">
-                    </span>
-                </div>
-                <div class="profile-dropdown" id="profile-dropdown">
-                    <!-- Dropdown Header -->
-                    <div class="profile-dropdown-header">
-                        <img class="dropdown-avatar"
-                            src="https://lh3.googleusercontent.com/a/ACg8ocLP4EbP78v0DO-Z1BwQGxLmfXGaRI8co4E8QP9SmRzBAJffYc9RxA=s96-c"
-                            alt="User" id="dropdown-avatar">
-                        <div class="dropdown-user-info">
-                            <span class="dropdown-name" id="dropdown-name">Thales Wendel</span>
-                            <span class="dropdown-email" id="dropdown-email">thaleswwendel@gmail.com</span>
-                        </div>
-                    </div>
 
-                    <div class="dropdown-divider"></div>
-
-                    <!-- Dropdown Items -->
-                    <a href="/pages/account/" class="profile-dropdown-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="12" cy="8" r="4" />
-                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                        </svg>
-                        Central de contas
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Page content -->
-    <div class="page-content">
-        <!-- Sidebar -->
-        <aside class="navigation-sidebar">
-            <!-- <hr> -->
+        <!-- Nav -->
+        <nav class="sidebar-nav">
             <ul class="nav-menu">
                 <li class="nav-item active" data-view="inicio">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="lucide lucide-house-icon lucide-house">
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
                         <path
                             d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -635,8 +583,7 @@
                 </li>
                 <li class="nav-item" data-view="vitrine">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="lucide lucide-store-icon lucide-store">
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5" />
                         <path
                             d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244" />
@@ -645,70 +592,63 @@
                     Minha vitrine
                 </li>
             </ul>
+        </nav>
 
-            <div class="sidebar-footer">
-                <!-- Theme Toggle -->
-                <button class="nav-item theme-toggle-btn" data-theme-toggle onclick="AuthPackTheme.toggle()">
-                    <svg class="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="4" />
-                        <path d="M12 2v2" />
-                        <path d="M12 20v2" />
-                        <path d="m4.93 4.93 1.41 1.41" />
-                        <path d="m17.66 17.66 1.41 1.41" />
-                        <path d="M2 12h2" />
-                        <path d="M20 12h2" />
-                        <path d="m6.34 17.66-1.41 1.41" />
-                        <path d="m19.07 4.93-1.41 1.41" />
-                    </svg>
-                    <svg class="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" style="display:none;">
-                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                    </svg>
-                    <span class="theme-toggle-label">Tema claro</span>
-                </button>
-
-                <ul class="nav-links">
-                    <li>
-                        <a href="/pages/account/">
-                            <span>Central de contas</span>
-
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link">
-                                <path d="M15 3h6v6" />
-                                <path d="M10 14 21 3" />
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                            </svg>
-                        </a>
-
-                    </li>
-                </ul>
-
-                <button class="plus-subscribe-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="lucide lucide-crown-icon lucide-crown">
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <!-- Plus Upgrade Card (hidden for Plus users via JS) -->
+            <div class="sidebar-upgrade-card" id="sidebar-plus-card">
+                <div class="sidebar-upgrade-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path
                             d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
                         <path d="M5 21h14" />
                     </svg>
-                    Assinar Plus
-                </button>
+                    <span>AuthPack Plus</span>
+                </div>
+                <p class="sidebar-upgrade-desc">Crie e monetize sem limites.</p>
+                <button class="plus-subscribe-btn sidebar-upgrade-btn">Ver benefícios</button>
+            </div>
 
-                <div class="profile" id="sidebar-profile">
-                    <span class="profile-picture">
-                        <img>
-                    </span>
-                    <div class="sidebar-profile-info">
-                        <span class="profile-name"></span>
-                        <span class="sidebar-profile-email"></span>
-                    </div>
+            <!-- Theme Toggle -->
+            <button class="nav-item theme-toggle-btn" data-theme-toggle onclick="AuthPackTheme.toggle()">
+                <svg class="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+                <svg class="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" style="display:none;">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+                <span class="theme-toggle-label">Tema claro</span>
+            </button>
+
+            <!-- User Profile -->
+            <div class="profile" id="sidebar-profile">
+                <span class="profile-picture">
+                    <img>
+                </span>
+                <div class="sidebar-profile-info">
+                    <span class="profile-name"></span>
+                    <span class="sidebar-profile-email"></span>
                 </div>
             </div>
-        </aside>
+        </div>
+    </aside>
+
+    <!-- Page content -->
+    <div class="page-content">
 
         <!-- Main -->
         <main class="main-content">
