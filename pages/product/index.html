@@ -7,17 +7,17 @@
     <title>Produto — AuthPack</title>
     <meta name="description" content="Adquira este produto no AuthPack">
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
-<link rel="stylesheet" href="/assets/styles/elementState.css">
+    <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+    <link rel="stylesheet" href="/assets/styles/elementState.css">
     <link rel="stylesheet" href="/pages/product/style.css">
 
     <!-- Theme: FOUC prevention + manager -->
     <script>
-        (function(){
+        (function () {
             try {
                 var t = localStorage.getItem('authpack-theme');
-                if (t === 'dark') document.documentElement.setAttribute('data-theme','dark');
-            } catch(e){}
+                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) { }
         })();
     </script>
     <script src="/assets/scripts/themeManager.js" defer></script>
@@ -25,22 +25,22 @@
 
 <body>
     <!-- Header -->
-    <header class="vt-header">
-        <a href="/" class="vt-logo">
-            <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
-            <span>AuthPack</span>
+    <header class="vt-topbar">
+        <a href="/" class="vt-brand">
+            <img src="/assets/images/favicon-128x128.png" alt="AuthPack" class="vt-brand-img">
+            <span class="vt-brand-name">AuthPack</span>
         </a>
-        <div class="vt-secure">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        <span class="vt-secure-chip">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            <span>Compra segura</span>
-        </div>
+            Compra segura
+        </span>
     </header>
 
-    <!-- Main -->
-    <main class="vt-main">
+    <!-- Page -->
+    <main class="vt-page">
         <div id="product-state" class="loading-state">
 
             <!-- Loading -->
@@ -61,110 +61,103 @@
 
             <!-- Product content -->
             <div class="preset preset-content">
+                <div class="vt-product">
 
-                <!-- Two-column layout -->
-                <div class="vt-layout">
+                    <!-- Left column -->
+                    <div class="vt-left">
+                        <div class="vt-category" id="vt-category"></div>
+                        <h1 class="vt-title" id="vt-title"></h1>
+                        <p class="vt-desc clamp" id="vt-desc"></p>
+                        <button class="vt-read-more" id="vt-read-more" style="display:none">Ler mais</button>
 
-                    <!-- Left: Product Info -->
-                    <div class="vt-product-col">
-                        <!-- Hero Banner -->
-                        <div class="vt-hero-banner">
-                            <div class="vt-hero-glow"></div>
-                            <h1 class="vt-product-name" id="vt-product-name"></h1>
-                            <p class="vt-product-desc" id="vt-product-desc"></p>
-                        </div>
-
-                        <!-- Divider -->
-                        <div class="vt-divider"></div>
-
-                        <!-- Included Services -->
-                        <div class="vt-services-section" id="vt-services-section">
-                            <span class="vt-services-title">Inclui acesso a</span>
-                            <div class="vt-services-grid" id="vt-services-grid">
+                        <!-- Services -->
+                        <section class="vt-services-section" id="vt-services-section">
+                            <div class="vt-services-head">
+                                <span class="vt-services-label" id="vt-services-label">Serviços inclusos</span>
+                                <span class="vt-services-count" id="vt-services-count" style="display:none"></span>
+                            </div>
+                            <!-- Search bar (shown when > 8 services) -->
+                            <div class="vt-search" id="vt-search" style="display:none">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="7" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
+                                <input type="text" id="vt-search-input" placeholder="Buscar serviço…">
+                            </div>
+                            <div class="vt-services" id="vt-services-grid">
                                 <!-- Rendered by JS -->
                             </div>
-                        </div>
+                            <div class="vt-empty-search" id="vt-empty-search" style="display:none">Nenhum serviço
+                                corresponde à busca.</div>
+                        </section>
                     </div>
 
-                    <!-- Right: Purchase Card -->
-                    <div class="vt-purchase-card">
+                    <!-- Right column: Checkout -->
+                    <aside class="vt-checkout">
                         <!-- Price -->
                         <div class="vt-price-block">
                             <div class="vt-price-row">
-                                <span class="vt-price" id="vt-price"></span>
+                                <span class="vt-price-currency">R$</span>
+                                <span class="vt-price-amount" id="vt-price-amount"></span>
+                                <span class="vt-price-period" id="vt-price-period" style="display:none">/mês</span>
                             </div>
-                            <span class="vt-billing-badge" id="vt-billing-badge"></span>
-                        </div>
-
-                        <!-- Price Breakdown (iFood-style) -->
-                        <div class="vt-price-breakdown" id="vt-price-breakdown">
-                            <div class="vt-breakdown-row">
-                                <span class="vt-breakdown-label" id="vt-breakdown-product-label">Produto</span>
-                                <span class="vt-breakdown-value" id="vt-breakdown-product-value"></span>
-                            </div>
-                            <div class="vt-breakdown-row vt-breakdown-fee">
-                                <span class="vt-breakdown-label">Taxa de serviço</span>
-                                <span class="vt-breakdown-value">R$ 0,99</span>
-                            </div>
-                            <div class="vt-breakdown-divider"></div>
-                            <div class="vt-breakdown-row vt-breakdown-total">
-                                <span class="vt-breakdown-label">Total</span>
-                                <span class="vt-breakdown-value" id="vt-breakdown-total-value"></span>
+                            <div class="vt-price-billing" id="vt-price-billing">
+                                <span id="vt-billing-type-label">Pagamento único</span>
+                                <span class="vt-billing-dot"></span>
+                                Acesso imediato
                             </div>
                         </div>
 
-                        <!-- Seller -->
-                        <div class="vt-seller" id="vt-seller">
-                            <img class="vt-seller-pic" id="vt-seller-pic" alt="Seller">
-                            <div class="vt-seller-info">
-                                <span class="vt-seller-name" id="vt-seller-name"></span>
-                                <span class="vt-seller-label">Seller</span>
+                        <!-- Breakdown -->
+                        <div class="vt-breakdown">
+                            <div class="vt-brk-row">
+                                <span class="vt-brk-lbl" id="vt-brk-product-label">Produto</span>
+                                <span class="vt-brk-val" id="vt-brk-product-val"></span>
+                            </div>
+                            <div class="vt-brk-row">
+                                <span class="vt-brk-lbl">Taxa de serviço</span>
+                                <span class="vt-brk-val">R$ 0,99</span>
+                            </div>
+                            <div class="vt-brk-row vt-brk-total">
+                                <span class="vt-brk-lbl">Total</span>
+                                <span class="vt-brk-val" id="vt-brk-total-val"></span>
                             </div>
                         </div>
 
                         <!-- Stock -->
-                        <div id="vt-stock-section">
-                            <!-- Rendered by JS: progress bar or unlimited badge -->
-                        </div>
+                        <div id="vt-stock-section"></div>
 
                         <!-- CTA -->
-                        <button class="vt-cta-btn" id="vt-cta-btn">Comprar agora</button>
-                        <p class="vt-cta-sub">Acesso instantâneo após confirmação do pagamento</p>
-                    </div>
-                </div>
+                        <button class="vt-cta" id="vt-cta-btn">
+                            Comprar agora
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="m13 5 7 7-7 7" />
+                            </svg>
+                        </button>
+                        <div class="vt-cta-sub">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            Acesso liberado na hora · Pagamento por Pagar.me
+                        </div>
 
-                <!-- Trust Signals -->
-                <div class="vt-trust-row">
-                    <div class="vt-trust-card">
-                        <div class="vt-trust-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <!-- Seller -->
+                        <div class="vt-seller" id="vt-seller">
+                            <div class="vt-seller-avatar" id="vt-seller-avatar"></div>
+                            <div>
+                                <div class="vt-seller-name" id="vt-seller-name"></div>
+                                <div class="vt-seller-meta">Vendedor</div>
+                            </div>
                         </div>
-                        <div class="vt-trust-text">
-                            <strong>Pagamento seguro</strong>
-                            <span>Criptografado e protegido</span>
-                        </div>
-                    </div>
-                    <div class="vt-trust-card">
-                        <div class="vt-trust-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        </div>
-                        <div class="vt-trust-text">
-                            <strong>Acesso instantâneo</strong>
-                            <span>Ativo imediatamente após compra</span>
-                        </div>
-                    </div>
-                    <div class="vt-trust-card">
-                        <div class="vt-trust-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
-                        </div>
-                        <div class="vt-trust-text">
-                            <strong>🔒 Pagamento seguro</strong>
-                            <span>Processado por Pagar.me</span>
-                        </div>
-                    </div>
-                </div>
+                    </aside>
 
+                </div>
             </div>
+
         </div>
     </main>
 
