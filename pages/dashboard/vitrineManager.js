@@ -368,6 +368,43 @@ function computeGrossFromHistory(days) {
     return gross;
 }
 
+// ── Receita bruta por dia/hora para o gráfico, usando allSalesHistory ──
+// Retorna { "dd/mm": gross_cents } (diário) ou { "HH:00": gross_cents } (horário).
+// Retorna null quando allSalesHistory estiver vazio (usa fallback de raw_orders).
+function buildGrossChartFromHistory(days, isHourly) {
+    if (!allSalesHistory || allSalesHistory.length === 0) return null;
+
+    const PLATFORM_FEE = 99;
+    const pad = v => String(v).padStart(2, '0');
+    const now = new Date();
+    const result = {};
+
+    if (isHourly) {
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0);
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d < startOfDay) return;
+            const key = `${pad(d.getHours())}:00`;
+            if (!result[key]) result[key] = 0;
+            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+        });
+    } else {
+        const cutoff = new Date(now);
+        cutoff.setDate(cutoff.getDate() - days);
+        cutoff.setHours(0, 0, 0, 0);
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d < cutoff) return;
+            const key = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+            if (!result[key]) result[key] = 0;
+            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+        });
+    }
+
+    return result;
+}
+
 // ── Compute KPIs from filtered orders ──
 function computeKPIs(filteredOrders) {
     let totalRevenue = 0;  // net (seller_amount_cents)
@@ -551,6 +588,16 @@ function updateVitrinePeriod(days) {
         const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
         const todayOrders = vitrineData.ordersByDate[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
         kpis = computeKPIs(todayOrders);
+
+        // Sobrescreve gross_cents do gráfico com dados do sales-history (que tem
+        // total_amount_cents correto — raw_orders pode não ter esse campo).
+        const historyGross = buildGrossChartFromHistory(days, true);
+        if (historyGross) {
+            Object.keys(chartData).forEach(key => {
+                if (historyGross[key] !== undefined) chartData[key].gross_cents = historyGross[key];
+            });
+        }
+
         loadVitrineSalesChart(chartData, transferData, true);
     } else {
         // ── 7d / 30d: daily chart ──
@@ -558,6 +605,16 @@ function updateVitrinePeriod(days) {
         kpis = computeKPIs(filteredOrders);
         chartData = getDailyTotals(filteredOrders);
         transferData = getDailyTransfers(financialCenterData.transfers, days);
+
+        // Sobrescreve gross_cents do gráfico com dados do sales-history (que tem
+        // total_amount_cents correto — raw_orders pode não ter esse campo).
+        const historyGross = buildGrossChartFromHistory(days, false);
+        if (historyGross) {
+            Object.keys(chartData).forEach(key => {
+                if (historyGross[key] !== undefined) chartData[key].gross_cents = historyGross[key];
+            });
+        }
+
         loadVitrineSalesChart(chartData, transferData, false);
     }
 
@@ -2251,7 +2308,8 @@ async function openSalesHistoryModal() {
 function closeSalesHistoryModal() {
     const modal = document.getElementById('salesHistoryModal');
     if (modal) modal.classList.remove('show');
-    allSalesHistory = [];
+    // Não limpar allSalesHistory aqui: os KPIs do dashboard (receita bruta)
+    // dependem dessa variável e ela seria perdida, fazendo bruto = líquido.
 }
 
 
@@ -2259,6 +2317,15 @@ document.getElementById('salesHistoryModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeSalesHistoryModal();
 });
 document.querySelector('#salesHistoryModal .close-btn')?.addEventListener('click', closeSalesHistoryModal);
+
+// ── Withdrawal history modal open / close ──
+document.getElementById('btn-ver-financeiro')?.addEventListener('click', openWithdrawalModal);
+document.getElementById('btn-ver-financeiro-3')?.addEventListener('click', openSalesHistoryModal);
+
+document.getElementById('withdrawalModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeWithdrawalModal();
+});
+document.querySelector('#withdrawalModal .close-btn')?.addEventListener('click', closeWithdrawalModal);
 
 // Helper for formatting currency value without symbol (e.g. "59,90")
 function formatBRLValue(cents) {
@@ -2402,10 +2469,11 @@ function renderSalesHistory(orders) {
                 mContent.innerHTML = `
                     <div class="sh-table-header">
                         <div class="sh-col sh-col-date">Data</div>
-                        <div class="sh-col sh-col-id">ID</div>
                         <div class="sh-col sh-col-prod">Produto</div>
                         <div class="sh-col sh-col-user">Comprador</div>
-                        <div class="sh-col sh-col-val">Valor</div>
+                        <div class="sh-col sh-col-pay">Método</div>
+                        <div class="sh-col sh-col-val">Valor Bruto</div>
+                        <div class="sh-col sh-col-liq">Valor Líquido</div>
                         <div style="width: 28px;"></div>
                     </div>
                 `;
@@ -2414,13 +2482,6 @@ function renderSalesHistory(orders) {
                 itemsToShow.forEach(order => {
                     const item = document.createElement('div');
                     item.className = 'sh-sale-item';
-
-                    const day = String(order.dateObj.getDate()).padStart(2, '0');
-                    const monthShort = MONTH_SHORT[order.dateObj.getMonth()];
-
-                    const pName = order.product_name || 'Produto';
-                    const splitP = pName.split(' ');
-                    const initialP = splitP[0] ? splitP[0][0].toUpperCase() : 'P';
 
                     const buyerName = order.buyer_name || 'Usuário';
                     const splitU = buyerName.split(' ');
@@ -2434,14 +2495,16 @@ function renderSalesHistory(orders) {
                     const mins = String(order.dateObj.getMinutes()).padStart(2, '0');
                     const dateLabel = `${order.dateObj.getDate()} ${MONTH_SHORT[order.dateObj.getMonth()]}, ${hours}:${mins}`;
 
+                    const pName = order.product_name || 'Produto';
+                    const productIdShort = '#' + (order.product_id || '').split('-')[0].toUpperCase();
+
                     item.innerHTML = `
                         <div class="sh-col sh-col-date">${dateLabel}</div>
-
-                        <div class="sh-col sh-col-id">#${order.product_id.split('-')[0].toUpperCase()}</div>
 
                         <div class="sh-col sh-col-prod">
                             <div class="sh-texts">
                                 <span class="sh-title">${pName}</span>
+                                <span class="sh-sub">${productIdShort}</span>
                             </div>
                         </div>
 
@@ -2453,11 +2516,16 @@ function renderSalesHistory(orders) {
                             </div>
                         </div>
 
+                        <div class="sh-col sh-col-pay">${_paymentMethodBadge(order.payment_method)}</div>
+
                         <div class="sh-col sh-col-val">
                             <div class="sh-sale-revenue">R$ ${formatBRLValue(order.receita)}</div>
-                            ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatBRLValue(order.liquido)}</div>` : ''}
                         </div>
-                        
+
+                        <div class="sh-col sh-col-liq">
+                            <div class="sh-sale-net" style="font-size: 14px; font-weight: 600;">R$ ${formatBRLValue(order.liquido)}</div>
+                        </div>
+
                         <button class="sh-sale-actions">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                         </button>
@@ -2888,9 +2956,15 @@ async function openWithdrawalModal() {
     try {
         const res = await fetchManager.getWithdrawalInfo();
         if (res.ok && res.result) {
-            renderWithdrawalInfo(res.result, wrapEl);
+            const transfers = res.result.transfers || [];
+            const TED_FEE   = res.result.ted_fee_cents ?? 367;
+            if (transfers.length === 0) {
+                wrapEl.innerHTML = '<div class="sh-empty-state">Nenhum repasse realizado ainda.</div>';
+            } else {
+                _renderTransferHistory(transfers, TED_FEE, wrapEl);
+            }
         } else {
-            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar informações de saque.</div>';
+            wrapEl.innerHTML = '<div class="sh-empty-state">Erro ao carregar histórico de saques.</div>';
         }
     } catch (err) {
         console.error('openWithdrawalModal error:', err);
@@ -2903,6 +2977,23 @@ async function openWithdrawalModal() {
 function closeWithdrawalModal() {
     const modal = document.getElementById('withdrawalModal');
     if (modal) modal.classList.remove('show');
+}
+
+// Payment method badge helper
+function _paymentMethodBadge(method) {
+    if (method === 'pix') {
+        return `<span class="sh-pay-badge sh-pay-pix">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.354 3.707 5.06 10H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2.06l6.294 6.293a1 1 0 0 0 1.641-.306 1 1 0 0 0 .005-.727V4.74a1 1 0 0 0-1.646-.707z"/><path d="M16 7.586 14.586 9A5.958 5.958 0 0 1 16 12.001a5.958 5.958 0 0 1-1.414 3.001L16 16.414a7.975 7.975 0 0 0 2-4.413A7.975 7.975 0 0 0 16 7.586z"/><path d="m19.071 4.929-1.414 1.414A9.956 9.956 0 0 1 20 12a9.956 9.956 0 0 1-2.343 6.343l1.414 1.414A11.942 11.942 0 0 0 22 12a11.942 11.942 0 0 0-2.929-7.071z"/></svg>
+            PIX
+        </span>`;
+    }
+    if (method === 'credit_card') {
+        return `<span class="sh-pay-badge sh-pay-card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+            Crédito
+        </span>`;
+    }
+    return '<span style="color: var(--ap-text-muted); font-size: 13px;">—</span>';
 }
 
 // Status badge helper for transfer status
@@ -3119,7 +3210,7 @@ function renderWithdrawalInfo(data, wrapEl) {
         }
     });
 
-    // ── Transfer history ──
+    // ── Transfer history (grouped by year → month) ──
     const historySection = document.createElement('div');
     historySection.className = 'pd-section wd-history-section';
 
@@ -3134,74 +3225,198 @@ function renderWithdrawalInfo(data, wrapEl) {
         empty.textContent = 'Nenhum repasse realizado ainda.';
         historySection.appendChild(empty);
     } else {
-        const listEl = document.createElement('div');
-        listEl.className = 'wd-transfer-list custom-scrollbar';
-
-        // Table header
-        const headerEl = document.createElement('div');
-        headerEl.className = 'sh-table-header';
-        headerEl.innerHTML = `
-            <div class="sh-col" style="flex:1.5;">Data</div>
-            <div class="sh-col" style="flex:2;">Valor</div>
-            <div class="sh-col" style="flex:1.5;">Status</div>
-            <div class="sh-col" style="flex:2;">Previsão / Efetivado</div>
-        `;
-        listEl.appendChild(headerEl);
-
-        // Sort by newest first
-        const sorted = [...transfers].sort((a, b) =>
-            new Date(b.date_created || b.created_at || 0) - new Date(a.date_created || a.created_at || 0)
-        );
-
-        let transferLimit = 10;
-        const renderTransfers = () => {
-            // Remove existing rows (keep header)
-            while (listEl.children.length > 1) listEl.removeChild(listEl.lastChild);
-
-            sorted.slice(0, transferLimit).forEach(transfer => {
-                const createdAt = new Date(transfer.date_created || transfer.created_at);
-                const dateLabel = `${String(createdAt.getDate()).padStart(2, '0')} ${MONTH_SHORT[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
-
-                let fundingLabel = '—';
-                const fundingRaw = transfer.funding_date || transfer.funding_estimated_date;
-                if (fundingRaw) {
-                    const fd = new Date(fundingRaw);
-                    fundingLabel = `${String(fd.getDate()).padStart(2, '0')} ${MONTH_SHORT[fd.getMonth()]} ${fd.getFullYear()}`;
-                }
-
-                const row = document.createElement('div');
-                row.className = 'sh-sale-item wd-transfer-row';
-                row.innerHTML = `
-                    <div class="sh-col" style="flex:1.5;">${dateLabel}</div>
-                    <div class="sh-col" style="flex:2;">
-                        <span class="wd-transfer-amount">R$ ${formatBRLValue(transfer.amount || 0)}</span>
-                    </div>
-                    <div class="sh-col" style="flex:1.5;">${_transferStatusBadge(transfer.status)}</div>
-                    <div class="sh-col" style="flex:2;">${fundingLabel}</div>
-                `;
-                listEl.appendChild(row);
-            });
-
-            if (transferLimit < sorted.length) {
-                const wrapBtn = document.createElement('div');
-                wrapBtn.className = 'sh-load-more-wrap';
-                const moreBtn = document.createElement('button');
-                moreBtn.className = 'sh-load-more';
-                moreBtn.textContent = `Carregar mais (${sorted.length - transferLimit} restantes)`;
-                moreBtn.addEventListener('click', () => {
-                    transferLimit += 10;
-                    renderTransfers();
-                });
-                wrapBtn.appendChild(moreBtn);
-                listEl.appendChild(wrapBtn);
-            }
-        };
-        renderTransfers();
-
-        historySection.appendChild(listEl);
+        _renderTransferHistory(transfers, TED_FEE, historySection);
     }
 
     wrapEl.appendChild(historySection);
+}
+
+// ── Render transfer history grouped by year → month ──
+function _renderTransferHistory(transfers, TED_FEE, container) {
+    // 1) Group by year → month
+    const grouped = {};
+    transfers.forEach(t => {
+        const d = new Date(t.date_created || t.created_at || 0);
+        const y = d.getFullYear();
+        const m = d.getMonth(); // 0-11
+        const isTransferred = t.status === 'transferred';
+
+        // "Sacado" e "Recebido" só contam transferências com sucesso
+        // sacado  = recebido + taxa TED (valor bruto solicitado)
+        // recebido = t.amount (valor líquido que chegou na conta)
+        // fee      = TED_FEE (taxa debitada)
+        const sacado   = isTransferred ? (t.amount || 0) + TED_FEE : 0;
+        const received = isTransferred ? (t.amount || 0) : 0;
+        const fee      = isTransferred ? TED_FEE : 0;
+
+        if (!grouped[y]) {
+            grouped[y] = { successCount: 0, sacado: 0, received: 0, fees: 0, months: {} };
+        }
+        if (!grouped[y].months[m]) {
+            grouped[y].months[m] = { successCount: 0, sacado: 0, received: 0, fees: 0, list: [] };
+        }
+
+        if (isTransferred) grouped[y].successCount++;
+        grouped[y].sacado    += sacado;
+        grouped[y].received  += received;
+        grouped[y].fees      += fee;
+
+        if (isTransferred) grouped[y].months[m].successCount++;
+        grouped[y].months[m].sacado    += sacado;
+        grouped[y].months[m].received  += received;
+        grouped[y].months[m].fees      += fee;
+        grouped[y].months[m].list.push({ ...t, dateObj: d, sacado, received, fee });
+    });
+
+    const now = new Date();
+    const currentYear  = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 2) Build HTML — anos decrescentes
+    const yearsSorted = Object.keys(grouped).sort((a, b) => b - a);
+
+    yearsSorted.forEach(yStr => {
+        const yData = grouped[yStr];
+        const year  = parseInt(yStr);
+
+        const yearSection = document.createElement('div');
+        yearSection.className = 'sh-year-group';
+
+        // ── Year header: Sacado | Recebido | Taxas TED | Transferências ──
+        const yHeader = document.createElement('div');
+        yHeader.className = 'sh-year-header';
+        yHeader.innerHTML = `
+            <div class="sh-year-stats">
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Sacado</span>
+                    <span class="sh-year-stat-value">R$ ${formatBRLValue(yData.sacado)}</span>
+                </div>
+                <div class="sh-year-divider"></div>
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Recebido</span>
+                    <span class="sh-year-stat-value highlight">R$ ${formatBRLValue(yData.received)}</span>
+                </div>
+                <div class="sh-year-divider"></div>
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Taxas TED</span>
+                    <span class="sh-year-stat-value" style="color: var(--ap-danger, #ef4444);">− R$ ${formatBRLValue(yData.fees)}</span>
+                </div>
+                <div class="sh-year-divider"></div>
+                <div class="sh-year-stat">
+                    <span class="sh-year-stat-label">Saques</span>
+                    <span class="sh-year-stat-value">${yData.successCount}</span>
+                </div>
+            </div>
+            <div class="sh-year-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                ${year}
+            </div>
+        `;
+        yearSection.appendChild(yHeader);
+
+        // ── Meses decrescentes ──
+        const monthsSorted = Object.keys(yData.months).sort((a, b) => b - a);
+
+        monthsSorted.forEach(mStr => {
+            const mData          = yData.months[mStr];
+            const month          = parseInt(mStr);
+            const isCurrentMonth = (year === currentYear && month === currentMonth);
+
+            const mGroup = document.createElement('div');
+            mGroup.className = `sh-month-group ${isCurrentMonth ? 'open' : ''}`;
+
+            const mBtn = document.createElement('button');
+            mBtn.className = 'sh-month-btn';
+            mBtn.innerHTML = `
+                <div class="sh-month-title-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon"><path d="m6 9 6 6 6-6"/></svg>
+                    <span>${MONTH_NAMES[month]}</span>
+                    ${isCurrentMonth ? '<span class="sh-month-tag">(Esse mês)</span>' : ''}
+                    <span class="sh-month-val-green">R$ ${formatBRLValue(mData.received)}</span>
+                </div>
+                <div class="sh-month-stats">
+                    Sacado R$ ${formatBRLValue(mData.sacado)} &nbsp;·&nbsp; Recebido R$ ${formatBRLValue(mData.received)} &nbsp;·&nbsp; ${mData.successCount} ${mData.successCount === 1 ? 'saque' : 'saques'}
+                </div>
+            `;
+
+            const mContent = document.createElement('div');
+            mContent.className = 'sh-month-content';
+
+            mContent.innerHTML = `
+                <div class="sh-table-header">
+                    <div class="sh-col" style="flex:1.8;">Data</div>
+                    <div class="sh-col" style="flex:1.4;">Status</div>
+                    <div class="sh-col" style="flex:1.6; text-align:right; padding-right: 8px;">Sacado</div>
+                    <div class="sh-col" style="flex:1.6; text-align:right; padding-right: 8px;">Recebido</div>
+                    <div class="sh-col" style="flex:1.4; text-align:right; padding-right: 8px;">Taxa TED</div>
+                </div>
+            `;
+
+            // Mais recentes primeiro
+            const sortedItems = [...mData.list].sort((a, b) => b.dateObj - a.dateObj);
+
+            let currentLimit = 10;
+            const renderItems = () => {
+                // Remove linhas (mantém o header)
+                while (mContent.children.length > 1) mContent.removeChild(mContent.lastChild);
+
+                sortedItems.slice(0, currentLimit).forEach(t => {
+                    const day       = String(t.dateObj.getDate()).padStart(2, '0');
+                    const hours     = String(t.dateObj.getHours()).padStart(2, '0');
+                    const mins      = String(t.dateObj.getMinutes()).padStart(2, '0');
+                    const dateLabel = `${day} ${MONTH_SHORT[t.dateObj.getMonth()]}, ${hours}:${mins}`;
+
+                    const row = document.createElement('div');
+                    row.className = 'sh-sale-item wd-transfer-row';
+                    row.innerHTML = `
+                        <div class="sh-col" style="flex:1.8;">${dateLabel}</div>
+                        <div class="sh-col" style="flex:1.4;">${_transferStatusBadge(t.status)}</div>
+                        <div class="sh-col" style="flex:1.6; text-align:right; padding-right: 8px;">
+                            ${t.sacado > 0
+                                ? `<span class="wd-transfer-amount">R$ ${formatBRLValue(t.sacado)}</span>`
+                                : `<span class="sh-sale-net">—</span>`}
+                        </div>
+                        <div class="sh-col" style="flex:1.6; text-align:right; padding-right: 8px;">
+                            ${t.received > 0
+                                ? `<span class="sh-sale-revenue">R$ ${formatBRLValue(t.received)}</span>`
+                                : `<span class="sh-sale-net">—</span>`}
+                        </div>
+                        <div class="sh-col" style="flex:1.4; text-align:right; padding-right: 8px;">
+                            ${t.fee > 0
+                                ? `<span style="color: var(--ap-danger, #ef4444); font-size: 0.82rem;">− R$ ${formatBRLValue(t.fee)}</span>`
+                                : `<span class="sh-sale-net">—</span>`}
+                        </div>
+                    `;
+                    mContent.appendChild(row);
+                });
+
+                if (currentLimit < sortedItems.length) {
+                    const wrapBtn = document.createElement('div');
+                    wrapBtn.className = 'sh-load-more-wrap';
+                    const moreBtn = document.createElement('button');
+                    moreBtn.className = 'sh-load-more';
+                    moreBtn.textContent = `Carregar mais (${sortedItems.length - currentLimit} restantes)`;
+                    moreBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        currentLimit += 10;
+                        renderItems();
+                    });
+                    wrapBtn.appendChild(moreBtn);
+                    mContent.appendChild(wrapBtn);
+                }
+            };
+
+            renderItems();
+
+            mBtn.addEventListener('click', () => mGroup.classList.toggle('open'));
+
+            mGroup.appendChild(mBtn);
+            mGroup.appendChild(mContent);
+            yearSection.appendChild(mGroup);
+        });
+
+        container.appendChild(yearSection);
+    });
 }
 
 // ============================================================================

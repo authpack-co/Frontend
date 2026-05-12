@@ -959,6 +959,49 @@
     min-width: 80px;
 }
 
+.sh-col-liq {
+    flex-shrink: 0;
+    align-items: flex-end;
+    min-width: 80px;
+}
+
+.sh-col-pay {
+    width: 82px;
+    flex-shrink: 0;
+    align-items: flex-start;
+}
+
+.sh-pay-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+}
+
+.sh-pay-pix {
+    background: rgba(74, 222, 128, 0.12);
+    color: #16a34a;
+}
+
+.sh-pay-card {
+    background: rgba(96, 165, 250, 0.12);
+    color: #2563eb;
+}
+
+[data-theme="dark"] .sh-pay-pix {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+}
+
+[data-theme="dark"] .sh-pay-card {
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+}
+
 /* Helpers */
 .sh-avatar {
     width: 36px;
@@ -1499,7 +1542,6 @@
 
 .wd-transfer-row {
     border-bottom: 1px solid var(--ap-border);
-    padding: 12px 0;
 }
 
 .wd-transfer-row:last-child {
