@@ -2219,15 +2219,6 @@ function renderUserInfo(userInfo) {
     if (sidebarProfileEmail) sidebarProfileEmail.textContent = email;
     if (sidebarProfilePicture) sidebarProfilePicture.src = picture;
 
-    // Dropdown header elements
-    const dropdownName = document.getElementById('dropdown-name');
-    const dropdownEmail = document.getElementById('dropdown-email');
-    const dropdownAvatar = document.getElementById('dropdown-avatar');
-
-    if (dropdownName) dropdownName.textContent = name;
-    if (dropdownEmail) dropdownEmail.textContent = email;
-    if (dropdownAvatar) dropdownAvatar.src = picture;
-
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
