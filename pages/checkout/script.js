@@ -1,24 +1,30 @@
 // ============================================================================
 // Checkout Page — /pages/checkout/?orderId=...
-// Fetches a checkout order and allows payment via card or Pix.
+//
+// Flow:
+//   Step 1 "Dados"    — user picks method (card | pix) + fills all fields
+//   Step 2 "Pagamento"— result screen:
+//      Card → Processing spinner → Success | Error
+//      Pix  → QR Code + copy + polling until confirmed
+//
+// Submit button lives in the right summary column.
 // ============================================================================
 
 (async function () {
     const container = document.getElementById('checkout-state');
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('orderId');
+    const params    = new URLSearchParams(window.location.search);
+    const orderId   = params.get('orderId');
 
-    // State
-    let _order = null;
+    let _order          = null;
     let _selectedMethod = 'credit_card';
     let _expiryInterval = null;
 
     // ====================================================================
-    // INIT
+    // BOOT
     // ====================================================================
 
     if (!orderId) {
-        showError('Pedido não encontrado', 'Nenhum ID de pagamento foi informado na URL.');
+        showGlobalError('Pedido não encontrado', 'Nenhum ID de pagamento foi informado na URL.');
         return;
     }
 
@@ -26,43 +32,23 @@
         const res = await fetchManager.getCheckoutOrder(orderId);
 
         if (!res.ok) {
-            if (res.status === 403) {
-                showError('Acesso negado', 'Este link de pagamento não pertence à sua conta.');
-            } else if (res.status === 401) {
-                // Not authenticated — redirect to login
-                window.location.href = '/pages/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-                return;
-            } else {
-                showError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.');
-            }
+            if      (res.status === 403) showGlobalError('Acesso negado', 'Este link de pagamento não pertence à sua conta.');
+            else if (res.status === 401) { window.location.href = '/pages/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+            else                         showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.');
             return;
         }
 
         _order = res.result?.data;
+        if (!_order) { showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.'); return; }
 
-        if (!_order) {
-            showError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.');
-            return;
-        }
-
-        // Route by status
         switch (_order.status) {
-            case 'expired':
-                setElementState(container, 'expired');
-                return;
-            case 'paid':
-                setElementState(container, 'paid');
-                return;
-            case 'failed':
-                showError('Pagamento falhou', 'Houve um erro ao processar este pagamento. Tente novamente.');
-                return;
-            case 'canceled':
-                showError('Pagamento cancelado', 'Este pagamento foi cancelado.');
-                return;
+            case 'expired':    setElementState(container, 'expired'); return;
+            case 'paid':       setElementState(container, 'paid');    return;
+            case 'failed':     showGlobalError('Pagamento falhou',   'Houve um erro ao processar este pagamento.'); return;
+            case 'canceled':   showGlobalError('Pagamento cancelado','Este pagamento foi cancelado.'); return;
             case 'processing':
-                // Page refreshed while waiting for webhook — resume polling
-                showProcessingState();
-                pollCheckoutOrder(orderId);
+                showGlobalProcessing();
+                pollOrder(orderId);
                 return;
             case 'pending':
                 renderCheckout(_order);
@@ -71,11 +57,11 @@
                 startExpiryTimer();
                 break;
             default:
-                showError('Status desconhecido', 'Este pagamento possui um status inesperado.');
+                showGlobalError('Status desconhecido', 'Este pagamento possui um status inesperado.');
         }
     } catch (err) {
-        console.error('Checkout init error:', err);
-        showError('Erro inesperado', 'Não foi possível carregar o pagamento. Tente novamente.');
+        console.error('[checkout] init error:', err);
+        showGlobalError('Erro inesperado', 'Não foi possível carregar o pagamento. Tente novamente.');
     }
 
     // ====================================================================
@@ -83,76 +69,45 @@
     // ====================================================================
 
     function renderCheckout(order) {
-        const meta = order.metadata || {};
+        const meta           = order.metadata || {};
         const paymentMethods = order.payment_methods || ['credit_card'];
+        const totalCents     = order.amount_cents || 0;
+        const feeCents       = meta.platformFeeCents || 0;
+        const productCents   = meta.productPriceCents || (totalCents - feeCents);
 
         // Product name
         const productName = order.product_name || meta.planName || 'Produto';
         document.getElementById('ck-product-name').textContent = productName;
-        document.title = `${productName} — Checkout — AuthPack`;
+        document.title = `${productName} — Checkout`;
 
-        // Description
-        const descEl = document.getElementById('ck-product-desc');
-        if (order.product_description) {
-            descEl.textContent = order.product_description;
-            descEl.style.display = 'block';
+        // Price line (e.g. "R$ 997,00 /ano" or "Pagamento único")
+        const priceLine = document.getElementById('ck-product-price-line');
+        if (order.billing_type === 'subscription') {
+            priceLine.textContent = `${formatCurrency(totalCents)} /mês`;
+        } else {
+            priceLine.textContent = 'Pagamento único';
         }
 
-        // Billing badge
-        const badge = document.getElementById('ck-billing-badge');
-        badge.className = `ck-billing-badge ${order.billing_type}`;
-        badge.textContent = order.billing_type === 'subscription' ? 'Assinatura mensal' : 'Pagamento único';
-
-        // Price breakdown
-        const totalCents = order.amount_cents || 0;
-        const feeCents = meta.platformFeeCents || 0;
-        const productCents = meta.productPriceCents || (totalCents - feeCents);
-
+        // Breakdown
         document.getElementById('ck-breakdown-product-value').textContent = formatCurrency(productCents);
-        document.getElementById('ck-breakdown-fee-value').textContent = formatCurrency(feeCents);
-        document.getElementById('ck-breakdown-total-value').textContent = formatCurrency(totalCents);
-
+        document.getElementById('ck-breakdown-fee-value').textContent     = formatCurrency(feeCents);
+        document.getElementById('ck-breakdown-total-value').textContent   = formatCurrency(totalCents);
         if (order.billing_type === 'subscription') {
             document.getElementById('ck-breakdown-product-label').textContent = 'Assinatura mensal';
         }
 
-        // Submit button text
-        updateSubmitButton();
-
         // Payment methods visibility
-        const methodCard = document.getElementById('ck-method-card');
-        const methodPix = document.getElementById('ck-method-pix');
+        if (!paymentMethods.includes('credit_card')) document.getElementById('ck-m-card-label').style.display = 'none';
+        if (!paymentMethods.includes('pix'))         document.getElementById('ck-m-pix-label').style.display  = 'none';
 
-        if (!paymentMethods.includes('credit_card')) {
-            methodCard.style.display = 'none';
-        }
-        if (!paymentMethods.includes('pix')) {
-            methodPix.style.display = 'none';
-        }
-
-        // If only one method, auto-select it
+        // If only one method available, auto-select + hide selector
         if (paymentMethods.length === 1) {
             _selectedMethod = paymentMethods[0];
-            document.querySelectorAll('.ck-method').forEach(m => m.classList.remove('active'));
-            const activeBtn = document.querySelector(`.ck-method[data-method="${_selectedMethod}"]`);
-            if (activeBtn) activeBtn.classList.add('active');
+            document.getElementById('ck-methods').style.display = 'none';
         }
 
-        // Set the initial visible method
-        switchPaymentMethod(_selectedMethod);
-    }
-
-    function updateSubmitButton() {
-        const btn = document.getElementById('ck-submit');
-        const totalStr = formatCurrency(_order.amount_cents || 0);
-
-        if (_selectedMethod === 'pix') {
-            btn.textContent = `Gerar Pix ${totalStr}`;
-            btn.classList.add('ck-submit-pix');
-        } else {
-            btn.textContent = `Pagar ${totalStr}`;
-            btn.classList.remove('ck-submit-pix');
-        }
+        switchMethod(_selectedMethod);
+        updateCTA();
     }
 
     // ====================================================================
@@ -161,289 +116,313 @@
 
     function setupEvents() {
         // Method switching
-        document.querySelectorAll('.ck-method').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.ck-method').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                _selectedMethod = tab.dataset.method;
-                switchPaymentMethod(_selectedMethod);
-                updateSubmitButton();
-                hideError();
+        document.querySelectorAll('.ck-method').forEach(label => {
+            label.addEventListener('click', () => {
+                const radio = label.querySelector('input[type="radio"]');
+                if (!radio) return;
+                document.querySelectorAll('.ck-method').forEach(l => l.classList.remove('ck-method--active'));
+                label.classList.add('ck-method--active');
+                _selectedMethod = radio.value;
+                switchMethod(_selectedMethod);
+                updateCTA();
+                hideFormError();
             });
         });
 
-        // Input formatting
-        setupInputFormatting();
+        // Input masks
+        setupMasks();
 
-        // Submit
+        // CTA button (right column)
         document.getElementById('ck-submit').addEventListener('click', handleSubmit);
 
-        // Pix code copy
+        // Retry button
+        document.getElementById('ck-btn-retry').addEventListener('click', () => {
+            showStep(1);
+            resetRightColumn();
+        });
+
+        // Pix copy
         document.getElementById('ck-pix-copy-btn').addEventListener('click', () => {
             const code = document.getElementById('ck-pix-code').textContent;
             if (!code) return;
             navigator.clipboard.writeText(code).then(() => {
                 const btn = document.getElementById('ck-pix-copy-btn');
-                const original = btn.innerHTML;
-                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Copiado';
+                const orig = btn.innerHTML;
+                btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Copiado!`;
                 btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.innerHTML = original;
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => { });
+                setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+            }).catch(() => {});
         });
     }
 
-    function switchPaymentMethod(method) {
-        const cardForm = document.getElementById('ck-card-form');
-        const pixForm = document.getElementById('ck-pix-form');
-
+    function switchMethod(method) {
+        const cardForm  = document.getElementById('ck-card-form');
+        const pixNotice = document.getElementById('ck-pix-info-panel');
         if (method === 'pix') {
-            cardForm.style.display = 'none';
-            pixForm.style.display = 'block';
+            cardForm.style.display  = 'none';
+            pixNotice.style.display = 'block';
         } else {
-            cardForm.style.display = 'block';
-            pixForm.style.display = 'none';
+            cardForm.style.display  = 'block';
+            pixNotice.style.display = 'none';
         }
     }
 
-    function setupInputFormatting() {
-        // Card number
-        const cardInput = document.getElementById('ck-card-number');
-        cardInput.addEventListener('input', () => {
-            let val = cardInput.value.replace(/\D/g, '');
-            val = val.replace(/(.{4})/g, '$1 ').trim();
-            cardInput.value = val;
-        });
+    function updateCTA() {
+        if (!_order) return;
+        const label = document.getElementById('ck-cta-label');
+        const icon  = document.getElementById('ck-cta-icon');
+        if (_selectedMethod === 'pix') {
+            label.textContent   = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
+        } else {
+            label.textContent   = `Pagar ${formatCurrency(_order.amount_cents)}`;
+        }
+        if (icon) icon.style.display = '';
+    }
 
-        // Expiry
-        const expiryInput = document.getElementById('ck-card-expiry');
-        expiryInput.addEventListener('input', () => {
-            let val = expiryInput.value.replace(/\D/g, '');
-            if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
-            expiryInput.value = val;
-        });
+    // ====================================================================
+    // STEP NAVIGATION
+    // ====================================================================
 
-        // Doc (CPF/CNPJ)
-        const docInput = document.getElementById('ck-doc');
-        docInput.addEventListener('input', () => {
-            let val = docInput.value.replace(/\D/g, '');
-            if (val.length <= 11) {
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-            } else {
-                val = val.replace(/^(\d{2})(\d)/, '$1.$2');
-                val = val.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-                val = val.replace(/\.(\d{3})(\d)/, '.$1/$2');
-                val = val.replace(/(\d{4})(\d)/, '$1-$2');
-            }
-            docInput.value = val;
-        });
+    function showStep(step) {
+        const panelDados = document.getElementById('ck-panel-dados');
+        const panelPag   = document.getElementById('ck-panel-pagamento');
+        const s1         = document.getElementById('ck-s1');
+        const s2         = document.getElementById('ck-s2');
+        const line       = document.getElementById('ck-step-line');
 
-        // Phone
-        const phoneInput = document.getElementById('ck-phone');
-        phoneInput.addEventListener('input', () => {
-            let val = phoneInput.value.replace(/\D/g, '');
-            if (val.length > 2) val = '(' + val.substring(0, 2) + ') ' + val.substring(2);
-            if (val.length > 9) val = val.substring(0, 10) + '-' + val.substring(10);
-            phoneInput.value = val;
-        });
+        if (step === 1) {
+            panelDados.style.display = 'flex';
+            panelPag.style.display   = 'none';
+            s1.className = 'ck-step ck-step--active';
+            s2.className = 'ck-step ck-step--pending';
+            line.classList.remove('ck-step__line--done');
 
-        // Zip code (CEP)
-        const zipInput = document.getElementById('ck-zip');
-        if (zipInput) {
-            zipInput.addEventListener('input', () => {
-                let val = zipInput.value.replace(/\D/g, '');
-                if (val.length > 5) val = val.substring(0, 5) + '-' + val.substring(5, 8);
-                zipInput.value = val;
-            });
+        } else if (step === 2) {
+            panelDados.style.display = 'none';
+            panelPag.style.display   = 'flex';
+            s1.className = 'ck-step ck-step--done';
+            s2.className = 'ck-step ck-step--active';
+            line.classList.add('ck-step__line--done');
         }
     }
 
     // ====================================================================
-    // SUBMIT
+    // SUBMIT HANDLER
     // ====================================================================
 
     async function handleSubmit() {
-        hideError();
+        hideFormError();
 
-        // Validate customer fields
-        const customerPayload = getCustomerPayload();
-        if (!customerPayload) return;
+        const customer = getCustomerPayload();
+        if (!customer) return;
 
         if (_selectedMethod === 'credit_card') {
-            await handleCardPayment(customerPayload);
+            await doCardPayment(customer);
         } else {
-            await handlePixPayment(customerPayload);
+            await doPixPayment(customer);
         }
     }
 
-    async function handleCardPayment(customerPayload) {
-        const btn = document.getElementById('ck-submit');
+    // ── Card Payment ──────────────────────────────────────────────────
+    async function doCardPayment(customer) {
         const number = document.getElementById('ck-card-number').value.replace(/\s/g, '');
         const holder = document.getElementById('ck-card-holder').value.trim();
         const expiry = document.getElementById('ck-card-expiry').value.trim();
-        const cvv = document.getElementById('ck-card-cvv').value.trim();
+        const cvv    = document.getElementById('ck-card-cvv').value.trim();
 
-        // Validate
-        if (number.length < 13) return displayError('Número do cartão inválido');
-        if (!holder) return displayError('Nome no cartão é obrigatório');
-        if (!/^\d{2}\/\d{2}$/.test(expiry)) return displayError('Validade inválida (MM/AA)');
-        if (cvv.length < 3) return displayError('CVV inválido');
+        if (number.length < 13)              return showFormError('Número do cartão inválido.');
+        if (!holder)                         return showFormError('Nome no cartão é obrigatório.');
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) return showFormError('Validade inválida (MM/AA).');
+        if (cvv.length < 3)                  return showFormError('CVV inválido.');
 
-        const [expMonth, expYear] = expiry.split('/');
+        const billing = getBillingAddress();
+        if (!billing) return;
 
-        // Billing address
-        const billingAddress = getBillingAddressPayload();
-        if (!billingAddress) return;
+        const [expM, expY] = expiry.split('/');
 
-        btn.disabled = true;
-        btn.innerHTML = '<div class="ck-btn-spinner"></div> Processando...';
+        // → Step 2: processing
+        showStep(2);
+        showResultState('processing');
+        setCTALoading(true);
 
         try {
-            // 1) Tokenize card
-            const cardToken = await tokenizeCard({
-                number,
-                holder_name: holder,
-                exp_month: parseInt(expMonth, 10),
-                exp_year: parseInt('20' + expYear, 10),
-                cvv,
-            });
+            const cardToken = await tokenizeCard({ number, holder_name: holder, exp_month: parseInt(expM), exp_year: parseInt('20' + expY), cvv });
 
-            // 2) Pay order
             const res = await fetchManager.payCheckoutOrder(orderId, {
                 payment_method: 'credit_card',
-                customer: customerPayload,
-                credit_card: {
-                    card_token: cardToken,
-                    billing_address: billingAddress,
-                },
+                customer,
+                credit_card: { card_token: cardToken, billing_address: billing },
             });
 
-            if (!res.ok) {
-                const errMsg = getErrorMessage(res);
-                throw new Error(errMsg);
-            }
+            if (!res.ok) throw new Error(getErrMsg(res));
 
-            // Gateway accepted the request — now wait for webhook confirmation
             if (res.result?.processing) {
-                pollCheckoutOrder(res.result.orderId || orderId, {
-                    onPaid: () => showPaidState(),
-                    onFailed: () => {
-                        displayError('Pagamento recusado. Tente novamente ou use outro método.');
-                        btn.disabled = false;
-                        updateSubmitButton();
-                    },
+                pollOrder(res.result.orderId || orderId, {
+                    onPaid:    () => showCardSuccess(),
+                    onFailed:  (msg) => showCardError(msg),
                     onExpired: () => setElementState(container, 'expired'),
-                    onTimeout: () => {
-                        displayError('Estamos aguardando confirmação do gateway. Tente novamente em alguns instantes.');
-                        btn.disabled = false;
-                        updateSubmitButton();
-                    },
+                    onTimeout: () => showCardError('Aguardando confirmação do gateway. Tente novamente em instantes.'),
                 });
                 return;
             }
 
-            // Legacy fallback (direct success)
-            showPaidState();
+            showCardSuccess();
+
         } catch (err) {
-            displayError(err.message || 'Erro ao processar pagamento');
-            btn.disabled = false;
-            updateSubmitButton();
+            showCardError(err.message || 'Erro ao processar pagamento.');
         }
     }
 
-    async function handlePixPayment(customerPayload) {
-        const btn = document.getElementById('ck-submit');
-
-        btn.disabled = true;
-        btn.innerHTML = '<div class="ck-btn-spinner"></div> Gerando Pix...';
+    // ── Pix Payment ───────────────────────────────────────────────────
+    async function doPixPayment(customer) {
+        // → Step 2: processing spinner
+        showStep(2);
+        showResultState('processing');
+        setCTALoading(true);
 
         try {
             const res = await fetchManager.payCheckoutOrder(orderId, {
                 payment_method: 'pix',
-                customer: customerPayload,
+                customer,
             });
 
-            if (!res.ok) {
-                const errMsg = getErrorMessage(res);
-                throw new Error(errMsg);
-            }
+            if (!res.ok) throw new Error(getErrMsg(res));
 
-            // Check for Pix QR code in response (synchronous flow)
             const charges = res.result?.charges || [];
-            const lastTx = charges[0]?.last_transaction;
+            const tx      = charges[0]?.last_transaction;
 
-            if (lastTx && lastTx.transaction_type === 'pix') {
-                showPixQR(lastTx.qr_code_url, lastTx.qr_code);
-                btn.style.display = 'none';
-                // Poll in background so page auto-updates when Pix is paid
-                pollCheckoutOrder(orderId, {
-                    onPaid: () => showPaidState(),
-                    onFailed: () => showError('Pagamento recusado', 'Houve um problema com seu Pix.'),
+            if (tx && tx.transaction_type === 'pix') {
+                showPixQR(tx.qr_code_url, tx.qr_code);
+                hideCTA();
+
+                pollOrder(orderId, {
+                    onPaid:    () => showPixConfirmed(),
+                    onFailed:  () => showGlobalError('Pix recusado', 'Houve um problema com seu Pix.'),
                     onExpired: () => setElementState(container, 'expired'),
                 });
                 return;
             }
 
-            // Fallback if no QR
-            showPaidState();
+            showCardSuccess(); // fallback: direct success
+
         } catch (err) {
-            displayError(err.message || 'Erro ao gerar Pix');
-            btn.disabled = false;
-            updateSubmitButton();
+            // Back to step 1 on pix generation error
+            showStep(1);
+            showFormError(err.message || 'Erro ao gerar Pix.');
+            resetRightColumn();
         }
     }
 
     // ====================================================================
-    // TOKENIZATION
+    // RESULT STATE HELPERS
     // ====================================================================
 
-    async function tokenizeCard(cardData) {
-        const url = `https://api.pagar.me/core/v5/tokens?appId=${PAGARME_PUBLIC_KEY}`;
+    function showResultState(state) {
+        const processing = document.getElementById('ck-state-processing');
+        const success    = document.getElementById('ck-state-success');
+        const error      = document.getElementById('ck-state-error');
+        const pix        = document.getElementById('ck-state-pix');
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'card',
-                card: {
-                    number: cardData.number,
-                    holder_name: cardData.holder_name,
-                    exp_month: cardData.exp_month,
-                    exp_year: cardData.exp_year,
-                    cvv: cardData.cvv,
-                },
-            }),
-        });
+        processing.style.display = state === 'processing' ? 'flex' : 'none';
+        success.style.display    = state === 'success'    ? 'flex' : 'none';
+        error.style.display      = state === 'error'      ? 'flex' : 'none';
+        pix.style.display        = state === 'pix'        ? 'block' : 'none';
+    }
 
-        if (!res.ok) {
-            const errData = await res.json().catch(() => null);
-            throw new Error(errData?.message || 'Erro ao processar cartão');
+    function showCardSuccess() {
+        if (_expiryInterval) clearInterval(_expiryInterval);
+
+        let msg = 'Seu acesso já está ativo.';
+        if (_order?.origin === 'marketplace') {
+            msg = _order.billing_type === 'subscription'
+                ? 'Sua assinatura foi realizada! O acesso será ativado assim que o pagamento for confirmado.'
+                : 'Seu acesso já está ativo.';
+        } else {
+            msg = 'Sua assinatura do AuthPack Plus está ativa!';
         }
 
-        const data = await res.json();
-        return data.id;
+        document.getElementById('ck-success-msg').textContent = msg;
+        showResultState('success');
+        showDashboardButton();
+    }
+
+    function showCardError(msg) {
+        document.getElementById('ck-error-detail').textContent = msg || 'Verifique os dados e tente novamente.';
+        showResultState('error');
+        showRetryButton();
+    }
+
+    function showPixQR(qrUrl, qrCode) {
+        showResultState('pix');
+        if (qrUrl)  document.getElementById('ck-pix-qr-img').src = qrUrl;
+        if (qrCode) document.getElementById('ck-pix-code').textContent = qrCode;
+        document.getElementById('ck-pix-waiting').classList.add('visible');
+    }
+
+    function showPixConfirmed() {
+        if (_expiryInterval) clearInterval(_expiryInterval);
+        document.getElementById('ck-pix-waiting').classList.remove('visible');
+        document.getElementById('ck-pix-paid').classList.add('visible');
+        showDashboardButton();
     }
 
     // ====================================================================
-    // CUSTOMER VALIDATION
+    // RIGHT-COLUMN BUTTON STATE
+    // ====================================================================
+
+    function setCTALoading(loading) {
+        const btn     = document.getElementById('ck-submit');
+        const label   = document.getElementById('ck-cta-label');
+        const icon    = document.getElementById('ck-cta-icon');
+        const spinner = document.getElementById('ck-cta-spinner');
+
+        btn.disabled          = loading;
+        label.textContent     = loading ? 'Processando...' : '';
+        icon.style.display    = loading ? 'none' : '';
+        spinner.style.display = loading ? 'flex' : 'none';
+
+        if (!loading) updateCTA();
+    }
+
+    function hideCTA() {
+        document.getElementById('ck-submit').style.display = 'none';
+    }
+
+    function showRetryButton() {
+        const submit = document.getElementById('ck-submit');
+        const retry  = document.getElementById('ck-btn-retry');
+        submit.style.display = 'none';
+        retry.style.display  = 'flex';
+    }
+
+    function showDashboardButton() {
+        const submit    = document.getElementById('ck-submit');
+        const dashboard = document.getElementById('ck-btn-dashboard');
+        submit.style.display    = 'none';
+        dashboard.style.display = 'flex';
+    }
+
+    function resetRightColumn() {
+        document.getElementById('ck-submit').style.display      = '';
+        document.getElementById('ck-btn-retry').style.display   = 'none';
+        document.getElementById('ck-btn-dashboard').style.display = 'none';
+        const btn = document.getElementById('ck-submit');
+        btn.disabled = false;
+        document.getElementById('ck-cta-spinner').style.display = 'none';
+        document.getElementById('ck-cta-icon').style.display    = '';
+        updateCTA();
+    }
+
+    // ====================================================================
+    // VALIDATION
     // ====================================================================
 
     function getCustomerPayload() {
-        const rawDoc = document.getElementById('ck-doc').value.replace(/\D/g, '');
+        const rawDoc   = document.getElementById('ck-doc').value.replace(/\D/g, '');
         const rawPhone = document.getElementById('ck-phone').value.replace(/\D/g, '');
 
-        if (rawDoc.length < 11) {
-            displayError('CPF ou CNPJ inválido');
-            return null;
-        }
-        if (rawPhone.length < 10) {
-            displayError('Celular inválido (inclua o DDD)');
-            return null;
-        }
+        if (rawDoc.length < 11)   { showFormError('CPF ou CNPJ inválido.');              return null; }
+        if (rawPhone.length < 10) { showFormError('Celular inválido (inclua o DDD).');   return null; }
 
         return {
             document: rawDoc,
@@ -451,52 +430,125 @@
                 mobile_phone: {
                     country_code: '55',
                     area_code: rawPhone.substring(0, 2),
-                    number: rawPhone.substring(2),
+                    number:    rawPhone.substring(2),
                 },
             },
         };
     }
 
-    function getBillingAddressPayload() {
-        const zip = document.getElementById('ck-zip').value.replace(/\D/g, '');
-        const line1 = document.getElementById('ck-line1').value.trim();
-        const line2 = document.getElementById('ck-line2').value.trim();
-        const city = document.getElementById('ck-city').value.trim();
-        const state = document.getElementById('ck-state').value.trim();
+    function getBillingAddress() {
+        const zip     = document.getElementById('ck-zip').value.replace(/\D/g, '');
+        const line1   = document.getElementById('ck-line1').value.trim();
+        const line2   = document.getElementById('ck-line2').value.trim();
+        const city    = document.getElementById('ck-city').value.trim();
+        const state   = document.getElementById('ck-state').value.trim();
         const country = document.getElementById('ck-country').value.trim().toUpperCase();
 
-        if (!zip || zip.length < 8) {
-            displayError('CEP inválido');
-            return null;
-        }
-        if (!line1) {
-            displayError('Endereço (rua, número e bairro) é obrigatório');
-            return null;
-        }
-        if (!city) {
-            displayError('Cidade é obrigatória');
-            return null;
-        }
-        if (!state || state.length !== 2) {
-            displayError('UF inválida');
-            return null;
-        }
-        if (!country || country.length !== 2) {
-            displayError('País inválido');
-            return null;
-        }
+        if (!zip || zip.length < 8)          { showFormError('CEP inválido.');                                   return null; }
+        if (!line1)                           { showFormError('Endereço (rua, número e bairro) é obrigatório.'); return null; }
+        if (!city)                            { showFormError('Cidade é obrigatória.');                          return null; }
+        if (!state || state.length !== 2)     { showFormError('UF inválida.');                                   return null; }
+        if (!country || country.length !== 2) { showFormError('País inválido.');                                 return null; }
 
-        const payload = {
-            line_1: line1,
-            zip_code: zip,
-            city: city,
-            state: state,
-            country: country,
-        };
-
+        const payload = { line_1: line1, zip_code: zip, city, state, country };
         if (line2) payload.line_2 = line2;
-
         return payload;
+    }
+
+    // ====================================================================
+    // INPUT MASKS
+    // ====================================================================
+
+    function setupMasks() {
+        // Card number
+        document.getElementById('ck-card-number').addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '');
+            v = v.replace(/(.{4})/g, '$1 ').trim();
+            this.value = v;
+        });
+
+        // Expiry MM/AA
+        document.getElementById('ck-card-expiry').addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '');
+            if (v.length >= 2) v = v.substring(0, 2) + '/' + v.substring(2);
+            this.value = v;
+        });
+
+        // CPF/CNPJ
+        document.getElementById('ck-doc').addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '');
+            if (v.length <= 11) {
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            this.value = v;
+        });
+
+        // Phone
+        document.getElementById('ck-phone').addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '');
+            if (v.length > 2)  v = '(' + v.substring(0, 2) + ') ' + v.substring(2);
+            if (v.length > 9)  v = v.substring(0, 10) + '-' + v.substring(10);
+            this.value = v;
+        });
+
+        // CEP
+        const zipEl = document.getElementById('ck-zip');
+        if (zipEl) zipEl.addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '');
+            if (v.length > 5) v = v.substring(0, 5) + '-' + v.substring(5, 8);
+            this.value = v;
+        });
+    }
+
+    // ====================================================================
+    // TOKENIZATION
+    // ====================================================================
+
+    async function tokenizeCard(card) {
+        const res = await fetch(`https://api.pagar.me/core/v5/tokens?appId=${PAGARME_PUBLIC_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'card', card }),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(err?.message || 'Erro ao processar cartão.');
+        }
+        return (await res.json()).id;
+    }
+
+    // ====================================================================
+    // POLLING
+    // ====================================================================
+
+    async function pollOrder(id, cbs = {}) {
+        const maxAttempts = 60;
+        const interval = (n) => n < 2 ? 2000 : n < 4 ? 3000 : n < 6 ? 5000 : 10000;
+
+        for (let i = 0; i < maxAttempts; i++) {
+            await new Promise(r => setTimeout(r, interval(i)));
+            try {
+                const res = await fetchManager.getCheckoutOrder(id);
+                if (!res.ok) continue;
+
+                const status = res.result?.data?.status;
+                _order = res.result?.data || _order;
+
+                if (status === 'paid')    { (cbs.onPaid    || showCardSuccess)();                return; }
+                if (status === 'failed')  { (cbs.onFailed  || (() => showCardError()))();        return; }
+                if (status === 'expired') { (cbs.onExpired || (() => setElementState(container, 'expired')))(); return; }
+
+            } catch { /* retry */ }
+        }
+
+        (cbs.onTimeout || (() => showCardError('Aguardando confirmação. Você será notificado assim que o pagamento for confirmado.')))();
     }
 
     // ====================================================================
@@ -504,35 +556,60 @@
     // ====================================================================
 
     function startExpiryTimer() {
-        if (!_order || !_order.expires_at) return;
+        if (!_order?.expires_at) return;
+        const el   = document.getElementById('ck-expiry');
+        const text = document.getElementById('ck-expiry-text');
 
-        const expiryEl = document.getElementById('ck-expiry');
-        const textEl = document.getElementById('ck-expiry-text');
+        const tick = () => {
+            const diff = new Date(_order.expires_at).getTime() - Date.now();
+            if (diff <= 0) { clearInterval(_expiryInterval); setElementState(container, 'expired'); return; }
+            const m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
+            text.textContent = `Expira em ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if (m < 5) el.classList.add('ck-expiry--urgent');
+        };
+        tick();
+        _expiryInterval = setInterval(tick, 1000);
+    }
 
-        function update() {
-            const now = Date.now();
-            const expiresAt = new Date(_order.expires_at).getTime();
-            const diff = expiresAt - now;
+    // ====================================================================
+    // GLOBAL STATES
+    // ====================================================================
 
-            if (diff <= 0) {
-                clearInterval(_expiryInterval);
-                setElementState(container, 'expired');
-                return;
-            }
+    function showGlobalError(title, msg) {
+        document.getElementById('ck-error-title').textContent = title;
+        document.getElementById('ck-error-msg').textContent   = msg;
+        setElementState(container, 'empty');
+    }
 
-            const minutes = Math.floor(diff / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            textEl.textContent = `Expira em ${formatted}`;
+    function showGlobalProcessing() {
+        if (_expiryInterval) clearInterval(_expiryInterval);
+        setElementState(container, 'processing');
+    }
 
-            // Urgent state when < 5 minutes
-            if (minutes < 5) {
-                expiryEl.classList.add('ck-expiry-urgent');
-            }
-        }
+    function updateProcessingMsg(msg) {
+        const el = document.getElementById('ck-processing-msg');
+        if (el) el.textContent = msg;
+    }
 
-        update();
-        _expiryInterval = setInterval(update, 1000);
+    // ====================================================================
+    // ERROR HELPERS
+    // ====================================================================
+
+    function showFormError(msg) {
+        const el = document.getElementById('ck-error');
+        el.textContent = msg;
+        el.classList.add('visible');
+    }
+
+    function hideFormError() {
+        const el = document.getElementById('ck-error');
+        el.classList.remove('visible');
+        el.textContent = '';
+    }
+
+    function getErrMsg(res) {
+        const body = res.result || res.error || {};
+        return body.message || body.error || 'Erro ao processar pagamento.';
     }
 
     // ====================================================================
@@ -543,146 +620,4 @@
         return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    function showError(title, msg) {
-        document.getElementById('ck-error-title').textContent = title;
-        document.getElementById('ck-error-msg').textContent = msg;
-        setElementState(container, 'empty');
-    }
-
-    function displayError(msg) {
-        const el = document.getElementById('ck-error');
-        el.textContent = msg;
-        el.classList.add('visible');
-    }
-
-    function hideError() {
-        const el = document.getElementById('ck-error');
-        el.classList.remove('visible');
-        el.textContent = '';
-    }
-
-    // ====================================================================
-    // PROCESSING & POLLING
-    // ====================================================================
-
-    function showProcessingState() {
-        if (_expiryInterval) clearInterval(_expiryInterval);
-        setElementState(container, 'processing');
-    }
-
-    function updateProcessingMessage(msg) {
-        const el = document.getElementById('ck-processing-msg');
-        if (el) el.textContent = msg;
-    }
-
-    /**
-     * Polls the checkout order until it reaches a terminal state.
-     * Uses progressive backoff to avoid hammering the server.
-     * @param {string} pollOrderId
-     * @param {Object} [callbacks] - Optional callbacks: onPaid, onFailed, onExpired, onTimeout
-     */
-    async function pollCheckoutOrder(pollOrderId, callbacks = null) {
-        const maxAttempts = 60; // ~2 minutes total with backoff
-
-        // Progressive backoff intervals (ms)
-        const getInterval = (attempt) => {
-            if (attempt < 2) return 2000;
-            if (attempt < 4) return 3000;
-            if (attempt < 6) return 5000;
-            return 10000;
-        };
-
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            await new Promise((r) => setTimeout(r, getInterval(attempt)));
-
-            try {
-                const res = await fetchManager.getCheckoutOrder(pollOrderId);
-
-                if (!res.ok) {
-                    console.warn(`pollCheckoutOrder: HTTP ${res.status}, retrying...`);
-                    continue;
-                }
-
-                const order = res.result?.data;
-                const status = order?.status;
-
-                if (status === 'paid') {
-                    _order = order; // update local state
-                    if (callbacks?.onPaid) { callbacks.onPaid(order); return; }
-                    showPaidState();
-                    return;
-                }
-
-                if (status === 'failed') {
-                    if (callbacks?.onFailed) { callbacks.onFailed(order); return; }
-                    showError('Pagamento recusado', 'Houve um problema ao processar seu pagamento. Tente novamente ou use outro método.');
-                    return;
-                }
-
-                if (status === 'expired') {
-                    if (callbacks?.onExpired) { callbacks.onExpired(order); return; }
-                    setElementState(container, 'expired');
-                    return;
-                }
-
-                if (status === 'processing' && attempt === 3 && !callbacks) {
-                    updateProcessingMessage('Aguardando confirmação do gateway de pagamento...');
-                }
-
-                // "pending" or "processing" -> keep polling
-            } catch (err) {
-                console.warn('pollCheckoutOrder: network error, retrying...', err.message);
-            }
-        }
-
-        // Timeout
-        if (callbacks?.onTimeout) { callbacks.onTimeout(); return; }
-        updateProcessingMessage(
-            'Estamos aguardando a confirmação do gateway. ' +
-            'Você será notificado assim que o pagamento for confirmado.'
-        );
-    }
-
-    function showPaidState() {
-        if (_expiryInterval) clearInterval(_expiryInterval);
-
-        if (_order.origin === 'marketplace') {
-            document.getElementById('ck-paid-msg').textContent =
-                _order.billing_type === 'subscription'
-                    ? 'Sua assinatura foi realizada! Seu acesso será ativado assim que o pagamento for confirmado.'
-                    : 'Seu acesso já está ativo.';
-        } else {
-            document.getElementById('ck-paid-msg').textContent =
-                'Sua assinatura do AuthPack Plus está ativa!';
-        }
-
-        setElementState(container, 'paid');
-    }
-
-    function showPixQR(qrCodeUrl, qrCode) {
-        document.getElementById('ck-pix-info').style.display = 'none';
-        const resultEl = document.getElementById('ck-pix-result');
-        resultEl.classList.add('visible');
-
-        if (qrCodeUrl) {
-            document.getElementById('ck-pix-qr-img').src = qrCodeUrl;
-        }
-        if (qrCode) {
-            document.getElementById('ck-pix-code').textContent = qrCode;
-        }
-
-        const waitingEl = document.getElementById('ck-pix-waiting');
-        const paidEl = document.getElementById('ck-pix-paid');
-        if (waitingEl) waitingEl.style.display = 'flex';
-        if (paidEl) paidEl.style.display = 'none';
-    }
-
-    function getErrorMessage(res) {
-        const err = res.result?.error;
-        if (err === 'ALREADY_HAS_ACCESS') return 'Você já possui acesso a este produto.';
-        if (err === 'PRODUCT_SOLD_OUT') return 'Este produto está esgotado.';
-        if (err === 'CHECKOUT_ORDER_EXPIRED') return 'Este pagamento expirou. Realize uma nova compra.';
-        if (err === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN') return 'Você já possui uma assinatura ativa.';
-        return err || 'Erro ao processar pagamento.';
-    }
 })();
