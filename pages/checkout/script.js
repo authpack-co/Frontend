@@ -12,10 +12,10 @@
 
 (async function () {
     const container = document.getElementById('checkout-state');
-    const params    = new URLSearchParams(window.location.search);
-    const orderId   = params.get('orderId');
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId');
 
-    let _order          = null;
+    let _order = null;
     let _selectedMethod = 'credit_card';
     let _expiryInterval = null;
 
@@ -32,9 +32,9 @@
         const res = await fetchManager.getCheckoutOrder(orderId);
 
         if (!res.ok) {
-            if      (res.status === 403) showGlobalError('Acesso negado', 'Este link de pagamento não pertence à sua conta.');
+            if (res.status === 403) showGlobalError('Acesso negado', 'Este link de pagamento não pertence à sua conta.');
             else if (res.status === 401) { window.location.href = '/pages/login/?redirect=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
-            else                         showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.');
+            else showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.');
             return;
         }
 
@@ -42,10 +42,10 @@
         if (!_order) { showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.'); return; }
 
         switch (_order.status) {
-            case 'expired':    setElementState(container, 'expired'); return;
-            case 'paid':       setElementState(container, 'paid');    return;
-            case 'failed':     showGlobalError('Pagamento falhou',   'Houve um erro ao processar este pagamento.'); return;
-            case 'canceled':   showGlobalError('Pagamento cancelado','Este pagamento foi cancelado.'); return;
+            case 'expired': setElementState(container, 'expired'); return;
+            case 'paid': setElementState(container, 'paid'); return;
+            case 'failed': showGlobalError('Pagamento falhou', 'Houve um erro ao processar este pagamento.'); return;
+            case 'canceled': showGlobalError('Pagamento cancelado', 'Este pagamento foi cancelado.'); return;
             case 'processing':
                 showGlobalProcessing();
                 pollOrder(orderId);
@@ -69,11 +69,11 @@
     // ====================================================================
 
     function renderCheckout(order) {
-        const meta           = order.metadata || {};
+        const meta = order.metadata || {};
         const paymentMethods = order.payment_methods || ['credit_card'];
-        const totalCents     = order.amount_cents || 0;
-        const feeCents       = meta.platformFeeCents || 0;
-        const productCents   = meta.productPriceCents || (totalCents - feeCents);
+        const totalCents = order.amount_cents || 0;
+        const feeCents = meta.platformFeeCents || 0;
+        const productCents = meta.productPriceCents || (totalCents - feeCents);
 
         // Product name
         const productName = order.product_name || meta.planName || 'Produto';
@@ -90,15 +90,15 @@
 
         // Breakdown
         document.getElementById('ck-breakdown-product-value').textContent = formatCurrency(productCents);
-        document.getElementById('ck-breakdown-fee-value').textContent     = formatCurrency(feeCents);
-        document.getElementById('ck-breakdown-total-value').textContent   = formatCurrency(totalCents);
+        document.getElementById('ck-breakdown-fee-value').textContent = formatCurrency(feeCents);
+        document.getElementById('ck-breakdown-total-value').textContent = formatCurrency(totalCents);
         if (order.billing_type === 'subscription') {
             document.getElementById('ck-breakdown-product-label').textContent = 'Assinatura mensal';
         }
 
         // Payment methods visibility
         if (!paymentMethods.includes('credit_card')) document.getElementById('ck-m-card-label').style.display = 'none';
-        if (!paymentMethods.includes('pix'))         document.getElementById('ck-m-pix-label').style.display  = 'none';
+        if (!paymentMethods.includes('pix')) document.getElementById('ck-m-pix-label').style.display = 'none';
 
         // If only one method available, auto-select + hide selector
         if (paymentMethods.length === 1) {
@@ -151,18 +151,18 @@
                 btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Copiado!`;
                 btn.classList.add('copied');
                 setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
-            }).catch(() => {});
+            }).catch(() => { });
         });
     }
 
     function switchMethod(method) {
-        const cardForm  = document.getElementById('ck-card-form');
+        const cardForm = document.getElementById('ck-card-form');
         const pixNotice = document.getElementById('ck-pix-info-panel');
         if (method === 'pix') {
-            cardForm.style.display  = 'none';
+            cardForm.style.display = 'none';
             pixNotice.style.display = 'block';
         } else {
-            cardForm.style.display  = 'block';
+            cardForm.style.display = 'block';
             pixNotice.style.display = 'none';
         }
     }
@@ -170,11 +170,11 @@
     function updateCTA() {
         if (!_order) return;
         const label = document.getElementById('ck-cta-label');
-        const icon  = document.getElementById('ck-cta-icon');
+        const icon = document.getElementById('ck-cta-icon');
         if (_selectedMethod === 'pix') {
-            label.textContent   = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
+            label.textContent = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
         } else {
-            label.textContent   = `Pagar ${formatCurrency(_order.amount_cents)}`;
+            label.textContent = `Pagar ${formatCurrency(_order.amount_cents)}`;
         }
         if (icon) icon.style.display = '';
     }
@@ -185,21 +185,21 @@
 
     function showStep(step) {
         const panelDados = document.getElementById('ck-panel-dados');
-        const panelPag   = document.getElementById('ck-panel-pagamento');
-        const s1         = document.getElementById('ck-s1');
-        const s2         = document.getElementById('ck-s2');
-        const line       = document.getElementById('ck-step-line');
+        const panelPag = document.getElementById('ck-panel-pagamento');
+        const s1 = document.getElementById('ck-s1');
+        const s2 = document.getElementById('ck-s2');
+        const line = document.getElementById('ck-step-line');
 
         if (step === 1) {
             panelDados.style.display = 'flex';
-            panelPag.style.display   = 'none';
+            panelPag.style.display = 'none';
             s1.className = 'ck-step ck-step--active';
             s2.className = 'ck-step ck-step--pending';
             line.classList.remove('ck-step__line--done');
 
         } else if (step === 2) {
             panelDados.style.display = 'none';
-            panelPag.style.display   = 'flex';
+            panelPag.style.display = 'flex';
             s1.className = 'ck-step ck-step--done';
             s2.className = 'ck-step ck-step--active';
             line.classList.add('ck-step__line--done');
@@ -228,12 +228,12 @@
         const number = document.getElementById('ck-card-number').value.replace(/\s/g, '');
         const holder = document.getElementById('ck-card-holder').value.trim();
         const expiry = document.getElementById('ck-card-expiry').value.trim();
-        const cvv    = document.getElementById('ck-card-cvv').value.trim();
+        const cvv = document.getElementById('ck-card-cvv').value.trim();
 
-        if (number.length < 13)              return showFormError('Número do cartão inválido.');
-        if (!holder)                         return showFormError('Nome no cartão é obrigatório.');
+        if (number.length < 13) return showFormError('Número do cartão inválido.');
+        if (!holder) return showFormError('Nome no cartão é obrigatório.');
         if (!/^\d{2}\/\d{2}$/.test(expiry)) return showFormError('Validade inválida (MM/AA).');
-        if (cvv.length < 3)                  return showFormError('CVV inválido.');
+        if (cvv.length < 3) return showFormError('CVV inválido.');
 
         const billing = getBillingAddress();
         if (!billing) return;
@@ -254,12 +254,15 @@
                 credit_card: { card_token: cardToken, billing_address: billing },
             });
 
-            if (!res.ok) throw new Error(getErrMsg(res));
+            if (!res.ok) {
+                if (res.status === 410) { setElementState(container, 'expired'); return; }
+                throw new Error(getErrMsg(res));
+            }
 
             if (res.result?.processing) {
                 pollOrder(res.result.orderId || orderId, {
-                    onPaid:    () => showCardSuccess(),
-                    onFailed:  (msg) => showCardError(msg),
+                    onPaid: () => showCardSuccess(),
+                    onFailed: (msg) => showCardError(msg),
                     onExpired: () => setElementState(container, 'expired'),
                     onTimeout: () => showCardError('Aguardando confirmação do gateway. Tente novamente em instantes.'),
                 });
@@ -286,18 +289,21 @@
                 customer,
             });
 
-            if (!res.ok) throw new Error(getErrMsg(res));
+            if (!res.ok) {
+                if (res.status === 410) { setElementState(container, 'expired'); return; }
+                throw new Error(getErrMsg(res));
+            }
 
             const charges = res.result?.charges || [];
-            const tx      = charges[0]?.last_transaction;
+            const tx = charges[0]?.last_transaction;
 
             if (tx && tx.transaction_type === 'pix') {
                 showPixQR(tx.qr_code_url, tx.qr_code);
                 hideCTA();
 
                 pollOrder(orderId, {
-                    onPaid:    () => showPixConfirmed(),
-                    onFailed:  () => showGlobalError('Pix recusado', 'Houve um problema com seu Pix.'),
+                    onPaid: () => showPixConfirmed(),
+                    onFailed: () => showGlobalError('Pix recusado', 'Houve um problema com seu Pix.'),
                     onExpired: () => setElementState(container, 'expired'),
                 });
                 return;
@@ -319,14 +325,14 @@
 
     function showResultState(state) {
         const processing = document.getElementById('ck-state-processing');
-        const success    = document.getElementById('ck-state-success');
-        const error      = document.getElementById('ck-state-error');
-        const pix        = document.getElementById('ck-state-pix');
+        const success = document.getElementById('ck-state-success');
+        const error = document.getElementById('ck-state-error');
+        const pix = document.getElementById('ck-state-pix');
 
         processing.style.display = state === 'processing' ? 'flex' : 'none';
-        success.style.display    = state === 'success'    ? 'flex' : 'none';
-        error.style.display      = state === 'error'      ? 'flex' : 'none';
-        pix.style.display        = state === 'pix'        ? 'block' : 'none';
+        success.style.display = state === 'success' ? 'flex' : 'none';
+        error.style.display = state === 'error' ? 'flex' : 'none';
+        pix.style.display = state === 'pix' ? 'block' : 'none';
     }
 
     function showCardSuccess() {
@@ -354,7 +360,7 @@
 
     function showPixQR(qrUrl, qrCode) {
         showResultState('pix');
-        if (qrUrl)  document.getElementById('ck-pix-qr-img').src = qrUrl;
+        if (qrUrl) document.getElementById('ck-pix-qr-img').src = qrUrl;
         if (qrCode) document.getElementById('ck-pix-code').textContent = qrCode;
         document.getElementById('ck-pix-waiting').classList.add('visible');
     }
@@ -371,14 +377,14 @@
     // ====================================================================
 
     function setCTALoading(loading) {
-        const btn     = document.getElementById('ck-submit');
-        const label   = document.getElementById('ck-cta-label');
-        const icon    = document.getElementById('ck-cta-icon');
+        const btn = document.getElementById('ck-submit');
+        const label = document.getElementById('ck-cta-label');
+        const icon = document.getElementById('ck-cta-icon');
         const spinner = document.getElementById('ck-cta-spinner');
 
-        btn.disabled          = loading;
-        label.textContent     = loading ? 'Processando...' : '';
-        icon.style.display    = loading ? 'none' : '';
+        btn.disabled = loading;
+        label.textContent = loading ? 'Processando...' : '';
+        icon.style.display = loading ? 'none' : '';
         spinner.style.display = loading ? 'flex' : 'none';
 
         if (!loading) updateCTA();
@@ -390,26 +396,26 @@
 
     function showRetryButton() {
         const submit = document.getElementById('ck-submit');
-        const retry  = document.getElementById('ck-btn-retry');
+        const retry = document.getElementById('ck-btn-retry');
         submit.style.display = 'none';
-        retry.style.display  = 'flex';
+        retry.style.display = 'flex';
     }
 
     function showDashboardButton() {
-        const submit    = document.getElementById('ck-submit');
+        const submit = document.getElementById('ck-submit');
         const dashboard = document.getElementById('ck-btn-dashboard');
-        submit.style.display    = 'none';
+        submit.style.display = 'none';
         dashboard.style.display = 'flex';
     }
 
     function resetRightColumn() {
-        document.getElementById('ck-submit').style.display      = '';
-        document.getElementById('ck-btn-retry').style.display   = 'none';
+        document.getElementById('ck-submit').style.display = '';
+        document.getElementById('ck-btn-retry').style.display = 'none';
         document.getElementById('ck-btn-dashboard').style.display = 'none';
         const btn = document.getElementById('ck-submit');
         btn.disabled = false;
         document.getElementById('ck-cta-spinner').style.display = 'none';
-        document.getElementById('ck-cta-icon').style.display    = '';
+        document.getElementById('ck-cta-icon').style.display = '';
         updateCTA();
     }
 
@@ -418,11 +424,11 @@
     // ====================================================================
 
     function getCustomerPayload() {
-        const rawDoc   = document.getElementById('ck-doc').value.replace(/\D/g, '');
+        const rawDoc = document.getElementById('ck-doc').value.replace(/\D/g, '');
         const rawPhone = document.getElementById('ck-phone').value.replace(/\D/g, '');
 
-        if (rawDoc.length < 11)   { showFormError('CPF ou CNPJ inválido.');              return null; }
-        if (rawPhone.length < 10) { showFormError('Celular inválido (inclua o DDD).');   return null; }
+        if (rawDoc.length < 11) { showFormError('CPF ou CNPJ inválido.'); return null; }
+        if (rawPhone.length < 10) { showFormError('Celular inválido (inclua o DDD).'); return null; }
 
         return {
             document: rawDoc,
@@ -430,25 +436,25 @@
                 mobile_phone: {
                     country_code: '55',
                     area_code: rawPhone.substring(0, 2),
-                    number:    rawPhone.substring(2),
+                    number: rawPhone.substring(2),
                 },
             },
         };
     }
 
     function getBillingAddress() {
-        const zip     = document.getElementById('ck-zip').value.replace(/\D/g, '');
-        const line1   = document.getElementById('ck-line1').value.trim();
-        const line2   = document.getElementById('ck-line2').value.trim();
-        const city    = document.getElementById('ck-city').value.trim();
-        const state   = document.getElementById('ck-state').value.trim();
+        const zip = document.getElementById('ck-zip').value.replace(/\D/g, '');
+        const line1 = document.getElementById('ck-line1').value.trim();
+        const line2 = document.getElementById('ck-line2').value.trim();
+        const city = document.getElementById('ck-city').value.trim();
+        const state = document.getElementById('ck-state').value.trim();
         const country = document.getElementById('ck-country').value.trim().toUpperCase();
 
-        if (!zip || zip.length < 8)          { showFormError('CEP inválido.');                                   return null; }
-        if (!line1)                           { showFormError('Endereço (rua, número e bairro) é obrigatório.'); return null; }
-        if (!city)                            { showFormError('Cidade é obrigatória.');                          return null; }
-        if (!state || state.length !== 2)     { showFormError('UF inválida.');                                   return null; }
-        if (!country || country.length !== 2) { showFormError('País inválido.');                                 return null; }
+        if (!zip || zip.length < 8) { showFormError('CEP inválido.'); return null; }
+        if (!line1) { showFormError('Endereço (rua, número e bairro) é obrigatório.'); return null; }
+        if (!city) { showFormError('Cidade é obrigatória.'); return null; }
+        if (!state || state.length !== 2) { showFormError('UF inválida.'); return null; }
+        if (!country || country.length !== 2) { showFormError('País inválido.'); return null; }
 
         const payload = { line_1: line1, zip_code: zip, city, state, country };
         if (line2) payload.line_2 = line2;
@@ -493,8 +499,8 @@
         // Phone
         document.getElementById('ck-phone').addEventListener('input', function () {
             let v = this.value.replace(/\D/g, '');
-            if (v.length > 2)  v = '(' + v.substring(0, 2) + ') ' + v.substring(2);
-            if (v.length > 9)  v = v.substring(0, 10) + '-' + v.substring(10);
+            if (v.length > 2) v = '(' + v.substring(0, 2) + ') ' + v.substring(2);
+            if (v.length > 9) v = v.substring(0, 10) + '-' + v.substring(10);
             this.value = v;
         });
 
@@ -541,8 +547,8 @@
                 const status = res.result?.data?.status;
                 _order = res.result?.data || _order;
 
-                if (status === 'paid')    { (cbs.onPaid    || showCardSuccess)();                return; }
-                if (status === 'failed')  { (cbs.onFailed  || (() => showCardError()))();        return; }
+                if (status === 'paid') { (cbs.onPaid || showCardSuccess)(); return; }
+                if (status === 'failed') { (cbs.onFailed || (() => showCardError()))(); return; }
                 if (status === 'expired') { (cbs.onExpired || (() => setElementState(container, 'expired')))(); return; }
 
             } catch { /* retry */ }
@@ -557,15 +563,23 @@
 
     function startExpiryTimer() {
         if (!_order?.expires_at) return;
-        const el   = document.getElementById('ck-expiry');
+        const el = document.getElementById('ck-expiry');
         const text = document.getElementById('ck-expiry-text');
+
+        const LOCK_MS = 60000; // disable CTA 60s before expiry (reserve last minute for processing)
 
         const tick = () => {
             const diff = new Date(_order.expires_at).getTime() - Date.now();
             if (diff <= 0) { clearInterval(_expiryInterval); setElementState(container, 'expired'); return; }
             const m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
-            text.textContent = `Expira em ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            text.textContent = `Expira em ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
             if (m < 5) el.classList.add('ck-expiry--urgent');
+
+            // Disable CTA in the last 60s — reserve that window for in-flight payments
+            const ctaBtn = document.getElementById('ck-submit');
+            if (ctaBtn && !ctaBtn.disabled) {
+                ctaBtn.disabled = diff <= LOCK_MS;
+            }
         };
         tick();
         _expiryInterval = setInterval(tick, 1000);
@@ -577,7 +591,7 @@
 
     function showGlobalError(title, msg) {
         document.getElementById('ck-error-title').textContent = title;
-        document.getElementById('ck-error-msg').textContent   = msg;
+        document.getElementById('ck-error-msg').textContent = msg;
         setElementState(container, 'empty');
     }
 
