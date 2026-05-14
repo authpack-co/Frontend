@@ -438,11 +438,12 @@ async function loadSellerDashboardData() {
     try {
         showDashboardSkeletons(true);
 
-        // Load dashboard, withdrawal info e sales history em paralelo
-        const [dashRes, withdrawalRes, salesHistRes] = await Promise.all([
+        // Load dashboard, withdrawal info, sales history e cash flow em paralelo
+        const [dashRes, withdrawalRes, salesHistRes, cashFlowRes] = await Promise.all([
             fetchManager.getSellerDashboard(),
             fetchManager.getWithdrawalInfo(),
-            fetchManager.getSellerSalesHistory()
+            fetchManager.getSellerSalesHistory(),
+            fetchManager.getCashFlow(),
         ]);
 
         console.log('[Vitrine] Dashboard data:', dashRes);
@@ -544,8 +545,52 @@ async function loadSellerDashboardData() {
                 sellerNextWrap.style.display = '';
             }
 
-            // Update quick summary panel
-            updateQuickSummary(withdrawalRes.result);
+            updateQuickSummary();
+        }
+
+        // ── Populate Performance KPIs + Quick Summary from backend ──
+        if (data.performance) {
+            const perf = data.performance;
+            const kpiGross = document.getElementById('kpi-gross-revenue');
+            if (kpiGross) kpiGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
+            const kpiNet = document.getElementById('kpi-net-revenue');
+            if (kpiNet) kpiNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
+            const kpiSales = document.getElementById('kpi-sales');
+            if (kpiSales) kpiSales.textContent = perf.sales_count;
+            const kpiAvgTicket = document.getElementById('kpi-avg-ticket');
+            if (kpiAvgTicket) kpiAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
+
+            const finGross = document.getElementById('fin-gross-revenue');
+            if (finGross) finGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
+            const finNet = document.getElementById('fin-net-revenue');
+            if (finNet) finNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
+            const finSalesCount = document.getElementById('fin-sales-count');
+            if (finSalesCount) finSalesCount.textContent = perf.sales_count;
+            const finAvgTicket = document.getElementById('fin-avg-ticket-summary');
+            if (finAvgTicket) finAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
+        }
+
+        // ── Populate Cash Flow (Movimentações) cards ──
+        if (cashFlowRes.ok && cashFlowRes.result) {
+            const cf = cashFlowRes.result;
+            const cfEntriesTotal = document.getElementById('cf-entries-total');
+            if (cfEntriesTotal) cfEntriesTotal.textContent = formatCentsToBRL(cf.entries.total_cents);
+            const cfEntriesSales = document.getElementById('cf-entries-sales');
+            if (cfEntriesSales) cfEntriesSales.textContent = formatCentsToBRL(cf.entries.new_sales_cents);
+            const cfEntriesSubs = document.getElementById('cf-entries-subscriptions');
+            if (cfEntriesSubs) cfEntriesSubs.textContent = formatCentsToBRL(cf.entries.subscription_renewals_cents);
+            const cfEntriesInst = document.getElementById('cf-entries-installments');
+            if (cfEntriesInst) cfEntriesInst.textContent = formatCentsToBRL(cf.entries.installment_payments_cents);
+            const cfEntriesPending = document.getElementById('cf-entries-pending');
+            if (cfEntriesPending) cfEntriesPending.textContent = formatCentsToBRL(cf.entries.pending_settlement_cents);
+            const cfExitsTotal = document.getElementById('cf-exits-total');
+            if (cfExitsTotal) cfExitsTotal.textContent = formatCentsToBRL(cf.exits.total_cents);
+            const cfExitsWithdrawn = document.getElementById('cf-exits-withdrawn');
+            if (cfExitsWithdrawn) cfExitsWithdrawn.textContent = formatCentsToBRL(cf.exits.withdrawn_cents);
+            const cfExitsReceived = document.getElementById('cf-exits-received');
+            if (cfExitsReceived) cfExitsReceived.textContent = formatCentsToBRL(cf.exits.received_cents);
+            const cfExitsWithdrawals = document.getElementById('cf-exits-withdrawals');
+            if (cfExitsWithdrawals) cfExitsWithdrawals.textContent = cf.exits.withdrawal_count;
         }
 
         showDashboardSkeletons(false);
@@ -619,39 +664,10 @@ function updateVitrinePeriod(days) {
         loadVitrineSalesChart(chartData, transferData, false);
     }
 
-    // ── Update new KPI cards ──
-    const kpiGross = document.getElementById('kpi-gross-revenue');
-    if (kpiGross) {
-        // Usa dados completos do sales-history (que tem total_amount_cents correto).
-        // Fallback para kpis.totalGross se o sales-history ainda não estiver disponível.
-        const grossFromHistory = computeGrossFromHistory(days);
-        kpiGross.textContent = formatCentsToBRL(
-            grossFromHistory !== null ? grossFromHistory : (kpis.totalGross || kpis.totalRevenue)
-        );
-    }
-    const kpiNet = document.getElementById('kpi-net-revenue');
-    if (kpiNet) kpiNet.textContent = formatCentsToBRL(kpis.totalRevenue);
-    const kpiSales = document.getElementById('kpi-sales');
-    if (kpiSales) kpiSales.textContent = kpis.totalSales;
-
-    // ── Quick summary panel ──
-    const finGross = document.getElementById('fin-gross-revenue');
-    if (finGross) {
-        const grossFromHistory = computeGrossFromHistory(days);
-        finGross.textContent = formatCentsToBRL(
-            grossFromHistory !== null ? grossFromHistory : (kpis.totalGross || kpis.totalRevenue)
-        );
-    }
-    const finNet = document.getElementById('fin-net-revenue');
-    if (finNet) finNet.textContent = formatCentsToBRL(kpis.totalRevenue);
-    const finSalesCount = document.getElementById('fin-sales-count');
-    if (finSalesCount) finSalesCount.textContent = kpis.totalSales;
-
-
 }
 
 function showDashboardSkeletons(show) {
-    const kpiValueEls = ['kpi-gross-revenue', 'kpi-net-revenue', 'kpi-withdrawn', 'kpi-sales', 'fin-available-balance'];
+    const kpiValueEls = ['kpi-gross-revenue', 'kpi-net-revenue', 'kpi-sales', 'kpi-avg-ticket', 'cf-entries-total', 'cf-exits-total', 'fin-available-balance'];
     kpiValueEls.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -916,57 +932,9 @@ let financialCenterData = {
     balance: null,
 };
 
-function updateQuickSummary(data) {
-    const { balance, transfers } = data;
-    const available = balance?.available_amount || 0;
-    const waiting = balance?.waiting_funds_amount || 0;
-
-    // Taxa TED por saque (fornecida pelo backend ou padrão R$3,67)
-    const TED_FEE = data.ted_fee_cents ?? 367;
-
-    // Contagem geral de saques do mês (todos os status) — para o painel lateral
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    let totalWithdrawnAll = 0;
-    let withdrawalCount = 0;
-
-    // Somente saques com status "transferred" (confirmados) — para o KPI card
-    let totalWithdrawnSuccess = 0;
-    let withdrawalSuccessCount = 0;
-
-    if (transfers) {
-        transfers.forEach(t => {
-            const d = new Date(t.date_created || t.created_at || 0);
-            if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-                totalWithdrawnAll += (t.amount || 0);
-                withdrawalCount++;
-                if (t.status === 'transferred') {
-                    // t.amount = valor recebido na conta (já descontado o TED)
-                    // valor solicitado = t.amount + TED_FEE
-                    totalWithdrawnSuccess += (t.amount || 0) + TED_FEE;
-                    withdrawalSuccessCount++;
-                }
-            }
-        });
-    }
-
-    // Painel lateral (sumário rápido) — usa mesma lógica do KPI: apenas saques confirmados
-    const finTotalWithdrawn = document.getElementById('fin-total-withdrawn');
-    if (finTotalWithdrawn) finTotalWithdrawn.textContent = formatCentsToBRL(totalWithdrawnSuccess);
-
-    // KPI card "Total sacado no mês" — apenas saques confirmados
-    const kpiWithdrawn = document.getElementById('kpi-withdrawn');
-    if (kpiWithdrawn) kpiWithdrawn.textContent = formatCentsToBRL(totalWithdrawnSuccess);
-
-    // "recebido X" = total sacado (confirmado) - taxa TED de cada saque
-    const kpiWithdrawnReceived = document.getElementById('kpi-withdrawn-received');
-    if (kpiWithdrawnReceived) {
-        // netReceived = totalWithdrawnSuccess - (TED_FEE × quantidade)
-        // pois totalWithdrawnSuccess já somou (amount + TED_FEE) por saque
-        const netReceived = Math.max(0, totalWithdrawnSuccess - (TED_FEE * withdrawalSuccessCount));
-        kpiWithdrawnReceived.textContent = `recebido ${formatCentsToBRL(netReceived)}`;
-    }
+function updateQuickSummary() {
+    // Quick summary panel is now populated from backend performance data
+    // in loadSellerDashboardData — nothing period-dependent here.
 }
 
 // ============================================================================
@@ -3895,3 +3863,331 @@ document.getElementById('btn-ver-financeiro')?.addEventListener('click', openWit
 
 // "Ver histórico de vendas" (Minha Vitrine)
 document.getElementById('btn-ver-financeiro-3')?.addEventListener('click', openSalesHistoryModal);
+
+// ============================================================================
+// CASH FLOW DETAIL MODALS (Entradas / Saídas)
+// ============================================================================
+
+const MONTH_FULL = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+let cfEntriesCurrentMonth = null; // { year, month (0-indexed) }
+
+function getDefaultCfMonth() {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+}
+
+function cfMonthKey(m) {
+    return `${m.year}-${String(m.month + 1).padStart(2, '0')}`;
+}
+
+function cfMonthLabel(m) {
+    return `${MONTH_FULL[m.month]} ${m.year}`;
+}
+
+function cfPrevMonth(m) {
+    let month = m.month - 1;
+    let year = m.year;
+    if (month < 0) { month = 11; year--; }
+    return { year, month };
+}
+
+function cfNextMonth(m) {
+    let month = m.month + 1;
+    let year = m.year;
+    if (month > 11) { month = 0; year++; }
+    return { year, month };
+}
+
+// ── Entries modal ──
+async function openCashFlowEntriesModal() {
+    const modal = document.getElementById('cashFlowEntriesModal');
+    if (!modal) return;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    cfEntriesCurrentMonth = cfEntriesCurrentMonth || getDefaultCfMonth();
+    await loadCashFlowEntriesDetail(cfEntriesCurrentMonth);
+}
+
+function closeCashFlowEntriesModal() {
+    const modal = document.getElementById('cashFlowEntriesModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+const CF_CATEGORIES = [
+    { key: 'new_sale', label: 'Novas vendas', color: '#22c55e', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
+    { key: 'subscription', label: 'Assinaturas', color: '#3b82f6', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>' },
+    { key: 'installment', label: 'Parcelas', color: '#f59e0b', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>' },
+    { key: 'pending_settlement', label: 'Aguardando compensação', color: '#8b5cf6', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+];
+
+function _cfFormatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function _cfFormatDateShort(dateStr) {
+    if (!dateStr) return '';
+    const [, m, d] = dateStr.split('-');
+    return `${d}/${m}`;
+}
+
+function _cfBuyerMeta(catKey, item) {
+    const method = item.payment_method === 'pix' ? 'PIX' : 'Cartão';
+    if (catKey === 'new_sale') return method;
+    if (catKey === 'subscription') return 'Renovação mensal';
+    if (catKey === 'installment') return `${item.installment}ª de ${item.total_installments} parcelas`;
+    if (catKey === 'pending_settlement') return `Compra em ${_cfFormatDateShort(item.order_created_at)}`;
+    return '';
+}
+
+function _cfSmallAvatar(item) {
+    const name = item.buyer_name || 'U';
+    const initial = name.charAt(0).toUpperCase();
+    if (item.buyer_picture) {
+        return `<div class="cf-buyer-avatar"><img src="${item.buyer_picture}" alt="${name}"></div>`;
+    }
+    return `<div class="cf-buyer-avatar">${initial}</div>`;
+}
+
+function _cfProductId(item) {
+    if (!item.product_id) return '';
+    return '#' + item.product_id.slice(0, 5);
+}
+
+function _cfRenderItem(catKey, item) {
+    const releaseLbl = catKey === 'pending_settlement'
+        ? `Liberação ${_cfFormatDateShort(item.release_date)}`
+        : _cfFormatDateShort(item.release_date);
+
+    return `<div class="cf-item">
+        <div class="cf-item-main">
+            <div class="cf-item-product">
+                <span class="cf-item-product-name">${item.product_name}</span>
+                <span class="cf-item-product-id">${_cfProductId(item)}</span>
+            </div>
+            <div class="cf-item-buyer">
+                ${_cfSmallAvatar(item)}
+                <span class="cf-item-buyer-name">${item.buyer_name || 'Comprador'}</span>
+                <span class="cf-item-buyer-sep">·</span>
+                <span class="cf-item-buyer-meta">${_cfBuyerMeta(catKey, item)}</span>
+            </div>
+        </div>
+        <div class="cf-item-right">
+            <span class="cf-item-value">${formatCentsToBRL(item.amount_cents)}</span>
+            <span class="cf-item-date">${releaseLbl}</span>
+        </div>
+    </div>`;
+}
+
+async function loadCashFlowEntriesDetail(m) {
+    const label = document.getElementById('cf-entries-month-label');
+    if (label) label.textContent = cfMonthLabel(m);
+    const headerMonth = document.getElementById('cf-entries-header-month');
+    if (headerMonth) headerMonth.textContent = cfMonthLabel(m);
+
+    const loading = document.getElementById('cfEntriesLoading');
+    const wrap = document.getElementById('cfEntriesWrap');
+    if (loading) loading.style.display = 'flex';
+    if (wrap) wrap.innerHTML = '';
+
+    try {
+        const res = await fetchManager.getCashFlowDetail(cfMonthKey(m));
+        if (loading) loading.style.display = 'none';
+        if (!res.ok || !res.result) {
+            if (wrap) wrap.innerHTML = '<div class="cf-empty">Não foi possível carregar os dados.</div>';
+            return;
+        }
+
+        const data = res.result;
+        const cats = data.categories || {};
+        const totals = data.monthly_totals || {};
+        const hasAny = CF_CATEGORIES.some(c => cats[c.key] && cats[c.key].items.length > 0);
+
+        let futureCents = 0;
+        (data.future_installments || []).forEach(f => { futureCents += f.estimated_cents; });
+        (data.future_pending_settlement || []).forEach(f => { futureCents += f.estimated_cents; });
+
+        const frag = document.createDocumentFragment();
+
+        // ── Summary stats bar ──
+        const summaryBar = document.createElement('div');
+        summaryBar.className = 'cf-summary-bar';
+        summaryBar.innerHTML = `<div class="cf-summary-stat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                <span><strong>${formatCentsToBRL(totals.total_cents || 0)}</strong> recebidos neste mês</span>
+            </div>
+            ${futureCents > 0 ? `<div class="cf-summary-stat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span><strong>+${formatCentsToBRL(futureCents)}</strong> previstos</span>
+            </div>` : ''}`;
+        frag.appendChild(summaryBar);
+
+        // ── 4 Status mini cards ──
+        const cardsRow = document.createElement('div');
+        cardsRow.className = 'cf-status-cards';
+        cardsRow.innerHTML = `<div class="cf-status-card cf-status-revenue">
+                <div class="cf-status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <span class="cf-status-label">Receita líquida</span>
+                <span class="cf-status-value">${formatCentsToBRL(totals.new_sales_cents || 0)}</span>
+            </div>
+            <div class="cf-status-card cf-status-subscription">
+                <div class="cf-status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                </div>
+                <span class="cf-status-label">Assinaturas</span>
+                <span class="cf-status-value">${formatCentsToBRL(totals.subscription_cents || 0)}</span>
+            </div>
+            <div class="cf-status-card cf-status-pending">
+                <div class="cf-status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <span class="cf-status-label">Em compensação</span>
+                <span class="cf-status-value">${formatCentsToBRL(totals.pending_settlement_cents || 0)}</span>
+            </div>
+            <div class="cf-status-card cf-status-installment">
+                <div class="cf-status-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <span class="cf-status-label">Parcelas</span>
+                <span class="cf-status-value">${formatCentsToBRL(totals.installment_cents || 0)}</span>
+            </div>`;
+        frag.appendChild(cardsRow);
+
+        if (!hasAny) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'cf-empty';
+            emptyDiv.textContent = 'Nenhuma entrada neste mês.';
+            frag.appendChild(emptyDiv);
+            wrap.innerHTML = '';
+            wrap.appendChild(frag);
+            renderFutureEntries(wrap, data.future_installments, data.future_pending_settlement);
+            return;
+        }
+
+        // ── Section title ──
+        const timelineTitle = document.createElement('div');
+        timelineTitle.className = 'cf-section-title';
+        timelineTitle.textContent = 'Detalhamento por categoria';
+        frag.appendChild(timelineTitle);
+
+        // ── Category groups ──
+        let firstOpen = true;
+        CF_CATEGORIES.forEach(catDef => {
+            const cat = cats[catDef.key];
+            if (!cat || cat.items.length === 0) return;
+
+            const group = document.createElement('div');
+            group.className = 'cf-category-group' + (firstOpen ? ' open' : '');
+            firstOpen = false;
+
+            const countLabel = cat.items.length === 1 ? '1 item' : `${cat.items.length} itens`;
+
+            let itemsHtml = '';
+            cat.items.forEach(item => { itemsHtml += _cfRenderItem(catDef.key, item); });
+
+            group.innerHTML = `<div class="cf-category-header" role="button" tabindex="0">
+                <div class="cf-category-left">
+                    <div class="cf-category-icon" style="color:${catDef.color}">${catDef.icon}</div>
+                    <div class="cf-category-label-wrap">
+                        <span class="cf-category-label">${catDef.label}</span>
+                        <span class="cf-category-count">${countLabel}</span>
+                    </div>
+                </div>
+                <div class="cf-category-right">
+                    <span class="cf-category-total" style="color:${catDef.color}">${formatCentsToBRL(cat.total_cents)}</span>
+                    <svg class="cf-toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+            <div class="cf-category-content">${itemsHtml}</div>`;
+
+            group.querySelector('.cf-category-header').addEventListener('click', (e) => {
+                e.stopPropagation();
+                group.classList.toggle('open');
+            });
+
+            frag.appendChild(group);
+        });
+
+        // ── Monthly total ──
+        const totalDiv = document.createElement('div');
+        totalDiv.className = 'cf-total-row';
+        totalDiv.innerHTML = `<span>Total do mês</span><span>${formatCentsToBRL(totals.total_cents)}</span>`;
+        frag.appendChild(totalDiv);
+
+        wrap.innerHTML = '';
+        wrap.appendChild(frag);
+
+        renderFutureEntries(wrap, data.future_installments, data.future_pending_settlement);
+
+    } catch (err) {
+        console.error('[CashFlow] Error loading entries detail:', err);
+        if (loading) loading.style.display = 'none';
+        if (wrap) wrap.innerHTML = '<div class="cf-empty">Erro ao carregar dados.</div>';
+    }
+}
+
+function renderFutureEntries(container, futureInstallments, futurePending) {
+    if (!container) return;
+    const hasInst = futureInstallments && futureInstallments.length > 0;
+    const hasPend = futurePending && futurePending.length > 0;
+    if (!hasInst && !hasPend) return;
+
+    let html = '<div class="cf-future-section">';
+    html += '<div class="cf-future-title">Previsão de entradas futuras</div>';
+
+    if (hasInst) {
+        html += '<div class="cf-future-subtitle">Parcelas</div>';
+        futureInstallments.forEach(fi => {
+            const [y, m] = fi.month.split('-').map(Number);
+            const lbl = `${MONTH_FULL[m - 1]} ${y}`;
+            html += `<div class="cf-future-row">
+                <span class="cf-future-row-label">${lbl} (${fi.count} parcela${fi.count > 1 ? 's' : ''})</span>
+                <span class="cf-future-row-value">${formatCentsToBRL(fi.estimated_cents)}</span>
+            </div>`;
+        });
+    }
+
+    if (hasPend) {
+        html += '<div class="cf-future-subtitle">Compensação</div>';
+        futurePending.forEach(fi => {
+            const [y, m] = fi.month.split('-').map(Number);
+            const lbl = `${MONTH_FULL[m - 1]} ${y}`;
+            html += `<div class="cf-future-row">
+                <span class="cf-future-row-label">${lbl} (${fi.count} transaç${fi.count > 1 ? 'ões' : 'ão'})</span>
+                <span class="cf-future-row-value">${formatCentsToBRL(fi.estimated_cents)}</span>
+            </div>`;
+        });
+    }
+
+    html += '</div>';
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+// ── Event listeners for cash flow cards and modals ──
+document.getElementById('btn-cashflow-entries')?.addEventListener('click', openCashFlowEntriesModal);
+document.getElementById('cashFlowEntriesModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCashFlowEntriesModal();
+});
+document.querySelector('#cashFlowEntriesModal .close-btn')?.addEventListener('click', closeCashFlowEntriesModal);
+
+document.getElementById('btn-cashflow-exits')?.addEventListener('click', openWithdrawalModal);
+
+// Month navigation (entries only — exits now uses withdrawal modal)
+document.getElementById('cf-entries-prev')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    cfEntriesCurrentMonth = cfPrevMonth(cfEntriesCurrentMonth);
+    await loadCashFlowEntriesDetail(cfEntriesCurrentMonth);
+});
+document.getElementById('cf-entries-next')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    cfEntriesCurrentMonth = cfNextMonth(cfEntriesCurrentMonth);
+    await loadCashFlowEntriesDetail(cfEntriesCurrentMonth);
+});

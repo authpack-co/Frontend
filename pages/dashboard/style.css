@@ -5811,3 +5811,608 @@ textarea:focus-visible {
 [data-theme="dark"] .fin-next-transfer {
     background: rgba(255, 255, 255, 0.02);
 }
+
+/* ── Cash Flow / Movimentações ── */
+.fin-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.fin-section-sub {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+    font-weight: 400;
+}
+
+.fin-cashflow-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ap-space-md);
+    margin-bottom: var(--ap-space-lg);
+}
+
+.fin-cashflow-card {
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    padding: var(--ap-space-lg);
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fin-cashflow-card:hover {
+    border-color: var(--ap-border-hover);
+    transform: translateY(-1px);
+}
+
+.fin-cashflow-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fin-cashflow-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--ap-radius-md);
+    flex-shrink: 0;
+}
+
+.fin-icon-red {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.fin-cashflow-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.fin-cashflow-value {
+    font-family: var(--ap-font-data);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    line-height: 1.2;
+}
+
+.fin-cashflow-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--ap-border);
+}
+
+.fin-cashflow-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+.fin-cashflow-line span:last-child {
+    font-family: var(--ap-font-data);
+    font-weight: 500;
+    color: var(--ap-text-secondary);
+}
+
+.fin-cashflow-link {
+    font-size: 12px;
+    color: var(--ap-accent);
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.fin-cashflow-card:hover .fin-cashflow-link {
+    text-decoration: underline;
+}
+
+/* ── Cash Flow Modals ── */
+
+.cf-header-dot {
+    color: var(--ap-text-muted);
+    font-weight: 300;
+}
+
+.cf-header-sub {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+    font-weight: 400;
+    margin: 2px 0 0;
+}
+
+.cf-summary-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 12px 16px;
+    background: var(--ap-bg-alt);
+    border: 1px solid var(--ap-border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+}
+
+.cf-summary-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+.cf-summary-stat strong {
+    color: var(--ap-text-primary);
+    font-weight: 700;
+    font-family: var(--ap-font-data);
+}
+
+.cf-status-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.cf-status-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 14px 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--ap-border);
+    gap: 4px;
+}
+
+.cf-status-card .cf-status-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.cf-status-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ap-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.cf-status-value {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--ap-font-data);
+    line-height: 1.2;
+}
+
+.cf-status-revenue {
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+.cf-status-revenue .cf-status-icon {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+}
+.cf-status-revenue .cf-status-value {
+    color: #22c55e;
+}
+
+.cf-status-subscription {
+    background: rgba(59, 130, 246, 0.06);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+.cf-status-subscription .cf-status-icon {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+.cf-status-subscription .cf-status-value {
+    color: #3b82f6;
+}
+
+.cf-status-pending {
+    background: rgba(139, 92, 246, 0.06);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+.cf-status-pending .cf-status-icon {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+}
+.cf-status-pending .cf-status-value {
+    color: #8b5cf6;
+}
+
+.cf-status-installment {
+    background: rgba(245, 158, 11, 0.06);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+.cf-status-installment .cf-status-icon {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+.cf-status-installment .cf-status-value {
+    color: #f59e0b;
+}
+
+.cf-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.cf-month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 4px 0 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--ap-border);
+}
+
+.cf-month-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--ap-radius-md);
+    border: 1px solid var(--ap-border);
+    background: var(--ap-bg-card);
+    color: var(--ap-text-primary);
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.15s ease;
+}
+
+.cf-month-btn:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+}
+
+.cf-month-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    min-width: 140px;
+    text-align: center;
+}
+
+/* ── Category-based cash flow detail ── */
+.cf-category-group {
+    background: var(--ap-bg-alt);
+    border: 1px solid var(--ap-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    transition: border-color 0.2s;
+}
+
+.cf-category-group.open {
+    border-color: color-mix(in srgb, var(--ap-border) 100%, transparent);
+}
+
+.cf-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.cf-category-header:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.cf-category-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cf-category-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.cf-category-icon svg {
+    stroke: var(--ap-bg-alt, #1a1a2e);
+}
+
+.cf-category-label-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.cf-category-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    line-height: 1.3;
+}
+
+.cf-category-count {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ap-text-muted);
+    line-height: 1.3;
+}
+
+.cf-category-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cf-category-total {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: var(--ap-font-data);
+}
+
+.cf-toggle-chevron {
+    transition: transform 0.25s ease;
+    color: var(--ap-text-muted);
+    flex-shrink: 0;
+}
+
+.cf-category-group.open .cf-toggle-chevron {
+    transform: rotate(180deg);
+}
+
+.cf-category-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    border-top: 1px solid transparent;
+}
+
+.cf-category-group.open .cf-category-content {
+    max-height: 600px;
+    overflow-y: auto;
+    border-top-color: var(--ap-border);
+}
+
+.cf-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid color-mix(in srgb, var(--ap-border) 50%, transparent);
+    gap: 16px;
+    transition: background 0.1s;
+}
+
+.cf-item:last-child {
+    border-bottom: none;
+}
+
+.cf-item:hover {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.cf-item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+}
+
+.cf-item-product {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.cf-item-product-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cf-item-product-id {
+    font-size: 11px;
+    font-family: var(--ap-font-data);
+    color: var(--ap-text-muted);
+    flex-shrink: 0;
+}
+
+.cf-item-buyer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--ap-text-muted);
+}
+
+.cf-buyer-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.cf-buyer-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.cf-item-buyer-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+.cf-item-buyer-sep {
+    opacity: 0.4;
+}
+
+.cf-item-buyer-meta {
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
+.cf-item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 2px;
+}
+
+.cf-item-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--ap-font-data);
+    color: #22c55e;
+}
+
+.cf-item-date {
+    font-size: 10px;
+    color: var(--ap-text-muted);
+}
+
+.cf-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    margin-top: 12px;
+    background: var(--ap-bg-alt);
+    border: 1px solid var(--ap-border);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.cf-total-row span:last-child {
+    font-family: var(--ap-font-data);
+    font-size: 16px;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.cf-future-section {
+    margin-top: 16px;
+    padding: 16px 18px;
+    background: var(--ap-bg-alt);
+    border: 1px solid var(--ap-border);
+    border-radius: 12px;
+}
+
+.cf-future-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+}
+
+.cf-future-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+}
+
+.cf-future-row-label {
+    color: var(--ap-text-muted);
+}
+
+.cf-future-row-value {
+    font-family: var(--ap-font-data);
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.cf-future-subtitle {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ap-text-muted);
+    margin: 14px 0 6px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--ap-border) 50%, transparent);
+}
+
+.cf-future-subtitle:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.cf-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--ap-text-muted);
+    font-size: 13px;
+    background: var(--ap-bg-alt);
+    border: 1px dashed var(--ap-border);
+    border-radius: 12px;
+}
+
+/* ── Responsive Cash Flow ── */
+@media (max-width: 640px) {
+    .fin-cashflow-row {
+        grid-template-columns: 1fr;
+    }
+
+    .fin-cashflow-value {
+        font-size: 22px;
+    }
+
+    .cf-status-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cf-summary-bar {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+}

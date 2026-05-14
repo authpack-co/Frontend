@@ -499,6 +499,40 @@
                 </div>
             </div>
         </div>
+        <!-- Cash Flow Entries Detail Modal -->
+        <div class="modal-overlay" id="cashFlowEntriesModal">
+            <div class="modal sales-history-modal">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" style="color:var(--ap-text-muted)">
+                                <rect width="18" height="18" x="3" y="4" rx="2" />
+                                <path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" />
+                            </svg>
+                            Entradas <span class="cf-header-dot">·</span>
+                            <span id="cf-entries-header-month">Junho 2026</span>
+                        </h2>
+                        <p class="cf-header-sub">Visão completa das entradas e liberações deste mês</p>
+                    </div>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body custom-scrollbar" id="cfEntriesContent">
+                    <div class="cf-month-nav">
+                        <button class="cf-month-btn" id="cf-entries-prev">&lsaquo;</button>
+                        <span class="cf-month-label" id="cf-entries-month-label">Maio 2026</span>
+                        <button class="cf-month-btn" id="cf-entries-next">&rsaquo;</button>
+                    </div>
+                    <div class="spinner-container" style="height: 200px; display: none;" id="cfEntriesLoading">
+                        <div class="spinner large"></div>
+                    </div>
+                    <div id="cfEntriesWrap">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Product Details Modal -->
         <div class="modal-overlay" id="productDetailsModal">
             <div class="modal sales-history-modal">
@@ -2422,7 +2456,80 @@
                             </div>
                         </div>
 
-                        <!-- ── 4 Secondary KPI Cards ── -->
+                        <!-- ── Movimentações (Cash Flow) ── -->
+                        <div class="fin-section-header" style="margin-bottom:12px;">
+                            <h3 class="fin-section-title">Movimentações do mês</h3>
+                        </div>
+                        <div class="fin-cashflow-row" id="fin-cashflow-row">
+                            <div class="fin-cashflow-card fin-cashflow-entries" id="btn-cashflow-entries">
+                                <div class="fin-cashflow-header">
+                                    <div class="fin-cashflow-icon fin-icon-green">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M12 19V5" />
+                                            <polyline points="5 12 12 5 19 12" />
+                                        </svg>
+                                    </div>
+                                    <span class="fin-cashflow-label">Entradas</span>
+                                </div>
+                                <span class="fin-cashflow-value" id="cf-entries-total">R$ 0,00</span>
+                                <div class="fin-cashflow-breakdown">
+                                    <div class="fin-cashflow-line">
+                                        <span>Novas vendas</span>
+                                        <span id="cf-entries-sales">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-cashflow-line">
+                                        <span>Assinaturas</span>
+                                        <span id="cf-entries-subscriptions">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-cashflow-line">
+                                        <span>Parcelas</span>
+                                        <span id="cf-entries-installments">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-cashflow-line">
+                                        <span>Aguardando compensação</span>
+                                        <span id="cf-entries-pending">R$ 0,00</span>
+                                    </div>
+                                </div>
+                                <span class="fin-cashflow-link">Ver detalhes</span>
+                            </div>
+                            <div class="fin-cashflow-card fin-cashflow-exits" id="btn-cashflow-exits">
+                                <div class="fin-cashflow-header">
+                                    <div class="fin-cashflow-icon fin-icon-red">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M12 5v14" />
+                                            <polyline points="19 12 12 19 5 12" />
+                                        </svg>
+                                    </div>
+                                    <span class="fin-cashflow-label">Saídas</span>
+                                </div>
+                                <span class="fin-cashflow-value" id="cf-exits-total">R$ 0,00</span>
+                                <div class="fin-cashflow-breakdown">
+                                    <div class="fin-cashflow-line">
+                                        <span>Total sacado</span>
+                                        <span id="cf-exits-withdrawn">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-cashflow-line">
+                                        <span>Valor recebido</span>
+                                        <span id="cf-exits-received">R$ 0,00</span>
+                                    </div>
+                                    <div class="fin-cashflow-line">
+                                        <span>Saques</span>
+                                        <span id="cf-exits-withdrawals">0</span>
+                                    </div>
+                                </div>
+                                <span class="fin-cashflow-link">Ver detalhes</span>
+                            </div>
+                        </div>
+
+                        <!-- ── Performance de Vendas: 4 KPI Cards ── -->
+                        <div class="fin-section-header" style="margin:20px 0 12px;">
+                            <h3 class="fin-section-title">Performance de vendas</h3>
+                            <span class="fin-section-sub">Somente novas vendas do mês</span>
+                        </div>
                         <div class="fin-kpi-row" id="fin-kpi-row">
                             <div class="fin-kpi-card">
                                 <div class="fin-kpi-icon fin-icon-blue">
@@ -2435,10 +2542,9 @@
                                     </svg>
                                 </div>
                                 <div class="fin-kpi-info">
-                                    <span class="fin-kpi-label">Receita bruta do mês</span>
+                                    <span class="fin-kpi-label">Receita Bruta</span>
                                     <span class="fin-kpi-value" id="kpi-gross-revenue">R$ 0,00</span>
-                                    <span class="fin-kpi-sub">Total vendido sem taxas</span>
-                                    <span class="fin-kpi-change" id="kpi-gross-change"></span>
+                                    <span class="fin-kpi-sub">Total vendido no mês</span>
                                 </div>
                             </div>
                             <div class="fin-kpi-card">
@@ -2450,26 +2556,9 @@
                                     </svg>
                                 </div>
                                 <div class="fin-kpi-info">
-                                    <span class="fin-kpi-label">Receita líquida do mês</span>
+                                    <span class="fin-kpi-label">Receita Líquida</span>
                                     <span class="fin-kpi-value" id="kpi-net-revenue">R$ 0,00</span>
                                     <span class="fin-kpi-sub">Após taxas de transação</span>
-                                    <span class="fin-kpi-change" id="kpi-net-change"></span>
-                                </div>
-                            </div>
-                            <div class="fin-kpi-card">
-                                <div class="fin-kpi-icon fin-icon-teal">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" x2="12" y1="15" y2="3" />
-                                    </svg>
-                                </div>
-                                <div class="fin-kpi-info">
-                                    <span class="fin-kpi-label">Total sacado no mês</span>
-                                    <span class="fin-kpi-value" id="kpi-withdrawn">R$ 0,00</span>
-                                    <span class="fin-kpi-sub" id="kpi-withdrawn-received">recebido R$ 0,00</span>
                                 </div>
                             </div>
                             <div class="fin-kpi-card">
@@ -2477,17 +2566,30 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
-                                        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
-                                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                                        <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
-                                        <path d="M2 7h20" />
+                                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                        <line x1="3" x2="21" y1="6" y2="6" />
+                                        <path d="M16 10a4 4 0 0 1-8 0" />
                                     </svg>
                                 </div>
                                 <div class="fin-kpi-info">
                                     <span class="fin-kpi-label" id="kpi-sales-label">Vendas no mês</span>
                                     <span class="fin-kpi-value" id="kpi-sales">0</span>
-                                    <span class="fin-kpi-sub">Vendas realizadas</span>
-                                    <span class="fin-kpi-change" id="kpi-sales-change"></span>
+                                    <span class="fin-kpi-sub">Novas vendas realizadas</span>
+                                </div>
+                            </div>
+                            <div class="fin-kpi-card">
+                                <div class="fin-kpi-icon fin-icon-teal">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                        <line x1="4" x2="4" y1="22" y2="15" />
+                                    </svg>
+                                </div>
+                                <div class="fin-kpi-info">
+                                    <span class="fin-kpi-label">Ticket Médio</span>
+                                    <span class="fin-kpi-value" id="kpi-avg-ticket">R$ 0,00</span>
+                                    <span class="fin-kpi-sub">Média por venda</span>
                                 </div>
                             </div>
                         </div>
@@ -2580,13 +2682,13 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                                <polyline points="7 10 12 15 17 10" />
-                                                <line x1="12" x2="12" y1="15" y2="3" />
+                                                <line x1="12" x2="12" y1="20" y2="10" />
+                                                <line x1="18" x2="18" y1="20" y2="4" />
+                                                <line x1="6" x2="6" y1="20" y2="16" />
                                             </svg>
-                                            Total sacado
+                                            Ticket Médio
                                         </div>
-                                        <span class="fin-summary-value" id="fin-total-withdrawn">R$ 0,00</span>
+                                        <span class="fin-summary-value" id="fin-avg-ticket-summary">R$ 0,00</span>
                                     </div>
                                 </div>
                                 <button class="fin-summary-link" id="btn-ver-financeiro-3">

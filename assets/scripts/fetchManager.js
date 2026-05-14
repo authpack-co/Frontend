@@ -381,6 +381,23 @@ const fetchManager = {
         return response;
     },
 
+    async getCashFlow() {
+        const response = await fetchRoutes(`/api/marketplace/seller/cash-flow`);
+        return response;
+    },
+
+    async getCashFlowDetail(month) {
+        const qs = month ? `?month=${encodeURIComponent(month)}` : '';
+        const response = await fetchRoutes(`/api/marketplace/seller/cash-flow-detail${qs}`);
+        return response;
+    },
+
+    async getWithdrawalsDetail(month) {
+        const qs = month ? `?month=${encodeURIComponent(month)}` : '';
+        const response = await fetchRoutes(`/api/marketplace/seller/withdrawals-detail${qs}`);
+        return response;
+    },
+
     async requestWithdrawal(amountCents) {
         const response = await fetchRoutes(`/api/marketplace/seller/withdraw`, {
             method: 'POST',
