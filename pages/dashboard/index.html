@@ -501,35 +501,74 @@
         </div>
         <!-- Cash Flow Entries Detail Modal -->
         <div class="modal-overlay" id="cashFlowEntriesModal">
-            <div class="modal sales-history-modal">
-                <div class="modal-header">
-                    <div>
-                        <h2 class="modal-title" style="display:flex;align-items:center;gap:8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" style="color:var(--ap-text-muted)">
-                                <rect width="18" height="18" x="3" y="4" rx="2" />
-                                <path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" />
-                            </svg>
-                            Entradas <span class="cf-header-dot">·</span>
-                            <span id="cf-entries-header-month">Junho 2026</span>
-                        </h2>
-                        <p class="cf-header-sub">Visão completa das entradas e liberações deste mês</p>
-                    </div>
-                    <button class="close-btn">&times;</button>
-                </div>
-                <div class="modal-body custom-scrollbar" id="cfEntriesContent">
+            <div class="cf-sheet">
+                <div class="cf-topbar">
                     <div class="cf-month-nav">
-                        <button class="cf-month-btn" id="cf-entries-prev">&lsaquo;</button>
-                        <span class="cf-month-label" id="cf-entries-month-label">Maio 2026</span>
-                        <button class="cf-month-btn" id="cf-entries-next">&rsaquo;</button>
+                        <button class="cf-nav-btn" id="cf-entries-prev" title="Mês anterior">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <span class="cf-month-label" id="cf-entries-month-label"></span>
+                        <button class="cf-nav-btn" id="cf-entries-next" title="Próximo mês">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
                     </div>
-                    <div class="spinner-container" style="height: 200px; display: none;" id="cfEntriesLoading">
-                        <div class="spinner large"></div>
+                    <button class="cf-close-btn close-btn" title="Fechar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="cf-hero">
+                    <div class="cf-hero-amount" id="cfHeroAmount">R$ 0,00</div>
+                    <div class="cf-hero-subtitle">total recebido em <strong id="cfMonthRef"></strong></div>
+                    <div class="cf-metrics">
+                        <div class="cf-metric" data-filter="new_sale" style="--cat-color:#22c55e">
+                            <div class="cf-metric-header">
+                                <div class="cf-metric-dot"></div>
+                                <span class="cf-metric-name">Vendas</span>
+                            </div>
+                            <div class="cf-metric-val" id="cf-m-sales">R$ 0,00</div>
+                            <div class="cf-metric-count" id="cf-m-sales-c">0 transações</div>
+                        </div>
+                        <div class="cf-metric" data-filter="subscription" style="--cat-color:#3b82f6">
+                            <div class="cf-metric-header">
+                                <div class="cf-metric-dot"></div>
+                                <span class="cf-metric-name">Assinaturas</span>
+                            </div>
+                            <div class="cf-metric-val" id="cf-m-sub">R$ 0,00</div>
+                            <div class="cf-metric-count" id="cf-m-sub-c">0 renovações</div>
+                        </div>
+                        <div class="cf-metric" data-filter="installment" style="--cat-color:#f59e0b">
+                            <div class="cf-metric-header">
+                                <div class="cf-metric-dot"></div>
+                                <span class="cf-metric-name">Parcelas</span>
+                            </div>
+                            <div class="cf-metric-val" id="cf-m-inst">R$ 0,00</div>
+                            <div class="cf-metric-count" id="cf-m-inst-c">0 parcelas</div>
+                        </div>
+                        <div class="cf-metric" data-filter="pending_settlement" style="--cat-color:#8b5cf6">
+                            <div class="cf-metric-header">
+                                <div class="cf-metric-dot"></div>
+                                <span class="cf-metric-name">Compensação</span>
+                            </div>
+                            <div class="cf-metric-val" id="cf-m-pend">R$ 0,00</div>
+                            <div class="cf-metric-count" id="cf-m-pend-c">0 aguardando</div>
+                        </div>
                     </div>
-                    <div id="cfEntriesWrap">
-                        <!-- Populated by JS -->
-                    </div>
+                </div>
+                <div class="cf-divider"></div>
+                <div class="cf-tabs-row">
+                    <button class="cf-tab active" data-filter="all" style="--tab-bg:var(--ap-text-primary)">Todos <span class="cf-tab-badge" id="cf-badge-all">0</span></button>
+                    <button class="cf-tab" data-filter="new_sale" style="--tab-bg:#22c55e">Novas vendas <span class="cf-tab-badge" id="cf-badge-new_sale">0</span></button>
+                    <button class="cf-tab" data-filter="subscription" style="--tab-bg:#3b82f6">Assinaturas <span class="cf-tab-badge" id="cf-badge-sub">0</span></button>
+                    <button class="cf-tab" data-filter="installment" style="--tab-bg:#f59e0b">Parcelas <span class="cf-tab-badge" id="cf-badge-inst">0</span></button>
+                    <button class="cf-tab" data-filter="pending_settlement" style="--tab-bg:#8b5cf6">Em compensação <span class="cf-tab-badge" id="cf-badge-pend">0</span></button>
+                </div>
+                <div class="cf-list" id="cfEntriesList"></div>
+                <div class="spinner-container" id="cfEntriesLoading" style="display:none;height:200px;">
+                    <div class="spinner large"></div>
+                </div>
+                <div class="cf-footer">
+                    <span class="cf-footer-label">Total do mês</span>
+                    <span class="cf-footer-total" id="cfFooterTotal">R$ 0,00</span>
                 </div>
             </div>
         </div>

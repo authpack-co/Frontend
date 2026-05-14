@@ -3864,15 +3864,17 @@ document.getElementById('btn-ver-financeiro')?.addEventListener('click', openWit
 // "Ver histórico de vendas" (Minha Vitrine)
 document.getElementById('btn-ver-financeiro-3')?.addEventListener('click', openSalesHistoryModal);
 
+
 // ============================================================================
 // CASH FLOW DETAIL MODALS (Entradas / Saídas)
 // ============================================================================
 
 const MONTH_FULL = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
-let cfEntriesCurrentMonth = null; // { year, month (0-indexed) }
+let cfEntriesCurrentMonth = null;
+let cfEntriesData = null;
+let cfEntriesFilter = 'all';
 
 function getDefaultCfMonth() {
     const now = new Date();
@@ -3885,6 +3887,10 @@ function cfMonthKey(m) {
 
 function cfMonthLabel(m) {
     return `${MONTH_FULL[m.month]} ${m.year}`;
+}
+
+function cfMonthRefLabel(m) {
+    return `${MONTH_FULL[m.month].toLowerCase()} de ${m.year}`;
 }
 
 function cfPrevMonth(m) {
@@ -3901,13 +3907,21 @@ function cfNextMonth(m) {
     return { year, month };
 }
 
-// ── Entries modal ──
+function cfIsCurrentMonth(m) {
+    const now = new Date();
+    return m.year === now.getFullYear() && m.month === now.getMonth();
+}
+
+// ── Entries modal open/close ──
+
 async function openCashFlowEntriesModal() {
     const modal = document.getElementById('cashFlowEntriesModal');
     if (!modal) return;
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
     cfEntriesCurrentMonth = cfEntriesCurrentMonth || getDefaultCfMonth();
+    cfEntriesFilter = 'all';
+    _cfResetTabsAndMetrics();
     await loadCashFlowEntriesDetail(cfEntriesCurrentMonth);
 }
 
@@ -3918,18 +3932,25 @@ function closeCashFlowEntriesModal() {
     document.body.style.overflow = '';
 }
 
-const CF_CATEGORIES = [
-    { key: 'new_sale', label: 'Novas vendas', color: '#22c55e', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>' },
-    { key: 'subscription', label: 'Assinaturas', color: '#3b82f6', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>' },
-    { key: 'installment', label: 'Parcelas', color: '#f59e0b', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>' },
-    { key: 'pending_settlement', label: 'Aguardando compensação', color: '#8b5cf6', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
-];
+// ── Avatar helpers ──
 
-function _cfFormatDateBR(dateStr) {
-    if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
+const _cfAvatarBgPalette = ['#e0f2fe', '#dcfce7', '#fef3c7', '#ede9fe', '#fce7f3', '#fff7ed'];
+const _cfAvatarFgPalette = ['#0369a1', '#15803d', '#b45309', '#7c3aed', '#be185d', '#c2410c'];
+
+function _cfAvatarBg(name) {
+    return _cfAvatarBgPalette[(name || 'U').charCodeAt(0) % _cfAvatarBgPalette.length];
 }
+
+function _cfAvatarFg(name) {
+    return _cfAvatarFgPalette[(name || 'U').charCodeAt(0) % _cfAvatarFgPalette.length];
+}
+
+function _cfInitials(name) {
+    if (!name) return 'U';
+    return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// ── Date helpers ──
 
 function _cfFormatDateShort(dateStr) {
     if (!dateStr) return '';
@@ -3937,241 +3958,438 @@ function _cfFormatDateShort(dateStr) {
     return `${d}/${m}`;
 }
 
-function _cfBuyerMeta(catKey, item) {
-    const method = item.payment_method === 'pix' ? 'PIX' : 'Cartão';
-    if (catKey === 'new_sale') return method;
+function _cfDateLabel(dateStr) {
+    if (!dateStr || dateStr === '0000-00-00') return 'Sem data';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+    if (dateStr === todayStr) return 'Hoje';
+    if (dateStr === yesterdayStr) return 'Ontem';
+    return `${d} de ${MONTH_FULL[m - 1].toLowerCase()}`;
+}
+
+// ── Release label per category ──
+
+function _cfReleaseLabel(catKey, item) {
     if (catKey === 'subscription') return 'Renovação mensal';
-    if (catKey === 'installment') return `${item.installment}ª de ${item.total_installments} parcelas`;
-    if (catKey === 'pending_settlement') return `Compra em ${_cfFormatDateShort(item.order_created_at)}`;
-    return '';
+    if (catKey === 'installment') return `${item.installment || ''}ª de ${item.total_installments || ''} parcelas`;
+    if (catKey === 'pending_settlement') return `Liberação ${_cfFormatDateShort(item.release_date)}`;
+    return `Liberado ${_cfFormatDateShort(item.release_date)}`;
 }
 
-function _cfSmallAvatar(item) {
-    const name = item.buyer_name || 'U';
-    const initial = name.charAt(0).toUpperCase();
-    if (item.buyer_picture) {
-        return `<div class="cf-buyer-avatar"><img src="${item.buyer_picture}" alt="${name}"></div>`;
-    }
-    return `<div class="cf-buyer-avatar">${initial}</div>`;
+// ── Category metadata ──
+
+const CF_CAT_COLORS = {
+    new_sale: '#22c55e',
+    subscription: '#3b82f6',
+    installment: '#f59e0b',
+    pending_settlement: '#8b5cf6',
+};
+
+const CF_CATEGORIES = [
+    { key: 'new_sale', label: 'Novas vendas' },
+    { key: 'subscription', label: 'Assinaturas' },
+    { key: 'installment', label: 'Parcelas' },
+    { key: 'pending_settlement', label: 'Aguardando compensação' },
+];
+
+// ── Reset tabs and metric cards ──
+
+function _cfResetTabsAndMetrics() {
+    document.querySelectorAll('#cashFlowEntriesModal .cf-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.filter === 'all');
+    });
+    document.querySelectorAll('#cashFlowEntriesModal .cf-metric').forEach(m => {
+        m.classList.remove('active');
+    });
 }
 
-function _cfProductId(item) {
-    if (!item.product_id) return '';
-    return '#' + item.product_id.slice(0, 5);
-}
-
-function _cfRenderItem(catKey, item) {
-    const releaseLbl = catKey === 'pending_settlement'
-        ? `Liberação ${_cfFormatDateShort(item.release_date)}`
-        : _cfFormatDateShort(item.release_date);
-
-    return `<div class="cf-item">
-        <div class="cf-item-main">
-            <div class="cf-item-product">
-                <span class="cf-item-product-name">${item.product_name}</span>
-                <span class="cf-item-product-id">${_cfProductId(item)}</span>
-            </div>
-            <div class="cf-item-buyer">
-                ${_cfSmallAvatar(item)}
-                <span class="cf-item-buyer-name">${item.buyer_name || 'Comprador'}</span>
-                <span class="cf-item-buyer-sep">·</span>
-                <span class="cf-item-buyer-meta">${_cfBuyerMeta(catKey, item)}</span>
-            </div>
-        </div>
-        <div class="cf-item-right">
-            <span class="cf-item-value">${formatCentsToBRL(item.amount_cents)}</span>
-            <span class="cf-item-date">${releaseLbl}</span>
-        </div>
-    </div>`;
-}
+// ── Main data loader ──
 
 async function loadCashFlowEntriesDetail(m) {
-    const label = document.getElementById('cf-entries-month-label');
-    if (label) label.textContent = cfMonthLabel(m);
-    const headerMonth = document.getElementById('cf-entries-header-month');
-    if (headerMonth) headerMonth.textContent = cfMonthLabel(m);
+    const monthLabel = document.getElementById('cf-entries-month-label');
+    const monthRef = document.getElementById('cfMonthRef');
+    const nextBtn = document.getElementById('cf-entries-next');
+    if (monthLabel) monthLabel.textContent = cfMonthLabel(m);
+    if (monthRef) monthRef.textContent = cfMonthRefLabel(m);
+    if (nextBtn) nextBtn.disabled = cfIsCurrentMonth(m);
 
     const loading = document.getElementById('cfEntriesLoading');
-    const wrap = document.getElementById('cfEntriesWrap');
+    const list = document.getElementById('cfEntriesList');
     if (loading) loading.style.display = 'flex';
-    if (wrap) wrap.innerHTML = '';
+    if (list) list.innerHTML = '';
 
     try {
         const res = await fetchManager.getCashFlowDetail(cfMonthKey(m));
         if (loading) loading.style.display = 'none';
         if (!res.ok || !res.result) {
-            if (wrap) wrap.innerHTML = '<div class="cf-empty">Não foi possível carregar os dados.</div>';
+            _cfRenderEmptyState(list, 'Não foi possível carregar os dados.');
+            _cfUpdateHeroAndMetrics(null);
             return;
         }
 
-        const data = res.result;
-        const cats = data.categories || {};
-        const totals = data.monthly_totals || {};
-        const hasAny = CF_CATEGORIES.some(c => cats[c.key] && cats[c.key].items.length > 0);
-
-        let futureCents = 0;
-        (data.future_installments || []).forEach(f => { futureCents += f.estimated_cents; });
-        (data.future_pending_settlement || []).forEach(f => { futureCents += f.estimated_cents; });
-
-        const frag = document.createDocumentFragment();
-
-        // ── Summary stats bar ──
-        const summaryBar = document.createElement('div');
-        summaryBar.className = 'cf-summary-bar';
-        summaryBar.innerHTML = `<div class="cf-summary-stat">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
-                <span><strong>${formatCentsToBRL(totals.total_cents || 0)}</strong> recebidos neste mês</span>
-            </div>
-            ${futureCents > 0 ? `<div class="cf-summary-stat">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span><strong>+${formatCentsToBRL(futureCents)}</strong> previstos</span>
-            </div>` : ''}`;
-        frag.appendChild(summaryBar);
-
-        // ── 4 Status mini cards ──
-        const cardsRow = document.createElement('div');
-        cardsRow.className = 'cf-status-cards';
-        cardsRow.innerHTML = `<div class="cf-status-card cf-status-revenue">
-                <div class="cf-status-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                </div>
-                <span class="cf-status-label">Receita líquida</span>
-                <span class="cf-status-value">${formatCentsToBRL(totals.new_sales_cents || 0)}</span>
-            </div>
-            <div class="cf-status-card cf-status-subscription">
-                <div class="cf-status-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                </div>
-                <span class="cf-status-label">Assinaturas</span>
-                <span class="cf-status-value">${formatCentsToBRL(totals.subscription_cents || 0)}</span>
-            </div>
-            <div class="cf-status-card cf-status-pending">
-                <div class="cf-status-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <span class="cf-status-label">Em compensação</span>
-                <span class="cf-status-value">${formatCentsToBRL(totals.pending_settlement_cents || 0)}</span>
-            </div>
-            <div class="cf-status-card cf-status-installment">
-                <div class="cf-status-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                </div>
-                <span class="cf-status-label">Parcelas</span>
-                <span class="cf-status-value">${formatCentsToBRL(totals.installment_cents || 0)}</span>
-            </div>`;
-        frag.appendChild(cardsRow);
-
-        if (!hasAny) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'cf-empty';
-            emptyDiv.textContent = 'Nenhuma entrada neste mês.';
-            frag.appendChild(emptyDiv);
-            wrap.innerHTML = '';
-            wrap.appendChild(frag);
-            renderFutureEntries(wrap, data.future_installments, data.future_pending_settlement);
-            return;
-        }
-
-        // ── Section title ──
-        const timelineTitle = document.createElement('div');
-        timelineTitle.className = 'cf-section-title';
-        timelineTitle.textContent = 'Detalhamento por categoria';
-        frag.appendChild(timelineTitle);
-
-        // ── Category groups ──
-        let firstOpen = true;
-        CF_CATEGORIES.forEach(catDef => {
-            const cat = cats[catDef.key];
-            if (!cat || cat.items.length === 0) return;
-
-            const group = document.createElement('div');
-            group.className = 'cf-category-group' + (firstOpen ? ' open' : '');
-            firstOpen = false;
-
-            const countLabel = cat.items.length === 1 ? '1 item' : `${cat.items.length} itens`;
-
-            let itemsHtml = '';
-            cat.items.forEach(item => { itemsHtml += _cfRenderItem(catDef.key, item); });
-
-            group.innerHTML = `<div class="cf-category-header" role="button" tabindex="0">
-                <div class="cf-category-left">
-                    <div class="cf-category-icon" style="color:${catDef.color}">${catDef.icon}</div>
-                    <div class="cf-category-label-wrap">
-                        <span class="cf-category-label">${catDef.label}</span>
-                        <span class="cf-category-count">${countLabel}</span>
-                    </div>
-                </div>
-                <div class="cf-category-right">
-                    <span class="cf-category-total" style="color:${catDef.color}">${formatCentsToBRL(cat.total_cents)}</span>
-                    <svg class="cf-toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-            </div>
-            <div class="cf-category-content">${itemsHtml}</div>`;
-
-            group.querySelector('.cf-category-header').addEventListener('click', (e) => {
-                e.stopPropagation();
-                group.classList.toggle('open');
-            });
-
-            frag.appendChild(group);
-        });
-
-        // ── Monthly total ──
-        const totalDiv = document.createElement('div');
-        totalDiv.className = 'cf-total-row';
-        totalDiv.innerHTML = `<span>Total do mês</span><span>${formatCentsToBRL(totals.total_cents)}</span>`;
-        frag.appendChild(totalDiv);
-
-        wrap.innerHTML = '';
-        wrap.appendChild(frag);
-
-        renderFutureEntries(wrap, data.future_installments, data.future_pending_settlement);
+        cfEntriesData = res.result;
+        cfEntriesFilter = 'all';
+        _cfResetTabsAndMetrics();
+        _cfUpdateHeroAndMetrics(cfEntriesData);
+        _cfRenderList();
 
     } catch (err) {
         console.error('[CashFlow] Error loading entries detail:', err);
         if (loading) loading.style.display = 'none';
-        if (wrap) wrap.innerHTML = '<div class="cf-empty">Erro ao carregar dados.</div>';
+        _cfRenderEmptyState(list, 'Erro ao carregar dados.');
+        _cfUpdateHeroAndMetrics(null);
     }
 }
 
-function renderFutureEntries(container, futureInstallments, futurePending) {
+// ── Update hero amount + metric cards + tab badges ──
+
+function _cfUpdateHeroAndMetrics(data) {
+    const heroAmount = document.getElementById('cfHeroAmount');
+    const footerTotal = document.getElementById('cfFooterTotal');
+
+    if (!data) {
+        if (heroAmount) heroAmount.textContent = 'R$ 0,00';
+        if (footerTotal) footerTotal.textContent = 'R$ 0,00';
+        ['cf-m-sales', 'cf-m-sub', 'cf-m-inst', 'cf-m-pend'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'R$ 0,00';
+        });
+        ['cf-m-sales-c', 'cf-m-sub-c', 'cf-m-inst-c', 'cf-m-pend-c'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
+        ['cf-badge-all', 'cf-badge-new_sale', 'cf-badge-sub', 'cf-badge-inst', 'cf-badge-pend'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
+        return;
+    }
+
+    const totals = data.monthly_totals || {};
+    const cats = data.categories || {};
+
+    if (heroAmount) heroAmount.textContent = formatCentsToBRL(totals.total_cents || 0);
+    if (footerTotal) footerTotal.textContent = formatCentsToBRL(totals.total_cents || 0);
+
+    const salesEl = document.getElementById('cf-m-sales');
+    const subEl = document.getElementById('cf-m-sub');
+    const instEl = document.getElementById('cf-m-inst');
+    const pendEl = document.getElementById('cf-m-pend');
+    if (salesEl) salesEl.textContent = formatCentsToBRL(totals.new_sales_cents || 0);
+    if (subEl) subEl.textContent = formatCentsToBRL(totals.subscription_cents || 0);
+    if (instEl) instEl.textContent = formatCentsToBRL(totals.installment_cents || 0);
+    if (pendEl) pendEl.textContent = formatCentsToBRL(totals.pending_settlement_cents || 0);
+
+    const salesCount = cats.new_sale?.items?.length || 0;
+    const subCount = cats.subscription?.items?.length || 0;
+    const instCount = cats.installment?.items?.length || 0;
+    const pendCount = cats.pending_settlement?.items?.length || 0;
+    const totalCount = salesCount + subCount + instCount + pendCount;
+
+    const salesCEl = document.getElementById('cf-m-sales-c');
+    const subCEl = document.getElementById('cf-m-sub-c');
+    const instCEl = document.getElementById('cf-m-inst-c');
+    const pendCEl = document.getElementById('cf-m-pend-c');
+    if (salesCEl) salesCEl.textContent = `${salesCount} transaç${salesCount === 1 ? 'ão' : 'ões'}`;
+    if (subCEl) subCEl.textContent = `${subCount} renovaç${subCount === 1 ? 'ão' : 'ões'}`;
+    if (instCEl) instCEl.textContent = `${instCount} parcela${instCount === 1 ? '' : 's'}`;
+    if (pendCEl) pendCEl.textContent = `${pendCount} aguardando`;
+
+    const allBadge = document.getElementById('cf-badge-all');
+    const saleBadge = document.getElementById('cf-badge-new_sale');
+    const subBadge = document.getElementById('cf-badge-sub');
+    const instBadge = document.getElementById('cf-badge-inst');
+    const pendBadge = document.getElementById('cf-badge-pend');
+    if (allBadge) allBadge.textContent = totalCount;
+    if (saleBadge) saleBadge.textContent = salesCount;
+    if (subBadge) subBadge.textContent = subCount;
+    if (instBadge) instBadge.textContent = instCount;
+    if (pendBadge) pendBadge.textContent = pendCount;
+}
+
+// ── Render transaction list ──
+
+function _cfRenderList() {
+    const list = document.getElementById('cfEntriesList');
+    if (!list || !cfEntriesData) return;
+    list.innerHTML = '';
+
+    const cats = cfEntriesData.categories || {};
+
+    const allItems = [];
+    CF_CATEGORIES.forEach(catDef => {
+        const cat = cats[catDef.key];
+        if (!cat || !cat.items) return;
+        cat.items.forEach(item => {
+            allItems.push({ ...item, _cat: catDef.key, _color: CF_CAT_COLORS[catDef.key] });
+        });
+    });
+
+    const filtered = cfEntriesFilter === 'all'
+        ? allItems
+        : allItems.filter(item => item._cat === cfEntriesFilter);
+
+    // Update footer total based on filter
+    const footerTotal = document.getElementById('cfFooterTotal');
+    if (footerTotal) {
+        const filteredSum = filtered.reduce((sum, item) => sum + (item.amount_cents || 0), 0);
+        footerTotal.textContent = formatCentsToBRL(cfEntriesFilter === 'all'
+            ? (cfEntriesData.monthly_totals?.total_cents || 0)
+            : filteredSum);
+    }
+
+    if (filtered.length === 0) {
+        const monthName = cfEntriesCurrentMonth ? MONTH_FULL[cfEntriesCurrentMonth.month] : '';
+        const msg = cfEntriesFilter !== 'all'
+            ? 'Nenhuma transação nesta categoria'
+            : `Nenhuma entrada em ${monthName}`;
+        _cfRenderEmptyState(list, msg);
+        _cfRenderFutureSection(list);
+        return;
+    }
+
+    const groups = {};
+    filtered.forEach(item => {
+        const dateKey = item.release_date || item.order_created_at || '0000-00-00';
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push(item);
+    });
+
+    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+    sortedDates.forEach(dateKey => {
+        const group = document.createElement('div');
+        group.className = 'cf-date-group';
+
+        const header = document.createElement('div');
+        header.className = 'cf-date-header';
+        header.textContent = _cfDateLabel(dateKey);
+        group.appendChild(header);
+
+        groups[dateKey].forEach(item => {
+            group.appendChild(_cfRenderTxn(item));
+        });
+
+        list.appendChild(group);
+    });
+
+    _cfRenderFutureSection(list);
+}
+
+// ── Render single transaction item ──
+
+function _cfRenderTxn(item) {
+    const wrap = document.createElement('div');
+    wrap.className = 'cf-txn';
+    wrap.setAttribute('data-cat', item._cat);
+
+    const accent = document.createElement('div');
+    accent.className = 'cf-txn-accent';
+    accent.style.background = item._color;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'cf-txn-avatar';
+    const buyerName = item.buyer_name || 'Comprador';
+    if (item.buyer_picture) {
+        avatar.innerHTML = `<img src="${item.buyer_picture}" alt="${buyerName}">`;
+    } else {
+        avatar.style.background = _cfAvatarBg(buyerName);
+        avatar.style.color = _cfAvatarFg(buyerName);
+        avatar.textContent = _cfInitials(buyerName);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'cf-txn-body';
+
+    const productLine = document.createElement('div');
+    productLine.className = 'cf-txn-product';
+    const pid = item.product_id ? '#' + item.product_id.slice(0, 5) : '';
+    productLine.innerHTML = `${item.product_name || 'Produto'}${pid ? ` <span class="cf-txn-pid">${pid}</span>` : ''}`;
+
+    const metaLine = document.createElement('div');
+    metaLine.className = 'cf-txn-meta';
+    const methodClass = item.payment_method === 'pix' ? 'pix' : 'card';
+    const methodLabel = item.payment_method === 'pix' ? 'PIX' : 'Cartão';
+    metaLine.innerHTML = `<span class="cf-txn-method-badge ${methodClass}">${methodLabel}</span><span class="cf-txn-meta-sep">·</span><span>${buyerName}</span>`;
+
+    body.appendChild(productLine);
+    body.appendChild(metaLine);
+
+    const right = document.createElement('div');
+    right.className = 'cf-txn-right';
+
+    const val = document.createElement('span');
+    val.className = 'cf-txn-value';
+    val.textContent = formatCentsToBRL(item.amount_cents);
+    right.appendChild(val);
+
+    if (item._cat === 'pending_settlement') {
+        const badge = document.createElement('span');
+        badge.className = 'cf-txn-pending-badge';
+        badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${_cfReleaseLabel(item._cat, item)}`;
+        right.appendChild(badge);
+    } else {
+        const dateLabel = document.createElement('span');
+        dateLabel.className = 'cf-txn-date-label';
+        dateLabel.textContent = _cfReleaseLabel(item._cat, item);
+        right.appendChild(dateLabel);
+    }
+
+    wrap.appendChild(accent);
+    wrap.appendChild(avatar);
+    wrap.appendChild(body);
+    wrap.appendChild(right);
+
+    return wrap;
+}
+
+// ── Render empty state ──
+
+function _cfRenderEmptyState(container, message) {
     if (!container) return;
-    const hasInst = futureInstallments && futureInstallments.length > 0;
-    const hasPend = futurePending && futurePending.length > 0;
+    const empty = document.createElement('div');
+    empty.className = 'cf-empty';
+    empty.innerHTML = `
+        <div class="cf-empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><polyline points="5 12 12 5 19 12"/></svg>
+        </div>
+        <strong style="color:var(--ap-text-secondary);font-size:14px;">${message}</strong>
+        <span style="font-size:12px;">As entradas aparecerão aqui quando houver movimentações.</span>`;
+    container.appendChild(empty);
+}
+
+// ── Render future entries section ──
+
+function _cfRenderFutureSection(container) {
+    if (!container || !cfEntriesData) return;
+    if (cfEntriesFilter !== 'all' && cfEntriesFilter !== 'pending_settlement' && cfEntriesFilter !== 'installment') return;
+
+    const futureInst = cfEntriesData.future_installments;
+    const futurePend = cfEntriesData.future_pending_settlement;
+    const hasInst = (cfEntriesFilter === 'all' || cfEntriesFilter === 'installment') && futureInst && futureInst.length > 0;
+    const hasPend = (cfEntriesFilter === 'all' || cfEntriesFilter === 'pending_settlement') && futurePend && futurePend.length > 0;
     if (!hasInst && !hasPend) return;
 
-    let html = '<div class="cf-future-section">';
-    html += '<div class="cf-future-title">Previsão de entradas futuras</div>';
+    const section = document.createElement('div');
+    section.className = 'cf-future-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'cf-future-header';
+    const badge = document.createElement('span');
+    badge.className = 'cf-future-badge';
+    badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Próximas liberações`;
+    hdr.appendChild(badge);
+    section.appendChild(hdr);
 
     if (hasInst) {
-        html += '<div class="cf-future-subtitle">Parcelas</div>';
-        futureInstallments.forEach(fi => {
-            const [y, m] = fi.month.split('-').map(Number);
-            const lbl = `${MONTH_FULL[m - 1]} ${y}`;
-            html += `<div class="cf-future-row">
-                <span class="cf-future-row-label">${lbl} (${fi.count} parcela${fi.count > 1 ? 's' : ''})</span>
-                <span class="cf-future-row-value">${formatCentsToBRL(fi.estimated_cents)}</span>
-            </div>`;
-        });
+        _cfRenderFutureSubSection(section, 'Parcelas', futureInst, 'installment');
     }
-
     if (hasPend) {
-        html += '<div class="cf-future-subtitle">Compensação</div>';
-        futurePending.forEach(fi => {
-            const [y, m] = fi.month.split('-').map(Number);
-            const lbl = `${MONTH_FULL[m - 1]} ${y}`;
-            html += `<div class="cf-future-row">
-                <span class="cf-future-row-label">${lbl} (${fi.count} transaç${fi.count > 1 ? 'ões' : 'ão'})</span>
-                <span class="cf-future-row-value">${formatCentsToBRL(fi.estimated_cents)}</span>
-            </div>`;
-        });
+        _cfRenderFutureSubSection(section, 'Compensação', futurePend, 'pending_settlement');
     }
 
-    html += '</div>';
-    container.insertAdjacentHTML('beforeend', html);
+    container.appendChild(section);
 }
 
-// ── Event listeners for cash flow cards and modals ──
+function _cfRenderFutureSubSection(parent, title, items, catKey) {
+    const subHeader = document.createElement('div');
+    subHeader.className = 'cf-future-sub-header';
+    subHeader.innerHTML = `<span class="cf-future-sub-dot" style="background:${CF_CAT_COLORS[catKey]}"></span>${title}`;
+    parent.appendChild(subHeader);
+
+    items.forEach(fi => {
+        const [y, mo] = fi.month.split('-').map(Number);
+        const lbl = `${MONTH_FULL[mo - 1]} ${y}`;
+        const countLabel = catKey === 'installment'
+            ? `${fi.count} parcela${fi.count > 1 ? 's' : ''}`
+            : `${fi.count} compensaç${fi.count > 1 ? 'ões' : 'ão'}`;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'cf-future-item';
+
+        const row = document.createElement('div');
+        row.className = 'cf-future-item-row';
+        row.style.cursor = 'pointer';
+        row.innerHTML = `
+            <div class="cf-txn-accent" style="background:${CF_CAT_COLORS[catKey]}"></div>
+            <div class="cf-txn-avatar" style="background:var(--ap-accent-light);color:var(--ap-accent)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="cf-txn-body">
+                <div class="cf-txn-product">${lbl}</div>
+                <div class="cf-txn-meta">${countLabel}</div>
+            </div>
+            <div class="cf-txn-right">
+                <span class="cf-txn-value">${formatCentsToBRL(fi.estimated_cents)}</span>
+                <span class="cf-txn-pending-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Previsão
+                </span>
+            </div>
+            <svg class="cf-future-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+        wrapper.appendChild(row);
+
+        const detail = document.createElement('div');
+        detail.className = 'cf-future-detail';
+
+        (fi.items || []).forEach(item => {
+            detail.appendChild(_cfRenderFutureDetailRow(item, catKey));
+        });
+
+        wrapper.appendChild(detail);
+
+        row.addEventListener('click', () => {
+            wrapper.classList.toggle('open');
+        });
+
+        parent.appendChild(wrapper);
+    });
+}
+
+// ── Render a single detail row inside a future expandable item ──
+
+function _cfRenderFutureDetailRow(item, catKey) {
+    const buyerName = item.buyer_name || 'Comprador';
+    const pid = item.product_id ? '#' + item.product_id.slice(0, 5) : '';
+    const releaseLabel = catKey === 'installment'
+        ? `${item.installment || ''}ª de ${item.total_installments || ''} parcelas · Liberação ${_cfFormatDateShort(item.release_date)}`
+        : `Liberação ${_cfFormatDateShort(item.release_date)}`;
+
+    const detailRow = document.createElement('div');
+    detailRow.className = 'cf-future-detail-row';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'cf-future-detail-avatar';
+    if (item.buyer_picture) {
+        avatar.innerHTML = `<img src="${item.buyer_picture}" alt="${buyerName}">`;
+    } else {
+        avatar.style.background = _cfAvatarBg(buyerName);
+        avatar.style.color = _cfAvatarFg(buyerName);
+        avatar.textContent = _cfInitials(buyerName);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'cf-future-detail-body';
+    body.innerHTML = `
+        <div class="cf-future-detail-product">${item.product_name || 'Produto'}${pid ? ` <span class="cf-txn-pid">${pid}</span>` : ''}</div>
+        <div class="cf-future-detail-meta">${buyerName} · ${releaseLabel}</div>`;
+
+    const val = document.createElement('span');
+    val.className = 'cf-future-detail-value';
+    val.textContent = formatCentsToBRL(item.amount_cents);
+
+    detailRow.appendChild(avatar);
+    detailRow.appendChild(body);
+    detailRow.appendChild(val);
+    return detailRow;
+}
+
+// ── Event listeners ──
+
 document.getElementById('btn-cashflow-entries')?.addEventListener('click', openCashFlowEntriesModal);
 document.getElementById('cashFlowEntriesModal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeCashFlowEntriesModal();
@@ -4180,7 +4398,6 @@ document.querySelector('#cashFlowEntriesModal .close-btn')?.addEventListener('cl
 
 document.getElementById('btn-cashflow-exits')?.addEventListener('click', openWithdrawalModal);
 
-// Month navigation (entries only — exits now uses withdrawal modal)
 document.getElementById('cf-entries-prev')?.addEventListener('click', async (e) => {
     e.stopPropagation();
     cfEntriesCurrentMonth = cfPrevMonth(cfEntriesCurrentMonth);
@@ -4188,6 +4405,46 @@ document.getElementById('cf-entries-prev')?.addEventListener('click', async (e) 
 });
 document.getElementById('cf-entries-next')?.addEventListener('click', async (e) => {
     e.stopPropagation();
+    if (cfIsCurrentMonth(cfEntriesCurrentMonth)) return;
     cfEntriesCurrentMonth = cfNextMonth(cfEntriesCurrentMonth);
     await loadCashFlowEntriesDetail(cfEntriesCurrentMonth);
+});
+
+// Tab click → filter
+document.querySelectorAll('#cashFlowEntriesModal .cf-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('#cashFlowEntriesModal .cf-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        cfEntriesFilter = tab.dataset.filter;
+
+        document.querySelectorAll('#cashFlowEntriesModal .cf-metric').forEach(m => m.classList.remove('active'));
+        if (cfEntriesFilter !== 'all') {
+            document.querySelector(`#cashFlowEntriesModal .cf-metric[data-filter="${cfEntriesFilter}"]`)?.classList.add('active');
+        }
+
+        _cfRenderList();
+    });
+});
+
+// Metric card click → filter
+document.querySelectorAll('#cashFlowEntriesModal .cf-metric').forEach(card => {
+    card.addEventListener('click', () => {
+        const filter = card.dataset.filter;
+
+        if (cfEntriesFilter === filter) {
+            cfEntriesFilter = 'all';
+            document.querySelectorAll('#cashFlowEntriesModal .cf-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.filter === 'all');
+            });
+            card.classList.remove('active');
+        } else {
+            cfEntriesFilter = filter;
+            document.querySelectorAll('#cashFlowEntriesModal .cf-metric').forEach(m => m.classList.remove('active'));
+            card.classList.add('active');
+            document.querySelectorAll('#cashFlowEntriesModal .cf-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.filter === filter);
+            });
+        }
+        _cfRenderList();
+    });
 });
