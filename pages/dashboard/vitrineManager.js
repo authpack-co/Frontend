@@ -13,6 +13,7 @@ let createProductState = {
     name: '',
     description: '',
     billingType: 'one_time',
+    allowInstallments: false,
     price: '',
     stock: '',
 };
@@ -1765,6 +1766,7 @@ function openCreateProductModal() {
         sessions: [],
         description: '',
         billingType: 'one_time',
+        allowInstallments: false,
         price: '',
         stock: '',
     };
@@ -1779,6 +1781,12 @@ function openCreateProductModal() {
         opt.classList.toggle('selected', opt.dataset.type === 'one_time');
     });
     document.querySelector('.subscription-note').style.display = 'none';
+
+    // Reset installments toggle
+    const installCheckbox = document.getElementById('product-allow-installments');
+    if (installCheckbox) installCheckbox.checked = false;
+    const installWrap = document.getElementById('installments-toggle-wrap');
+    if (installWrap) installWrap.classList.remove('hidden');
 
     // Hide error
     const errorEl = document.getElementById('create-product-error');
@@ -1907,6 +1915,15 @@ function renderReviewSummary() {
 
     const typeLabel = s.billingType === 'subscription' ? 'Assinatura mensal' : 'Pagamento único';
 
+    let installmentsRow = '';
+    if (s.billingType === 'one_time') {
+        installmentsRow = `
+        <div class="review-row">
+            <span class="review-label">Parcelas</span>
+            <span class="review-value">${s.allowInstallments ? 'Até 12x sem juros' : 'Apenas à vista'}</span>
+        </div>`;
+    }
+
     container.innerHTML = `
         <div class="review-row">
             <span class="review-label">Pacote</span>
@@ -1920,6 +1937,7 @@ function renderReviewSummary() {
             <span class="review-label">Preço</span>
             <span class="review-value">R$ ${parseFloat(s.price).toFixed(2)}</span>
         </div>
+        ${installmentsRow}
         <div class="review-row">
             <span class="review-label">Quantidade</span>
             <span class="review-value">${s.stock ? s.stock : 'Ilimitado'}</span>
@@ -1951,6 +1969,7 @@ document.getElementById('product-step-next')?.addEventListener('click', async ()
             break;
         case 3:
             // billingType already set via click handler
+            createProductState.allowInstallments = !!document.getElementById('product-allow-installments')?.checked;
             break;
         case 4:
             createProductState.price = document.getElementById('product-price').value;
@@ -1994,6 +2013,16 @@ document.querySelectorAll('.billing-option').forEach(opt => {
 
         const subNote = document.querySelector('.subscription-note');
         subNote.style.display = opt.dataset.type === 'subscription' ? '' : 'none';
+
+        const installWrap = document.getElementById('installments-toggle-wrap');
+        if (installWrap) {
+            installWrap.classList.toggle('hidden', opt.dataset.type === 'subscription');
+            if (opt.dataset.type === 'subscription') {
+                const cb = document.getElementById('product-allow-installments');
+                if (cb) cb.checked = false;
+                createProductState.allowInstallments = false;
+            }
+        }
     });
 });
 
@@ -2009,6 +2038,7 @@ async function submitCreateProduct() {
             package_id: s.packageId,
             description: s.description,
             billing_type: s.billingType,
+            allow_installments: s.allowInstallments,
             price_cents: Math.round(parseFloat(s.price) * 100),
             currency: 'brl',
             stock: s.stock ? parseInt(s.stock) : null,

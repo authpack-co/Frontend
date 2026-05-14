@@ -106,6 +106,15 @@
             document.getElementById('ck-methods').style.display = 'none';
         }
 
+        // Installments select (one-time + card + allowInstallments)
+        const installRow = document.getElementById('ck-installments-row');
+        if (order.billing_type !== 'subscription' && meta.allowInstallments) {
+            populateInstallmentSelect(totalCents);
+            installRow.style.display = '';
+        } else {
+            installRow.style.display = 'none';
+        }
+
         switchMethod(_selectedMethod);
         updateCTA();
     }
@@ -131,6 +140,10 @@
 
         // Input masks
         setupMasks();
+
+        // Installment select
+        const installSelect = document.getElementById('ck-installments-select');
+        if (installSelect) installSelect.addEventListener('change', () => updateCTA());
 
         // CTA button (right column)
         document.getElementById('ck-submit').addEventListener('click', handleSubmit);
@@ -158,12 +171,18 @@
     function switchMethod(method) {
         const cardForm = document.getElementById('ck-card-form');
         const pixNotice = document.getElementById('ck-pix-info-panel');
+        const installRow = document.getElementById('ck-installments-row');
         if (method === 'pix') {
             cardForm.style.display = 'none';
             pixNotice.style.display = 'block';
+            if (installRow) installRow.style.display = 'none';
         } else {
             cardForm.style.display = 'block';
             pixNotice.style.display = 'none';
+            const meta = _order?.metadata || {};
+            if (_order && _order.billing_type !== 'subscription' && meta.allowInstallments) {
+                installRow.style.display = '';
+            }
         }
     }
 
@@ -174,7 +193,13 @@
         if (_selectedMethod === 'pix') {
             label.textContent = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
         } else {
-            label.textContent = `Pagar ${formatCurrency(_order.amount_cents)}`;
+            const inst = getSelectedInstallments();
+            if (inst > 1) {
+                const per = Math.ceil(_order.amount_cents / inst);
+                label.textContent = `Pagar ${inst}x de ${formatCurrency(per)}`;
+            } else {
+                label.textContent = `Pagar ${formatCurrency(_order.amount_cents)}`;
+            }
         }
         if (icon) icon.style.display = '';
     }
@@ -240,17 +265,31 @@
 
         const [expM, expY] = expiry.split('/');
 
-        // → Step 2: processing
         showStep(2);
         showResultState('processing');
         setCTALoading(true);
 
+        let cardToken;
         try {
-            const cardToken = await tokenizeCard({ number, holder_name: holder, exp_month: parseInt(expM), exp_year: parseInt('20' + expY), cvv });
+            cardToken = await tokenizeCard({ number, holder_name: holder, exp_month: parseInt(expM), exp_year: parseInt('20' + expY), cvv });
+        } catch (err) {
+            showCardError(err.message || 'Erro ao processar cartão.');
+            return;
+        }
 
+        const installments = getSelectedInstallments();
+        await executeCardPayment(customer, cardToken, billing, installments);
+    }
+
+    async function executeCardPayment(customer, cardToken, billing, installments) {
+        showResultState('processing');
+        setCTALoading(true);
+
+        try {
             const res = await fetchManager.payCheckoutOrder(orderId, {
                 payment_method: 'credit_card',
                 customer,
+                installments,
                 credit_card: { card_token: cardToken, billing_address: billing },
             });
 
@@ -274,6 +313,32 @@
         } catch (err) {
             showCardError(err.message || 'Erro ao processar pagamento.');
         }
+    }
+
+    // ── Installment Select ─────────────────────────────────────────
+    function populateInstallmentSelect(totalCents) {
+        const select = document.getElementById('ck-installments-select');
+        if (!select) return;
+        const minPerInstallment = 500;
+        const maxCount = Math.max(1, Math.min(12, Math.floor(totalCents / minPerInstallment)));
+        select.innerHTML = '';
+        for (let i = 1; i <= maxCount; i++) {
+            const per = Math.ceil(totalCents / i);
+            const label = i === 1
+                ? `1x de ${formatCurrency(per)} sem juros`
+                : `${i}x de ${formatCurrency(per)} sem juros`;
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = label;
+            select.appendChild(opt);
+        }
+        select.value = '1';
+    }
+
+    function getSelectedInstallments() {
+        const select = document.getElementById('ck-installments-select');
+        if (!select || select.closest('.ck-installments-row')?.style.display === 'none') return 1;
+        return parseInt(select.value, 10) || 1;
     }
 
     // ── Pix Payment ───────────────────────────────────────────────────
@@ -416,6 +481,8 @@
         btn.disabled = false;
         document.getElementById('ck-cta-spinner').style.display = 'none';
         document.getElementById('ck-cta-icon').style.display = '';
+        const select = document.getElementById('ck-installments-select');
+        if (select) select.value = '1';
         updateCTA();
     }
 

@@ -4428,6 +4428,84 @@ span.coming-soon {
     color: var(--ap-text-muted);
 }
 
+/* Installments toggle */
+.installments-toggle-wrap {
+    margin-top: 14px;
+}
+
+.installments-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.installments-toggle:hover {
+    border-color: var(--ap-border-hover);
+}
+.installments-toggle:has(input:checked) {
+    border-color: var(--ap-accent);
+    background: rgba(65, 132, 228, 0.06);
+}
+
+.installments-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.toggle-switch {
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--ap-border);
+    flex-shrink: 0;
+    position: relative;
+    margin-top: 2px;
+    transition: background 0.2s;
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+}
+.installments-toggle input:checked ~ .toggle-switch {
+    background: var(--ap-accent);
+}
+.installments-toggle input:checked ~ .toggle-switch::after {
+    transform: translateX(16px);
+}
+
+.toggle-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.toggle-content strong {
+    font-size: 14px;
+    color: var(--ap-text-primary);
+    font-weight: 600;
+}
+.toggle-content span {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
+.installments-toggle-wrap.hidden {
+    display: none;
+}
+
 /* Step 6: Review */
 .review-summary {
     display: flex;
