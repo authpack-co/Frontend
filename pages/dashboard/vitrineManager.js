@@ -97,8 +97,7 @@ async function loadVitrineTab() {
     const container = document.getElementById('vitrine-container');
     setElementState(container, 'loading');
 
-    // Always hide gate + banners first
-    hideGate();
+    // Always hide banners first
     hideOnboardingBanner();
     hideKycBanner();
     // Ensure "Criar produto" is visible by default (it may have been hidden in KYC state)
@@ -106,9 +105,10 @@ async function loadVitrineTab() {
 
     // Check if user is Plus
     if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        // Free user: show content state with blurred gate
-        setElementState(container, 'vitrine-content');
-        showGate('locked');
+        // Free user: show dedicated gate hero screen
+        _setVitrineDashboardVisible(false);
+        setElementState(container, 'vitrine-gate');
+        renderGateHero('locked');
         vitrineLoaded = true;
         return;
     }
@@ -120,8 +120,9 @@ async function loadVitrineTab() {
 
         // State 1: No connected account at all
         if (!accountRes.ok || !accountRes.result?.connected) {
-            setElementState(container, 'vitrine-content');
-            showGate('connect');
+            _setVitrineDashboardVisible(false);
+            setElementState(container, 'vitrine-gate');
+            renderGateHero('connect');
             vitrineLoaded = true;
             return;
         }
@@ -164,8 +165,9 @@ async function loadVitrineTab() {
         vitrineLoaded = true;
     } catch (err) {
         console.error('Error loading vitrine:', err);
-        setElementState(container, 'vitrine-content');
-        showGate('connect');
+        _setVitrineDashboardVisible(false);
+        setElementState(container, 'vitrine-gate');
+        renderGateHero('connect');
         vitrineLoaded = true;
     }
 }
@@ -174,31 +176,62 @@ async function loadVitrineTab() {
 // GATE OVERLAY HELPERS
 // ============================================================================
 
-function showGate(type) {
-    const overlay = document.getElementById('vt-gate-overlay');
-    const lockedCard = document.getElementById('vt-gate-locked');
-    const connectCard = document.getElementById('vt-gate-connect');
+const GATE_HERO_CONFIG = {
+    locked: {
+        iconClass: 'locked',
+        iconSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>',
+        title: 'Minha vitrine é um recurso Plus',
+        description: 'Crie sua vitrine para vender seus pacotes de forma automática, com pagamentos integrados.',
+        benefits: [
+            'Venda pacotes automaticamente',
+            'Controle de quantidade de acessos',
+            'Pagamento único ou assinatura',
+        ],
+        ctaText: 'Ver planos',
+        ctaAction: () => utils.showModal('plusSubscribe'),
+    },
+    connect: {
+        iconClass: 'connect',
+        iconSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+        title: 'Cadastre-se como vendedor',
+        description: 'Para começar a vender, cadastre suas informações para receber pagamentos diretamente.',
+        benefits: [
+            'Receba pagamentos diretamente',
+            'Acompanhe suas vendas em tempo real',
+            'Saque quando quiser',
+        ],
+        ctaText: 'Cadastrar recebedor',
+        ctaAction: () => openOnboardingPage(),
+    },
+};
 
-    if (!overlay) return;
+const CHECK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 
-    // Hide both cards first
-    lockedCard?.classList.add('hidden');
-    connectCard?.classList.add('hidden');
+function renderGateHero(type) {
+    const config = GATE_HERO_CONFIG[type];
+    if (!config) return;
 
-    // Show the right card
-    if (type === 'locked') {
-        lockedCard?.classList.remove('hidden');
-    } else if (type === 'connect') {
-        connectCard?.classList.remove('hidden');
+    const icon = document.getElementById('vt-hero-icon');
+    const title = document.getElementById('vt-hero-title');
+    const desc = document.getElementById('vt-hero-description');
+    const benefits = document.getElementById('vt-hero-benefits');
+    const cta = document.getElementById('vt-hero-cta');
+
+    if (icon) {
+        icon.className = 'vt-hero-icon-circle ' + config.iconClass;
+        icon.innerHTML = config.iconSvg;
     }
-
-    // Show overlay
-    overlay.classList.remove('hidden');
-}
-
-function hideGate() {
-    const overlay = document.getElementById('vt-gate-overlay');
-    if (overlay) overlay.classList.add('hidden');
+    if (title) title.textContent = config.title;
+    if (desc) desc.textContent = config.description;
+    if (benefits) {
+        benefits.innerHTML = config.benefits
+            .map(b => `<li>${CHECK_SVG} ${b}</li>`)
+            .join('');
+    }
+    if (cta) {
+        cta.textContent = config.ctaText;
+        cta.onclick = config.ctaAction;
+    }
 }
 
 function showOnboardingBanner() {
@@ -1248,11 +1281,9 @@ function openOnboardingPage() {
 function closeOnboardingPage() {
     const container = document.getElementById('vitrine-container');
     if (!container) return;
-    // Return to content state (or loading if still loading)
-    const hasContent = container.classList.contains('vitrine-onboarding-state');
-    if (hasContent) {
-        setElementState(container, 'vitrine-content');
-    }
+    if (!container.classList.contains('vitrine-onboarding-state')) return;
+    vitrineLoaded = false;
+    loadVitrineTab();
 }
 
 // ── Form reset ─────────────────────────────────────────────────────────────
@@ -1606,11 +1637,6 @@ function validateAndBuildPayload() {
 }
 
 // ── Event Listeners ────────────────────────────────────────────────────────
-
-// Open onboarding page on gate click
-document.getElementById('btn-connect-seller')?.addEventListener('click', () => {
-    openOnboardingPage();
-});
 
 // Back button
 document.getElementById('onboarding-back-btn')?.addEventListener('click', closeOnboardingPage);

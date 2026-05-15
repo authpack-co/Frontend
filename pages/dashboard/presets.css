@@ -103,6 +103,15 @@
     animation: fadeIn 0.25s ease-in forwards;
 }
 
+.preset-vitrine-gate {
+    display: none;
+}
+
+.vitrine-gate-state>.preset-vitrine-gate {
+    display: block;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
 /* ===== Skeletons ====== */
 
 .skeleton {
