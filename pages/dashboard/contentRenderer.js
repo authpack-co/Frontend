@@ -48,6 +48,7 @@ function createPackageElement(pkg, isAccess = false) {
         const img = document.createElement('img');
         img.alt = session.name;
         img.src = session.icon;
+        img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
         stackIcon.appendChild(img);
         iconStack.appendChild(stackIcon);
     });
@@ -225,6 +226,7 @@ function createCollectionSessionCardElement(session) {
     icon.className = 'session-card-icon';
     icon.alt = session.name;
     icon.src = session.icon;
+    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
 
     const headerText = createElement('div', 'session-card-header-text');
 
@@ -284,6 +286,7 @@ function createSessionCardElement(session) {
     icon.className = 'session-card-icon';
     icon.alt = session.name;
     icon.src = session.icon;
+    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
 
     const headerText = createElement('div', 'session-card-header-text');
 

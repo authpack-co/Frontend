@@ -2825,41 +2825,45 @@
                     <div class="product-step" data-step="3">
                         <h3 class="step-title">Tipo de cobrança</h3>
                         <div class="billing-options">
-                            <label class="billing-option selected" data-type="one_time">
-                                <div class="billing-option-radio"></div>
-                                <div class="billing-option-content">
-                                    <strong>Pagamento único</strong>
-                                    <span>O cliente paga uma vez e recebe acesso permanente</span>
+                            <div class="billing-option selected" data-type="one_time">
+                                <label class="billing-option-main">
+                                    <div class="billing-option-radio"></div>
+                                    <div class="billing-option-content">
+                                        <strong>Pagamento único</strong>
+                                        <span>O cliente paga uma vez e recebe acesso permanente</span>
+                                    </div>
+                                </label>
+                                <div class="installments-collapse" id="installments-toggle-wrap">
+                                    <label class="installments-toggle">
+                                        <input type="checkbox" id="product-allow-installments">
+                                        <div class="toggle-switch"></div>
+                                        <div class="toggle-content">
+                                            <strong>Habilitar parcelas</strong>
+                                            <span>Permitir que o comprador parcele em até 12x sem juros</span>
+                                        </div>
+                                    </label>
                                 </div>
-                            </label>
-                            <label class="billing-option" data-type="subscription">
-                                <div class="billing-option-radio"></div>
-                                <div class="billing-option-content">
-                                    <strong>Assinatura mensal</strong>
-                                    <span>O cliente paga mensalmente para manter o acesso</span>
+                            </div>
+                            <div class="billing-option" data-type="subscription">
+                                <label class="billing-option-main">
+                                    <div class="billing-option-radio"></div>
+                                    <div class="billing-option-content">
+                                        <strong>Assinatura mensal</strong>
+                                        <span>O cliente paga mensalmente para manter o acesso</span>
+                                    </div>
+                                </label>
+                                <div class="form-note subscription-note">
+                                    <span class="note-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16"
+                                            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path
+                                                d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                                            <path d="M9 18h6" />
+                                            <path d="M10 22h4" />
+                                        </svg></span>
+                                    <span class="note">A cobrança será feita automaticamente a cada mês</span>
                                 </div>
-                            </label>
-                        </div>
-                        <div class="form-note subscription-note" style="display:none;">
-                            <span class="note-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-                                    <path d="M9 18h6" />
-                                    <path d="M10 22h4" />
-                                </svg></span>
-                            <span class="note">A cobrança será feita automaticamente a cada mês</span>
-                        </div>
-                        <div class="installments-toggle-wrap" id="installments-toggle-wrap">
-                            <label class="installments-toggle">
-                                <input type="checkbox" id="product-allow-installments">
-                                <div class="toggle-switch"></div>
-                                <div class="toggle-content">
-                                    <strong>Habilitar parcelas</strong>
-                                    <span>Permitir que o comprador parcele em até 12x sem juros</span>
-                                </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
 

@@ -4367,8 +4367,7 @@ span.coming-soon {
 
 .billing-option {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
     padding: 14px 16px;
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-md);
@@ -4428,9 +4427,19 @@ span.coming-soon {
     color: var(--ap-text-muted);
 }
 
-/* Installments toggle */
-.installments-toggle-wrap {
-    margin-top: 14px;
+/* Installments collapse inside billing option */
+.installments-collapse {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
+    margin-top: 0;
+}
+
+.billing-option.selected[data-type="one_time"] .installments-collapse {
+    max-height: 100px;
+    opacity: 1;
+    margin-top: 12px;
 }
 
 .installments-toggle {
@@ -4502,8 +4511,25 @@ span.coming-soon {
     color: var(--ap-text-muted);
 }
 
-.installments-toggle-wrap.hidden {
-    display: none;
+.billing-option-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.billing-option .subscription-note {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
+    margin-top: 0;
+}
+
+.billing-option.selected[data-type="subscription"] .subscription-note {
+    max-height: 60px;
+    opacity: 1;
+    margin-top: 10px;
 }
 
 /* Step 6: Review */

@@ -1004,6 +1004,7 @@ function createVitrineProductCard(product) {
             const img = document.createElement('img');
             img.src = s.icon;
             img.alt = s.name;
+            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
             icon.appendChild(img);
 
             // Add +N badge on the last visible icon if there are more
@@ -1748,13 +1749,10 @@ function openCreateProductModal() {
     document.querySelectorAll('.billing-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.type === 'one_time');
     });
-    document.querySelector('.subscription-note').style.display = 'none';
 
     // Reset installments toggle
     const installCheckbox = document.getElementById('product-allow-installments');
     if (installCheckbox) installCheckbox.checked = false;
-    const installWrap = document.getElementById('installments-toggle-wrap');
-    if (installWrap) installWrap.classList.remove('hidden');
 
     // Hide error
     const errorEl = document.getElementById('create-product-error');
@@ -1814,6 +1812,7 @@ function renderStepPackages() {
             const img = document.createElement('img');
             img.src = s.icon;
             img.alt = s.name;
+            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
             iconWrap.appendChild(img);
             icons.appendChild(iconWrap);
         });
@@ -1979,17 +1978,10 @@ document.querySelectorAll('.billing-option').forEach(opt => {
         opt.classList.add('selected');
         createProductState.billingType = opt.dataset.type;
 
-        const subNote = document.querySelector('.subscription-note');
-        subNote.style.display = opt.dataset.type === 'subscription' ? '' : 'none';
-
-        const installWrap = document.getElementById('installments-toggle-wrap');
-        if (installWrap) {
-            installWrap.classList.toggle('hidden', opt.dataset.type === 'subscription');
-            if (opt.dataset.type === 'subscription') {
-                const cb = document.getElementById('product-allow-installments');
-                if (cb) cb.checked = false;
-                createProductState.allowInstallments = false;
-            }
+        if (opt.dataset.type === 'subscription') {
+            const cb = document.getElementById('product-allow-installments');
+            if (cb) cb.checked = false;
+            createProductState.allowInstallments = false;
         }
     });
 });

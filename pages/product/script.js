@@ -130,15 +130,7 @@
                     const img = document.createElement('img');
                     img.src = s.icon;
                     img.alt = domain;
-                    img.onerror = function () {
-                        this.remove();
-                        const letter = document.createElement('div');
-                        letter.className = 'vt-icon-letter';
-                        letter.textContent = domain.charAt(0).toUpperCase();
-                        const [c1, c2] = paletteFor(domain);
-                        letter.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
-                        iconWrap.appendChild(letter);
-                    };
+                    img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
                     iconWrap.appendChild(img);
 
                     const nameEl = document.createElement('span');
