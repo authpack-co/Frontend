@@ -3727,6 +3727,12 @@ span.coming-soon {
     gap: var(--ap-space-md);
 }
 
+.vt-products-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 /* Product Cards Grid */
 .vitrine-products-grid {
     display: grid;

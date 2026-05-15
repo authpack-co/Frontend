@@ -952,6 +952,16 @@ function renderVitrineProducts(products) {
     });
 }
 
+async function reloadVitrineProducts() {
+    try {
+        const res = await fetchManager.getSellerProducts();
+        vitrineProducts = res.ok ? (res.result?.products || []) : [];
+        renderVitrineProducts(vitrineProducts);
+    } catch (err) {
+        console.error('Error reloading products:', err);
+    }
+}
+
 function createVitrineProductCard(product) {
     const card = document.createElement('div');
     card.className = 'vp-card';
@@ -1155,8 +1165,7 @@ function createVitrineProductCard(product) {
                 const res = await fetchManager.reactivateProduct(product.id);
                 if (res.ok) {
                     notify('success', 'Produto retomado');
-                    vitrineLoaded = false;
-                    await loadVitrineTab();
+                    await reloadVitrineProducts();
                 } else {
                     notify('error', 'Erro ao retomar');
                 }
@@ -2008,9 +2017,7 @@ async function submitCreateProduct() {
             closeCreateProductModal();
             notify('success', 'Produto criado com sucesso!');
 
-            // Reload vitrine
-            vitrineLoaded = false;
-            await loadVitrineTab();
+            await reloadVitrineProducts();
         } else {
             showCreateProductError(res.result?.error || 'Erro ao criar produto');
             setElementState(btnContainer, 'content');
@@ -2066,9 +2073,7 @@ document.getElementById('confirm-delete-product')?.addEventListener('click', asy
             closeDeleteProductModal();
             notify('success', 'Produto pausado');
 
-            // Reload
-            vitrineLoaded = false;
-            await loadVitrineTab();
+            await reloadVitrineProducts();
         } else {
             notify('error', 'Erro ao pausar produto');
             setElementState(btnContainer, 'content');
@@ -2182,8 +2187,7 @@ document.getElementById('confirm-edit-product')?.addEventListener('click', async
             closeEditProductModal();
             notify('success', 'Produto atualizado');
 
-            vitrineLoaded = false;
-            await loadVitrineTab();
+            await reloadVitrineProducts();
         } else {
             const errCode = res.result?.error;
             if (errCode === 'STOCK_BELOW_ACTIVE_USERS') {
@@ -2242,8 +2246,7 @@ document.getElementById('confirm-hard-delete-product')?.addEventListener('click'
             closeHardDeleteProductModal();
             notify('success', 'Produto excluído permanentemente');
 
-            vitrineLoaded = false;
-            await loadVitrineTab();
+            await reloadVitrineProducts();
         } else {
             notify('error', 'Erro ao excluir produto');
             setElementState(btnContainer, 'content');
