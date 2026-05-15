@@ -2850,12 +2850,13 @@ function renderProductDetails(data, wrapEl) {
 
                 let currentLimit = 10;
                 const renderItems = () => {
-                    // Without the "Produto" column — we're in context
                     mContent.innerHTML = `
                         <div class="sh-table-header">
-                            <div class="sh-col sh-col-id" style="min-width: 110px;">Data</div>
+                            <div class="sh-col sh-col-date">Data</div>
                             <div class="sh-col sh-col-user">Comprador</div>
-                            <div class="sh-col sh-col-val">Valor</div>
+                            <div class="sh-col sh-col-pay">Método</div>
+                            <div class="sh-col sh-col-val">Valor Bruto</div>
+                            <div class="sh-col sh-col-liq">Valor Líquido</div>
                             <div style="width: 28px;"></div>
                         </div>
                     `;
@@ -2888,9 +2889,14 @@ function renderProductDetails(data, wrapEl) {
                                 </div>
                             </div>
 
+                            <div class="sh-col sh-col-pay">${_paymentMethodBadge(order.payment_method)}</div>
+
                             <div class="sh-col sh-col-val">
                                 <div class="sh-sale-revenue">R$ ${formatBRLValue(order.receita)}</div>
-                                ${order.liquido !== order.receita ? `<div class="sh-sale-net" title="Valor Líquido">Liq: R$ ${formatBRLValue(order.liquido)}</div>` : ''}
+                            </div>
+
+                            <div class="sh-col sh-col-liq">
+                                <div class="sh-sale-net" style="font-size: 14px; font-weight: 600;">R$ ${formatBRLValue(order.liquido)}</div>
                             </div>
 
                             <button class="sh-sale-actions">
