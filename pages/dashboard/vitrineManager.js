@@ -132,31 +132,38 @@ async function loadVitrineTab() {
         console.log('[Vitrine] KYC status:', kycRes);
 
         if (!kycRes.ok || kycRes.result?.kyc_needed) {
-            // State 2: KYC pending — block selling until identity verified
+            // State 2: KYC pending — show full dashboard but block selling
+            _setVitrineDashboardVisible(true);
             setElementState(container, 'vitrine-content');
             showKycBanner();
-            // Hide "Criar produto" button
             document.getElementById('btn-create-product')?.classList.add('hidden');
-            // Update seller status badge
             const statusEl = document.getElementById('fin-seller-status');
             if (statusEl) {
                 statusEl.className = 'fin-seller-mini-status pending';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Pendente';
             }
+
+            // Load products (render empty state if none)
+            const productsRes = await fetchManager.getSellerProducts();
+            vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+            renderVitrineProducts(vitrineProducts);
+
+            // Load dashboard data (handles API failures gracefully)
+            loadSellerDashboardData();
+
             vitrineLoaded = true;
             return;
         }
 
         // State 3: Account fully active — show products
+        _setVitrineDashboardVisible(true);
         updateGatewayStatusBar(true);
 
         const productsRes = await fetchManager.getSellerProducts();
         console.log('[Vitrine] Products:', productsRes);
         vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
 
-        if (vitrineProducts.length > 0) {
-            renderVitrineProducts(vitrineProducts);
-        }
+        renderVitrineProducts(vitrineProducts);
         setElementState(container, 'vitrine-content');
 
         // Load seller dashboard data (KPIs + seller info) in background
@@ -471,41 +478,7 @@ async function loadSellerDashboardData() {
     try {
         showDashboardSkeletons(true);
 
-        // Load dashboard, withdrawal info, sales history e cash flow em paralelo
-        const [dashRes, withdrawalRes, salesHistRes, cashFlowRes] = await Promise.all([
-            fetchManager.getSellerDashboard(),
-            fetchManager.getWithdrawalInfo(),
-            fetchManager.getSellerSalesHistory(),
-            fetchManager.getCashFlow(),
-        ]);
-
-        console.log('[Vitrine] Dashboard data:', dashRes);
-        console.log('[Vitrine] Withdrawal info:', withdrawalRes);
-
-        if (!dashRes.ok || !dashRes.result) {
-            showDashboardSkeletons(false);
-            return;
-        }
-
-        const data = dashRes.result;
-
-        // ── Process and cache raw orders ──
-        vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
-
-        // ── Pré-popula allSalesHistory para cálculo correto de receita bruta ──
-        // /sales-history retorna os pedidos com total_amount_cents completo
-        if (salesHistRes.ok && salesHistRes.result?.orders) {
-            allSalesHistory = salesHistRes.result.orders;
-        }
-
-        // ── Update mini seller card ──
-        const statusEl = document.getElementById('fin-seller-status');
-        if (statusEl) {
-            statusEl.className = 'fin-seller-mini-status active';
-            statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
-        }
-
-        // ── Update mini seller card ──
+        // ── Always populate seller card from currentUserInfo first ──
         const finSellerName = document.getElementById('fin-seller-name');
         if (finSellerName) finSellerName.textContent = currentUserInfo?.name || 'Vendedor';
 
@@ -517,20 +490,72 @@ async function loadSellerDashboardData() {
             finSellerAvatar.innerHTML = `<img src="${currentUserInfo.picture}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
         }
 
-        const finSellerBank = document.getElementById('fin-seller-bank');
-        if (finSellerBank) finSellerBank.textContent = data.bank_name || '—';
-
-        const finSellerAccount = document.getElementById('fin-seller-account');
-        if (finSellerAccount) finSellerAccount.textContent = data.bank_last4 ? `****${data.bank_last4}` : '—';
-
         const finSellerCountry = document.getElementById('fin-seller-country');
-        if (finSellerCountry) finSellerCountry.textContent = data.country || '—';
+        if (finSellerCountry) finSellerCountry.textContent = 'Brasil';
 
-        const finSellerRecipient = document.getElementById('fin-seller-recipient');
-        if (finSellerRecipient) {
-            const rid = data.gateway_recipient_id || data.stripe_account_id || '—';
-            finSellerRecipient.textContent = rid.length > 14 ? rid.slice(0, 11) + '…' : rid;
-            finSellerRecipient.title = rid;
+        // Load dashboard, withdrawal info, sales history e cash flow em paralelo
+        const [dashRes, withdrawalRes, salesHistRes, cashFlowRes] = await Promise.all([
+            fetchManager.getSellerDashboard(),
+            fetchManager.getWithdrawalInfo(),
+            fetchManager.getSellerSalesHistory(),
+            fetchManager.getCashFlow(),
+        ]);
+
+        console.log('[Vitrine] Dashboard data:', dashRes);
+        console.log('[Vitrine] Withdrawal info:', withdrawalRes);
+
+        // ── Process dashboard data (may fail for non-active accounts → use defaults) ──
+        if (dashRes.ok && dashRes.result) {
+            const data = dashRes.result;
+
+            vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
+
+            const statusEl = document.getElementById('fin-seller-status');
+            if (statusEl) {
+                statusEl.className = 'fin-seller-mini-status active';
+                statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
+            }
+
+            const finSellerBank = document.getElementById('fin-seller-bank');
+            if (finSellerBank) finSellerBank.textContent = data.bank_name || '—';
+
+            const finSellerAccount = document.getElementById('fin-seller-account');
+            if (finSellerAccount) finSellerAccount.textContent = data.bank_last4 ? `****${data.bank_last4}` : '—';
+
+            const finSellerRecipient = document.getElementById('fin-seller-recipient');
+            if (finSellerRecipient) {
+                const rid = data.gateway_recipient_id || '—';
+                finSellerRecipient.textContent = rid.length > 14 ? rid.slice(0, 11) + '…' : rid;
+                finSellerRecipient.title = rid;
+            }
+
+            if (data.performance) {
+                const perf = data.performance;
+                const kpiGross = document.getElementById('kpi-gross-revenue');
+                if (kpiGross) kpiGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
+                const kpiNet = document.getElementById('kpi-net-revenue');
+                if (kpiNet) kpiNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
+                const kpiSales = document.getElementById('kpi-sales');
+                if (kpiSales) kpiSales.textContent = perf.sales_count;
+                const kpiAvgTicket = document.getElementById('kpi-avg-ticket');
+                if (kpiAvgTicket) kpiAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
+
+                const finGross = document.getElementById('fin-gross-revenue');
+                if (finGross) finGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
+                const finNet = document.getElementById('fin-net-revenue');
+                if (finNet) finNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
+                const finSalesCount = document.getElementById('fin-sales-count');
+                if (finSalesCount) finSalesCount.textContent = perf.sales_count;
+                const finAvgTicket = document.getElementById('fin-avg-ticket-summary');
+                if (finAvgTicket) finAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
+            }
+        } else {
+            vitrineData.ordersByDate = {};
+        }
+
+        // ── Pré-popula allSalesHistory para cálculo correto de receita bruta ──
+        if (salesHistRes.ok && salesHistRes.result?.orders) {
+            allSalesHistory = salesHistRes.result.orders;
         }
 
         // ── Process withdrawal data (balance + transfers) ──
@@ -540,14 +565,12 @@ async function loadSellerDashboardData() {
             financialCenterData.tedFeeCents = withdrawalRes.result.ted_fee_cents ?? 367;
             financialCenterData.netWithdrawableCents = withdrawalRes.result.net_withdrawable_cents ?? Math.max(0, (withdrawalRes.result.balance?.available_amount || 0) - (withdrawalRes.result.ted_fee_cents ?? 367));
 
-            // Update hero balance
             const available = withdrawalRes.result.balance?.available_amount || 0;
             const waiting = withdrawalRes.result.balance?.waiting_funds_amount || 0;
 
             const finAvailable = document.getElementById('fin-available-balance');
             if (finAvailable) finAvailable.textContent = formatCentsToBRL(available);
 
-            // Hint "aguardando compensação" discreto abaixo do saldo disponível
             const pendingHint = document.getElementById('fin-pending-hint');
             const pendingAmount = document.getElementById('fin-pending-amount');
             if (pendingHint && pendingAmount) {
@@ -559,7 +582,6 @@ async function loadSellerDashboardData() {
                 }
             }
 
-            // Update next transfer date (hero + seller card)
             const nextTransferEl = document.getElementById('fin-next-transfer');
             const nextTransferLabel = document.getElementById('fin-next-transfer-label');
             if (nextTransferEl && nextTransferLabel && withdrawalRes.result.next_transfer_date) {
@@ -579,28 +601,6 @@ async function loadSellerDashboardData() {
             }
 
             updateQuickSummary();
-        }
-
-        // ── Populate Performance KPIs + Quick Summary from backend ──
-        if (data.performance) {
-            const perf = data.performance;
-            const kpiGross = document.getElementById('kpi-gross-revenue');
-            if (kpiGross) kpiGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
-            const kpiNet = document.getElementById('kpi-net-revenue');
-            if (kpiNet) kpiNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
-            const kpiSales = document.getElementById('kpi-sales');
-            if (kpiSales) kpiSales.textContent = perf.sales_count;
-            const kpiAvgTicket = document.getElementById('kpi-avg-ticket');
-            if (kpiAvgTicket) kpiAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
-
-            const finGross = document.getElementById('fin-gross-revenue');
-            if (finGross) finGross.textContent = formatCentsToBRL(perf.gross_revenue_cents);
-            const finNet = document.getElementById('fin-net-revenue');
-            if (finNet) finNet.textContent = formatCentsToBRL(perf.net_revenue_cents);
-            const finSalesCount = document.getElementById('fin-sales-count');
-            if (finSalesCount) finSalesCount.textContent = perf.sales_count;
-            const finAvgTicket = document.getElementById('fin-avg-ticket-summary');
-            if (finAvgTicket) finAvgTicket.textContent = formatCentsToBRL(perf.average_ticket_cents);
         }
 
         // ── Populate Cash Flow (Movimentações) cards ──
@@ -628,7 +628,7 @@ async function loadSellerDashboardData() {
 
         showDashboardSkeletons(false);
 
-        // ── Render default period (30 days) ──
+        // ── Always render chart (empty state when no data) ──
         const periodSelect = document.getElementById('vt-chart-period-select');
         const defaultDays = periodSelect ? parseInt(periodSelect.value) || 30 : 30;
         updateVitrinePeriod(defaultDays);
@@ -636,6 +636,9 @@ async function loadSellerDashboardData() {
     } catch (err) {
         console.error('[Vitrine] Error loading dashboard data:', err);
         showDashboardSkeletons(false);
+        // Ensure chart renders even on total failure
+        vitrineData.ordersByDate = vitrineData.ordersByDate || {};
+        updateVitrinePeriod(30);
     }
 }
 
@@ -796,13 +799,34 @@ function loadVitrineSalesChart(dataObject, transfersData = null, isHourly = fals
     const existingChart = Chart.getChart(canvas);
     if (existingChart) existingChart.destroy();
 
+    // Manage empty state overlay
+    const wrapper = document.getElementById('vt-chart-wrapper');
+    let emptyOverlay = wrapper?.querySelector('.vt-chart-empty-overlay');
+    const hasData = Object.keys(dataObject).some(key => (dataObject[key].count || 0) > 0 || (dataObject[key].gross_cents || 0) > 0);
+
+    if (!hasData) {
+        if (!emptyOverlay && wrapper) {
+            emptyOverlay = document.createElement('div');
+            emptyOverlay.className = 'vt-chart-empty-overlay';
+            emptyOverlay.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"/>
+                    <path d="m19 9-5 5-4-4-3 3"/>
+                </svg>
+                <span>Nenhuma venda registrada neste período</span>`;
+            wrapper.appendChild(emptyOverlay);
+        }
+        if (emptyOverlay) emptyOverlay.style.display = '';
+    } else {
+        if (emptyOverlay) emptyOverlay.style.display = 'none';
+    }
+
     const ctx = canvas.getContext('2d');
 
     const labels = Object.keys(dataObject);
     const salesCountData = labels.map(key => dataObject[key].count || 0);
     const grossData = labels.map(key => (dataObject[key].gross_cents || 0) / 100);
 
-    // If no data, show empty state
     if (labels.length === 0) {
         const now = new Date();
         const emptyLabel = isHourly ? '00:00' : `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -978,6 +1002,21 @@ function renderVitrineProducts(products) {
     const grid = document.getElementById('vitrine-products-grid');
     if (!grid) return;
     grid.innerHTML = '';
+
+    if (!products || products.length === 0) {
+        grid.innerHTML = `
+            <div class="vt-empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                    <path d="M2 7h20"/>
+                </svg>
+                <span class="vt-empty-state-title">Nenhum produto criado</span>
+                <span class="vt-empty-state-desc">Crie seu primeiro produto para começar a vender.</span>
+            </div>`;
+        return;
+    }
 
     products.forEach(product => {
         const card = createVitrineProductCard(product);
@@ -1478,26 +1517,161 @@ function showOnboardingError(msg) {
     el.classList.remove('hidden');
 }
 
+// ── Validation utilities ──────────────────────────────────────────────────
+
+function isValidCPF(cpf) {
+    if (cpf.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
+    let rem = (sum * 10) % 11;
+    if (rem === 10) rem = 0;
+    if (rem !== parseInt(cpf[9])) return false;
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
+    rem = (sum * 10) % 11;
+    if (rem === 10) rem = 0;
+    return rem === parseInt(cpf[10]);
+}
+
+function isValidCNPJ(cnpj) {
+    if (cnpj.length !== 14) return false;
+    if (/^(\d)\1{13}$/.test(cnpj)) return false;
+    const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+    const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    let sum = 0;
+    for (let i = 0; i < 12; i++) sum += parseInt(cnpj[i]) * w1[i];
+    let rem = sum % 11;
+    const d1 = rem < 2 ? 0 : 11 - rem;
+    if (d1 !== parseInt(cnpj[12])) return false;
+    sum = 0;
+    for (let i = 0; i < 13; i++) sum += parseInt(cnpj[i]) * w2[i];
+    rem = sum % 11;
+    const d2 = rem < 2 ? 0 : 11 - rem;
+    return d2 === parseInt(cnpj[13]);
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+const VALID_BR_STATES = new Set([
+    'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
+    'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'
+]);
+
+function isValidBRState(uf) {
+    return VALID_BR_STATES.has(uf.toUpperCase());
+}
+
+function isValidDate(dateStr, type) {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return false;
+    const now = new Date();
+    const minDate = new Date('1900-01-01');
+    if (date < minDate || date > now) return false;
+    if (type === 'birth') {
+        const age = (now - date) / (365.25 * 24 * 60 * 60 * 1000);
+        if (age < 18) return false;
+    }
+    return true;
+}
+
+// ── Field highlight ───────────────────────────────────────────────────────
+
+function highlightField(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('invalid');
+    const existing = el.parentElement.querySelector('.form-field-error');
+    if (existing) existing.remove();
+    if (msg) {
+        const span = document.createElement('span');
+        span.className = 'form-field-error';
+        span.textContent = msg;
+        el.parentElement.appendChild(span);
+    }
+    el.addEventListener('input', function onInput() {
+        el.classList.remove('invalid');
+        const errSpan = el.parentElement.querySelector('.form-field-error');
+        if (errSpan) errSpan.remove();
+        el.removeEventListener('input', onInput);
+    });
+}
+
+function clearFieldHighlights() {
+    document.querySelectorAll('.preset-vitrine-onboarding .invalid').forEach(el => {
+        el.classList.remove('invalid');
+    });
+    document.querySelectorAll('.preset-vitrine-onboarding .form-field-error').forEach(el => {
+        el.remove();
+    });
+}
+
+// ── Address helper: fill N/A for optional-looking but API-required fields ─
+
+function fillAddressDefaults(address) {
+    if (!address.complementary) address.complementary = 'N/A';
+    if (!address.reference_point) address.reference_point = 'N/A';
+    return address;
+}
+
+// ── Address validation helper ─────────────────────────────────────────────
+
+function validateAddress(address, prefix, label) {
+    if (!address.street || !address.street_number || !address.neighborhood || !address.city || !address.state || !address.zip_code) {
+        return { error: `Preencha todos os campos do ${label}.` };
+    }
+    if (address.zip_code.length !== 8) {
+        highlightField(`${prefix}-zip_code`, 'CEP deve ter 8 dígitos');
+        return { error: 'O CEP informado deve ter exatamente 8 dígitos.' };
+    }
+    if (!isValidBRState(address.state)) {
+        highlightField(`${prefix}-state`, 'UF inválido');
+        return { error: 'O estado (UF) informado é inválido.' };
+    }
+    return null;
+}
+
 // ── Payload builder ────────────────────────────────────────────────────────
 
 function validateAndBuildPayload() {
+    clearFieldHighlights();
     let register_information = { type: onboardingType };
 
     if (onboardingType === 'individual') {
         const name = getOnboardingValue('onb-pf-name');
-        const document = getRawDigits('onb-pf-document');
+        const doc = getRawDigits('onb-pf-document');
         const mother_name = getOnboardingValue('onb-pf-mother_name');
-        const birthdate = formatDateBR(getOnboardingValue('onb-pf-birthdate'));
+        const rawBirthdate = getOnboardingValue('onb-pf-birthdate');
+        const birthdate = formatDateBR(rawBirthdate);
         const monthly_income = getCurrencyCents('onb-pf-monthly_income');
         const professional_occupation = getOnboardingValue('onb-pf-professional_occupation');
         const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pf-phone');
 
-        if (!name || !document || !mother_name || !birthdate || !monthly_income || !professional_occupation) {
+        if (!name || !doc || !mother_name || !rawBirthdate || !monthly_income || !professional_occupation) {
             return { error: 'Preencha todos os dados pessoais obrigatórios.' };
         }
-        if (document.length !== 11) return { error: 'CPF deve ter 11 dígitos.' };
+        if (!isValidCPF(doc)) {
+            highlightField('onb-pf-document', 'CPF inválido');
+            return { error: 'O CPF informado é inválido. Verifique os dígitos.' };
+        }
+        if (!isValidDate(rawBirthdate, 'birth')) {
+            highlightField('onb-pf-birthdate', 'Data inválida');
+            return { error: 'Data de nascimento inválida. Você deve ter pelo menos 18 anos.' };
+        }
+        if (monthly_income <= 0) {
+            highlightField('onb-pf-monthly_income', 'Informe um valor');
+            return { error: 'Informe a renda mensal.' };
+        }
+        const phoneDigits = getRawDigits('onb-pf-phone');
+        if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+            highlightField('onb-pf-phone', 'Telefone incompleto');
+            return { error: 'Telefone deve ter DDD + 8 ou 9 dígitos.' };
+        }
 
-        const address = {
+        const address = fillAddressDefaults({
             street: getOnboardingValue('onb-pf-street'),
             complementary: getOnboardingValue('onb-pf-complementary'),
             street_number: getOnboardingValue('onb-pf-street_number'),
@@ -1506,15 +1680,14 @@ function validateAndBuildPayload() {
             state: getOnboardingValue('onb-pf-state').toUpperCase(),
             zip_code: getRawDigits('onb-pf-zip_code'),
             reference_point: getOnboardingValue('onb-pf-reference_point'),
-        };
-        if (!address.street || !address.street_number || !address.neighborhood || !address.city || !address.state || !address.zip_code) {
-            return { error: 'Preencha todos os campos do endereço.' };
-        }
+        });
+        const addrErr = validateAddress(address, 'onb-pf', 'endereço');
+        if (addrErr) return addrErr;
 
         register_information = {
             ...register_information,
             name,
-            document,
+            document: doc,
             mother_name,
             birthdate,
             monthly_income,
@@ -1525,18 +1698,34 @@ function validateAndBuildPayload() {
     } else {
         const company_name = getOnboardingValue('onb-pj-company_name');
         const trading_name = getOnboardingValue('onb-pj-trading_name');
-        const document = getRawDigits('onb-pj-document');
+        const doc = getRawDigits('onb-pj-document');
         const annual_revenue = getCurrencyCents('onb-pj-annual_revenue');
         const corporation_type = getOnboardingValue('onb-pj-corporation_type');
         const founding_date = getOnboardingValue('onb-pj-founding_date');
         const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pj-phone');
 
-        if (!company_name || !trading_name || !document || !annual_revenue || !corporation_type || !founding_date) {
+        if (!company_name || !trading_name || !doc || !annual_revenue || !corporation_type || !founding_date) {
             return { error: 'Preencha todos os dados da empresa obrigatórios.' };
         }
-        if (document.length !== 14) return { error: 'CNPJ deve ter 14 dígitos.' };
+        if (!isValidCNPJ(doc)) {
+            highlightField('onb-pj-document', 'CNPJ inválido');
+            return { error: 'O CNPJ informado é inválido. Verifique os dígitos.' };
+        }
+        if (!isValidDate(founding_date, 'founding')) {
+            highlightField('onb-pj-founding_date', 'Data inválida');
+            return { error: 'Data de fundação inválida.' };
+        }
+        if (annual_revenue <= 0) {
+            highlightField('onb-pj-annual_revenue', 'Informe um valor');
+            return { error: 'Informe a receita anual.' };
+        }
+        const pjPhoneDigits = getRawDigits('onb-pj-phone');
+        if (pjPhoneDigits.length < 10 || pjPhoneDigits.length > 11) {
+            highlightField('onb-pj-phone', 'Telefone incompleto');
+            return { error: 'Telefone da empresa deve ter DDD + 8 ou 9 dígitos.' };
+        }
 
-        const main_address = {
+        const main_address = fillAddressDefaults({
             street: getOnboardingValue('onb-pj-street'),
             complementary: getOnboardingValue('onb-pj-complementary'),
             street_number: getOnboardingValue('onb-pj-street_number'),
@@ -1545,26 +1734,46 @@ function validateAndBuildPayload() {
             state: getOnboardingValue('onb-pj-state').toUpperCase(),
             zip_code: getRawDigits('onb-pj-zip_code'),
             reference_point: getOnboardingValue('onb-pj-reference_point'),
-        };
-        if (!main_address.street || !main_address.street_number || !main_address.neighborhood || !main_address.city || !main_address.state || !main_address.zip_code) {
-            return { error: 'Preencha todos os campos do endereço da empresa.' };
-        }
+        });
+        const pjAddrErr = validateAddress(main_address, 'onb-pj', 'endereço da empresa');
+        if (pjAddrErr) return pjAddrErr;
 
         const partnerName = getOnboardingValue('onb-partner-name');
         const partnerEmail = getOnboardingValue('onb-partner-email');
         const partnerDocument = getRawDigits('onb-partner-document');
         const partnerMother = getOnboardingValue('onb-partner-mother_name');
-        const partnerBirth = formatDateBR(getOnboardingValue('onb-partner-birthdate'));
+        const rawPartnerBirth = getOnboardingValue('onb-partner-birthdate');
+        const partnerBirth = formatDateBR(rawPartnerBirth);
         const partnerIncome = getCurrencyCents('onb-partner-monthly_income');
         const partnerJob = getOnboardingValue('onb-partner-professional_occupation');
         const { ddd: partnerPhoneDdd, number: partnerPhoneNum } = getPhoneParts('onb-partner-phone');
 
-        if (!partnerName || !partnerEmail || !partnerDocument || !partnerMother || !partnerBirth || !partnerIncome || !partnerJob) {
+        if (!partnerName || !partnerEmail || !partnerDocument || !partnerMother || !rawPartnerBirth || !partnerIncome || !partnerJob) {
             return { error: 'Preencha todos os dados do representante legal.' };
         }
-        if (partnerDocument.length !== 11) return { error: 'CPF do representante deve ter 11 dígitos.' };
+        if (!isValidCPF(partnerDocument)) {
+            highlightField('onb-partner-document', 'CPF inválido');
+            return { error: 'O CPF do representante é inválido. Verifique os dígitos.' };
+        }
+        if (!isValidEmail(partnerEmail)) {
+            highlightField('onb-partner-email', 'E-mail inválido');
+            return { error: 'O e-mail do representante é inválido.' };
+        }
+        if (!isValidDate(rawPartnerBirth, 'birth')) {
+            highlightField('onb-partner-birthdate', 'Data inválida');
+            return { error: 'Data de nascimento do representante inválida. Deve ter pelo menos 18 anos.' };
+        }
+        if (partnerIncome <= 0) {
+            highlightField('onb-partner-monthly_income', 'Informe um valor');
+            return { error: 'Informe a renda mensal do representante.' };
+        }
+        const partnerPhoneDigits = getRawDigits('onb-partner-phone');
+        if (partnerPhoneDigits.length < 10 || partnerPhoneDigits.length > 11) {
+            highlightField('onb-partner-phone', 'Telefone incompleto');
+            return { error: 'Telefone do representante deve ter DDD + 8 ou 9 dígitos.' };
+        }
 
-        const partnerAddress = {
+        const partnerAddress = fillAddressDefaults({
             street: getOnboardingValue('onb-partner-street'),
             complementary: getOnboardingValue('onb-partner-complementary'),
             street_number: getOnboardingValue('onb-partner-street_number'),
@@ -1573,16 +1782,15 @@ function validateAndBuildPayload() {
             state: getOnboardingValue('onb-partner-state').toUpperCase(),
             zip_code: getRawDigits('onb-partner-zip_code'),
             reference_point: getOnboardingValue('onb-partner-reference_point'),
-        };
-        if (!partnerAddress.street || !partnerAddress.street_number || !partnerAddress.neighborhood || !partnerAddress.city || !partnerAddress.state || !partnerAddress.zip_code) {
-            return { error: 'Preencha todos os campos do endereço do representante.' };
-        }
+        });
+        const partAddrErr = validateAddress(partnerAddress, 'onb-partner', 'endereço do representante');
+        if (partAddrErr) return partAddrErr;
 
         register_information = {
             ...register_information,
             company_name,
             trading_name,
-            document,
+            document: doc,
             annual_revenue,
             corporation_type,
             founding_date,
@@ -1604,9 +1812,16 @@ function validateAndBuildPayload() {
         };
     }
 
+    // Bank account — document derived from recipient
     const holder_name = getOnboardingValue('onb-bank-holder_name');
-    const holder_document = getRawDigits('onb-bank-holder_document');
-    const holder_type = document.getElementById('onb-bank-holder_type')?.value || 'individual';
+    let holder_document, holder_type;
+    if (onboardingType === 'individual') {
+        holder_document = getRawDigits('onb-pf-document');
+        holder_type = 'individual';
+    } else {
+        holder_document = getRawDigits('onb-pj-document');
+        holder_type = 'company';
+    }
     const bank = getBankCode();
     const branch_number = getRawDigits('onb-bank-branch_number');
     const branch_check_digit = getRawDigits('onb-bank-branch_check_digit') || undefined;
@@ -1614,11 +1829,23 @@ function validateAndBuildPayload() {
     const account_check_digit = getRawDigits('onb-bank-account_check_digit');
     const accountType = document.getElementById('onb-bank-type')?.value || 'checking';
 
-    if (!holder_name || !holder_document || !bank || !branch_number || !account_number || !account_check_digit) {
+    if (!holder_name || !bank || !branch_number || !account_number || !account_check_digit) {
         return { error: 'Preencha todos os dados bancários obrigatórios.' };
     }
     if (bank.length !== 3) {
         return { error: 'O código do banco deve ter 3 dígitos (código COMPE). Ex: 260 para Nubank, 341 para Itaú.' };
+    }
+    if (branch_number.length < 1 || branch_number.length > 4) {
+        highlightField('onb-bank-branch_number', 'Entre 1 e 4 dígitos');
+        return { error: 'A agência deve ter entre 1 e 4 dígitos.' };
+    }
+    if (account_number.length < 1 || account_number.length > 13) {
+        highlightField('onb-bank-account_number', 'Máximo 13 dígitos');
+        return { error: 'O número da conta deve ter no máximo 13 dígitos.' };
+    }
+    if (account_check_digit.length !== 1) {
+        highlightField('onb-bank-account_check_digit', '1 dígito');
+        return { error: 'O dígito da conta deve ter exatamente 1 dígito.' };
     }
 
     const default_bank_account = {
@@ -1634,6 +1861,61 @@ function validateAndBuildPayload() {
     if (branch_check_digit) default_bank_account.branch_check_digit = branch_check_digit;
 
     return { register_information, default_bank_account };
+}
+
+// ── Pagar.me error mapping ────────────────────────────────────────────────
+
+const PAGARME_FIELD_MAP = {
+    'holder_name': { label: 'Nome do titular', id: 'onb-bank-holder_name' },
+    'holder_document': { label: 'Documento do titular' },
+    'branch_number': { label: 'Agência', id: 'onb-bank-branch_number' },
+    'account_number': { label: 'Número da conta', id: 'onb-bank-account_number' },
+    'account_check_digit': { label: 'Dígito da conta', id: 'onb-bank-account_check_digit' },
+    'branch_check_digit': { label: 'Dígito da agência', id: 'onb-bank-branch_check_digit' },
+    'bank': { label: 'Banco', id: 'onb-bank-bank' },
+    'name': { label: 'Nome' },
+    'document': { label: 'Documento' },
+    'email': { label: 'E-mail' },
+    'birthdate': { label: 'Data de nascimento' },
+    'mother_name': { label: 'Nome da mãe' },
+    'monthly_income': { label: 'Renda mensal' },
+    'annual_revenue': { label: 'Receita anual' },
+    'company_name': { label: 'Nome fantasia' },
+    'trading_name': { label: 'Razão social' },
+    'zip_code': { label: 'CEP' },
+    'street': { label: 'Rua' },
+    'street_number': { label: 'Número' },
+    'neighborhood': { label: 'Bairro' },
+    'city': { label: 'Cidade' },
+    'state': { label: 'Estado' },
+};
+
+const PAGARME_MSG_MAP = {
+    'is invalid': 'valor inválido',
+    'is required': 'campo obrigatório',
+    'must be filled': 'campo obrigatório',
+    'has already been taken': 'já está em uso',
+    'must be equal to recipient document': 'deve ser igual ao documento do recebedor',
+    'must be a number': 'deve ser um número',
+    'size must be': 'tamanho inválido',
+};
+
+function formatPagarmeError(details) {
+    if (!details || typeof details !== 'object') return null;
+    const hints = [];
+    const entries = Array.isArray(details) ? details.map((m, i) => [String(i), m]) : Object.entries(details);
+    for (const [field, msgs] of entries) {
+        const mapped = PAGARME_FIELD_MAP[field];
+        const label = mapped?.label || field;
+        if (mapped?.id) highlightField(mapped.id);
+        const msgText = Array.isArray(msgs) ? msgs.join(', ') : String(msgs);
+        let translated = msgText;
+        for (const [en, pt] of Object.entries(PAGARME_MSG_MAP)) {
+            translated = translated.replace(new RegExp(en, 'gi'), pt);
+        }
+        hints.push(`${label}: ${translated}`);
+    }
+    return hints.length > 0 ? hints.join('; ') : null;
 }
 
 // ── Event Listeners ────────────────────────────────────────────────────────
@@ -1686,18 +1968,13 @@ document.getElementById('onboarding-submit')?.addEventListener('click', async ()
                 loadVitrineTab();
             }, 1500);
         } else {
-            let errMsg = res.result?.error || 'Erro ao cadastrar. Tente novamente.';
             const details = res.result?.details;
-            if (details && typeof details === 'object') {
-                const detailMessages = Object.entries(details)
-                    .map(([field, msgs]) => {
-                        const msgText = Array.isArray(msgs) ? msgs.join(', ') : String(msgs);
-                        return `${field}: ${msgText}`;
-                    })
-                    .join(' | ');
-                if (detailMessages) errMsg += ` (${detailMessages})`;
-            } else if (details) {
-                errMsg += ` (${details})`;
+            console.error('[Vitrine] Onboarding API error:', res.result?.error, details);
+
+            let errMsg = 'Não foi possível completar o cadastro. Verifique os dados e tente novamente.';
+            if (details) {
+                const fieldHints = formatPagarmeError(details);
+                if (fieldHints) errMsg += ` (${fieldHints})`;
             }
             showOnboardingError(errMsg);
             if (btnContainer) setElementState(btnContainer, 'content');

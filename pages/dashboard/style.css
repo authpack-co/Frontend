@@ -3656,6 +3656,52 @@ span.coming-soon {
     height: 100% !important;
 }
 
+.vt-chart-empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--ap-text-muted);
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.vt-chart-empty-overlay svg {
+    opacity: 0.4;
+}
+
+.vt-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 48px 24px;
+    color: var(--ap-text-muted);
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+.vt-empty-state svg {
+    opacity: 0.35;
+    margin-bottom: 4px;
+}
+
+.vt-empty-state-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.vt-empty-state-desc {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
 /* Gateway Dashboard (legacy, kept for reference) */
 .vt-gateway-link {
     display: inline-flex;
@@ -4840,6 +4886,17 @@ textarea:focus-visible {
     color: var(--ap-text-muted);
     margin-top: 2px;
     line-height: 1.4;
+}
+
+.form-field-error {
+    font-size: 11px;
+    color: var(--ap-danger);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.preset-vitrine-onboarding .form-input.invalid {
+    border-color: var(--ap-danger);
 }
 
 /* Input with icon prefix (R$ for currency) */

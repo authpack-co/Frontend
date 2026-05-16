@@ -2132,21 +2132,6 @@
                                                         placeholder="Nome do titular">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="form-label">CPF/CNPJ do titular *</label>
-                                                    <input type="text" class="form-input" id="onb-bank-holder_document"
-                                                        placeholder="CPF ou CNPJ" maxlength="18" data-mask="cpf-cnpj"
-                                                        inputmode="numeric">
-                                                </div>
-                                            </div>
-                                            <div class="form-row">
-                                                <div class="form-group">
-                                                    <label class="form-label">Tipo do titular *</label>
-                                                    <select class="form-input" id="onb-bank-holder_type">
-                                                        <option value="individual">Pessoa Física</option>
-                                                        <option value="company">Pessoa Jurídica</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
                                                     <label class="form-label">Banco *</label>
                                                     <select class="form-input" id="onb-bank-bank">
                                                         <option value="">Selecione...</option>
@@ -2174,6 +2159,12 @@
                                                         inputmode="numeric" maxlength="3" style="margin-top:6px;">
                                                 </div>
                                             </div>
+                                            <div class="info-box" style="margin-top:8px;">
+                                                <span class="info-text" style="font-size:12px;">
+                                                    O documento e tipo do titular da conta serão preenchidos
+                                                    automaticamente com base nos dados do recebedor cadastrado acima.
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
@@ -2182,7 +2173,7 @@
                                                 <div class="form-group">
                                                     <label class="form-label">Agência *</label>
                                                     <input type="text" class="form-input" id="onb-bank-branch_number"
-                                                        placeholder="1234" inputmode="numeric">
+                                                        placeholder="1234" inputmode="numeric" maxlength="4">
                                                 </div>
                                                 <div class="form-group">
                                                     <label class="form-label">Dígito da agência</label>
@@ -2195,7 +2186,7 @@
                                                 <div class="form-group">
                                                     <label class="form-label">Número da conta *</label>
                                                     <input type="text" class="form-input" id="onb-bank-account_number"
-                                                        placeholder="12345" inputmode="numeric">
+                                                        placeholder="12345" inputmode="numeric" maxlength="13">
                                                 </div>
                                                 <div class="form-group">
                                                     <label class="form-label">Dígito da conta *</label>
