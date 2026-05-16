@@ -296,6 +296,13 @@
             btn.innerHTML = 'Redirecionando...';
 
             try {
+                const authRes = await fetchManager.getAuthenticatedUser();
+                if (!authRes.ok) {
+                    const redirectPath = window.location.pathname + window.location.search;
+                    window.location.href = '/pages/login/?redirect=' + encodeURIComponent(redirectPath);
+                    return;
+                }
+
                 const res = await fetchManager.createCheckoutOrder({
                     productId: product.id,
                     origin: 'marketplace',
