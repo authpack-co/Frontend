@@ -232,14 +232,6 @@ const fetchManager = {
         return response;
     },
 
-    async reactivateBilling() {
-        const response = await fetchRoutes(`/api/subscription/reactivate`, {
-            method: "POST",
-            credentials: "include"
-        });
-        return response;
-    },
-
     // Auth
 
     async logout() {

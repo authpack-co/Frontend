@@ -292,32 +292,6 @@
         }
     }
 
-    // ─── Action: Reativar assinatura ──────────────────────────────────────────────
-
-    async function scHandleReactivatePlan() {
-        const btn = scEl('sc-btn-reactivate-plan');
-        if (!btn) return;
-
-        btn.disabled    = true;
-        btn.textContent = 'Reativando...';
-
-        try {
-            const res = await fetchManager.reactivateBilling();
-            if (!res.ok) {
-                alert('Não foi possível reativar a assinatura. Tente novamente.');
-                btn.disabled    = false;
-                btn.textContent = 'Reativar';
-                return;
-            }
-            if (scUserData) scUserData.plan_status = 'active';
-            scRenderPlanCard(scUserData);
-        } catch (err) {
-            console.error('[Settings] reactivateBilling error:', err);
-            btn.disabled    = false;
-            btn.textContent = 'Reativar';
-        }
-    }
-
     // ─── Action: Assinar Plus (fecha settings, abre Plus modal) ──────────────────
 
     function scHandleAssinarPlus() {
@@ -438,12 +412,10 @@
         // Botões de ação
         const disconnectBtn    = scEl('sc-btn-disconnect');
         const cancelPlanBtn    = scEl('sc-btn-cancel-plan');
-        const reactivateBtn    = scEl('sc-btn-reactivate-plan');
         const assinarPlusBtn   = scEl('sc-btn-assinar-plus');
 
         if (disconnectBtn)  disconnectBtn.addEventListener('click',  scHandleDisconnect);
         if (cancelPlanBtn)  cancelPlanBtn.addEventListener('click',  scHandleCancelPlan);
-        if (reactivateBtn)  reactivateBtn.addEventListener('click',  scHandleReactivatePlan);
         if (assinarPlusBtn) assinarPlusBtn.addEventListener('click', scHandleAssinarPlus);
     });
 
