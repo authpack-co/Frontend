@@ -470,6 +470,14 @@
         const submit = document.getElementById('ck-submit');
         const dashboard = document.getElementById('ck-btn-dashboard');
         submit.style.display = 'none';
+
+        if (_order?.origin === 'marketplace') {
+            const pkgId = _order.package_id || _order.metadata?.packageId;
+            if (pkgId) {
+                dashboard.href = `/pages/dashboard/?newProduct=${pkgId}`;
+            }
+        }
+
         dashboard.style.display = 'flex';
     }
 

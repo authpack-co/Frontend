@@ -2492,8 +2492,30 @@ async function init() {
     // Atualiza contador do plano free
     updateFreePlanPackageCounter();
 
+    // Verifica se há parâmetro de novo produto (vindo do checkout)
+    const urlParams = new URLSearchParams(window.location.search);
+    const newProductId = urlParams.get('newProduct');
+
     // Define estado inicial do packages list
-    if (packagesList.userCollection.length === 0) {
+    if (newProductId && packagesList.userAccess.length > 0) {
+        setElementState(document.querySelector("#packages-list"), 'access');
+
+        const newPkg = packagesList.userAccess.find(p => p.id === newProductId);
+        if (newPkg) {
+            selectPackage(newPkg.id, false);
+
+            const pkgElement = document.querySelector(`.preset-access [data-package-id="${newProductId}"]`);
+            if (pkgElement) {
+                const newBadge = createElement('div', 'new-badge');
+                newBadge.textContent = 'Novo';
+                pkgElement.appendChild(newBadge);
+            }
+        } else {
+            selectPackage(packagesList.userAccess[0].id, false);
+        }
+
+        window.history.replaceState({}, '', window.location.pathname);
+    } else if (packagesList.userCollection.length === 0) {
         setElementState(document.querySelector("#packages-list"), 'empty-collection');
     } else {
         setElementState(document.querySelector("#packages-list"), 'collection');
@@ -2539,8 +2561,8 @@ async function init() {
         });
     });
 
-    // Seleciona o primeiro pacote da coleção por padrão
-    if (packagesList.userCollection.length > 0) {
+    // Seleciona o primeiro pacote da coleção por padrão (se não veio do checkout)
+    if (!newProductId && packagesList.userCollection.length > 0) {
         selectPackage(packagesList.userCollection[0].id);
     }
 }

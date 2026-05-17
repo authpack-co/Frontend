@@ -3036,6 +3036,31 @@ span.coming-soon {
     }
 }
 
+/* Badge "Novo" no access-item (pós-checkout) */
+.access-item .new-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #10b981;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    z-index: 1;
+    animation: newBadgePulse 2s ease-in-out 3;
+}
+
+@keyframes newBadgePulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 14px rgba(16, 185, 129, 0.6);
+    }
+}
+
 /* Nota de alerta no package-details */
 .inactive-alert-note {
     display: flex;
