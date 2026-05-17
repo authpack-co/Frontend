@@ -1,4 +1,4 @@
-const ENV = "dev";
+const ENV = "prod";
 const IS_DEV = ENV === "dev";
 
 const PAGARME_PUBLIC_KEY = IS_DEV
