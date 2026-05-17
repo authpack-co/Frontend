@@ -298,6 +298,12 @@ async function handleConnectSession(e) {
     // Ignora clique se o botão estiver desabilitado (pacote inativo)
     if (this.disabled) return;
 
+    // Verifica se a extensão está instalada
+    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
+        utils.showModal("extensionRequired");
+        return;
+    }
+
     function addURLParams(url, parameters) {
         // Verifique se há uma interrogação (?) na URL
         const separator = url.includes('?') ? '&' : '?';
