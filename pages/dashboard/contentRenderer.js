@@ -1219,6 +1219,7 @@ async function loadSessionStats(session, pkg, period) {
 
     sessionHotUsers.forEach(userId => {
         const user = pkg.users.find(u => u.id === userId);
+        if (!user) return;
         const userAvatar = createElement("img", "service-user-avatar");
         userAvatar.src = user.picture;
         hotUsersListContainer.appendChild(userAvatar);
