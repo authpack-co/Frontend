@@ -232,6 +232,14 @@ const fetchManager = {
         return response;
     },
 
+    async redeemPlusTrial() {
+        const response = await fetchRoutes(`/api/subscription/redeem-trial`, {
+            method: "POST",
+            credentials: "include"
+        });
+        return response;
+    },
+
     // Auth
 
     async logout() {
