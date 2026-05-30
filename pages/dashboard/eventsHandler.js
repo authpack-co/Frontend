@@ -774,6 +774,20 @@ cancelBtns.forEach(item => item.addEventListener("click", event => {
     utils.closeModals();
 }));
 
+// Abre o modal Plus automaticamente quando vindo do upsell (ex.: extensão -> ?upgrade=plus)
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") === "plus") {
+        utils.showModal("plusSubscribe");
+
+        // Limpa o query param para não reabrir ao recarregar
+        params.delete("upgrade");
+        const query = params.toString();
+        const cleanUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+        window.history.replaceState({}, "", cleanUrl);
+    }
+})();
+
 // ==== Click outside to close
 document.addEventListener('click', e => {
     // Close package options if click outside
