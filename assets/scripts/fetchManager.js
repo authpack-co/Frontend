@@ -349,8 +349,8 @@ const fetchManager = {
         return response;
     },
 
-    async getProductBySlug(slug) {
-        const response = await fetchRoutes(`/api/marketplace/products/${slug}`);
+    async getProductById(id) {
+        const response = await fetchRoutes(`/api/marketplace/products/${id}`);
         return response;
     },
 
