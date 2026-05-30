@@ -52,22 +52,42 @@ const utils = {
         }
     },
 
-    toggleShareModalState() {
-        const toggle = document.querySelector('.toggle-switch');
-        const statusBadge = document.querySelector('#statusBadge');
+    setShareModalOpenState(isOpen) {
+        const toggle = document.querySelector('#sharePackageModal #generalToggle');
+        const statusBadge = document.querySelector('#sharePackageModal #statusBadge');
+        const linkDisplay = document.querySelector('#sharePackageModal #generalLinkDisplay');
+        if (!toggle || !statusBadge || !linkDisplay) return;
         const statusText = statusBadge.querySelector('span');
 
-        const isActive = toggle.classList.contains("active");
-
-        if (isActive) {
-            toggle.classList.remove('active');
-            statusBadge.className = 'status-badge status-closed';
-            statusText.textContent = 'Acesso Restrito';
-        } else {
+        if (isOpen) {
             toggle.classList.add('active');
             statusBadge.className = 'status-badge status-open';
-            statusText.textContent = 'Acesso Público';
+            statusText.textContent = 'Acesso público';
+            linkDisplay.classList.remove('disabled');
+        } else {
+            toggle.classList.remove('active');
+            statusBadge.className = 'status-badge status-closed';
+            statusText.textContent = 'Acesso restrito';
+            linkDisplay.classList.add('disabled');
         }
+    },
+
+    buildInviteUrl(key) {
+        if (!key) return '';
+        return `${window.location.origin}/pages/package-invite/?key=${encodeURIComponent(key)}`;
+    },
+
+    formatExpiry(expiresAt) {
+        const now = Date.now();
+        const target = new Date(expiresAt).getTime();
+        const diffMs = target - now;
+        if (diffMs <= 0) return 'expirou';
+        const totalMin = Math.floor(diffMs / 60000);
+        const hours = Math.floor(totalMin / 60);
+        const mins = totalMin % 60;
+        if (hours > 0 && mins > 0) return `expira em ${hours}h ${mins}min`;
+        if (hours > 0) return `expira em ${hours}h`;
+        return `expira em ${mins}min`;
     },
 
     validateField(value, config = {}) {
@@ -386,22 +406,96 @@ function setupSharePackageForm(e) {
     const packageId = packageEl.dataset.packageId;
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
-    const inputName = sharePackageModal.querySelector(".modal-body .form-input.readonly");
-    const keyValue = sharePackageModal.querySelector(".modal-body #keyValue");
-    const statusBadge = sharePackageModal.querySelector(".status-badge");
+    const inputName = sharePackageModal.querySelector(".share-pkg-name");
+    const generalLinkUrl = sharePackageModal.querySelector("#generalLinkUrl");
 
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
-    const isOpen = packageData.open === 0 ? false : true;
-
-    if (statusBadge.classList.contains("status-closed") && isOpen) {
-        utils.toggleShareModalState();
-    } else if (statusBadge.classList.contains("status-open") && !isOpen) {
-        utils.toggleShareModalState();
-    }
+    const isOpen = packageData.open !== 0;
 
     inputName.value = packageData.name;
-    keyValue.textContent = packageData.key;
+    generalLinkUrl.textContent = utils.buildInviteUrl(packageData.key);
+    utils.setShareModalOpenState(isOpen);
+
+    // Reset unique-keys list to empty placeholder; will be populated by loader.
+    const list = sharePackageModal.querySelector("#uniqueKeysList");
+    list.innerHTML = '<li class="unique-keys-empty">Carregando…</li>';
+
     utils.showModal("sharePackage", packageId);
+
+    // Fetch active unique keys for this package.
+    loadActiveUniqueKeys(packageId);
+}
+
+async function loadActiveUniqueKeys(packageId) {
+    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    const res = await fetchManager.getActiveUniqueKeys(packageId);
+
+    if (!res.ok) {
+        list.innerHTML = '<li class="unique-keys-empty">Não foi possível carregar os links únicos.</li>';
+        return;
+    }
+
+    renderUniqueKeysList(res.result.data || []);
+}
+
+function renderUniqueKeysList(keys) {
+    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    list.innerHTML = '';
+
+    if (!keys.length) {
+        const empty = document.createElement('li');
+        empty.className = 'unique-keys-empty';
+        empty.textContent = 'Nenhum link único ativo no momento.';
+        list.appendChild(empty);
+        return;
+    }
+
+    keys.forEach(k => list.appendChild(buildUniqueKeyItem(k)));
+}
+
+function buildUniqueKeyItem(k) {
+    const url = utils.buildInviteUrl(k.key);
+
+    const li = document.createElement('li');
+    li.className = 'unique-key-item';
+
+    const info = document.createElement('div');
+    info.className = 'unique-key-info';
+
+    const urlEl = document.createElement('span');
+    urlEl.className = 'unique-key-url';
+    urlEl.textContent = url;
+    urlEl.title = url;
+
+    const expiryEl = document.createElement('span');
+    expiryEl.className = 'unique-key-expiry';
+    expiryEl.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+        </svg>
+        <span>${utils.formatExpiry(k.expiresAt)}</span>
+    `;
+
+    info.appendChild(urlEl);
+    info.appendChild(expiryEl);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'unique-key-copy';
+    copyBtn.textContent = 'Copiar';
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(url).then(() => {
+            copyBtn.textContent = 'Copiado';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+                copyBtn.textContent = 'Copiar';
+                copyBtn.classList.remove('copied');
+            }, 1200);
+        }).catch(() => notify('error', 'Não foi possível copiar o link.'));
+    });
+
+    li.appendChild(info);
+    li.appendChild(copyBtn);
+    return li;
 }
 
 function setupDeletePackageForm(e) {
@@ -1160,17 +1254,17 @@ activationInputs.forEach(input => {
     });
 });
 
-// Share Package
+// Share Package (v2: link público + links únicos)
 const sharePackageModal = document.querySelector('#sharePackageModal');
-const toggleShareAccessBtn = sharePackageModal.querySelector('.toggle-switch');
-const copyKeyBtn = sharePackageModal.querySelector('.copy-key-btn');
-const renewKeyBtn = sharePackageModal.querySelector('.renew-key-btn');
+const generalToggle = sharePackageModal.querySelector('#generalToggle');
+const copyGeneralLinkBtn = sharePackageModal.querySelector('#copyGeneralLinkBtn');
+const renewGeneralKeyBtn = sharePackageModal.querySelector('#renewGeneralKeyBtn');
+const generateUniqueKeyBtn = sharePackageModal.querySelector('#generateUniqueKeyBtn');
 
-toggleShareAccessBtn.addEventListener('click', async () => {
+// Toggle público (open/closed) — apenas o link geral é afetado; links únicos seguem válidos.
+generalToggle.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
     const fetchToggleAccess = await fetchManager.togglePackageState({ id: packageId });
-
-    console.log(fetchToggleAccess);
 
     if (!fetchToggleAccess.ok) {
         notify("error", "Não foi possível alterar o acesso.");
@@ -1179,30 +1273,30 @@ toggleShareAccessBtn.addEventListener('click', async () => {
 
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
     const packageData = packagesList.userCollection[packageIdx];
-    const isOpen = packageData.open === 0 ? false : true;
+    const wasOpen = packageData.open !== 0;
+    packagesList.userCollection[packageIdx].open = wasOpen ? 0 : 1;
 
-    packagesList.userCollection[packageIdx].open = isOpen ? 0 : 1;
-
-    utils.toggleShareModalState();
+    utils.setShareModalOpenState(!wasOpen);
 });
 
-copyKeyBtn.addEventListener('click', () => {
-    const keyValue = sharePackageModal.querySelector("#keyValue").textContent;
-    navigator.clipboard.writeText(keyValue).then(() => {
-        copyKeyBtn.textContent = "Copiado";
+// Copia o link público.
+copyGeneralLinkBtn.addEventListener('click', () => {
+    const url = sharePackageModal.querySelector("#generalLinkUrl").textContent;
+    if (!url || url === '—') return;
+    navigator.clipboard.writeText(url).then(() => {
+        copyGeneralLinkBtn.textContent = "Copiado";
         setTimeout(() => {
-            copyKeyBtn.textContent = "Copiar";
+            copyGeneralLinkBtn.textContent = "Copiar";
         }, 1000);
     }).catch(() => {
-        notify("error", "Não foi possível copiar a chave.");
+        notify("error", "Não foi possível copiar o link.");
     });
 });
 
-renewKeyBtn.addEventListener('click', async () => {
+// Renova a key geral — invalida o link público anterior.
+renewGeneralKeyBtn.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
     const fetchRenewKey = await fetchManager.renewPackageKey({ id: packageId });
-
-    console.log(fetchRenewKey);
 
     if (!fetchRenewKey.ok) {
         notify("error", "Não foi possível renovar a chave.");
@@ -1211,15 +1305,42 @@ renewKeyBtn.addEventListener('click', async () => {
 
     const newKey = fetchRenewKey.result.data.key;
 
-    // Atualiza chave no array local de packages
+    // Atualiza chave no array local + URL na tela.
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
     packagesList.userCollection[packageIdx].key = newKey;
 
-    // Atualiza chave na tela
-    const keyValue = sharePackageModal.querySelector("#keyValue");
-    keyValue.textContent = newKey;
+    const urlEl = sharePackageModal.querySelector("#generalLinkUrl");
+    urlEl.textContent = utils.buildInviteUrl(newKey);
 
-    notify("success", "Chave renovada com sucesso.");
+    notify("success", "Link público renovado.");
+});
+
+// Gera um novo link único (válido por 24h, uso único).
+generateUniqueKeyBtn.addEventListener('click', async () => {
+    const packageId = sharePackageModal.dataset.itemId;
+
+    const buttonLabel = generateUniqueKeyBtn.querySelector('span');
+    const originalLabel = buttonLabel ? buttonLabel.textContent : null;
+    generateUniqueKeyBtn.disabled = true;
+    if (buttonLabel) buttonLabel.textContent = 'Gerando…';
+
+    const res = await fetchManager.createUniqueKey(packageId);
+
+    generateUniqueKeyBtn.disabled = false;
+    if (buttonLabel && originalLabel) buttonLabel.textContent = originalLabel;
+
+    if (!res.ok) {
+        notify("error", res.result && res.result.errorMessage ? res.result.errorMessage : "Não foi possível gerar o link único.");
+        return;
+    }
+
+    // Append to current list (prepend so newest shows first).
+    const list = sharePackageModal.querySelector("#uniqueKeysList");
+    const emptyState = list.querySelector('.unique-keys-empty');
+    if (emptyState) emptyState.remove();
+    list.insertBefore(buildUniqueKeyItem(res.result.data), list.firstChild);
+
+    notify("success", "Link único gerado.");
 });
 
 // Edit Session
