@@ -1,30 +1,21 @@
 // ============================================================================
 // Public Product Page — Single Product
-// Loaded via /pages/product/?slug=product-slug-xxx
+// Loaded via /pages/product/?product={productId}
 // ============================================================================
 
 (async function () {
     const container = document.getElementById('product-state');
 
-    // Get slug from URL path or query
     const params = new URLSearchParams(window.location.search);
-    let slug = params.get('slug');
+    const productId = params.get('product');
 
-    if (!slug) {
-        const pathParts = window.location.pathname.split('/').filter(Boolean);
-        const productIdx = pathParts.indexOf('product');
-        if (productIdx !== -1 && pathParts[productIdx + 1]) {
-            slug = pathParts[productIdx + 1];
-        }
-    }
-
-    if (!slug) {
+    if (!productId) {
         setElementState(container, 'empty');
         return;
     }
 
     try {
-        const res = await fetchManager.getProductBySlug(slug);
+        const res = await fetchManager.getProductById(productId);
 
         if (!res.ok || !res.result?.product) {
             setElementState(container, 'empty');

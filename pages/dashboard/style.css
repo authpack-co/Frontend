@@ -6795,3 +6795,179 @@ textarea:focus-visible {
         min-width: 70px;
     }
 }
+
+/* ============================================================================
+   Share Package Modal v2 — link público + links únicos
+   ============================================================================ */
+.share-modal-v2 {
+    max-width: 520px;
+    width: 92vw;
+}
+.share-modal-v2 .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-height: 78vh;
+    overflow-y: auto;
+}
+.share-pkg-name {
+    font-weight: 600;
+}
+
+.share-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.share-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+.share-section-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+.share-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+.share-section-sub {
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+    line-height: 1.4;
+}
+
+.share-divider {
+    height: 1px;
+    background: var(--ap-border);
+    margin: 2px 0;
+}
+
+/* Hide the general link card when toggle is off */
+.share-link-display {
+    transition: opacity 0.18s ease;
+}
+.share-link-display.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    filter: grayscale(0.4);
+}
+
+/* Truncate the URL nicely inside .key-value */
+#generalLinkUrl {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Generate button icon alignment */
+#generateUniqueKeyBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Unique keys list */
+.unique-keys-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.unique-keys-empty {
+    padding: 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-card-alt);
+    border: 1px dashed var(--ap-border);
+    border-radius: 8px;
+}
+.unique-key-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+    border-radius: 8px;
+}
+.unique-key-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.unique-key-url {
+    font-family: var(--ap-font-data);
+    font-size: 12.5px;
+    color: var(--ap-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.unique-key-expiry {
+    font-size: 11.5px;
+    color: var(--ap-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.unique-key-expiry svg {
+    width: 11px;
+    height: 11px;
+}
+.unique-key-copy {
+    background: none;
+    border: 1px solid var(--ap-border);
+    color: var(--ap-text-secondary);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+.unique-key-copy:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+.unique-key-copy.copied {
+    background: var(--ap-success-light);
+    border-color: var(--ap-success-border);
+    color: var(--ap-success-text);
+}
+
+@media (max-width: 540px) {
+    .share-section-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .share-section-head .toggle-switch {
+        align-self: flex-end;
+    }
+    #generateUniqueKeyBtn {
+        align-self: flex-end;
+    }
+    .unique-key-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .unique-key-copy {
+        align-self: flex-end;
+    }
+}
+

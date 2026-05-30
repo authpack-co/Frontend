@@ -119,6 +119,31 @@ const fetchManager = {
         return response;
     },
 
+    // Invite links (package sharing v2)
+    async getInvitePreview(key) {
+        const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}`);
+        return response;
+    },
+
+    async acceptInvite(key) {
+        const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}/accept`, {
+            method: "POST"
+        });
+        return response;
+    },
+
+    async createUniqueKey(packageId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys`, {
+            method: "POST"
+        });
+        return response;
+    },
+
+    async getActiveUniqueKeys(packageId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys`);
+        return response;
+    },
+
     // Sessions
 
     async editSession(sessionDetails) {
@@ -324,8 +349,8 @@ const fetchManager = {
         return response;
     },
 
-    async getProductBySlug(slug) {
-        const response = await fetchRoutes(`/api/marketplace/products/${slug}`);
+    async getProductById(id) {
+        const response = await fetchRoutes(`/api/marketplace/products/${id}`);
         return response;
     },
 
