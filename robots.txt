@@ -1,0 +1,36 @@
+# AuthPack — robots.txt
+# Conteúdo público é livre para indexação. Páginas de aplicação são bloqueadas.
+
+User-agent: *
+Allow: /
+Disallow: /pages/dashboard/
+Disallow: /pages/checkout/
+Disallow: /pages/activation/
+Disallow: /pages/package-invite/
+
+# ── Crawlers de IA explicitamente bem-vindos (descoberta da ferramenta) ──
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://authpack.co/sitemap.xml

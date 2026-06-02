@@ -4,14 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuthPack — Controle Total de Acessos</title>
+    <title>AuthPack — Compartilhe e gerencie acessos digitais em um clique</title>
     <meta name="description"
-        content="Compartilhe e gerencie sessões com controle total. Crie, organize e distribua acessos de forma automatizada, segura e escalável.">
+        content="O AuthPack é a plataforma para organizar, compartilhar e distribuir acessos digitais em pacotes. Sua equipe entra nos serviços que precisa em um clique — sem expor credenciais, sem cofre de senhas.">
+    <meta name="keywords"
+        content="AuthPack, compartilhamento de acessos, pacotes de acesso, stacks de acesso, gerenciamento de acessos, distribuição de acessos digitais, compartilhar acesso sem senha">
+    <link rel="canonical" href="https://authpack.co/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="AuthPack — Compartilhe e gerencie acessos digitais em um clique">
+    <meta property="og:description" content="A plataforma para organizar, compartilhar e distribuir acessos digitais em pacotes. Sua equipe entra nos serviços que precisa em um clique — sem expor credenciais.">
+    <meta property="og:url" content="https://authpack.co/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AuthPack — Compartilhe e gerencie acessos digitais em um clique">
+    <meta name="twitter:description" content="A plataforma para organizar, compartilhar e distribuir acessos digitais em pacotes.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
-        <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
-<link rel="stylesheet" href="/assets/styles/landing.css">
-    <link rel="stylesheet" href="/assets/styles/header.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
 
     <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
     <style id="ap-block-style">
@@ -64,119 +87,640 @@
         })();
     </script>
     <script src="/assets/scripts/themeManager.js" defer></script>
+
+    <!-- ===== Structured data: Organization + WebSite + SoftwareApplication ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes e stacks.",
+          "email": "team@authpack.co",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://authpack.co/#website",
+          "url": "https://authpack.co/",
+          "name": "AuthPack",
+          "description": "A plataforma para organizar, compartilhar e distribuir acessos digitais em pacotes.",
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "inLanguage": "pt-BR"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://authpack.co/#software",
+          "name": "AuthPack",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Chrome, Edge, Arc",
+          "url": "https://authpack.co/",
+          "downloadUrl": "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm",
+          "description": "Organize acessos em pacotes e compartilhe com sua equipe em um clique, sem expor credenciais.",
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body>
-    <!-- ========== NAVBAR ========== -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/?persist=true" class="navbar-brand">
-                <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
-                <span>AuthPack</span>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <svg width="28" height="22" viewBox="0 0 64 50" fill="none" style="display:block">
+                    <defs>
+                        <linearGradient id="bm-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B79BF0"/><stop offset="1" stop-color="#7B57D4"/></linearGradient>
+                        <linearGradient id="bm-sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AAC6F6"/><stop offset="1" stop-color="#7194E8"/></linearGradient>
+                        <linearGradient id="bm-mint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5EECC"/><stop offset="1" stop-color="#5FD6A2"/></linearGradient>
+                        <linearGradient id="bm-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E8DF8"/><stop offset="1" stop-color="#3454E0"/></linearGradient>
+                    </defs>
+                    <rect x="34" y="3" width="26" height="42" rx="7" fill="url(#bm-purple)"/>
+                    <rect x="24" y="3" width="26" height="42" rx="7" fill="url(#bm-sky)"/>
+                    <rect x="14" y="3" width="26" height="42" rx="7" fill="url(#bm-mint)"/>
+                    <rect x="2"  y="3" width="28" height="42" rx="8" fill="url(#bm-blue)"/>
+                </svg>
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
             </a>
-
-            <div class="navbar-links">
-                <a href="#features">Funcionalidades</a>
-                <a href="#how-it-works">Docs</a>
+            <div class="nav-links">
+                <a href="#como">Como funciona</a>
+                <a href="#recursos">Recursos</a>
+                <a href="#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
             </div>
-
-            <div class="navbar-actions">
-                <!-- Visitor state: not logged in -->
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <!-- Visitor state -->
                 <div class="nav-visitor">
-                    <a href="/pages/login/">
-                        <button class="nav-btn-primary">Começar</button>
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
                     </a>
                 </div>
-                <!-- Logged-in state -->
-                <div class="nav-user">
-                    <a href="/pages/dashboard/" class="nav-profile">
-                        <span class="nav-profile-name"></span>
-                        <span class="nav-plus-badge">Plus</span>
-                        <img class="nav-avatar" src="" alt="User">
-                    </a>
-                    <a href="/pages/dashboard/">
-                        <button class="nav-btn-primary">Entrar</button>
-                    </a>
-                </div>
+                <!-- Logged-in state (populated by home.js) -->
+                <div class="nav-user"></div>
             </div>
         </div>
     </nav>
 
     <!-- ========== HERO ========== -->
-    <section class="lp-hero">
-        <div class="lp-container">
-            <!-- Left Column -->
-            <div class="lp-hero-content">
-                <!-- Announcement Badge -->
-                <div class="lp-announcement">
-                    <span class="lp-announcement-dot"></span>
-                    Nova versão v2.0 disponível
-                </div>
-
-                <h1 class="lp-hero-headline">
-                    Compartilhe e gerencie sessões com <span class="lp-highlight">controle total</span>
-                </h1>
-
-                <p class="lp-hero-subtitle">
-                    O AuthPack permite criar, organizar e distribuir acessos de forma automatizada, segura e escalável
-                    para sua equipe e clientes.
-                </p>
-
-                <div class="lp-hero-ctas">
-                    <a href="/pages/dashboard/">
-                        <button class="lp-btn-primary">
-                            Começar agora
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M5 12h14" />
-                                <path d="m12 5 7 7-7 7" />
-                            </svg>
-                        </button>
-                    </a>
-                    <a href="#how-it-works">
-                        <button class="lp-btn-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <polygon points="10 8 16 12 10 16 10 8" />
-                            </svg>
-                            Ver como funciona
-                        </button>
-                    </a>
-                </div>
-
-                <div class="lp-trust-badges">
-                    <div class="lp-trust-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                        Sem cartão de crédito
+    <section class="hero">
+        <div class="hero-bg"><div class="hero-grid"></div></div>
+        <div class="container hero-inner">
+            <div class="hero-layout">
+                <div>
+                    <span class="eyebrow">
+                        <span class="dot"></span>
+                        <span class="pill">Novo</span>
+                        <span>Extensão para Chrome, Edge e Arc</span>
+                    </span>
+                    <h1 class="h1">
+                        Acesse qualquer&nbsp;sessão. <em>Sem login.</em> <span class="grad">Sem senha.</span>
+                    </h1>
+                    <p class="lede">
+                        O AuthPack organiza seus acessos em pacotes e os compartilha com quem você autoriza. Sua equipe
+                        entra nos serviços que precisa em um clique — sem expor credenciais, sem TOTP por SMS, sem cofre
+                        de senhas.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-grad btn-lg">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                            Instalar extensão grátis
+                        </a>
+                        <a href="#demo" class="btn btn-outline btn-lg">Ver demonstração
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
                     </div>
-                    <div class="lp-trust-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                        Setup em 2 min
+                    <div class="hero-meta">
+                        <span>Grátis para começar</span>
+                        <span class="sep"></span>
+                        <span>Funciona em qualquer site</span>
+                        <span class="sep"></span>
+                        <span>Sua senha nunca é revelada</span>
+                    </div>
+                </div>
+
+                <!-- Hero visual: stacked shared sessions -->
+                <div class="hero-visual">
+                    <div class="session-stack s-back">
+                        <div class="session-head">
+                            <div class="session-favicon" style="background:#5E6AD2">L</div>
+                            <div><div class="session-name">Linear</div><div class="session-domain">linear.app</div></div>
+                            <div class="session-status"><span class="d"></span> Ativa</div>
+                        </div>
+                        <div class="session-body">
+                            <div class="session-row"><span class="k">Compartilhado por</span><span class="v">Ana</span></div>
+                            <div class="session-row"><span class="k">Pacote</span><span class="v">Engenharia</span></div>
+                            <div class="session-row"><span class="k">Acesso</span><span class="v">ativo</span></div>
+                            <div class="session-foot">
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#4A6EF5,#7194E8)">A</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#7EE5B8,#5FD6A2)">L</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#9B7AE8,#7B57D4)">M</div>
+                                <span class="session-action" style="color:var(--ink-3)">3 membros</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-stack s-mid">
+                        <div class="session-head">
+                            <div class="session-favicon" style="background:#0ACF83">F</div>
+                            <div><div class="session-name">Figma</div><div class="session-domain">figma.com</div></div>
+                            <div class="session-status"><span class="d"></span> Ativa</div>
+                        </div>
+                        <div class="session-body">
+                            <div class="session-row"><span class="k">Compartilhado por</span><span class="v">Lucas</span></div>
+                            <div class="session-row"><span class="k">Pacote</span><span class="v">Design</span></div>
+                            <div class="session-row"><span class="k">Acesso</span><span class="v">ativo</span></div>
+                            <div class="session-foot">
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#4A6EF5,#7194E8)">A</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#7EE5B8,#5FD6A2)">L</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#9B7AE8,#7B57D4)">M</div>
+                                <span class="session-action" style="color:var(--ink-3)">3 membros</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-stack s-front">
+                        <div class="session-head">
+                            <div class="session-favicon" style="background:#635BFF">S</div>
+                            <div><div class="session-name">Stripe</div><div class="session-domain">dashboard.stripe.com</div></div>
+                            <div class="session-status"><span class="d"></span> Ativa</div>
+                        </div>
+                        <div class="session-body">
+                            <div class="session-row"><span class="k">Compartilhado por</span><span class="v">Você</span></div>
+                            <div class="session-row"><span class="k">Pacote</span><span class="v">Financeiro</span></div>
+                            <div class="session-row"><span class="k">Acesso</span><span class="v">ativo</span></div>
+                            <div class="session-foot">
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#4A6EF5,#7194E8)">A</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#7EE5B8,#5FD6A2)">L</div>
+                                <div class="avatar-mini" style="background:linear-gradient(135deg,#9B7AE8,#7B57D4)">M</div>
+                                <a class="session-action">Entrar agora →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="float-card fc-top">
+                        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg></div>
+                        <div>
+                            <div class="label">Para compartilhar</div>
+                            <div class="val">1 link · sem senha</div>
+                        </div>
+                    </div>
+                    <div class="float-card fc-bot">
+                        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+                        <div>
+                            <div class="label">Você no controle</div>
+                            <div class="val">revogue quando quiser</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column — Image -->
-            <div class="lp-hero-image">
-                <img src="/assets/images/landing-image-neutral.png" alt="Pessoa usando AuthPack">
+            <!-- logos strip -->
+            <div class="logos">
+                <div class="logos-label">Funciona em qualquer serviço autenticado por sessão</div>
+                <div class="logos-row">
+                    <span class="lg">Figma</span>
+                    <span class="lg">Notion</span>
+                    <span class="lg">Linear</span>
+                    <span class="lg">Stripe</span>
+                    <span class="lg">GitHub</span>
+                    <span class="lg">HubSpot</span>
+                    <span class="lg">Mixpanel</span>
+                    <span class="lg">Slack</span>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- ========== HOW IT WORKS ========== -->
+    <section class="section" id="como">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-eyebrow">— Como funciona</div>
+                <h2 class="section-title">Três passos. Nenhuma senha digitada.</h2>
+                <p class="section-sub">O AuthPack opera sobre o que já existe no navegador: cookies, tokens, sessões.
+                    Nada de integrações por API, nada de SSO para configurar.</p>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <span class="step-num mono">PASSO 01</span>
+                    <h3>Você já está logado.</h3>
+                    <p>Acesse o serviço normalmente. O AuthPack reconhece a sessão ativa no seu navegador — Figma,
+                        Stripe, Notion, qualquer um.</p>
+                    <div class="step-art">
+                        <div class="mini-browser">
+                            <div class="mini-browser-bar">
+                                <span class="dot" style="background:#FF5F57"></span>
+                                <span class="dot" style="background:#FEBC2E"></span>
+                                <span class="dot" style="background:#28C840"></span>
+                                <span class="url mono">stripe.com/login</span>
+                            </div>
+                            <div class="mini-browser-body">
+                                <div class="field"></div>
+                                <div class="field f2"></div>
+                                <div class="field btn-fake"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num mono">PASSO 02</span>
+                    <h3>Capture num pacote.</h3>
+                    <p>Um clique no ícone da extensão e a sessão entra no pacote que você escolher.
+                        Sua senha nunca sai da sua máquina.</p>
+                    <div class="step-art">
+                        <div class="capture-art">
+                            <div class="capture-card">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                                    <svg width="20" height="16" viewBox="0 0 64 50" fill="none"><rect x="34" y="3" width="26" height="42" rx="7" fill="#9B7AE8"/><rect x="24" y="3" width="26" height="42" rx="7" fill="#8FB7F0"/><rect x="14" y="3" width="26" height="42" rx="7" fill="#7EE5B8"/><rect x="2" y="3" width="28" height="42" rx="8" fill="#4A6EF5"/></svg>
+                                    <span style="font-weight:600">Empacotando sessão</span>
+                                </div>
+                                <div class="capture-row"><span class="check"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7.5"/></svg></span> Cookies seguros</div>
+                                <div class="capture-row"><span class="check"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7.5"/></svg></span> Tokens de acesso</div>
+                                <div class="capture-row"><span class="check"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7.5"/></svg></span> Pronto pra compartilhar</div>
+                                <div class="capture-progress"><div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num mono">PASSO 03</span>
+                    <h3>Gere um link e compartilhe.</h3>
+                    <p>Um link público ou link único para quem você quiser. A pessoa clica — e já entra. Sem
+                        precisar saber a senha.</p>
+                    <div class="step-art">
+                        <div class="share-art">
+                            <div class="share-card c1">
+                                <div class="sc-head"><span class="sc-fav" style="background:#0ACF83"></span><strong>Figma</strong></div>
+                                <span class="mono" style="color:var(--ink-3);font-size:9px">compartilhado</span>
+                            </div>
+                            <div class="share-card c2">
+                                <div class="sc-head"><span class="sc-fav" style="background:#635BFF"></span><strong>Stripe</strong></div>
+                                <span class="mono" style="color:var(--ink-3);font-size:9px">compartilhado</span>
+                            </div>
+                            <div class="share-card c3">
+                                <div class="sc-head"><span class="sc-fav" style="background:#0E1530"></span><strong>Notion</strong></div>
+                                <span class="mono" style="color:var(--ink-3);font-size:9px">compartilhado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== DEMO ========== -->
+    <section class="section" id="demo">
+        <div class="container">
+            <div class="demo-wrap">
+                <div class="demo-grid">
+                    <div class="demo-copy">
+                        <div class="section-eyebrow" style="color:var(--mint)">— Demonstração</div>
+                        <h3>Sua coleção.<br>Seus acessos.<br>Num clique.</h3>
+                        <p>Abra a extensão e seus pacotes estão ali. Conecte a uma sessão em um clique —
+                            e gerencie tudo, com revogação a qualquer momento.</p>
+                        <div class="demo-toggles">
+                            <button class="demo-toggle on" data-tab="collection">Minha coleção</button>
+                            <button class="demo-toggle" data-tab="access">Meus acessos</button>
+                        </div>
+                        <div style="margin-top:24px;font-size:13px;color:rgba(255,255,255,0.5)" class="mono">↳ clique numa sessão para conectar</div>
+                    </div>
+
+                    <div style="position:relative">
+                        <div class="ext-popup">
+                            <div class="ext-head">
+                                <div class="logo-mini"></div>
+                                <div style="flex:1">
+                                    <div class="title">AuthPack</div>
+                                    <div class="sub">Olá, você · plano Free</div>
+                                </div>
+                                <div style="width:28px;height:28px;border-radius:8px;background:var(--bg-warm);display:grid;place-items:center;color:var(--ink-3)">⚙</div>
+                            </div>
+                            <div class="ext-search">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                                Buscar pacote ou sessão…
+                            </div>
+                            <div class="ext-tabs">
+                                <div class="ext-tab on" data-tab="collection">Minha coleção <span class="count">3</span></div>
+                                <div class="ext-tab" data-tab="access">Meus acessos <span class="count">2</span></div>
+                            </div>
+
+                            <div class="ext-list">
+                                <div class="ext-panel on" data-tab="collection">
+                                    <div class="ext-item">
+                                        <div class="fav" style="background:#7856FF">#</div>
+                                        <div class="info"><div class="nm">Top IAs</div><div class="dm">Gemini · ChatGPT · Claude</div></div>
+                                        <span class="actor">6 sessões</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                    <div class="ext-item">
+                                        <div class="fav" style="background:#4A6EF5">#</div>
+                                        <div class="info"><div class="nm">Trabalho</div><div class="dm">Figma · Linear · Notion</div></div>
+                                        <span class="actor">8 sessões</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                    <div class="ext-item">
+                                        <div class="fav" style="background:#0ACF83">#</div>
+                                        <div class="info"><div class="nm">Assinaturas</div><div class="dm">Netflix · Spotify · Canva</div></div>
+                                        <span class="actor">5 sessões</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                </div>
+
+                                <div class="ext-panel" data-tab="access">
+                                    <div class="ext-item selected" data-service="Gemini">
+                                        <div class="fav" style="background:#4285F4">G</div>
+                                        <div class="info"><div class="nm">Gemini</div><div class="dm">por Ana · pacote Top IAs</div></div>
+                                        <span class="actor">conectar</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                    <div class="ext-item" data-service="ChatGPT">
+                                        <div class="fav" style="background:#0E1530">C</div>
+                                        <div class="info"><div class="nm">ChatGPT</div><div class="dm">por Ana · pacote Top IAs</div></div>
+                                        <span class="actor">conectar</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                    <div class="ext-item" data-service="Figma">
+                                        <div class="fav" style="background:#0ACF83">F</div>
+                                        <div class="info"><div class="nm">Figma</div><div class="dm">por Lucas · pacote Design</div></div>
+                                        <span class="actor">conectar</span>
+                                        <span class="arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ext-footer">
+                                <span class="mono">sincronizado ●</span>
+                                <button class="login-btn">Novo pacote
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                                </button>
+                            </div>
+
+                            <div class="connecting" style="display:none">
+                                <div class="connecting-card">
+                                    <div class="connecting-spinner"></div>
+                                    <div class="connecting-text">
+                                        <strong>Conectando em <span class="connecting-name"></span></strong>
+                                        restaurando sessão…
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FEATURES ========== -->
+    <section class="section" id="recursos" style="padding-top:40px">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-eyebrow">— Recursos</div>
+                <h2 class="section-title">Tudo o que <span style="background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent">cofre de senha</span> não resolve.</h2>
+            </div>
+
+            <div class="features">
+                <div class="feature f-1">
+                    <div class="feat-tag mono">// SESSÕES, NÃO SENHAS</div>
+                    <h4>Funciona onde cofres falham.</h4>
+                    <p>2FA, SSO, magic links, OAuth, captchas — o AuthPack compartilha a sessão já autenticada, não as
+                        credenciais. Nada pra digitar, nada pra preencher.</p>
+                    <div class="feat-visual">
+                        <div class="keychain">
+                            <div class="key" style="background:#0ACF83">F</div>
+                            <div class="key" style="background:#0E1530">N</div>
+                            <div class="key" style="background:#5E6AD2">L</div>
+                            <div class="key" style="background:#635BFF">S</div>
+                            <div class="key" style="background:#0E1530">G</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature f-2">
+                    <div class="feat-tag mono">// SUA SENHA FICA COM VOCÊ</div>
+                    <h4>A senha nunca é compartilhada.</h4>
+                    <p>Você compartilha o acesso já autenticado, não a credencial. A senha original permanece só com você.</p>
+                    <div class="feat-visual">
+                        <div class="lock-art">
+                            <div class="lock-row"><span class="l">senha</span><span class="v">nunca compartilhada</span></div>
+                            <div class="lock-row"><span class="l">acesso</span><span class="v">revogável</span></div>
+                            <div class="lock-row"><span class="l">link</span><span class="v">você encerra quando quiser</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature f-3">
+                    <div class="feat-tag mono">// INSTANTÂNEO</div>
+                    <h4>Entrar é um clique.</h4>
+                    <p>A pessoa abre o pacote e conecta na sessão. Sem redirect, sem digitar senha.</p>
+                    <div class="feat-visual" style="padding-top:28px">
+                        <div class="timer"><span class="big">1</span><span class="unit">clique</span></div>
+                    </div>
+                </div>
+
+                <div class="feature f-4">
+                    <div class="feat-tag mono">// ORGANIZAÇÃO</div>
+                    <h4>Tudo organizado em pacotes.</h4>
+                    <p>Agrupe sessões por equipe, projeto, cliente ou tema. Compartilhe o pacote inteiro de uma vez.</p>
+                    <div class="feat-visual">
+                        <div class="team-bar">
+                            <div class="avatar" style="background:linear-gradient(135deg,#4A6EF5,#3454E0)">AR</div>
+                            <div class="avatar" style="background:linear-gradient(135deg,#7EE5B8,#5FD6A2)">LM</div>
+                            <div class="avatar" style="background:linear-gradient(135deg,#9B7AE8,#7B57D4)">CS</div>
+                            <div class="avatar" style="background:linear-gradient(135deg,#8FB7F0,#5982D8)">DA</div>
+                            <div class="avatar more">+8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature f-5">
+                    <div class="feat-tag mono">// CONTROLE</div>
+                    <h4>Revogue quando quiser.</h4>
+                    <p>Membro saindo, projeto encerrado, acesso que não precisa mais — tudo encerra na hora.</p>
+                    <div class="feat-visual">
+                        <div class="revoke-art">
+                            <div><span class="cmt">Encerrar acesso</span> · Lucas</div>
+                            <div class="strike">→ Top IAs · acesso ativo</div>
+                            <div class="strike">→ Trabalho · acesso ativo</div>
+                            <div class="ok">✓ acesso encerrado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== TEAMS ========== -->
+    <section class="section teams" id="equipes">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-eyebrow">— Para equipes</div>
+                <h2 class="section-title">Pensado para quem trabalha com muitos acessos.</h2>
+            </div>
+
+            <div class="teams-grid">
+                <div>
+                    <div class="persona-card active">
+                        <h4>Times & agências <span class="badge">um pacote por cliente</span></h4>
+                        <p>Acesse dezenas de contas de cliente sem trocar de perfil ou senha. Cada projeto no seu
+                            próprio pacote, compartilhado com quem precisa.</p>
+                    </div>
+                    <div class="persona-card">
+                        <h4>Comunidades & grupos <span class="badge">acesso coletivo</span></h4>
+                        <p>Grupos, comunidades e famílias compartilham ferramentas e assinaturas num pacote —
+                            sem repassar senha para ninguém.</p>
+                    </div>
+                    <div class="persona-card">
+                        <h4>Criadores <span class="badge">vitrine</span></h4>
+                        <p>Monte pacotes de acesso e disponibilize na sua vitrine pública — por link ou assinatura.
+                            Monetize com o AuthPack Plus.</p>
+                    </div>
+                </div>
+
+                <div class="persona-vis">
+                    <div class="persona-vis-head">
+                        <div class="persona-vis-title">Clientes ativos</div>
+                        <div class="persona-vis-meta">últimos 30 dias</div>
+                    </div>
+                    <div class="persona-rows"></div>
+                    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);display:flex;gap:24px;font-size:13px">
+                        <div>
+                            <div style="color:var(--ink-3);font-size:11.5px;margin-bottom:4px">PARA COMPARTILHAR</div>
+                            <div style="font-weight:600;font-size:19px;letter-spacing:-0.01em">1 link</div>
+                        </div>
+                        <div>
+                            <div style="color:var(--ink-3);font-size:11.5px;margin-bottom:4px">SENHAS REVELADAS</div>
+                            <div style="font-weight:600;font-size:19px;letter-spacing:-0.01em">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FAQ ========== -->
+    <section class="section" id="docs" style="padding-top:80px">
+        <div class="container">
+            <div class="section-header" style="text-align:center;margin:0 auto 56px">
+                <div class="section-eyebrow">— Perguntas</div>
+                <h2 class="section-title">Dúvidas frequentes.</h2>
+            </div>
+            <div class="faq">
+                <div class="faq-item open">
+                    <div class="faq-q">Vocês armazenam minhas senhas?<span class="plus">+</span></div>
+                    <div class="faq-a">Não. O AuthPack trabalha com a sessão já autenticada, não com a sua senha. Você
+                        compartilha o acesso sem nunca expor a credencial — a senha original continua só com você.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Funciona com 2FA, SSO e magic links?<span class="plus">+</span></div>
+                    <div class="faq-a">Sim. Como compartilhamos a sessão (e não a credencial), qualquer método de
+                        autenticação que o serviço suporte continua funcionando normalmente. Você passa pelo 2FA uma
+                        vez, e o time todo herda o acesso.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">E se eu quiser tirar o acesso de alguém?<span class="plus">+</span></div>
+                    <div class="faq-a">Você controla cada acesso. Links únicos expiram automaticamente, e qualquer acesso
+                        pode ser revogado a qualquer momento — encerrando na hora a conexão de quem o recebeu.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Os serviços compartilhados não vão me banir?<span class="plus">+</span></div>
+                    <div class="faq-a">O AuthPack respeita os Termos de Uso de cada serviço. É indicado para acesso de
+                        equipe interna em planos que permitem múltiplos usuários, e para uso pessoal entre
+                        dispositivos.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Funciona em quais navegadores?<span class="plus">+</span></div>
+                    <div class="faq-a">Chrome, Edge, Brave e Arc — qualquer navegador baseado em Chromium. A extensão
+                        AuthPack Studio está disponível na Chrome Web Store.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Como vocês cobram?<span class="plus">+</span></div>
+                    <div class="faq-a">O AuthPack é gratuito para começar. O plano AuthPack Plus custa R$ 16,90/mês e libera
+                        criação ilimitada de pacotes, publicação na vitrine pública e venda de pacotes.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== CTA BANNER ========== -->
+    <div class="cta-banner">
+        <div class="inner">
+            <h2>Organize e compartilhe todos os seus acessos em um só lugar.</h2>
+            <p>Instale a extensão e compartilhe seu primeiro pacote em segundos. Grátis para começar.</p>
+            <div class="cta-actions">
+                <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                    Adicionar ao Chrome
+                </a>
+                <a href="/pages/login/" class="btn btn-lg" style="color:#fff;border:1px solid rgba(255,255,255,0.25)">Entrar
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== FOOTER ========== -->
-    <div id="ap-footer"></div>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <svg width="26" height="20" viewBox="0 0 64 50" fill="none"><rect x="34" y="3" width="26" height="42" rx="7" fill="#9B7AE8"/><rect x="24" y="3" width="26" height="42" rx="7" fill="#8FB7F0"/><rect x="14" y="3" width="26" height="42" rx="7" fill="#7EE5B8"/><rect x="2" y="3" width="28" height="42" rx="8" fill="#4A6EF5"/></svg>
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                    <div style="display:flex;gap:10px">
+                        <a class="btn btn-outline" style="padding:8px 12px">𝕏</a>
+                        <a class="btn btn-outline" style="padding:8px 12px">in</a>
+                        <a class="btn btn-outline" style="padding:8px 12px">GH</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="#como">Como funciona</a></li>
+                        <li><a href="#recursos">Recursos</a></li>
+                        <li><a href="#equipes">Para equipes</a></li>
+                        <li><a href="#docs">FAQ</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
 
     <!-- Scripts -->
-    <script src="/assets/scripts/landing.js"></script>
-    <script src="/assets/scripts/footer.js"></script>
+    <script src="/assets/scripts/home.js" defer></script>
 </body>
+
 </html>
