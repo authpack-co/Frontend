@@ -82,7 +82,7 @@
     // ── Teams: persona switching ────────────────────────────────────────────────
     var personas = [
         {
-            title: 'Clientes ativos',
+            title: 'Pacotes por cliente',
             rows: [
                 { name: 'Nova Studio', count: 14, pct: 90 },
                 { name: 'Atlas Creative', count: 9, pct: 70 },
@@ -91,21 +91,21 @@
             ]
         },
         {
-            title: 'Sessões por time',
+            title: 'Grupos & comunidades',
             rows: [
-                { name: 'Engineering', count: 21, pct: 85 },
-                { name: 'Design', count: 14, pct: 65 },
-                { name: 'Growth', count: 11, pct: 50 },
-                { name: 'Customer Success', count: 7, pct: 35 }
+                { name: 'Comunidade Dev', count: 18, pct: 85 },
+                { name: 'Turma de Design', count: 11, pct: 65 },
+                { name: 'Clube de IA', count: 9, pct: 50 },
+                { name: 'Família', count: 6, pct: 35 }
             ]
         },
         {
-            title: 'Convites recebidos',
+            title: 'Pacotes na vitrine',
             rows: [
-                { name: 'Cliente · Stripe', count: 1, pct: 30 },
-                { name: 'Cliente · Notion', count: 1, pct: 30 },
-                { name: 'Cliente · Linear', count: 1, pct: 30 },
-                { name: 'Cliente · Figma', count: 1, pct: 30 }
+                { name: 'Top IAs', count: 12, pct: 90 },
+                { name: 'Pack Design', count: 9, pct: 68 },
+                { name: 'Streaming', count: 6, pct: 48 },
+                { name: 'Produtividade', count: 5, pct: 32 }
             ]
         }
     ];

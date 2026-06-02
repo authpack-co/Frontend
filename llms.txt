@@ -1,0 +1,44 @@
+# AuthPack
+
+> O AuthPack é uma plataforma de compartilhamento de acessos que permite organizar, distribuir e gerenciar o acesso a produtos, sistemas, ferramentas e serviços digitais através de pacotes inteligentes. Em vez de compartilhar instruções, credenciais ou fazer configurações manuais para cada usuário, o AuthPack centraliza o gerenciamento e simplifica a distribuição para pessoas autorizadas.
+
+A plataforma é neutra e flexível, usada em cenários que vão de grupos de amigos a equipes corporativas, comunidades privadas, organizações e empresas. O objetivo de longo prazo é ser a principal infraestrutura para compartilhamento, gerenciamento e distribuição de acessos digitais.
+
+## Conceitos principais
+
+- **Pacote (Package)**: unidade central do AuthPack. Um pacote contém um ou vários acessos digitais agrupados por um administrador e disponibilizados a usuários autorizados, com mecanismos próprios de distribuição, controle e gerenciamento.
+- **Stack de Acesso**: coleção organizada de acessos reunidos em um único pacote. Pode ser concedida gratuitamente ou obtida via compra, assinatura ou licenciamento — base da "economia de stacks" do AuthPack.
+- **Compartilhamento de sessão**: a extensão permite acessar recursos de forma autenticada sem expor credenciais a quem recebe o acesso.
+- **Controle e revogação**: acessos podem ser concedidos, monitorados e revogados pelos administradores.
+
+## Arquitetura (três pilares)
+
+- **Plataforma Web**: painel central para administradores e usuários gerenciarem pacotes, acessos, permissões e conta.
+- **Backend de Gerenciamento**: processa operações, autenticação, validações, regras de negócio e distribuição dos acessos.
+- **Extensão AuthPack** (Chrome): interface pela qual os usuários consomem os acessos dos seus pacotes no ambiente onde os recursos são utilizados.
+
+## Casos de uso
+
+- Compartilhamento de acessos entre membros de uma empresa.
+- Distribuição de ferramentas para equipes de trabalho.
+- Gestão de recursos digitais em comunidades privadas.
+- Compartilhamento entre amigos ou grupos organizados.
+- Distribuição de acessos para alunos, colaboradores ou clientes.
+- Organização de ambientes digitais que exigem múltiplos acessos.
+
+## Páginas
+
+- [Página inicial](https://authpack.co/): visão geral da plataforma AuthPack.
+- [Como funciona](https://authpack.co/#como): captura, organização e distribuição de acessos.
+- [Para equipes](https://authpack.co/#equipes): uso do AuthPack em times e organizações.
+- [Extensão na Chrome Web Store](https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm): instalação oficial.
+
+## Blog
+
+- [Blog AuthPack](https://authpack.co/blog/): guias sobre compartilhamento e distribuição de acessos, pacotes, stacks e segurança.
+- [O que é o AuthPack?](https://authpack.co/blog/o-que-e-o-authpack/): visão geral da plataforma, conceitos de pacotes e stacks, arquitetura e casos de uso.
+- [Como compartilhar acesso sem compartilhar a senha](https://authpack.co/blog/como-compartilhar-acesso-sem-senha/): guia comparando cofres de senha, acesso multiusuário e compartilhamento de sessão.
+
+## Contato
+
+- E-mail: team@authpack.co

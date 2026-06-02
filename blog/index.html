@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Blog AuthPack — Compartilhamento de acesso e sessões em equipe</title>
+    <meta name="description"
+        content="Guias práticos sobre compartilhar acesso sem expor senhas, gerenciar sessões autenticadas em equipe e trabalhar com segurança no navegador. O blog oficial do AuthPack.">
+    <meta name="keywords"
+        content="AuthPack, compartilhar acesso, compartilhar senha em equipe, compartilhamento de sessões, gerenciamento de acessos, segurança no navegador, extensão Chrome de acessos">
+    <link rel="canonical" href="https://authpack.co/blog/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Blog AuthPack — Compartilhamento de acesso e sessões em equipe">
+    <meta property="og:description"
+        content="Guias práticos sobre compartilhar acesso sem expor senhas e gerenciar sessões autenticadas em equipe.">
+    <meta property="og:url" content="https://authpack.co/blog/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Blog AuthPack — Compartilhamento de acesso e sessões em equipe">
+    <meta name="twitter:description"
+        content="Guias práticos sobre compartilhar acesso sem expor senhas e gerenciar sessões autenticadas em equipe.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Blog + Organization + Breadcrumb ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes e stacks.",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://authpack.co/#website",
+          "url": "https://authpack.co/",
+          "name": "AuthPack",
+          "publisher": { "@id": "https://authpack.co/#organization" }
+        },
+        {
+          "@type": "Blog",
+          "@id": "https://authpack.co/blog/#blog",
+          "url": "https://authpack.co/blog/",
+          "name": "Blog AuthPack",
+          "description": "Guias sobre compartilhamento de acesso, sessões autenticadas e segurança no navegador para equipes.",
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "inLanguage": "pt-BR"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <svg width="28" height="22" viewBox="0 0 64 50" fill="none" style="display:block">
+                    <defs>
+                        <linearGradient id="bm-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B79BF0"/><stop offset="1" stop-color="#7B57D4"/></linearGradient>
+                        <linearGradient id="bm-sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AAC6F6"/><stop offset="1" stop-color="#7194E8"/></linearGradient>
+                        <linearGradient id="bm-mint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5EECC"/><stop offset="1" stop-color="#5FD6A2"/></linearGradient>
+                        <linearGradient id="bm-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E8DF8"/><stop offset="1" stop-color="#3454E0"/></linearGradient>
+                    </defs>
+                    <rect x="34" y="3" width="26" height="42" rx="7" fill="url(#bm-purple)"/>
+                    <rect x="24" y="3" width="26" height="42" rx="7" fill="url(#bm-sky)"/>
+                    <rect x="14" y="3" width="26" height="42" rx="7" fill="url(#bm-mint)"/>
+                    <rect x="2"  y="3" width="28" height="42" rx="8" fill="url(#bm-blue)"/>
+                </svg>
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/" aria-current="page">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== BLOG LISTING ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <header class="blog-hero">
+                <span class="eyebrow"><span class="dot"></span><span class="pill">Blog</span></span>
+                <h1>Acesso compartilhado, <span class="grad">sem senhas expostas</span></h1>
+                <p>Guias práticos sobre compartilhamento de sessões autenticadas, gestão de acessos em equipe e segurança no navegador.</p>
+            </header>
+
+            <div class="blog-tools">
+                <div class="blog-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="search" id="blog-search-input" placeholder="Buscar artigos…" aria-label="Buscar artigos">
+                </div>
+                <div class="blog-filters" id="blog-filters" role="group" aria-label="Filtrar por categoria">
+                    <button class="filter-chip active" data-filter="all">Todos</button>
+                    <button class="filter-chip" data-filter="produto">Produto</button>
+                    <button class="filter-chip" data-filter="guias">Guias</button>
+                    <button class="filter-chip" data-filter="seguranca">Segurança</button>
+                    <button class="filter-chip" data-filter="equipes">Equipes</button>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 POSTS — cada artigo é um <article class="post-card"> abaixo.
+                 Para adicionar um post novo: copie um bloco, ajuste os
+                 data-title / data-tags / data-category (usados pela busca)
+                 e o conteúdo, e adicione a URL no /sitemap.xml.
+                 ============================================================ -->
+            <section class="post-grid" id="post-grid">
+
+                <article class="post-card"
+                    data-title="O que é o AuthPack plataforma de compartilhamento de acessos"
+                    data-tags="authpack plataforma pacotes stacks acesso distribuição gerenciamento o que é"
+                    data-category="produto guias">
+                    <div class="post-meta">
+                        <span class="post-tag">Produto</span>
+                        <time datetime="2026-06-02">2 jun 2026</time>
+                        <span>·</span>
+                        <span>7 min de leitura</span>
+                    </div>
+                    <h2><a href="/blog/o-que-e-o-authpack/">O que é o AuthPack?</a></h2>
+                    <p>A plataforma que organiza, distribui e gerencia acessos digitais através de pacotes e stacks. Entenda os conceitos, a arquitetura e os casos de uso.</p>
+                    <a class="post-readmore" href="/blog/o-que-e-o-authpack/">
+                        Ler artigo
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </article>
+
+                <article class="post-card"
+                    data-title="Como compartilhar acesso sem compartilhar a senha"
+                    data-tags="compartilhar acesso compartilhar senha equipe sessão segurança credenciais"
+                    data-category="guias seguranca">
+                    <div class="post-meta">
+                        <span class="post-tag">Guia</span>
+                        <time datetime="2026-06-02">2 jun 2026</time>
+                        <span>·</span>
+                        <span>8 min de leitura</span>
+                    </div>
+                    <h2><a href="/blog/como-compartilhar-acesso-sem-senha/">Como compartilhar acesso sem compartilhar a senha</a></h2>
+                    <p>Dar acesso a uma conta em equipe sem revelar a senha é possível — e mais seguro. Veja como o compartilhamento de sessões resolve o problema na raiz.</p>
+                    <a class="post-readmore" href="/blog/como-compartilhar-acesso-sem-senha/">
+                        Ler artigo
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </article>
+
+            </section>
+
+            <div class="blog-empty" id="blog-empty" hidden>
+                <p>Nenhum artigo encontrado para sua busca.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <svg width="26" height="20" viewBox="0 0 64 50" fill="none"><rect x="34" y="3" width="26" height="42" rx="7" fill="#9B7AE8"/><rect x="24" y="3" width="26" height="42" rx="7" fill="#8FB7F0"/><rect x="14" y="3" width="26" height="42" rx="7" fill="#7EE5B8"/><rect x="2" y="3" width="28" height="42" rx="8" fill="#4A6EF5"/></svg>
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/blog/blog.js" defer></script>
+</body>
+
+</html>
