@@ -479,6 +479,9 @@ function buildUniqueKeyItem(k) {
     info.appendChild(urlEl);
     info.appendChild(expiryEl);
 
+    const actions = document.createElement('div');
+    actions.className = 'unique-key-actions';
+
     const copyBtn = document.createElement('button');
     copyBtn.className = 'unique-key-copy';
     copyBtn.textContent = 'Copiar';
@@ -493,8 +496,51 @@ function buildUniqueKeyItem(k) {
         }).catch(() => notify('error', 'Não foi possível copiar o link.'));
     });
 
+    const revokeBtn = document.createElement('button');
+    revokeBtn.className = 'unique-key-revoke';
+    revokeBtn.title = 'Revogar link';
+    revokeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+    `;
+    revokeBtn.addEventListener('click', async () => {
+        const packageId = sharePackageModal.dataset.itemId;
+        revokeBtn.disabled = true;
+        copyBtn.disabled = true;
+
+        const res = await fetchManager.revokeUniqueKey(packageId, k.id);
+
+        if (!res.ok) {
+            revokeBtn.disabled = false;
+            copyBtn.disabled = false;
+            notify('error', res.result && res.result.errorMessage ? res.result.errorMessage : 'Não foi possível revogar o link.');
+            return;
+        }
+
+        // Remove item da lista com fade-out; mostra empty state se ficar vazia.
+        li.classList.add('removing');
+        setTimeout(() => {
+            const list = li.parentElement;
+            li.remove();
+            if (list && !list.querySelector('.unique-key-item')) {
+                const empty = document.createElement('li');
+                empty.className = 'unique-keys-empty';
+                empty.textContent = 'Nenhum link único ativo no momento.';
+                list.appendChild(empty);
+            }
+        }, 200);
+
+        notify('success', 'Link único revogado.');
+    });
+
+    actions.appendChild(copyBtn);
+    actions.appendChild(revokeBtn);
+
     li.appendChild(info);
-    li.appendChild(copyBtn);
+    li.appendChild(actions);
     return li;
 }
 
@@ -1532,3 +1578,237 @@ backBtns.forEach(btn => btn.addEventListener('click', (e) => {
         setElementState(screenSection, "none");
     }, { once: true });
 }));
+
+// ============================================================================
+// Plus — Free Trial activation (launch program, single-use per user)
+// Embedded in the Plus subscribe modal, no separate page.
+// ============================================================================
+(function plusTrialModule() {
+    const plusModal      = document.getElementById('plusSubscribeModal');
+    if (!plusModal) return;
+
+    const plusContent    = plusModal.querySelector('.plus-modal-content');
+    const successPane    = document.getElementById('plus-modal-success');
+    const trialWrap      = document.getElementById('plus-trial-wrap');
+    const trialBtn       = document.getElementById('plus-trial-btn');
+    const trialError     = document.getElementById('plus-trial-error');
+    const successCta     = document.getElementById('plus-success-cta');
+    const expiryDateEl   = document.getElementById('plus-success-expiry-date');
+    const confettiCanvas = document.getElementById('plusConfetti');
+
+    if (!plusContent || !successPane || !trialBtn) return;
+
+    const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+        'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+    function formatExpiry(input) {
+        const d = input ? new Date(input) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        if (isNaN(d.getTime())) return '—';
+        return `${d.getDate()} de ${MONTHS[d.getMonth()]} de ${d.getFullYear()}`;
+    }
+
+    // ─── Eligibility: hide trial CTA if user already redeemed or is already plus ──
+    function applyEligibility() {
+        const user = (typeof currentUserInfo !== 'undefined' && currentUserInfo) || null;
+        if (!user) return;
+        const alreadyPlus     = user.plan === 'plus';
+        const alreadyRedeemed = !!user.plus_trial_redeemed_at;
+        if (trialWrap) trialWrap.style.display = (alreadyPlus || alreadyRedeemed) ? 'none' : '';
+    }
+
+    // ─── Reset modal back to the offer (called on every open) ───────────────────
+    function resetToOffer() {
+        successPane.hidden = true;
+        plusContent.style.display = '';
+        if (trialError) { trialError.hidden = true; trialError.textContent = ''; }
+        trialBtn.classList.remove('is-loading');
+        trialBtn.disabled = false;
+        applyEligibility();
+    }
+
+    // ─── Swap to success state ──────────────────────────────────────────────────
+    function showSuccess(expiresAt) {
+        expiryDateEl.textContent = formatExpiry(expiresAt);
+        plusContent.style.display = 'none';
+        successPane.hidden = false;
+        // Confetti burst on the next paint so the layout has settled
+        requestAnimationFrame(() => fireConfetti());
+    }
+
+    // ─── Hook into utils.showModal so the modal resets each time it opens ───────
+    if (typeof utils !== 'undefined' && typeof utils.showModal === 'function') {
+        const _origShowModal = utils.showModal.bind(utils);
+        utils.showModal = function (modalName, itemId) {
+            if (modalName === 'plusSubscribe') resetToOffer();
+            return _origShowModal(modalName, itemId);
+        };
+    }
+
+    // ─── Activation handler ─────────────────────────────────────────────────────
+    async function activateTrial() {
+        if (trialBtn.disabled) return;
+        if (trialError) { trialError.hidden = true; trialError.textContent = ''; }
+        trialBtn.classList.add('is-loading');
+        trialBtn.disabled = true;
+
+        try {
+            const response = await fetchManager.redeemPlusTrial();
+            // Brief beat so the transition feels deliberate
+            await new Promise(r => setTimeout(r, 450));
+
+            if (response.ok && response.result?.data) {
+                // Update local cache so the rest of the app reflects Plus immediately
+                if (typeof currentUserInfo !== 'undefined' && currentUserInfo) {
+                    currentUserInfo.plan = 'plus';
+                    currentUserInfo.planExpiresAt = response.result.data.plan_expires_at;
+                    currentUserInfo.plus_trial_redeemed_at = new Date().toISOString();
+                }
+                showSuccess(response.result.data.plan_expires_at);
+                return;
+            }
+
+            // 409 → already plus or already redeemed → still show success state
+            if (response.status === 409) {
+                const exp = (typeof currentUserInfo !== 'undefined' && currentUserInfo?.planExpiresAt) || null;
+                showSuccess(exp);
+                return;
+            }
+
+            const msg = response.result?.errorMessage || 'Não foi possível ativar agora. Tente novamente em instantes.';
+            if (trialError) { trialError.textContent = msg; trialError.hidden = false; }
+            trialBtn.classList.remove('is-loading');
+            trialBtn.disabled = false;
+        } catch (err) {
+            console.error('[PlusTrial] activation error:', err);
+            if (trialError) {
+                trialError.textContent = 'Erro inesperado. Tente novamente em instantes.';
+                trialError.hidden = false;
+            }
+            trialBtn.classList.remove('is-loading');
+            trialBtn.disabled = false;
+        }
+    }
+
+    trialBtn.addEventListener('click', activateTrial);
+
+    if (successCta) {
+        successCta.addEventListener('click', () => {
+            utils.closeModals?.();
+            // Reload so plan-gated UI (sidebar card, hidden buttons, etc) re-renders
+            window.location.reload();
+        });
+    }
+
+    // ─── Confetti (scoped to the modal canvas) ──────────────────────────────────
+    let _ctx = null;
+    let _dpr = 1;
+    let _particles = [];
+    let _raf = null;
+
+    function sizeCanvas() {
+        if (!confettiCanvas) return;
+        _dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = confettiCanvas.getBoundingClientRect();
+        confettiCanvas.width  = rect.width  * _dpr;
+        confettiCanvas.height = rect.height * _dpr;
+        _ctx = confettiCanvas.getContext('2d');
+        _ctx.setTransform(_dpr, 0, 0, _dpr, 0, 0);
+    }
+
+    const COLORS = ['#60a5fa', '#3b82f6', '#93c5fd', '#fbbf24', '#fcd34d', '#16a34a', '#ffffff'];
+    const SHAPES = ['rect', 'circle', 'strip'];
+
+    function spawnBurst() {
+        if (!confettiCanvas) return;
+        sizeCanvas();
+        const W = confettiCanvas.clientWidth;
+        const H = confettiCanvas.clientHeight;
+        const cannons = [
+            { x: 0,     y: H * 0.92, angle: -Math.PI / 3,        spread: Math.PI / 5,   count: 50, power: 13 },
+            { x: W,     y: H * 0.92, angle: -2 * Math.PI / 3,    spread: Math.PI / 5,   count: 50, power: 13 },
+            { x: W / 2, y: H * 0.55, angle: -Math.PI / 2,        spread: Math.PI / 1.4, count: 80, power: 7 },
+        ];
+
+        cannons.forEach(c => {
+            for (let k = 0; k < c.count; k++) {
+                const ang = c.angle + (Math.random() - 0.5) * c.spread;
+                const v = c.power * (0.55 + Math.random() * 0.7);
+                _particles.push({
+                    x: c.x, y: c.y,
+                    vx: Math.cos(ang) * v,
+                    vy: Math.sin(ang) * v,
+                    g: 0.22 + Math.random() * 0.08,
+                    drag: 0.992,
+                    rot: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 0.32,
+                    size: 5 + Math.random() * 6,
+                    color: COLORS[(Math.random() * COLORS.length) | 0],
+                    shape: SHAPES[(Math.random() * SHAPES.length) | 0],
+                    life: 0,
+                    maxLife: 160 + Math.random() * 80,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.05 + Math.random() * 0.05,
+                });
+            }
+        });
+
+        if (!_raf) _raf = requestAnimationFrame(loop);
+    }
+
+    function loop() {
+        if (!_ctx || !confettiCanvas) { _raf = null; return; }
+        const W = confettiCanvas.clientWidth;
+        const H = confettiCanvas.clientHeight;
+        _ctx.clearRect(0, 0, W, H);
+
+        for (let i = _particles.length - 1; i >= 0; i--) {
+            const p = _particles[i];
+            p.life++;
+            p.vy += p.g;
+            p.vx *= p.drag;
+            p.vy *= p.drag;
+            p.wobble += p.wobbleSpeed;
+            p.x += p.vx + Math.sin(p.wobble) * 0.6;
+            p.y += p.vy;
+            p.rot += p.vRot;
+
+            const fadeStart = p.maxLife * 0.7;
+            const alpha = p.life > fadeStart
+                ? Math.max(0, 1 - (p.life - fadeStart) / (p.maxLife - fadeStart))
+                : 1;
+
+            _ctx.save();
+            _ctx.globalAlpha = alpha;
+            _ctx.translate(p.x, p.y);
+            _ctx.rotate(p.rot);
+            _ctx.fillStyle = p.color;
+            if (p.shape === 'circle') {
+                _ctx.beginPath();
+                _ctx.arc(0, 0, p.size * 0.45, 0, Math.PI * 2);
+                _ctx.fill();
+            } else if (p.shape === 'strip') {
+                _ctx.fillRect(-p.size * 0.7, -p.size * 0.15, p.size * 1.4, p.size * 0.3);
+            } else {
+                _ctx.fillRect(-p.size * 0.5, -p.size * 0.5, p.size, p.size * 0.6);
+            }
+            _ctx.restore();
+
+            if (p.life >= p.maxLife || p.y > H + 60) _particles.splice(i, 1);
+        }
+
+        if (_particles.length > 0) {
+            _raf = requestAnimationFrame(loop);
+        } else {
+            _raf = null;
+            _ctx.clearRect(0, 0, W, H);
+        }
+    }
+
+    function fireConfetti() {
+        spawnBurst();
+        setTimeout(spawnBurst, 350);
+        setTimeout(spawnBurst, 800);
+    }
+
+    window.addEventListener('resize', () => { if (!successPane.hidden) sizeCanvas(); });
+})();

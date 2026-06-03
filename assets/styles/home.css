@@ -449,14 +449,9 @@ body.user-logged-in .nav-user { display: flex; }
   border-bottom: 1px solid var(--line);
 }
 .ext-head .logo-mini {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: var(--grad-brand);
-  display: grid; place-items: center;
-  position: relative;
-}
-.ext-head .logo-mini::after {
-  content: ''; position: absolute; inset: 4px;
-  background: rgba(255,255,255,0.25); border-radius: 5px;
+  width: 28px; height: 28px;
+  object-fit: contain;
+  display: block;
 }
 .ext-head .title { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
 .ext-head .sub { font-size: 11.5px; color: var(--ink-3); }
