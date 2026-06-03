@@ -479,6 +479,9 @@ function buildUniqueKeyItem(k) {
     info.appendChild(urlEl);
     info.appendChild(expiryEl);
 
+    const actions = document.createElement('div');
+    actions.className = 'unique-key-actions';
+
     const copyBtn = document.createElement('button');
     copyBtn.className = 'unique-key-copy';
     copyBtn.textContent = 'Copiar';
@@ -493,8 +496,51 @@ function buildUniqueKeyItem(k) {
         }).catch(() => notify('error', 'Não foi possível copiar o link.'));
     });
 
+    const revokeBtn = document.createElement('button');
+    revokeBtn.className = 'unique-key-revoke';
+    revokeBtn.title = 'Revogar link';
+    revokeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+    `;
+    revokeBtn.addEventListener('click', async () => {
+        const packageId = sharePackageModal.dataset.itemId;
+        revokeBtn.disabled = true;
+        copyBtn.disabled = true;
+
+        const res = await fetchManager.revokeUniqueKey(packageId, k.id);
+
+        if (!res.ok) {
+            revokeBtn.disabled = false;
+            copyBtn.disabled = false;
+            notify('error', res.result && res.result.errorMessage ? res.result.errorMessage : 'Não foi possível revogar o link.');
+            return;
+        }
+
+        // Remove item da lista com fade-out; mostra empty state se ficar vazia.
+        li.classList.add('removing');
+        setTimeout(() => {
+            const list = li.parentElement;
+            li.remove();
+            if (list && !list.querySelector('.unique-key-item')) {
+                const empty = document.createElement('li');
+                empty.className = 'unique-keys-empty';
+                empty.textContent = 'Nenhum link único ativo no momento.';
+                list.appendChild(empty);
+            }
+        }, 200);
+
+        notify('success', 'Link único revogado.');
+    });
+
+    actions.appendChild(copyBtn);
+    actions.appendChild(revokeBtn);
+
     li.appendChild(info);
-    li.appendChild(copyBtn);
+    li.appendChild(actions);
     return li;
 }
 

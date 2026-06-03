@@ -144,6 +144,13 @@ const fetchManager = {
         return response;
     },
 
+    async revokeUniqueKey(packageId, keyId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys/${keyId}`, {
+            method: "DELETE"
+        });
+        return response;
+    },
+
     // Sessions
 
     async editSession(sessionDetails) {
