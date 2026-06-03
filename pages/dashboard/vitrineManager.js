@@ -5,6 +5,10 @@
 
 let vitrineProducts = [];
 let vitrineLoaded = false;
+// True when the seller is a registered recipient who no longer has Plus.
+// Used to keep the seller status badge as "Inativa" even after the dashboard
+// data loads (which would otherwise flip it back to "Ativo").
+let vitrineIsInactive = false;
 let createProductState = {
     step: 1,
     packageId: null,
@@ -100,29 +104,37 @@ async function loadVitrineTab() {
     // Always hide banners first
     hideOnboardingBanner();
     hideKycBanner();
-    // Ensure "Criar produto" is visible by default (it may have been hidden in KYC state)
+    hideInactiveBanner();
+    // Reset any leftover "inactive" styling and ensure "Criar produto" is
+    // visible by default (it may have been hidden in KYC/inactive state)
+    _setVitrineInactive(false);
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
-    // Non-Plus users are never registered sellers → show the seller gate.
-    // The gate CTA decides the next step (subscribe Plus vs. open onboarding).
-    if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        _setVitrineDashboardVisible(false);
-        setElementState(container, 'vitrine-gate');
-        _populateGatePreview();
-        vitrineLoaded = true;
-        return;
-    }
+    const isPlus = !!currentUserInfo && currentUserInfo.plan === 'plus';
 
-    // User is Plus — check gateway recipient status
     try {
+        // Account status is plan-agnostic, so we can also detect former sellers
+        // (registered recipients who have since lost Plus).
         const accountRes = await fetchManager.getSellerAccountStatus();
         console.log('[Vitrine] Account status:', accountRes);
 
-        // State 1: No connected account at all → same seller gate
-        if (!accountRes.ok || !accountRes.result?.connected) {
+        const isSeller = accountRes.ok && accountRes.result?.connected;
+
+        // Not a registered seller → seller gate. The gate CTA decides the next
+        // step (subscribe Plus vs. open onboarding).
+        if (!isSeller) {
             _setVitrineDashboardVisible(false);
             setElementState(container, 'vitrine-gate');
             _populateGatePreview();
+            vitrineLoaded = true;
+            return;
+        }
+
+        // Registered seller without active Plus → inactive vitrine. They keep
+        // read access and can withdraw their remaining balance, but cannot sell
+        // (no new products; buyers are blocked at checkout).
+        if (!isPlus) {
+            await loadInactiveVitrine();
             vitrineLoaded = true;
             return;
         }
@@ -178,6 +190,57 @@ async function loadVitrineTab() {
         vitrineLoaded = true;
     }
 }
+
+// ── Inactive vitrine: registered seller who no longer has Plus ──
+// Shows the full dashboard (read-only) so the seller can still see their data
+// and withdraw the remaining balance, but dims the products section and blocks
+// any selling action. The withdrawal flow (hero + Sacar) stays fully live.
+async function loadInactiveVitrine() {
+    const container = document.getElementById('vitrine-container');
+
+    _setVitrineDashboardVisible(true);
+    setElementState(container, 'vitrine-content');
+
+    // Mark the vitrine as inactive: dim products + block selling actions.
+    _setVitrineInactive(true);
+    showInactiveBanner();
+    updateGatewayStatusBar(false);
+    document.getElementById('btn-create-product')?.classList.add('hidden');
+
+    const statusEl = document.getElementById('fin-seller-status');
+    if (statusEl) {
+        statusEl.className = 'fin-seller-mini-status inactive';
+        statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Inativa';
+    }
+
+    // Load products (rendered read-only) — withdrawal stays available via the hero.
+    const productsRes = await fetchManager.getSellerProducts();
+    vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+    renderVitrineProducts(vitrineProducts);
+
+    // Load dashboard data (balance + KPIs). Withdraw button remains functional.
+    loadSellerDashboardData();
+}
+
+// Toggle the "inactive" visual treatment on the products section.
+function _setVitrineInactive(inactive) {
+    vitrineIsInactive = inactive;
+    const productsSection = document.querySelector('.vt-products-section');
+    if (productsSection) productsSection.classList.toggle('vt-inactive', inactive);
+}
+
+function showInactiveBanner() {
+    document.getElementById('vt-inactive-banner')?.classList.remove('hidden');
+}
+
+function hideInactiveBanner() {
+    document.getElementById('vt-inactive-banner')?.classList.add('hidden');
+}
+
+// "Assinar Plus" CTA inside the inactive banner → open the Plus modal.
+document.getElementById('btn-reactivate-plus')?.addEventListener('click', () => {
+    utils.showModal('plusSubscribe');
+});
 
 // ============================================================================
 // GATE OVERLAY HELPERS
@@ -479,8 +542,10 @@ async function loadSellerDashboardData() {
 
             vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
+            // Keep the "Inativa" badge for former-Plus sellers — the recipient
+            // is still active on the gateway, but the vitrine is not selling.
             const statusEl = document.getElementById('fin-seller-status');
-            if (statusEl) {
+            if (statusEl && !vitrineIsInactive) {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
