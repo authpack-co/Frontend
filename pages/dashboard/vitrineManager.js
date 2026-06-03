@@ -103,12 +103,12 @@ async function loadVitrineTab() {
     // Ensure "Criar produto" is visible by default (it may have been hidden in KYC state)
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
-    // Check if user is Plus
+    // Non-Plus users are never registered sellers → show the seller gate.
+    // The gate CTA decides the next step (subscribe Plus vs. open onboarding).
     if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        // Free user: show dedicated gate hero screen
         _setVitrineDashboardVisible(false);
         setElementState(container, 'vitrine-gate');
-        renderGateHero('locked');
+        _populateGatePreview();
         vitrineLoaded = true;
         return;
     }
@@ -118,11 +118,11 @@ async function loadVitrineTab() {
         const accountRes = await fetchManager.getSellerAccountStatus();
         console.log('[Vitrine] Account status:', accountRes);
 
-        // State 1: No connected account at all
+        // State 1: No connected account at all → same seller gate
         if (!accountRes.ok || !accountRes.result?.connected) {
             _setVitrineDashboardVisible(false);
             setElementState(container, 'vitrine-gate');
-            renderGateHero('connect');
+            _populateGatePreview();
             vitrineLoaded = true;
             return;
         }
@@ -174,7 +174,7 @@ async function loadVitrineTab() {
         console.error('Error loading vitrine:', err);
         _setVitrineDashboardVisible(false);
         setElementState(container, 'vitrine-gate');
-        renderGateHero('connect');
+        _populateGatePreview();
         vitrineLoaded = true;
     }
 }
@@ -183,62 +183,31 @@ async function loadVitrineTab() {
 // GATE OVERLAY HELPERS
 // ============================================================================
 
-const GATE_HERO_CONFIG = {
-    locked: {
-        iconClass: 'locked',
-        iconSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>',
-        title: 'Minha vitrine é um recurso Plus',
-        description: 'Crie sua vitrine para vender seus pacotes de forma automática, com pagamentos integrados.',
-        benefits: [
-            'Venda pacotes automaticamente',
-            'Controle de quantidade de acessos',
-            'Pagamento único ou assinatura',
-        ],
-        ctaText: 'Ver planos',
-        ctaAction: () => utils.showModal('plusSubscribe'),
-    },
-    connect: {
-        iconClass: 'connect',
-        iconSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
-        title: 'Cadastre-se como vendedor',
-        description: 'Para começar a vender, cadastre suas informações para receber pagamentos diretamente.',
-        benefits: [
-            'Receba pagamentos diretamente',
-            'Acompanhe suas vendas em tempo real',
-            'Saque quando quiser',
-        ],
-        ctaText: 'Cadastrar recebedor',
-        ctaAction: () => openOnboardingPage(),
-    },
-};
-
-const CHECK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-
-function renderGateHero(type) {
-    const config = GATE_HERO_CONFIG[type];
-    if (!config) return;
-
-    const icon = document.getElementById('vt-hero-icon');
-    const title = document.getElementById('vt-hero-title');
-    const desc = document.getElementById('vt-hero-description');
-    const benefits = document.getElementById('vt-hero-benefits');
-    const cta = document.getElementById('vt-hero-cta');
-
-    if (icon) {
-        icon.className = 'vt-hero-icon-circle ' + config.iconClass;
-        icon.innerHTML = config.iconSvg;
+// Single gate screen for every non-seller state. The "Cadastrar-se como
+// vendedor" CTA centralizes the next step:
+//   - not Plus    → open the Plus subscription modal
+//   - already Plus → proceed to the seller onboarding form
+function handleSellerRegisterClick() {
+    if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
+        utils.showModal('plusSubscribe');
+    } else {
+        openOnboardingPage();
     }
-    if (title) title.textContent = config.title;
-    if (desc) desc.textContent = config.description;
-    if (benefits) {
-        benefits.innerHTML = config.benefits
-            .map(b => `<li>${CHECK_SVG} ${b}</li>`)
-            .join('');
-    }
-    if (cta) {
-        cta.textContent = config.ctaText;
-        cta.onclick = config.ctaAction;
-    }
+}
+
+document.getElementById('vt-gate-cta')?.addEventListener('click', handleSellerRegisterClick);
+
+function _populateGatePreview() {
+    const firstName = (currentUserInfo?.name || '').split(' ')[0] || 'você';
+    const slug = firstName.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+
+    const nameEl = document.getElementById('vt-preview-name');
+    const slugEl = document.getElementById('vt-preview-slug');
+    const avatarEl = document.getElementById('vt-preview-avatar');
+
+    if (nameEl) nameEl.textContent = firstName;
+    if (slugEl) slugEl.textContent = slug || firstName;
+    if (avatarEl) avatarEl.textContent = firstName.charAt(0).toUpperCase();
 }
 
 function showOnboardingBanner() {
