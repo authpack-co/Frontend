@@ -3346,21 +3346,15 @@ function _transferStatusBadge(status) {
 }
 
 function renderWithdrawalInfo(data, wrapEl) {
-    const { balance, transfers, bank_name, bank_last4, next_transfer_date } = data;
+    const { balance, transfers, bank_name, bank_last4 } = data;
 
     const available = balance?.available_amount || 0;
     const waiting = balance?.waiting_funds_amount || 0;
+    const transferred = balance?.transferred_amount || 0;
 
     // Net values provided by the backend (TED fee already accounted for)
     const TED_FEE = data.ted_fee_cents ?? 367;
     const netAmount = data.net_withdrawable_cents ?? Math.max(0, available - TED_FEE);
-
-    // Format next transfer date
-    let nextDateLabel = '—';
-    if (next_transfer_date) {
-        const d = new Date(next_transfer_date + 'T12:00:00');
-        nextDateLabel = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-    }
 
     // Bank label
     const bankLabel = (bank_name && bank_last4)
@@ -3392,11 +3386,11 @@ function renderWithdrawalInfo(data, wrapEl) {
             </div>
             <div class="wd-balance-card">
                 <div class="wd-balance-icon muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </div>
                 <div class="wd-balance-info">
-                    <span class="wd-balance-label">Próximo repasse automático</span>
-                    <span class="wd-balance-value">${nextDateLabel}</span>
+                    <span class="wd-balance-label">Já transferido</span>
+                    <span class="wd-balance-value">R$ ${formatBRLValue(transferred)}</span>
                 </div>
             </div>
             <div class="wd-balance-card">
