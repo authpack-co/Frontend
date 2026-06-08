@@ -502,6 +502,61 @@ function computeKPIs(filteredOrders) {
     return { totalRevenue, totalGross, totalFees, totalSales };
 }
 
+// ── KPIs do período para "Performance de vendas" + "Resumo rápido" ──
+// Reaproveita allSalesHistory (tem total_amount_cents correto, mesma janela do
+// gráfico) e cai para o cache de raw_orders quando o histórico ainda não chegou.
+// Mesmas fórmulas do histórico: bruto = total - R$0,99; líquido = seller_amount.
+function applyVitrinePeriodKPIs(days) {
+    const PLATFORM_FEE = 99;
+    let gross = 0, net = 0, sales = 0;
+
+    if (allSalesHistory && allSalesHistory.length > 0) {
+        const now = new Date();
+        const end = new Date(now); end.setHours(23, 59, 59, 999);
+        const start = new Date(now);
+        if (days <= 1) {
+            start.setHours(0, 0, 0, 0);
+        } else {
+            start.setDate(start.getDate() - days);
+            start.setHours(0, 0, 0, 0);
+        }
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d < start || d > end) return;
+            gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            net += order.seller_amount_cents || 0;
+            sales++;
+        });
+    } else {
+        // Fallback: cache de raw_orders
+        let filtered;
+        if (days <= 1) {
+            const pad = v => String(v).padStart(2, '0');
+            const today = new Date();
+            const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
+            filtered = vitrineData.ordersByDate?.[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
+        } else {
+            filtered = filterOrdersByLastDays(vitrineData.ordersByDate || {}, days);
+        }
+        const k = computeKPIs(filtered);
+        gross = k.totalGross; net = k.totalRevenue; sales = k.totalSales;
+    }
+
+    const avgTicket = sales > 0 ? Math.round(gross / sales) : 0;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    // Performance de vendas (KPI cards)
+    set('kpi-gross-revenue', formatCentsToBRL(gross));
+    set('kpi-net-revenue', formatCentsToBRL(net));
+    set('kpi-sales', sales);
+    set('kpi-avg-ticket', formatCentsToBRL(avgTicket));
+    // Resumo rápido (painel lateral)
+    set('fin-gross-revenue', formatCentsToBRL(gross));
+    set('fin-net-revenue', formatCentsToBRL(net));
+    set('fin-sales-count', sales);
+    set('fin-avg-ticket-summary', formatCentsToBRL(avgTicket));
+}
+
 // ============================================================================
 // MAIN LOAD + PERIOD UPDATE
 // ============================================================================
@@ -664,17 +719,25 @@ async function loadSellerDashboardData() {
 function updateVitrinePeriod(days) {
     if (!vitrineData.ordersByDate) return;
 
-    // ── Dynamic KPI label for sales ──
-    const kpiSalesLabel = document.getElementById('kpi-sales-label');
+    // ── Rótulos dependentes do período (KPIs + subtítulos) ──
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     if (days <= 1) {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas hoje';
+        setText('kpi-sales-label', 'Vendas hoje');
+        setText('kpi-gross-sub', 'Total vendido hoje');
+        setText('fin-perf-sub', 'Somente novas vendas de hoje');
     } else if (days <= 7) {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas esta semana';
+        setText('kpi-sales-label', 'Vendas esta semana');
+        setText('kpi-gross-sub', 'Total vendido em 7 dias');
+        setText('fin-perf-sub', 'Somente novas vendas dos últimos 7 dias');
     } else {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas este mês';
+        setText('kpi-sales-label', 'Vendas este mês');
+        setText('kpi-gross-sub', 'Total vendido no mês');
+        setText('fin-perf-sub', 'Somente novas vendas do mês');
     }
 
-    let kpis;
+    // ── Resumo rápido + Performance de vendas adaptados ao período ──
+    applyVitrinePeriodKPIs(days);
+
     let chartData;
     let transferData = null;
 
@@ -682,13 +745,6 @@ function updateVitrinePeriod(days) {
         // ── Today: hourly chart ──
         chartData = getHourlyOrders(vitrineData.ordersByDate);
         transferData = getHourlyTransfers(financialCenterData.transfers);
-
-        // Compute KPIs from today's data only
-        const pad = v => String(v).padStart(2, '0');
-        const today = new Date();
-        const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
-        const todayOrders = vitrineData.ordersByDate[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
-        kpis = computeKPIs(todayOrders);
 
         // Sobrescreve gross_cents do gráfico com dados do sales-history (que tem
         // total_amount_cents correto — raw_orders pode não ter esse campo).
@@ -703,7 +759,6 @@ function updateVitrinePeriod(days) {
     } else {
         // ── 7d / 30d: daily chart ──
         const filteredOrders = filterOrdersByLastDays(vitrineData.ordersByDate, days);
-        kpis = computeKPIs(filteredOrders);
         chartData = getDailyTotals(filteredOrders);
         transferData = getDailyTransfers(financialCenterData.transfers, days);
 
