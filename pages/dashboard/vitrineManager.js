@@ -616,23 +616,8 @@ async function loadSellerDashboardData() {
                 }
             }
 
-            const nextTransferEl = document.getElementById('fin-next-transfer');
-            const nextTransferLabel = document.getElementById('fin-next-transfer-label');
-            if (nextTransferEl && nextTransferLabel && withdrawalRes.result.next_transfer_date) {
-                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
-                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-                nextTransferLabel.textContent = `Próximo repasse automático: ${dateStr}`;
-                nextTransferEl.style.display = '';
-            }
-
-            const sellerNextWrap = document.getElementById('fin-seller-next-wrap');
-            const sellerNextLabel = document.getElementById('fin-seller-next-label');
-            if (sellerNextWrap && sellerNextLabel && withdrawalRes.result.next_transfer_date) {
-                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
-                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-                sellerNextLabel.textContent = `Próximo repasse: ${dateStr}`;
-                sellerNextWrap.style.display = '';
-            }
+            // Automatic transfers were removed — withdrawals are manual-only,
+            // so there is no "next transfer" date to display anymore.
 
             updateQuickSummary();
         }
@@ -3294,7 +3279,7 @@ async function openWithdrawalModal() {
             const transfers = res.result.transfers || [];
             const TED_FEE = res.result.ted_fee_cents ?? 367;
             if (transfers.length === 0) {
-                wrapEl.innerHTML = '<div class="sh-empty-state">Nenhum repasse realizado ainda.</div>';
+                wrapEl.innerHTML = '<div class="sh-empty-state">Nenhum saque realizado ainda.</div>';
             } else {
                 _renderTransferHistory(transfers, TED_FEE, wrapEl);
             }
@@ -3545,13 +3530,13 @@ function renderWithdrawalInfo(data, wrapEl) {
 
     const historyTitle = document.createElement('h3');
     historyTitle.className = 'pd-section-title';
-    historyTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg> Histórico de repasses`;
+    historyTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg> Histórico de saques`;
     historySection.appendChild(historyTitle);
 
     if (!transfers || transfers.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'sh-empty-state';
-        empty.textContent = 'Nenhum repasse realizado ainda.';
+        empty.textContent = 'Nenhum saque realizado ainda.';
         historySection.appendChild(empty);
     } else {
         _renderTransferHistory(transfers, TED_FEE, historySection);
@@ -3825,11 +3810,6 @@ function _bankTypeLabel(type) {
     return type || '—';
 }
 
-function _transferIntervalLabel(interval) {
-    const map = { Daily: 'Diário', Weekly: 'Semanal', Monthly: 'Mensal' };
-    return map[interval] || interval || '—';
-}
-
 async function openPersonalDataModal() {
     const modal = document.getElementById('personalDataModal');
     if (!modal) return;
@@ -4010,16 +3990,12 @@ function renderPersonalData(data, wrapEl) {
             </div>
             <div class="pd-card-body">
                 <div class="pd-data-row">
-                    <span class="pd-data-label">Repasse automático</span>
-                    <span class="pd-data-value">${transfer_settings.transfer_enabled ? 'Sim' : 'Não'}</span>
+                    <span class="pd-data-label">Modo de recebimento</span>
+                    <span class="pd-data-value">Saque manual</span>
                 </div>
                 <div class="pd-data-row">
-                    <span class="pd-data-label">Frequência</span>
-                    <span class="pd-data-value">${_transferIntervalLabel(transfer_settings.transfer_interval)}</span>
-                </div>
-                <div class="pd-data-row">
-                    <span class="pd-data-label">Dia do repasse</span>
-                    <span class="pd-data-value">${transfer_settings.transfer_day ?? '—'}</span>
+                    <span class="pd-data-label">Como funciona</span>
+                    <span class="pd-data-value">Você saca o saldo disponível quando quiser</span>
                 </div>
             </div>
         `;
@@ -4147,22 +4123,34 @@ async function confirmWithdrawal() {
 
     const confirmBtn = document.getElementById('wc-confirm-btn');
     const cancelBtn = document.getElementById('wc-cancel-btn');
+    const originalLabel = confirmBtn.textContent;
     confirmBtn.disabled = true;
     cancelBtn.disabled = true;
     confirmBtn.textContent = 'Aguarde…';
 
+    const restoreButton = () => {
+        confirmBtn.disabled = false;
+        cancelBtn.disabled = false;
+        confirmBtn.textContent = originalLabel;
+    };
+
     try {
         const res = await fetchManager.requestWithdrawal(available);
-        closeWithdrawConfirmModal();
-        if (res.ok) {
-            showToast?.('Saque solicitado com sucesso!', 'success');
+        if (res.ok && res.result?.success) {
+            closeWithdrawConfirmModal();
+            notify('success', `Saque de R$ ${formatBRLValue(res.result.amount_cents)} solicitado com sucesso!`);
+            // Refresh balances: the now-pending withdrawal is counted as a saída,
+            // so the available balance drops (to R$ 0,00 when the full amount was
+            // withdrawn), preventing a second withdrawal of the same funds.
+            loadSellerDashboardData();
         } else {
-            showToast?.('Erro ao solicitar saque. Tente novamente.', 'error');
+            notify('error', res.result?.error || 'Erro ao solicitar saque. Tente novamente.');
+            restoreButton();
         }
     } catch (err) {
         console.error('confirmWithdrawal error:', err);
-        closeWithdrawConfirmModal();
-        showToast?.('Erro de conexão. Tente novamente.', 'error');
+        notify('error', 'Erro de conexão. Tente novamente.');
+        restoreButton();
     }
 }
 
