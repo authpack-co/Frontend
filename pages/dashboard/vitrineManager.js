@@ -5,6 +5,10 @@
 
 let vitrineProducts = [];
 let vitrineLoaded = false;
+// True when the seller is a registered recipient who no longer has Plus.
+// Used to keep the seller status badge as "Inativa" even after the dashboard
+// data loads (which would otherwise flip it back to "Ativo").
+let vitrineIsInactive = false;
 let createProductState = {
     step: 1,
     packageId: null,
@@ -100,29 +104,37 @@ async function loadVitrineTab() {
     // Always hide banners first
     hideOnboardingBanner();
     hideKycBanner();
-    // Ensure "Criar produto" is visible by default (it may have been hidden in KYC state)
+    hideInactiveBanner();
+    // Reset any leftover "inactive" styling and ensure "Criar produto" is
+    // visible by default (it may have been hidden in KYC/inactive state)
+    _setVitrineInactive(false);
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
-    // Non-Plus users are never registered sellers → show the seller gate.
-    // The gate CTA decides the next step (subscribe Plus vs. open onboarding).
-    if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        _setVitrineDashboardVisible(false);
-        setElementState(container, 'vitrine-gate');
-        _populateGatePreview();
-        vitrineLoaded = true;
-        return;
-    }
+    const isPlus = !!currentUserInfo && currentUserInfo.plan === 'plus';
 
-    // User is Plus — check gateway recipient status
     try {
+        // Account status is plan-agnostic, so we can also detect former sellers
+        // (registered recipients who have since lost Plus).
         const accountRes = await fetchManager.getSellerAccountStatus();
         console.log('[Vitrine] Account status:', accountRes);
 
-        // State 1: No connected account at all → same seller gate
-        if (!accountRes.ok || !accountRes.result?.connected) {
+        const isSeller = accountRes.ok && accountRes.result?.connected;
+
+        // Not a registered seller → seller gate. The gate CTA decides the next
+        // step (subscribe Plus vs. open onboarding).
+        if (!isSeller) {
             _setVitrineDashboardVisible(false);
             setElementState(container, 'vitrine-gate');
             _populateGatePreview();
+            vitrineLoaded = true;
+            return;
+        }
+
+        // Registered seller without active Plus → inactive vitrine. They keep
+        // read access and can withdraw their remaining balance, but cannot sell
+        // (no new products; buyers are blocked at checkout).
+        if (!isPlus) {
+            await loadInactiveVitrine();
             vitrineLoaded = true;
             return;
         }
@@ -178,6 +190,57 @@ async function loadVitrineTab() {
         vitrineLoaded = true;
     }
 }
+
+// ── Inactive vitrine: registered seller who no longer has Plus ──
+// Shows the full dashboard (read-only) so the seller can still see their data
+// and withdraw the remaining balance, but dims the products section and blocks
+// any selling action. The withdrawal flow (hero + Sacar) stays fully live.
+async function loadInactiveVitrine() {
+    const container = document.getElementById('vitrine-container');
+
+    _setVitrineDashboardVisible(true);
+    setElementState(container, 'vitrine-content');
+
+    // Mark the vitrine as inactive: dim products + block selling actions.
+    _setVitrineInactive(true);
+    showInactiveBanner();
+    updateGatewayStatusBar(false);
+    document.getElementById('btn-create-product')?.classList.add('hidden');
+
+    const statusEl = document.getElementById('fin-seller-status');
+    if (statusEl) {
+        statusEl.className = 'fin-seller-mini-status inactive';
+        statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Inativa';
+    }
+
+    // Load products (rendered read-only) — withdrawal stays available via the hero.
+    const productsRes = await fetchManager.getSellerProducts();
+    vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+    renderVitrineProducts(vitrineProducts);
+
+    // Load dashboard data (balance + KPIs). Withdraw button remains functional.
+    loadSellerDashboardData();
+}
+
+// Toggle the "inactive" visual treatment on the products section.
+function _setVitrineInactive(inactive) {
+    vitrineIsInactive = inactive;
+    const productsSection = document.querySelector('.vt-products-section');
+    if (productsSection) productsSection.classList.toggle('vt-inactive', inactive);
+}
+
+function showInactiveBanner() {
+    document.getElementById('vt-inactive-banner')?.classList.remove('hidden');
+}
+
+function hideInactiveBanner() {
+    document.getElementById('vt-inactive-banner')?.classList.add('hidden');
+}
+
+// "Assinar Plus" CTA inside the inactive banner → open the Plus modal.
+document.getElementById('btn-reactivate-plus')?.addEventListener('click', () => {
+    utils.showModal('plusSubscribe');
+});
 
 // ============================================================================
 // GATE OVERLAY HELPERS
@@ -439,6 +502,61 @@ function computeKPIs(filteredOrders) {
     return { totalRevenue, totalGross, totalFees, totalSales };
 }
 
+// ── KPIs do período para "Performance de vendas" + "Resumo rápido" ──
+// Reaproveita allSalesHistory (tem total_amount_cents correto, mesma janela do
+// gráfico) e cai para o cache de raw_orders quando o histórico ainda não chegou.
+// Mesmas fórmulas do histórico: bruto = total - R$0,99; líquido = seller_amount.
+function applyVitrinePeriodKPIs(days) {
+    const PLATFORM_FEE = 99;
+    let gross = 0, net = 0, sales = 0;
+
+    if (allSalesHistory && allSalesHistory.length > 0) {
+        const now = new Date();
+        const end = new Date(now); end.setHours(23, 59, 59, 999);
+        const start = new Date(now);
+        if (days <= 1) {
+            start.setHours(0, 0, 0, 0);
+        } else {
+            start.setDate(start.getDate() - days);
+            start.setHours(0, 0, 0, 0);
+        }
+        allSalesHistory.forEach(order => {
+            const d = new Date(order.created_at);
+            if (d < start || d > end) return;
+            gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            net += order.seller_amount_cents || 0;
+            sales++;
+        });
+    } else {
+        // Fallback: cache de raw_orders
+        let filtered;
+        if (days <= 1) {
+            const pad = v => String(v).padStart(2, '0');
+            const today = new Date();
+            const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
+            filtered = vitrineData.ordersByDate?.[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
+        } else {
+            filtered = filterOrdersByLastDays(vitrineData.ordersByDate || {}, days);
+        }
+        const k = computeKPIs(filtered);
+        gross = k.totalGross; net = k.totalRevenue; sales = k.totalSales;
+    }
+
+    const avgTicket = sales > 0 ? Math.round(gross / sales) : 0;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    // Performance de vendas (KPI cards)
+    set('kpi-gross-revenue', formatCentsToBRL(gross));
+    set('kpi-net-revenue', formatCentsToBRL(net));
+    set('kpi-sales', sales);
+    set('kpi-avg-ticket', formatCentsToBRL(avgTicket));
+    // Resumo rápido (painel lateral)
+    set('fin-gross-revenue', formatCentsToBRL(gross));
+    set('fin-net-revenue', formatCentsToBRL(net));
+    set('fin-sales-count', sales);
+    set('fin-avg-ticket-summary', formatCentsToBRL(avgTicket));
+}
+
 // ============================================================================
 // MAIN LOAD + PERIOD UPDATE
 // ============================================================================
@@ -479,8 +597,10 @@ async function loadSellerDashboardData() {
 
             vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
+            // Keep the "Inativa" badge for former-Plus sellers — the recipient
+            // is still active on the gateway, but the vitrine is not selling.
             const statusEl = document.getElementById('fin-seller-status');
-            if (statusEl) {
+            if (statusEl && !vitrineIsInactive) {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
@@ -551,23 +671,8 @@ async function loadSellerDashboardData() {
                 }
             }
 
-            const nextTransferEl = document.getElementById('fin-next-transfer');
-            const nextTransferLabel = document.getElementById('fin-next-transfer-label');
-            if (nextTransferEl && nextTransferLabel && withdrawalRes.result.next_transfer_date) {
-                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
-                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-                nextTransferLabel.textContent = `Próximo repasse automático: ${dateStr}`;
-                nextTransferEl.style.display = '';
-            }
-
-            const sellerNextWrap = document.getElementById('fin-seller-next-wrap');
-            const sellerNextLabel = document.getElementById('fin-seller-next-label');
-            if (sellerNextWrap && sellerNextLabel && withdrawalRes.result.next_transfer_date) {
-                const d = new Date(withdrawalRes.result.next_transfer_date + 'T12:00:00');
-                const dateStr = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-                sellerNextLabel.textContent = `Próximo repasse: ${dateStr}`;
-                sellerNextWrap.style.display = '';
-            }
+            // Automatic transfers were removed — withdrawals are manual-only,
+            // so there is no "next transfer" date to display anymore.
 
             updateQuickSummary();
         }
@@ -614,17 +719,25 @@ async function loadSellerDashboardData() {
 function updateVitrinePeriod(days) {
     if (!vitrineData.ordersByDate) return;
 
-    // ── Dynamic KPI label for sales ──
-    const kpiSalesLabel = document.getElementById('kpi-sales-label');
+    // ── Rótulos dependentes do período (KPIs + subtítulos) ──
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     if (days <= 1) {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas hoje';
+        setText('kpi-sales-label', 'Vendas hoje');
+        setText('kpi-gross-sub', 'Total vendido hoje');
+        setText('fin-perf-sub', 'Somente novas vendas de hoje');
     } else if (days <= 7) {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas esta semana';
+        setText('kpi-sales-label', 'Vendas esta semana');
+        setText('kpi-gross-sub', 'Total vendido em 7 dias');
+        setText('fin-perf-sub', 'Somente novas vendas dos últimos 7 dias');
     } else {
-        if (kpiSalesLabel) kpiSalesLabel.textContent = 'Vendas este mês';
+        setText('kpi-sales-label', 'Vendas este mês');
+        setText('kpi-gross-sub', 'Total vendido no mês');
+        setText('fin-perf-sub', 'Somente novas vendas do mês');
     }
 
-    let kpis;
+    // ── Resumo rápido + Performance de vendas adaptados ao período ──
+    applyVitrinePeriodKPIs(days);
+
     let chartData;
     let transferData = null;
 
@@ -632,13 +745,6 @@ function updateVitrinePeriod(days) {
         // ── Today: hourly chart ──
         chartData = getHourlyOrders(vitrineData.ordersByDate);
         transferData = getHourlyTransfers(financialCenterData.transfers);
-
-        // Compute KPIs from today's data only
-        const pad = v => String(v).padStart(2, '0');
-        const today = new Date();
-        const todayKey = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
-        const todayOrders = vitrineData.ordersByDate[todayKey] ? { [todayKey]: vitrineData.ordersByDate[todayKey] } : {};
-        kpis = computeKPIs(todayOrders);
 
         // Sobrescreve gross_cents do gráfico com dados do sales-history (que tem
         // total_amount_cents correto — raw_orders pode não ter esse campo).
@@ -653,7 +759,6 @@ function updateVitrinePeriod(days) {
     } else {
         // ── 7d / 30d: daily chart ──
         const filteredOrders = filterOrdersByLastDays(vitrineData.ordersByDate, days);
-        kpis = computeKPIs(filteredOrders);
         chartData = getDailyTotals(filteredOrders);
         transferData = getDailyTransfers(financialCenterData.transfers, days);
 
@@ -3229,7 +3334,7 @@ async function openWithdrawalModal() {
             const transfers = res.result.transfers || [];
             const TED_FEE = res.result.ted_fee_cents ?? 367;
             if (transfers.length === 0) {
-                wrapEl.innerHTML = '<div class="sh-empty-state">Nenhum repasse realizado ainda.</div>';
+                wrapEl.innerHTML = '<div class="sh-empty-state">Nenhum saque realizado ainda.</div>';
             } else {
                 _renderTransferHistory(transfers, TED_FEE, wrapEl);
             }
@@ -3281,21 +3386,15 @@ function _transferStatusBadge(status) {
 }
 
 function renderWithdrawalInfo(data, wrapEl) {
-    const { balance, transfers, bank_name, bank_last4, next_transfer_date } = data;
+    const { balance, transfers, bank_name, bank_last4 } = data;
 
     const available = balance?.available_amount || 0;
     const waiting = balance?.waiting_funds_amount || 0;
+    const transferred = balance?.transferred_amount || 0;
 
     // Net values provided by the backend (TED fee already accounted for)
     const TED_FEE = data.ted_fee_cents ?? 367;
     const netAmount = data.net_withdrawable_cents ?? Math.max(0, available - TED_FEE);
-
-    // Format next transfer date
-    let nextDateLabel = '—';
-    if (next_transfer_date) {
-        const d = new Date(next_transfer_date + 'T12:00:00');
-        nextDateLabel = `${String(d.getDate()).padStart(2, '0')} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
-    }
 
     // Bank label
     const bankLabel = (bank_name && bank_last4)
@@ -3327,11 +3426,11 @@ function renderWithdrawalInfo(data, wrapEl) {
             </div>
             <div class="wd-balance-card">
                 <div class="wd-balance-icon muted">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </div>
                 <div class="wd-balance-info">
-                    <span class="wd-balance-label">Próximo repasse automático</span>
-                    <span class="wd-balance-value">${nextDateLabel}</span>
+                    <span class="wd-balance-label">Já transferido</span>
+                    <span class="wd-balance-value">R$ ${formatBRLValue(transferred)}</span>
                 </div>
             </div>
             <div class="wd-balance-card">
@@ -3486,13 +3585,13 @@ function renderWithdrawalInfo(data, wrapEl) {
 
     const historyTitle = document.createElement('h3');
     historyTitle.className = 'pd-section-title';
-    historyTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg> Histórico de repasses`;
+    historyTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg> Histórico de saques`;
     historySection.appendChild(historyTitle);
 
     if (!transfers || transfers.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'sh-empty-state';
-        empty.textContent = 'Nenhum repasse realizado ainda.';
+        empty.textContent = 'Nenhum saque realizado ainda.';
         historySection.appendChild(empty);
     } else {
         _renderTransferHistory(transfers, TED_FEE, historySection);
@@ -3766,11 +3865,6 @@ function _bankTypeLabel(type) {
     return type || '—';
 }
 
-function _transferIntervalLabel(interval) {
-    const map = { Daily: 'Diário', Weekly: 'Semanal', Monthly: 'Mensal' };
-    return map[interval] || interval || '—';
-}
-
 async function openPersonalDataModal() {
     const modal = document.getElementById('personalDataModal');
     if (!modal) return;
@@ -3951,16 +4045,12 @@ function renderPersonalData(data, wrapEl) {
             </div>
             <div class="pd-card-body">
                 <div class="pd-data-row">
-                    <span class="pd-data-label">Repasse automático</span>
-                    <span class="pd-data-value">${transfer_settings.transfer_enabled ? 'Sim' : 'Não'}</span>
+                    <span class="pd-data-label">Modo de recebimento</span>
+                    <span class="pd-data-value">Saque manual</span>
                 </div>
                 <div class="pd-data-row">
-                    <span class="pd-data-label">Frequência</span>
-                    <span class="pd-data-value">${_transferIntervalLabel(transfer_settings.transfer_interval)}</span>
-                </div>
-                <div class="pd-data-row">
-                    <span class="pd-data-label">Dia do repasse</span>
-                    <span class="pd-data-value">${transfer_settings.transfer_day ?? '—'}</span>
+                    <span class="pd-data-label">Como funciona</span>
+                    <span class="pd-data-value">Você saca o saldo disponível quando quiser</span>
                 </div>
             </div>
         `;
@@ -4088,22 +4178,34 @@ async function confirmWithdrawal() {
 
     const confirmBtn = document.getElementById('wc-confirm-btn');
     const cancelBtn = document.getElementById('wc-cancel-btn');
+    const originalLabel = confirmBtn.textContent;
     confirmBtn.disabled = true;
     cancelBtn.disabled = true;
     confirmBtn.textContent = 'Aguarde…';
 
+    const restoreButton = () => {
+        confirmBtn.disabled = false;
+        cancelBtn.disabled = false;
+        confirmBtn.textContent = originalLabel;
+    };
+
     try {
         const res = await fetchManager.requestWithdrawal(available);
-        closeWithdrawConfirmModal();
-        if (res.ok) {
-            showToast?.('Saque solicitado com sucesso!', 'success');
+        if (res.ok && res.result?.success) {
+            closeWithdrawConfirmModal();
+            notify('success', `Saque de R$ ${formatBRLValue(res.result.amount_cents)} solicitado com sucesso!`);
+            // Refresh balances: the now-pending withdrawal is counted as a saída,
+            // so the available balance drops (to R$ 0,00 when the full amount was
+            // withdrawn), preventing a second withdrawal of the same funds.
+            loadSellerDashboardData();
         } else {
-            showToast?.('Erro ao solicitar saque. Tente novamente.', 'error');
+            notify('error', res.result?.error || 'Erro ao solicitar saque. Tente novamente.');
+            restoreButton();
         }
     } catch (err) {
         console.error('confirmWithdrawal error:', err);
-        closeWithdrawConfirmModal();
-        showToast?.('Erro de conexão. Tente novamente.', 'error');
+        notify('error', 'Erro de conexão. Tente novamente.');
+        restoreButton();
     }
 }
 
