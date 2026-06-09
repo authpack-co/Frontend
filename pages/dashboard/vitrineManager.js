@@ -1610,8 +1610,8 @@ function isValidCPF(cpf) {
 function isValidCNPJ(cnpj) {
     if (cnpj.length !== 14) return false;
     if (/^(\d)\1{13}$/.test(cnpj)) return false;
-    const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
-    const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
     let sum = 0;
     for (let i = 0; i < 12; i++) sum += parseInt(cnpj[i]) * w1[i];
     let rem = sum % 11;
@@ -1629,8 +1629,8 @@ function isValidEmail(email) {
 }
 
 const VALID_BR_STATES = new Set([
-    'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
-    'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ]);
 
 function isValidBRState(uf) {
@@ -4822,3 +4822,177 @@ document.querySelectorAll('#cashFlowEntriesModal .cf-metric').forEach(card => {
         _cfRenderList();
     });
 });
+
+// ============================================================================
+// VITRINE PROFILE EDITOR (storefront — display name, bio, contacts, share)
+// ============================================================================
+
+let currentVitrine = null;
+
+function vitrinePublicUrl(id) {
+    return `${window.location.origin}/pages/vitrine/?loja=${id}`;
+}
+
+// Loads (and caches) the seller's own vitrine. The backend lazily creates a
+// default one on first access, so this always resolves for a registered seller.
+async function ensureVitrineLoaded(force = false) {
+    if (currentVitrine && !force) return currentVitrine;
+    try {
+        const res = await fetchManager.getSellerVitrine();
+        if (res.ok && res.result?.vitrine) currentVitrine = res.result.vitrine;
+    } catch (err) {
+        console.error('[Vitrine] Failed to load vitrine profile:', err);
+    }
+    return currentVitrine;
+}
+
+function populateVitrineModal(v) {
+    if (!v) return;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+    set('vt-edit-name', v.display_name);
+    set('vt-edit-bio', v.bio);
+
+    // Strip prefixes for display (users see raw values, prefix is in the label)
+    const stripPrefix = (val, prefix) => {
+        if (!val) return '';
+        if (typeof val === 'string' && val.startsWith(prefix)) return val.slice(prefix.length);
+        return val;
+    };
+
+    // WhatsApp: strip country code if stored with it, then format
+    let whatsapp = (v.whatsapp || '').replace(/\D/g, '');
+    if (whatsapp.startsWith('55') && whatsapp.length > 10) whatsapp = whatsapp.slice(2);
+    set('vt-edit-whatsapp', formatPhoneInput(whatsapp));
+
+    set('vt-edit-telegram', stripPrefix(v.telegram, '@'));
+    set('vt-edit-instagram', stripPrefix(v.instagram, '@'));
+    set('vt-edit-website', stripPrefix(stripPrefix(v.website, 'https://'), 'http://'));
+
+    const urlEl = document.getElementById('vt-edit-share-url');
+    if (urlEl) urlEl.textContent = vitrinePublicUrl(v.id).replace(/^https?:\/\//, '');
+
+    const toggle = document.getElementById('vt-edit-published-toggle');
+    if (toggle) toggle.classList.toggle('active', !!Number(v.is_published));
+
+    // Update char counters
+    updateCharCounter('vt-edit-name', 'vt-edit-name-counter', 20);
+    updateCharCounter('vt-edit-bio', 'vt-edit-bio-counter', 120);
+}
+
+// ── Character counter helpers ──
+function updateCharCounter(inputId, counterId, max) {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    if (!input || !counter) return;
+    const len = input.value.length;
+    counter.textContent = `${len} / ${max}`;
+    counter.classList.remove('near-limit', 'at-limit');
+    if (len >= max) counter.classList.add('at-limit');
+    else if (len >= max * 0.85) counter.classList.add('near-limit');
+}
+
+// Char counter listeners
+document.getElementById('vt-edit-name')?.addEventListener('input', () => updateCharCounter('vt-edit-name', 'vt-edit-name-counter', 20));
+document.getElementById('vt-edit-bio')?.addEventListener('input', () => updateCharCounter('vt-edit-bio', 'vt-edit-bio-counter', 120));
+
+// ── Phone mask (WhatsApp) ──
+function formatPhoneInput(raw) {
+    const digits = raw.replace(/\D/g, '').slice(0, 11);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+document.getElementById('vt-edit-whatsapp')?.addEventListener('input', function () {
+    const pos = this.selectionStart;
+    const before = this.value;
+    this.value = formatPhoneInput(this.value);
+    // Try to restore cursor intelligently
+    const diff = this.value.length - before.length;
+    this.setSelectionRange(pos + diff, pos + diff);
+});
+
+async function copyVitrineLink() {
+    const v = await ensureVitrineLoaded();
+    if (!v) return false;
+    try { await navigator.clipboard.writeText(vitrinePublicUrl(v.id)); } catch (e) { }
+    return true;
+}
+
+// "Editar vitrine" → load current profile + open the modal
+document.getElementById('btn-edit-vitrine')?.addEventListener('click', async () => {
+    const v = await ensureVitrineLoaded();
+    populateVitrineModal(v);
+    utils.showModal('editVitrine');
+});
+
+// "Compartilhar" (products header) → copy the public link with feedback
+document.getElementById('btn-share-vitrine')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    const ok = await copyVitrineLink();
+    btn.innerHTML = original.replace('Compartilhar', ok ? 'Link copiado' : 'Erro ao copiar');
+    setTimeout(() => { btn.innerHTML = original; }, 1500);
+});
+
+// Copy button inside the modal
+document.getElementById('vt-edit-copy-btn')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const original = btn.textContent;
+    const ok = await copyVitrineLink();
+    btn.textContent = ok ? 'Copiado!' : 'Erro';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+});
+
+// Published toggle
+document.getElementById('vt-edit-published-toggle')?.addEventListener('click', function () {
+    this.classList.toggle('active');
+});
+
+// Save
+document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
+    const modal = document.getElementById('editVitrineModal');
+    const buttonContent = modal.querySelector('.buttonContent');
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
+
+    const name = val('vt-edit-name');
+    if (name.length < 2) {
+        utils.setModalError(modal, 'Informe um nome para a vitrine.');
+        return;
+    }
+    utils.clearInputError(modal);
+    setElementState(buttonContent, 'loading');
+
+    // Build payload, re-adding prefixes where needed
+    const rawWhatsapp = val('vt-edit-whatsapp').replace(/\D/g, '');
+    const telegram = val('vt-edit-telegram').replace(/^@/, '');
+    const instagram = val('vt-edit-instagram').replace(/^@/, '');
+    let website = val('vt-edit-website').replace(/^https?:\/\//, '');
+
+    const payload = {
+        display_name: name,
+        bio: val('vt-edit-bio'),
+        whatsapp: rawWhatsapp ? `55${rawWhatsapp}` : '',
+        telegram: telegram ? `@${telegram}` : '',
+        instagram: instagram ? `@${instagram}` : '',
+        website: website ? `https://${website}` : '',
+        is_published: document.getElementById('vt-edit-published-toggle')?.classList.contains('active') ? 1 : 0,
+    };
+
+    try {
+        const res = await fetchManager.updateSellerVitrine(payload);
+        setElementState(buttonContent, 'content');
+        if (res.ok && res.result?.vitrine) {
+            currentVitrine = res.result.vitrine;
+            utils.closeModals();
+        } else {
+            utils.setModalError(modal, res.result?.error || 'Não foi possível salvar. Tente novamente.');
+        }
+    } catch (err) {
+        console.error('[Vitrine] Save profile error:', err);
+        setElementState(buttonContent, 'content');
+        utils.setModalError(modal, 'Erro inesperado. Tente novamente.');
+    }
+});
+

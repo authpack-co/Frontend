@@ -361,6 +361,26 @@ const fetchManager = {
         return response;
     },
 
+    // Public storefront (vitrine) — id doubles as the public handle
+    async getVitrine(id) {
+        const response = await fetchRoutes(`/api/marketplace/vitrines/${id}`);
+        return response;
+    },
+
+    // Seller's own vitrine (auth)
+    async getSellerVitrine() {
+        const response = await fetchRoutes(`/api/marketplace/seller/vitrine`);
+        return response;
+    },
+
+    async updateSellerVitrine(data) {
+        const response = await fetchRoutes(`/api/marketplace/seller/vitrine`, {
+            method: "PUT",
+            body: JSON.stringify(data),
+        });
+        return response;
+    },
+
     async startCheckout(data) {
         const response = await fetchRoutes(`/api/marketplace/checkout`, {
             method: "POST",
