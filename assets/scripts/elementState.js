@@ -5,7 +5,7 @@ function clearStateClasses(el) {
   });
 }
 
-// seta o estado no container e propaga para presets descendentemente
+// seta o estado no container e propaga para presets descendentemente.
 function setElementState(container, newState) {
   // 1) altera state do próprio container
   clearStateClasses(container);
