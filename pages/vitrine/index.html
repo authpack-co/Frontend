@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Vitrine — AuthPack</title>
+    <meta name="description" content="Conheça os produtos deste vendedor no AuthPack">
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/elementState.css">
+    <link rel="stylesheet" href="/pages/vitrine/style.css">
+</head>
+
+<body>
+    <!-- ============================ TOPBAR ============================ -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">
+                <img src="/assets/images/favicon-128x128.png" alt="AuthPack">
+                <span class="brand-name">AuthPack</span>
+                <span class="brand-by">vitrine</span>
+            </a>
+            <span class="secure-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="m9 12 2 2 4-4" />
+                </svg>
+                Vitrine verificada · AuthPack
+            </span>
+        </div>
+    </header>
+
+    <div id="vitrine-state" class="loading-state">
+
+        <!-- ============================ LOADING ============================ -->
+        <div class="preset preset-loading">
+            <div class="vt-spinner-wrap">
+                <div class="vt-spinner"></div>
+            </div>
+        </div>
+
+        <!-- ============================ NOT FOUND ============================ -->
+        <div class="preset preset-empty">
+            <div class="vt-notfound">
+                <div class="vt-notfound-icon">🔍</div>
+                <h2>Vitrine não encontrada</h2>
+                <p>Esta vitrine pode ter sido removida ou está indisponível.</p>
+            </div>
+        </div>
+
+        <!-- ============================ CONTENT ============================ -->
+        <div class="preset preset-content">
+            <div class="wrap">
+                <!-- ===================== SELLER HERO ===================== -->
+                <section class="seller-panel">
+                    <div class="seller-top">
+                        <div class="seller-avatar" id="seller-avatar">?</div>
+                        <div class="seller-info">
+                            <div class="seller-name-row">
+                                <h1 class="seller-name" id="seller-name">—</h1>
+                                <span class="verified-badge" id="verified-badge" style="display:none">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5l-8-3z" opacity=".16" />
+                                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7" />
+                                        <path d="m8.5 12 2.4 2.4 4.6-4.8" fill="none" stroke="currentColor"
+                                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Vendedor verificado
+                                </span>
+                            </div>
+                            <p class="seller-bio" id="seller-bio" style="display:none"></p>
+                            <div class="seller-links" id="seller-links"></div>
+                        </div>
+                    </div>
+
+                    <div class="seller-stats" id="seller-stats">
+                        <div class="stat">
+                            <span class="stat-val" id="stat-clients">0</span>
+                            <span class="stat-label">clientes ativos</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-val" id="stat-products">0</span>
+                            <span class="stat-label">produtos disponíveis</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-val" id="stat-sales">0</span>
+                            <span class="stat-label">vendas realizadas</span>
+                        </div>
+                        <div class="stat" id="stat-since-wrap">
+                            <span class="stat-val" id="stat-since">—</span>
+                            <span class="stat-label">vendendo no AuthPack</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===================== CATALOG ===================== -->
+                <div class="catalog-head">
+                    <h2 class="catalog-title">Produtos <span id="result-count"></span></h2>
+                    <div class="tabs" id="tabs">
+                        <button class="tab active" data-sort="featured">Destaques</button>
+                        <button class="tab" data-sort="bestseller">Mais vendidos</button>
+                        <button class="tab" data-sort="recent">Recentes</button>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                        <input id="search-input" type="text" placeholder="Buscar produto ou serviço…" autocomplete="off" />
+                    </div>
+                </div>
+
+                <!-- Featured product -->
+                <section class="featured" id="featured-block" style="display:none"></section>
+
+                <!-- Product grid -->
+                <div class="grid" id="product-grid"></div>
+
+                <!-- Empty (search) -->
+                <div class="empty" id="empty-state">
+                    Nenhum produto encontrado para "<b id="empty-query"></b>".
+                </div>
+
+                <!-- ===================== TRUST BAND ===================== -->
+                <section class="trust">
+                    <div class="trust-row">
+                        <div class="trust-item">
+                            <div class="trust-ico t1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <b>Vendedor verificado</b>
+                                <span>Identidade e conta validadas pelo AuthPack</span>
+                            </div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-ico t2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="20" height="14" x="2" y="5" rx="2" />
+                                    <line x1="2" x2="22" y1="10" y2="10" />
+                                </svg>
+                            </div>
+                            <div>
+                                <b>Pagamento seguro</b>
+                                <span>Processado por Pagar.me · Pix e cartão</span>
+                            </div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-ico t3">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <b>Garantia de 7 dias</b>
+                                <span>Reembolso integral se algo não funcionar</span>
+                            </div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-ico t4">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <b>Acesso imediato</b>
+                                <span>Liberação automática na hora da compra</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================ FOOTER ============================ -->
+            <footer class="footer">
+                <div class="footer-brand">
+                    <img src="/assets/images/favicon-128x128.png" alt="">
+                    Vitrine criada com <b>AuthPack</b>
+                </div>
+                <nav class="footer-links">
+                    <a href="/">Criar a minha vitrine</a>
+                </nav>
+            </footer>
+        </div>
+    </div>
+
+    <script src="/assets/scripts/envManager.js"></script>
+    <script src="/assets/scripts/fetchManager.js"></script>
+    <script src="/assets/scripts/elementState.js"></script>
+    <script src="/pages/vitrine/script.js"></script>
+</body>
+
+</html>
