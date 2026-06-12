@@ -153,6 +153,7 @@ const listenerMap = [
     { selector: '.abort-package-access-btn', event: 'click', handler: setupAbortPackageAccessForm },
     { selector: '.remove-user-access-btn', event: 'click', handler: setupRemoveUserAccessForm },
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
+    { selector: '.update-package-btn', event: 'click', handler: handleUpdatePackage },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
@@ -362,6 +363,118 @@ async function handleConnectSession(e) {
     });
 
     window.open(urlProcessced, '_blank');
+}
+
+function handleUpdatePackage(e) {
+    e.stopPropagation();
+
+    // Fecha o menu de opções
+    document.querySelectorAll('.package-options:not(.hidden)').forEach(o => o.classList.add('hidden'));
+
+    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas)
+    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
+        utils.showModal("extensionRequired");
+        return;
+    }
+
+    const packageEl = this.closest('.access-item');
+    const packageId = packageEl.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    if (!packageData) return;
+
+    const sessions = (packageData.sessions || []).map(s => ({ id: s.id, url: s.url, icon: s.icon, name: s.name }));
+
+    const modal = document.getElementById('updatePackageModal');
+    const nameEl = modal.querySelector('.up-pkg-name');
+    const statusEl = modal.querySelector('.up-status');
+    const countEl = modal.querySelector('.up-count');
+    const fillEl = modal.querySelector('.up-bar-fill');
+    const listEl = modal.querySelector('.up-list');
+    const closeBtn = modal.querySelector('.up-close');
+    const total = sessions.length;
+
+    // Reset
+    nameEl.textContent = packageData.name || '';
+    fillEl.style.width = '0%';
+    countEl.textContent = `0/${total}`;
+    closeBtn.disabled = true;
+    listEl.innerHTML = '';
+    modal.removeAttribute('data-result');
+
+    // Render uma linha por sessão (cada uma resolve de forma independente)
+    const rowById = {};
+    sessions.forEach(s => {
+        const row = document.createElement('li');
+        row.className = 'up-item';
+        row.dataset.sessionId = s.id;
+        row.dataset.state = 'pending';
+
+        const icon = document.createElement('img');
+        icon.className = 'up-item-icon';
+        icon.src = s.icon || '';
+        icon.alt = '';
+        icon.addEventListener('error', () => {
+            const fb = document.createElement('span');
+            fb.className = 'up-item-icon up-item-icon--fb';
+            fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
+            icon.replaceWith(fb);
+        });
+
+        let label = s.name;
+        if (!label) { try { label = new URL(s.url).hostname.replace(/^www\./, ''); } catch { label = s.url; } }
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'up-item-name';
+        nameSpan.textContent = label;
+
+        const status = document.createElement('span');
+        status.className = 'up-item-status';
+
+        row.append(icon, nameSpan, status);
+        listEl.appendChild(row);
+        rowById[s.id] = row;
+    });
+
+    if (total === 0) {
+        statusEl.textContent = 'Sem sessões para atualizar';
+        closeBtn.disabled = false;
+        utils.showModal('updatePackage', packageId);
+        closeBtn.onclick = () => utils.closeModals();
+        return;
+    }
+
+    statusEl.textContent = 'Atualizando sessões…';
+    utils.showModal('updatePackage', packageId);
+
+    // Escuta o progresso transmitido pela extensão (via content/bridge.js)
+    function onMessage(ev) {
+        if (ev.origin !== location.origin) return;
+        const d = ev.data;
+        if (d?.source !== 'authpack-extension') return;
+
+        if (d.type === 'authpack:updateProgress') {
+            const row = rowById[d.current?.id];
+            if (row) row.dataset.state = d.current.status === 'ok' ? 'ok' : 'error';
+            countEl.textContent = `${d.done}/${d.total}`;
+            fillEl.style.width = `${Math.round((d.done / d.total) * 100)}%`;
+        } else if (d.type === 'authpack:updateDone') {
+            window.removeEventListener('message', onMessage);
+            fillEl.style.width = '100%';
+            // Garante que nenhuma linha fique presa em "pendente"
+            Object.values(rowById).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
+            const failed = d.failed?.length || 0;
+            countEl.textContent = `${d.ok}/${d.total}`;
+            statusEl.textContent = failed === 0
+                ? 'Todas as sessões foram atualizadas'
+                : `${d.ok} atualizada(s) · ${failed} com falha`;
+            modal.dataset.result = failed === 0 ? 'success' : 'partial';
+            closeBtn.disabled = false;
+        }
+    }
+    window.addEventListener('message', onMessage);
+    closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
+
+    // Dispara o refresh na extensão
+    window.postMessage({ source: 'authpack-page', type: 'authpack:updatePackage', packageId, sessions }, location.origin);
 }
 
 function setupEditPackageForm(e) {
