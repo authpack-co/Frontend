@@ -325,17 +325,6 @@ async function handleConnectSession(e) {
         return;
     }
 
-    function addURLParams(url, parameters) {
-        // Verifique se há uma interrogação (?) na URL
-        const separator = url.includes('?') ? '&' : '?';
-
-        // Construa uma string com os novos parâmetros
-        const newParameters = Object.keys(parameters).map(key => `${key}=${encodeURIComponent(parameters[key])}`).join('&');
-
-        // Concatene a URL original com os novos parâmetros
-        return `${url}${separator}${newParameters}`;
-    }
-
     // Obtém detalhes do pacote e da sessão
     const packageEl = this.closest('#package-details');
     const packageId = packageEl.dataset.packageId;
@@ -350,19 +339,22 @@ async function handleConnectSession(e) {
         : packagesList.userCollection.find(pkg => pkg.id == packageId);
     const sessionData = packageData.sessions.find(session => session.id == sessionId);
 
-    const sessionConnectUrl = sessionData.url;
-
-    // redireciona para a URL de conexão da sessão (com metadados para o overlay de loading da extensão)
-    const urlProcessced = addURLParams(sessionConnectUrl, {
-        authpack_session_id: sessionId,
-        authpack_package_id: packageId,
-        authpack_is_acquired: isAccess,
-        authpack_session_name: sessionData.name || "",
-        authpack_session_icon: sessionData.icon || "",
-        authpack_owner_name: packageData?.owner?.name || "",
-    });
-
-    window.open(urlProcessced, '_blank');
+    // O connect passa pela extensão (fluxo unificado connectSession): a ponte (bridge.js) relança
+    // como "redirectUser", que pré-seta os cookies, abre a aba e o connectHold restaura in-page.
+    // (O window.open direto parou de funcionar quando o connect foi unificado no pré-stage.)
+    window.postMessage({
+        source: 'authpack-page',
+        type: 'authpack:connect',
+        session: {
+            id: sessionId,
+            packageId: packageId,
+            isAcquired: isAccess,
+            url: sessionData.url,
+            sessionName: sessionData.name || "",
+            sessionIcon: sessionData.icon || "",
+            ownerName: packageData?.owner?.name || "",
+        }
+    }, location.origin);
 }
 
 function handleUpdatePackage(e) {
