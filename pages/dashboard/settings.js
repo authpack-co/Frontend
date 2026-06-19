@@ -15,6 +15,13 @@
     let scUserData = null;
     let scDataLoaded = false;
 
+    let scBillingData   = null;
+    let scBillingLoaded = false;
+
+    // Fallback price for the AuthPack Plus plan (R$ 16,90/mês), used when there
+    // are no invoices yet to read the real amount from.
+    const PLUS_PRICE_CENTS = 1690;
+
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
     function scEl(id) {
@@ -32,6 +39,24 @@
     function scFormatDate(dateStr) {
         const d = new Date(dateStr);
         return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function scFormatMoney(cents, currency) {
+        const value = (Number(cents) || 0) / 100;
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: currency || 'BRL' });
+    }
+
+    // "Junho de 2026" (capitalized) — used as the billing-period title.
+    function scMonthLabel(dateStr) {
+        const d = new Date(dateStr);
+        const s = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function scAddMonthISO(dateStr) {
+        const d = new Date(dateStr);
+        d.setMonth(d.getMonth() + 1);
+        return d.toISOString();
     }
 
     function scGetDeviceSVG(type) {
@@ -285,6 +310,8 @@
             }
             if (scUserData) scUserData.plan_status = 'canceled';
             scRenderPlanCard(scUserData);
+            // Billing view shows plan status too — force a fresh reload next time.
+            scBillingLoaded = false;
         } catch (err) {
             console.error('[Settings] cancelBilling error:', err);
             btn.disabled    = false;
@@ -310,6 +337,205 @@
             window.location.reload();
         } catch (err) {
             console.error('[Settings] logout error:', err);
+        }
+    }
+
+    // ─── Billing: plano vigente ───────────────────────────────────────────────────
+
+    function scSetStatusBadge(el, text, kind) {
+        if (!el) return;
+        el.textContent = text;
+        el.className = `bl-status-badge bl-status-badge--${kind}`;
+        el.style.display = '';
+    }
+
+    function scRenderBillingPlan(billing) {
+        const nameEl  = scEl('bl-plan-name');
+        const badgeEl = scEl('bl-plan-badge');
+        const priceEl = scEl('bl-plan-price');
+        const renewEl = scEl('bl-plan-renew');
+        const noteEl  = scEl('bl-plan-note');
+
+        const plan      = billing.plan;
+        const status    = billing.plan_status;
+        const sub       = billing.subscription;
+        const invoices  = billing.invoices || [];
+        // Plus without a subscription row = courtesy/trial grant (no charges).
+        const isTrial   = plan === 'plus' && !sub;
+        const priceCents = invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS;
+        const currency   = (invoices[0] && invoices[0].currency) || 'BRL';
+
+        if (renewEl) renewEl.textContent = '';
+        if (noteEl)  scHide(noteEl);
+
+        if (plan === 'plus') {
+            if (nameEl) nameEl.textContent = 'AuthPack Plus';
+
+            if (isTrial) {
+                scSetStatusBadge(badgeEl, 'Cortesia', 'trial');
+                if (priceEl) priceEl.textContent = 'Gratuito';
+                if (renewEl && billing.plan_expires_at) {
+                    renewEl.textContent = `Ativo até ${scFormatDate(billing.plan_expires_at)}`;
+                }
+                if (noteEl) {
+                    noteEl.textContent = 'Período promocional gratuito — nenhuma cobrança será feita.';
+                    scShow(noteEl);
+                }
+            } else if (status === 'canceled') {
+                scSetStatusBadge(badgeEl, 'Cancelada', 'overdue');
+                if (priceEl) priceEl.textContent = `${scFormatMoney(priceCents, currency)} / mês`;
+                if (renewEl && billing.plan_expires_at) {
+                    renewEl.textContent = `Acesso até ${scFormatDate(billing.plan_expires_at)}`;
+                }
+                if (noteEl) {
+                    noteEl.textContent = 'Assinatura cancelada — não será renovada. O acesso Plus permanece até o fim do período pago.';
+                    scShow(noteEl);
+                }
+            } else {
+                scSetStatusBadge(badgeEl, 'Ativa', 'paid');
+                if (priceEl) priceEl.textContent = `${scFormatMoney(priceCents, currency)} / mês`;
+                if (renewEl && sub && sub.current_period_end) {
+                    renewEl.textContent = `Renova em ${scFormatDate(sub.current_period_end)}`;
+                }
+            }
+        } else {
+            if (nameEl)  nameEl.textContent = 'Plano Free';
+            if (badgeEl) scHide(badgeEl);
+            if (priceEl) priceEl.textContent = 'Gratuito';
+            if (noteEl) {
+                noteEl.textContent = 'Você está no plano Free. Assine o Plus para criar e monetizar sem limites.';
+                scShow(noteEl);
+            }
+        }
+    }
+
+    // ─── Billing: timeline de meses ────────────────────────────────────────────────
+
+    // Constrói a lista de períodos (meses) a partir das faturas pagas e da
+    // próxima cobrança em aberto/atrasada da assinatura.
+    function scBuildPeriods(billing) {
+        const periods  = [];
+        const invoices = billing.invoices || [];
+        const sub      = billing.subscription;
+
+        // Ciclos já pagos (uma fatura por ciclo).
+        invoices.forEach((inv) => {
+            periods.push({
+                status:      'paid',
+                periodStart: inv.period_start || inv.paid_at,
+                periodEnd:   inv.period_end,
+                dueDate:     inv.period_start || inv.paid_at,
+                amount:      inv.amount_paid,
+                currency:    inv.currency || 'BRL',
+                paidAt:      inv.paid_at,
+            });
+        });
+
+        // Próxima cobrança — apenas quando a assinatura está ativa e vai renovar.
+        // A cobrança ocorre em current_period_end (fim do ciclo já pago).
+        if (billing.plan === 'plus' && sub && sub.status === 'active'
+            && !sub.cancel_at_period_end && sub.current_period_end) {
+            const dueTime = new Date(sub.current_period_end).getTime();
+            periods.push({
+                status:      dueTime > Date.now() ? 'open' : 'overdue',
+                periodStart: sub.current_period_end,
+                periodEnd:   scAddMonthISO(sub.current_period_end),
+                dueDate:     sub.current_period_end,
+                amount:      invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS,
+                currency:    (invoices[0] && invoices[0].currency) || 'BRL',
+                paidAt:      null,
+            });
+        }
+
+        // Mais recente primeiro.
+        periods.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+        return periods;
+    }
+
+    const SC_STATUS_META = {
+        paid:    { label: 'Pago',      icon: '<path d="M20 6 9 17l-5-5"/>' },
+        open:    { label: 'Em aberto', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' },
+        overdue: { label: 'Atrasada',  icon: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/>' },
+    };
+
+    function scBuildPeriodRow(p) {
+        const meta = SC_STATUS_META[p.status] || SC_STATUS_META.open;
+
+        let metaText = '';
+        if (p.status === 'paid') {
+            metaText = p.paidAt ? `Pago em ${scFormatDate(p.paidAt)}` : 'Pagamento confirmado';
+        } else if (p.status === 'open') {
+            metaText = `Vence em ${scFormatDate(p.dueDate)}`;
+        } else {
+            metaText = `Vencido em ${scFormatDate(p.dueDate)}`;
+        }
+
+        const row = document.createElement('div');
+        row.className = `bl-period-row bl-period-row--${p.status}`;
+        row.innerHTML = `
+            <div class="bl-period-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${meta.icon}</svg>
+            </div>
+            <div class="bl-period-info">
+                <div class="bl-period-title"></div>
+                <div class="bl-period-meta"></div>
+            </div>
+            <div class="bl-period-right">
+                <div class="bl-period-amount">${scFormatMoney(p.amount, p.currency)}</div>
+                <span class="bl-status-badge bl-status-badge--${p.status}">${meta.label}</span>
+            </div>
+        `;
+        row.querySelector('.bl-period-title').textContent = scMonthLabel(p.periodStart);
+        row.querySelector('.bl-period-meta').textContent  = metaText;
+        return row;
+    }
+
+    function scRenderPeriods(periods) {
+        const list  = scEl('bl-periods-list');
+        const empty = scEl('bl-periods-empty');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        if (!periods.length) {
+            scHide(list);
+            scShow(empty);
+            return;
+        }
+
+        scShow(list);
+        scHide(empty);
+        periods.forEach((p) => list.appendChild(scBuildPeriodRow(p)));
+    }
+
+    async function scLoadBilling() {
+        if (scBillingLoaded) return;
+
+        const list = scEl('bl-periods-list');
+        if (list) {
+            list.innerHTML = '<div class="sc-loading" style="min-height:120px"><div class="spinner large"></div></div>';
+        }
+
+        try {
+            const res = await fetchManager.getBilling();
+            if (!res.ok || !res.result || !res.result.data) {
+                if (list) {
+                    list.innerHTML = '<p class="bl-error">Não foi possível carregar suas informações de cobrança.</p>';
+                }
+                return;
+            }
+
+            scBillingData   = res.result.data;
+            scBillingLoaded = true;
+
+            scRenderBillingPlan(scBillingData);
+            scRenderPeriods(scBuildPeriods(scBillingData));
+        } catch (err) {
+            console.error('[Settings] scLoadBilling error:', err);
+            if (list) {
+                list.innerHTML = '<p class="bl-error">Erro ao carregar cobrança. Tente novamente.</p>';
+            }
         }
     }
 
@@ -384,6 +610,8 @@
                 document.querySelectorAll('.settings-view').forEach(v => v.classList.remove('active'));
                 const target = scEl(`settings-view-${view}`);
                 if (target) target.classList.add('active');
+
+                if (view === 'cobranca') scLoadBilling();
             });
         });
     }
