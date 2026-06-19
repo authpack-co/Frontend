@@ -87,27 +87,28 @@
 
     <div class="bg-decoration"></div>
 
-    <div class="activation-container loading-state" id="activationContainer">
+    <div class="activation-container connecting-state" id="activationContainer">
         <div class="logo">
             <div class="logo-text">Auth<span class="logo-accent">Pack</span></div>
         </div>
 
         <div class="content-area">
 
-            <!-- Loading State -->
-            <div class="preset preset-loading">
+            <!-- Connecting State (account-aware) -->
+            <div class="preset preset-connecting">
                 <div class="icon-container">
-                    <div class="loading-icon">
-                        <div class="spinner"></div>
-                        <div class="pulse-ring"></div>
-                        <div class="pulse-ring"></div>
-                        <div class="pulse-ring"></div>
-                        <div class="device-icon"></div>
+                    <div class="connect-avatar">
+                        <span class="pulse-ring"></span>
+                        <span class="pulse-ring"></span>
+                        <span class="pulse-ring"></span>
+                        <span class="connect-avatar-initials" id="connectAvatarInitials"></span>
+                        <img class="connect-avatar-img hidden" id="connectAvatar" alt="">
                     </div>
                 </div>
-                <h1 class="status-title">Ativando dispositivo<span class="loading-dots"></span></h1>
-                <p class="status-description">
-                    Aguarde enquanto configuramos seu dispositivo de forma segura
+                <h1 class="status-title">Conectando<span class="loading-dots"></span></h1>
+                <p class="status-description connect-account">
+                    <span class="connect-account-name" id="connectName">sua conta</span>
+                    <span class="connect-account-email" id="connectEmail"></span>
                 </p>
             </div>
 
@@ -135,7 +136,7 @@
                 <p class="status-description" id="errorDescription">
                     Não foi possível concluir a ativação. Por favor, tente novamente mais tarde
                 </p>
-                <button class="action-button" onclick="handleRetry()">Tentar novamente</button>
+                <button class="action-button secondary" onclick="goHome()">Voltar para o início</button>
             </div>
         </div>
     </div>

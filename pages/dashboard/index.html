@@ -3614,6 +3614,14 @@
                         </svg>
                         Conta
                     </button>
+                    <button class="settings-nav-item" data-view="cobranca">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
+                        </svg>
+                        Cobrança
+                    </button>
                 </nav>
             </aside>
 
@@ -3748,6 +3756,64 @@
                     </div>
 
                 </div><!-- /#settings-view-conta -->
+
+                <!-- View: Cobrança -->
+                <div class="settings-view" id="settings-view-cobranca">
+                    <div class="settings-view-header">
+                        <h2>Cobrança</h2>
+                        <p>Acompanhe seu plano vigente e o histórico de pagamentos da assinatura.</p>
+                    </div>
+
+                    <!-- Current plan summary -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon settings-card-icon--star">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                    <path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8l-6.2 3.3 1.2-6.9L2 9.3l6.9-1z" />
+                                </svg>
+                            </div>
+                            <span class="settings-card-title">Plano vigente</span>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="bl-plan-summary">
+                                <div class="bl-plan-summary-main">
+                                    <span class="bl-plan-name" id="bl-plan-name">—</span>
+                                    <span class="bl-status-badge" id="bl-plan-badge" style="display:none"></span>
+                                </div>
+                                <div class="bl-plan-summary-side">
+                                    <span class="bl-plan-price" id="bl-plan-price"></span>
+                                    <span class="bl-plan-renew" id="bl-plan-renew"></span>
+                                </div>
+                            </div>
+                            <p class="bl-plan-note" id="bl-plan-note" style="display:none"></p>
+                        </div>
+                    </div>
+
+                    <!-- Payment history -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <path d="M14 2v6h6" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                    <line x1="9" y1="17" x2="13" y2="17" />
+                                </svg>
+                            </div>
+                            <span class="settings-card-title">Meses da assinatura</span>
+                        </div>
+                        <div class="settings-card-body">
+                            <div id="bl-periods-list"></div>
+                            <div id="bl-periods-empty" style="display:none">
+                                <p style="font-size:13px;color:var(--ap-text-muted);text-align:center;padding:12px 0;">
+                                    Nenhuma cobrança registrada ainda.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /#settings-view-cobranca -->
 
             </div><!-- /.settings-content -->
         </div><!-- /.settings-modal -->

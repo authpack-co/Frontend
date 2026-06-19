@@ -247,6 +247,13 @@ const fetchManager = {
 
     // Billing
 
+    async getBilling() {
+        const response = await fetchRoutes(`/api/subscription/billing`, {
+            credentials: "include"
+        });
+        return response;
+    },
+
     async checkoutPlus(paymentData) {
         const response = await fetchRoutes(`/api/subscription/checkout`, {
             method: "POST",
