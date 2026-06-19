@@ -486,3 +486,66 @@ body {
 .google-icon {
     flex-shrink: 0;
 }
+
+/* ============================================
+    Connecting State (account-aware activation)
+    ============================================ */
+.connecting-state .preset-connecting {
+    display: block !important;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
+.connect-avatar {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.connect-avatar-img,
+.connect-avatar-initials {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 3px solid var(--ap-accent);
+    background: var(--ap-bg-muted);
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+    animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.connect-avatar-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--ap-accent);
+    text-transform: uppercase;
+}
+
+.connect-account {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: center;
+}
+
+.connect-account-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--ap-text-primary);
+}
+
+.connect-account-email {
+    font-size: 0.85rem;
+    color: var(--ap-text-muted);
+}
+
+.hidden {
+    display: none !important;
+}

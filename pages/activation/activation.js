@@ -20,11 +20,46 @@ function setElementState(element, newState) {
     element.classList.add(`${newState}-state`);
 }
 
-// Retry handler
-function handleRetry() {
-    const container = document.getElementById('activationContainer');
-    setElementState(container, 'loading');
-    startActivation();
+// Em qualquer erro (limite de dispositivos, erro desconhecido, etc.) não faz sentido
+// repetir — provavelmente falharia de novo. Leva o usuário de volta para o início.
+function goHome() {
+    window.location.href = "/pages/dashboard/";
+}
+
+// Preenche a tela "Conectando" com a conta que está sendo ativada (foto + nome + email).
+// A autenticação já foi garantida pelo guard no <head>, então essa busca é rápida.
+async function renderConnectingAccount() {
+    try {
+        const res = await fetchManager.getAuthenticatedUser();
+        if (!res.ok) return;
+
+        const user = res.result.data;
+        const nameEl = document.getElementById('connectName');
+        const emailEl = document.getElementById('connectEmail');
+        const avatarImg = document.getElementById('connectAvatar');
+        const avatarInitials = document.getElementById('connectAvatarInitials');
+
+        if (nameEl) nameEl.textContent = user.name || 'sua conta';
+        if (emailEl) emailEl.textContent = user.email || '';
+
+        if (user.picture && avatarImg) {
+            avatarImg.onload = () => {
+                avatarImg.classList.remove('hidden');
+                if (avatarInitials) avatarInitials.classList.add('hidden');
+            };
+            // Se a foto falhar ao carregar, mantém as iniciais como fallback
+            avatarImg.onerror = () => {
+                avatarImg.classList.add('hidden');
+                if (avatarInitials) avatarInitials.classList.remove('hidden');
+            };
+            avatarImg.src = user.picture;
+        } else if (avatarInitials) {
+            avatarInitials.textContent = (user.name || '?').trim().charAt(0).toUpperCase();
+        }
+    } catch (err) {
+        // Mantém o placeholder genérico — não bloqueia a ativação
+        console.error("[DeviceActivation] Failed to load account:", err);
+    }
 }
 
 // ─── Main Activation Flow ───
@@ -34,6 +69,9 @@ function handleRetry() {
 
 async function startActivation() {
     const container = document.getElementById('activationContainer');
+
+    // Mostra qual conta está sendo conectada (em paralelo com a ativação)
+    renderConnectingAccount();
 
     try {
         // Get fingerprint
@@ -113,6 +151,6 @@ function waitForExtensionConfirmation(timeoutMs) {
 
 document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById('activationContainer');
-    setElementState(container, 'loading');
+    setElementState(container, 'connecting');
     await startActivation();
 });
