@@ -47,8 +47,7 @@ function createPackageElement(pkg, isAccess = false) {
         const stackIcon = createElement('div', 'stack-icon');
         const img = document.createElement('img');
         img.alt = session.name;
-        img.src = session.icon;
-        img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+        AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
         stackIcon.appendChild(img);
         iconStack.appendChild(stackIcon);
     });
@@ -238,8 +237,7 @@ function createCollectionSessionCardElement(session) {
     const icon = document.createElement('img');
     icon.className = 'session-card-icon';
     icon.alt = session.name;
-    icon.src = session.icon;
-    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
 
     const headerText = createElement('div', 'session-card-header-text');
 
@@ -298,8 +296,7 @@ function createSessionCardElement(session) {
     const icon = document.createElement('img');
     icon.className = 'session-card-icon';
     icon.alt = session.name;
-    icon.src = session.icon;
-    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
 
     const headerText = createElement('div', 'session-card-header-text');
 
@@ -436,8 +433,8 @@ function createUserAccessHistoryTable(data) {
         serviceIcon.className = 'service-icon';
 
         const img = document.createElement('img');
-        img.src = item.session.icon;
         img.alt = '';
+        AuthPackFavicon.apply(img, { icon: item.session.icon, url: item.session.url });
 
         const serviceName = document.createElement('span');
         serviceName.textContent = item.session.name;
@@ -1190,7 +1187,7 @@ function renderSessionDetails(session, pkg, period) {
 
     headerTitle.textContent = pkg.name;
 
-    sessionLogo.src = session.icon;
+    AuthPackFavicon.apply(sessionLogo, { icon: session.icon, url: session.url });
     sessionName.textContent = session.name;
     sessionDomain.textContent = new URL(session.url).hostname.replace(/^www\./, "");
 

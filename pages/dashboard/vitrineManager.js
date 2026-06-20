@@ -1157,9 +1157,8 @@ function createVitrineProductCard(product) {
             const icon = document.createElement('div');
             icon.className = 'vp-icon';
             const img = document.createElement('img');
-            img.src = s.icon;
             img.alt = s.name;
-            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+            AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
             icon.appendChild(img);
 
             // Add +N badge on the last visible icon if there are more
@@ -2195,9 +2194,8 @@ function renderStepPackages() {
             const iconWrap = document.createElement('div');
             iconWrap.className = 'stack-icon';
             const img = document.createElement('img');
-            img.src = s.icon;
             img.alt = s.name;
-            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+            AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
             iconWrap.appendChild(img);
             icons.appendChild(iconWrap);
         });

@@ -23,10 +23,6 @@
         return (params.get('key') || '').trim();
     }
 
-    function faviconUrl(domain) {
-        return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    }
-
     function renderStack(sessions) {
         const stack = document.getElementById('stack-preview');
         stack.innerHTML = '';
@@ -37,11 +33,13 @@
             av.className = 'inv-stack-av';
             const img = document.createElement('img');
             img.alt = s.name || '';
-            img.src = s.icon || '/assets/images/fallback-session-icon.png';
-            img.onerror = function () {
-                this.style.display = 'none';
-                av.textContent = (s.name || '?').charAt(0).toUpperCase();
-            };
+            AuthPackFavicon.apply(img, {
+                icon: s.icon, url: s.url,
+                onFinalError: () => {
+                    img.style.display = 'none';
+                    av.textContent = (s.name || '?').charAt(0).toUpperCase();
+                }
+            });
             av.appendChild(img);
             stack.appendChild(av);
         });

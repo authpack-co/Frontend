@@ -266,7 +266,9 @@
         const icons = shown.map(s => {
             const label = esc(s.name || extractDomain(s.url) || '?');
             if (s.icon) {
-                return `<div class="svc-icon" title="${label}" style="${sizeStyle}"><img src="${s.icon}" alt="${label}" onerror="this.parentNode.textContent='${initialFor(s.name || extractDomain(s.url))}'"></div>`;
+                const initial = initialFor(s.name || extractDomain(s.url));
+                const google = AuthPackFavicon.googleUrl(s.url);
+                return `<div class="svc-icon" title="${label}" style="${sizeStyle}"><img src="${s.icon}" alt="${label}" data-fav-google="${google}" data-fav-initial="${initial}" onerror="AuthPackFavicon.inlineError(this)"></div>`;
             }
             const [c1, c2] = paletteFor(s.name || s.url || '?');
             return `<div class="svc-icon" title="${label}" style="background:linear-gradient(150deg,${c1},${c2});${sizeStyle}">${initialFor(s.name || extractDomain(s.url))}</div>`;

@@ -119,9 +119,8 @@
                     iconWrap.className = 'vt-service-icon';
 
                     const img = document.createElement('img');
-                    img.src = s.icon;
                     img.alt = domain;
-                    img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+                    AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
                     iconWrap.appendChild(img);
 
                     const nameEl = document.createElement('span');

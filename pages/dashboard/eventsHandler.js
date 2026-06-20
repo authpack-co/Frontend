@@ -403,13 +403,15 @@ function handleUpdatePackage(e) {
 
         const icon = document.createElement('img');
         icon.className = 'up-item-icon';
-        icon.src = s.icon || '';
         icon.alt = '';
-        icon.addEventListener('error', () => {
-            const fb = document.createElement('span');
-            fb.className = 'up-item-icon up-item-icon--fb';
-            fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
-            icon.replaceWith(fb);
+        AuthPackFavicon.apply(icon, {
+            icon: s.icon, url: s.url,
+            onFinalError: () => {
+                const fb = document.createElement('span');
+                fb.className = 'up-item-icon up-item-icon--fb';
+                fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
+                icon.replaceWith(fb);
+            }
         });
 
         let label = s.name;
@@ -1649,7 +1651,7 @@ const deleteSessionHandler = async (event) => {
                     const stackIcon = createElement('div', 'stack-icon');
                     const img = document.createElement('img');
                     img.alt = session.name;
-                    img.src = session.icon;
+                    AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
                     stackIcon.appendChild(img);
                     iconStack.appendChild(stackIcon);
                 });
