@@ -7810,3 +7810,224 @@ textarea:focus-visible {
 .up-item[data-state="error"] .up-item-status::before { content: "\2715"; font-size: 12px; font-weight: 800; color: var(--ap-danger); }
 
 .up-hint { margin: 14px 0 0; font-size: 12px; color: var(--ap-text-secondary); opacity: .85; }
+
+/* ============================================
+   Vitrine Categories
+   ============================================ */
+.vt-categories-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 18px;
+    flex-wrap: wrap;
+}
+
+.vt-cat-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px dashed var(--ap-border-hover);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ap-text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.vt-cat-add-btn:hover {
+    color: var(--ap-text-primary);
+    border-color: var(--ap-accent);
+    background: var(--ap-bg-hover);
+}
+
+.vt-cat-chips {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.vt-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 11px;
+    border: 1px solid var(--ap-border);
+    border-radius: 999px;
+    background: var(--ap-bg-card);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ap-text-primary);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.vt-cat-chip:hover {
+    border-color: var(--ap-border-hover);
+}
+
+.vt-cat-chip.dragging {
+    opacity: 0.5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vt-cat-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.vt-cat-name {
+    line-height: 1;
+}
+
+/* ── Color swatches (create/edit modal) ── */
+.vt-color-swatches {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.vt-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease;
+    position: relative;
+}
+
+.vt-swatch:hover {
+    transform: scale(1.08);
+}
+
+.vt-swatch.selected {
+    border-color: var(--ap-text-primary);
+}
+
+.vt-swatch.selected::after {
+    content: "\2713";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.btn-danger-ghost {
+    background: transparent;
+    color: var(--ap-danger);
+    border: 1px solid transparent;
+    margin-right: auto; /* push to the far left of the footer */
+}
+
+.btn-danger-ghost:hover {
+    background: var(--ap-danger-border);
+}
+
+/* ── "Adicionar a" submenu inside the product options menu ── */
+.product-options {
+    overflow: visible; /* allow the category flyout to escape the menu box */
+}
+
+.vt-add-to-item {
+    position: relative;
+    width: 100%;
+}
+
+.vt-add-to-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--ap-text-primary);
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.vt-add-to-btn:hover {
+    background: var(--ap-bg-hover);
+}
+
+.vt-add-to-caret {
+    margin-left: auto;
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.vt-cat-submenu {
+    position: absolute;
+    right: 100%;
+    top: -1px;
+    min-width: 160px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--ap-bg-page);
+    border: 1px solid var(--ap-border-muted);
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 6px 16px;
+    border-radius: 8px;
+    padding: 4px;
+    display: none;
+    flex-direction: column;
+    z-index: 20;
+}
+
+.vt-add-to-item:hover .vt-cat-submenu {
+    display: flex;
+}
+
+.vt-cat-submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--ap-text-primary);
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: left;
+}
+
+.vt-cat-submenu-item:hover {
+    background: var(--ap-bg-hover);
+}
+
+.vt-cat-submenu-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vt-cat-submenu-check {
+    color: var(--ap-accent);
+    font-weight: 800;
+    width: 12px;
+    text-align: center;
+}
+
+.vt-cat-submenu-item.active .vt-cat-submenu-name {
+    font-weight: 600;
+}
+
+/* Inactive (former-Plus) vitrine: hide category management affordances */
+.vt-products-section.vt-inactive .vt-cat-add-btn {
+    display: none;
+}

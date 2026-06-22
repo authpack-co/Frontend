@@ -3207,6 +3207,21 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- ── Categories bar ── -->
+                            <div class="vt-categories-bar" id="vt-categories-bar">
+                                <button class="vt-cat-add-btn" id="btn-add-category">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M5 12h14" />
+                                        <path d="M12 5v14" />
+                                    </svg>
+                                    Adicionar categoria
+                                </button>
+                                <div class="vt-cat-chips" id="vt-cat-chips">
+                                    <!-- Category chips rendered by JS -->
+                                </div>
+                            </div>
                             <div class="vitrine-products-grid" id="vitrine-products-grid">
                                 <!-- Products rendered by JS -->
                             </div>
@@ -3410,6 +3425,75 @@
                 <div class="buttonContent content-state">
                     <div class="preset-content">
                         <button class="btn btn-danger confirm-btn" id="confirm-delete-product">Pausar</button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-danger confirm-btn">
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Create/Edit Modal -->
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="category-modal-title">Nova categoria</h2>
+                <button class="close-btn" id="category-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-input" id="category-name-input" maxlength="30"
+                        placeholder="Ex: Streaming">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cor</label>
+                    <div class="vt-color-swatches" id="vt-color-swatches">
+                        <!-- Swatches rendered by JS -->
+                    </div>
+                </div>
+                <span class="error-message hidden" id="category-modal-error"></span>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger-ghost hidden" id="category-modal-delete">Excluir</button>
+                <button class="btn btn-secondary cancel-btn" id="category-modal-cancel">Cancelar</button>
+                <div class="buttonContent content-state">
+                    <div class="preset-content">
+                        <button class="btn btn-primary" id="category-modal-save">Criar</button>
+                    </div>
+                    <div class="preset-loading">
+                        <button class="btn btn-primary">
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Category Confirmation Modal -->
+    <div class="modal-overlay" id="deleteCategoryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Excluir categoria</h2>
+            </div>
+            <div class="modal-body">
+                <p class="form-text">Tem certeza de que deseja excluir
+                    <strong id="delete-category-name">categoria</strong>?
+                </p>
+                <div class="form-note">
+                    <span class="note">Os produtos não serão removidos — apenas deixam de pertencer a esta
+                        categoria.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary cancel-btn">Cancelar</button>
+                <div class="buttonContent content-state">
+                    <div class="preset-content">
+                        <button class="btn btn-danger confirm-btn" id="confirm-delete-category">Excluir</button>
                     </div>
                     <div class="preset-loading">
                         <button class="btn btn-danger confirm-btn">

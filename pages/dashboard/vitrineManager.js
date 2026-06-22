@@ -4,6 +4,10 @@
 // ============================================================================
 
 let vitrineProducts = [];
+let vitrineCategories = [];
+// Whether the category bar allows mutations (create/edit/drag/assign). True for
+// an active Plus seller; false for an inactive (former-Plus) read-only vitrine.
+let vitrineCategoriesEditable = false;
 let vitrineLoaded = false;
 // True when the seller is a registered recipient who no longer has Plus.
 // Used to keep the seller status badge as "Inativa" even after the dashboard
@@ -158,6 +162,8 @@ async function loadVitrineTab() {
             // Load products (render empty state if none)
             const productsRes = await fetchManager.getSellerProducts();
             vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+            vitrineCategoriesEditable = true;
+            await loadVitrineCategories();
             renderVitrineProducts(vitrineProducts);
 
             // Load dashboard data (handles API failures gracefully)
@@ -175,6 +181,8 @@ async function loadVitrineTab() {
         console.log('[Vitrine] Products:', productsRes);
         vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
 
+        vitrineCategoriesEditable = true;
+        await loadVitrineCategories();
         renderVitrineProducts(vitrineProducts);
         setElementState(container, 'vitrine-content');
 
@@ -216,6 +224,8 @@ async function loadInactiveVitrine() {
     // Load products (rendered read-only) — withdrawal stays available via the hero.
     const productsRes = await fetchManager.getSellerProducts();
     vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+    vitrineCategoriesEditable = false;
+    await loadVitrineCategories();
     renderVitrineProducts(vitrineProducts);
 
     // Load dashboard data (balance + KPIs). Withdraw button remains functional.
@@ -1338,6 +1348,51 @@ function createVitrineProductCard(product) {
         productOptions.appendChild(pauseBtn);
     }
 
+    // "Adicionar a" — category submenu (flyout). Only when the seller can edit
+    // and has at least one category.
+    if (vitrineCategoriesEditable && vitrineCategories.length > 0) {
+        const addToItem = document.createElement('div');
+        addToItem.className = 'vt-add-to-item';
+
+        const addToBtn = document.createElement('button');
+        addToBtn.className = 'vt-add-to-btn';
+        addToBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="M12 5v14"/>
+            </svg>`;
+        addToBtn.appendChild(document.createTextNode('Adicionar a'));
+        const caret = document.createElement('span');
+        caret.className = 'vt-add-to-caret';
+        caret.textContent = '‹';
+        addToBtn.appendChild(caret);
+        addToBtn.addEventListener('click', (e) => e.stopPropagation());
+        addToItem.appendChild(addToBtn);
+
+        const submenu = document.createElement('div');
+        submenu.className = 'vt-cat-submenu';
+        vitrineCategories.forEach(cat => {
+            const isOn = (product.category_ids || []).includes(cat.id);
+            const opt = document.createElement('button');
+            opt.className = 'vt-cat-submenu-item' + (isOn ? ' active' : '');
+            opt.innerHTML = `<span class="vt-cat-dot" style="background:${cat.color}"></span>`;
+            const lbl = document.createElement('span');
+            lbl.className = 'vt-cat-submenu-name';
+            lbl.textContent = cat.name;
+            opt.appendChild(lbl);
+            const check = document.createElement('span');
+            check.className = 'vt-cat-submenu-check';
+            check.textContent = isOn ? '✓' : '';
+            opt.appendChild(check);
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleProductCategory(product, cat.id, opt, check);
+            });
+            submenu.appendChild(opt);
+        });
+        addToItem.appendChild(submenu);
+        productOptions.appendChild(addToItem);
+    }
+
     productOptions.appendChild(editBtn);
 
     const deleteBtn = document.createElement('button');
@@ -1373,6 +1428,285 @@ function createVitrineProductCard(product) {
     return card;
 }
 
+
+// ============================================================================
+// VITRINE CATEGORIES
+// ============================================================================
+
+// Must mirror backend src/utils/vitrineCategoryColors.js
+const VITRINE_CATEGORY_COLORS = ['#3b82f6', '#22c55e', '#8b5cf6', '#f97316', '#ec4899'];
+
+// Fetch + render the seller's categories. Called whenever the products load.
+async function loadVitrineCategories() {
+    try {
+        const res = await fetchManager.getSellerCategories();
+        vitrineCategories = res.ok ? (res.result?.categories || []) : [];
+    } catch (err) {
+        console.error('Error loading categories:', err);
+        vitrineCategories = [];
+    }
+    renderCategoryBar();
+}
+
+function renderCategoryBar() {
+    const addBtn = document.getElementById('btn-add-category');
+    const chips = document.getElementById('vt-cat-chips');
+    if (!chips) return;
+
+    if (addBtn) addBtn.classList.toggle('hidden', !vitrineCategoriesEditable);
+
+    chips.innerHTML = '';
+    vitrineCategories.forEach(cat => {
+        const chip = document.createElement('div');
+        chip.className = 'vt-cat-chip';
+        chip.dataset.catId = cat.id;
+        chip.draggable = vitrineCategoriesEditable;
+
+        const dot = document.createElement('span');
+        dot.className = 'vt-cat-dot';
+        dot.style.background = cat.color;
+        chip.appendChild(dot);
+
+        const name = document.createElement('span');
+        name.className = 'vt-cat-name';
+        name.textContent = cat.name;
+        chip.appendChild(name);
+
+        if (vitrineCategoriesEditable) {
+            chip.title = 'Editar categoria';
+            chip.addEventListener('click', () => {
+                // A drag just ended on this chip — swallow the click.
+                if (chip.dataset.justDragged) { delete chip.dataset.justDragged; return; }
+                openCategoryModal('edit', cat);
+            });
+            attachChipDrag(chip);
+        }
+
+        chips.appendChild(chip);
+    });
+}
+
+// ── Drag-and-drop reorder (native, dependency-free) ──
+let draggedChip = null;
+
+function attachChipDrag(chip) {
+    chip.addEventListener('dragstart', (e) => {
+        draggedChip = chip;
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    chip.addEventListener('dragend', () => {
+        chip.classList.remove('dragging');
+        chip.dataset.justDragged = '1';
+        setTimeout(() => { delete chip.dataset.justDragged; }, 300);
+        draggedChip = null;
+        persistCategoryOrder();
+    });
+    chip.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!draggedChip || draggedChip === chip) return;
+        const chips = document.getElementById('vt-cat-chips');
+        const rect = chip.getBoundingClientRect();
+        const after = (e.clientX - rect.left) > rect.width / 2;
+        chips.insertBefore(draggedChip, after ? chip.nextSibling : chip);
+    });
+}
+
+async function persistCategoryOrder() {
+    const chips = document.getElementById('vt-cat-chips');
+    const order = Array.from(chips.querySelectorAll('.vt-cat-chip')).map(c => c.dataset.catId);
+    const current = vitrineCategories.map(c => c.id);
+    if (order.length === current.length && order.every((id, i) => id === current[i])) return;
+
+    // Optimistic: reorder the local model to match the DOM.
+    const byId = Object.fromEntries(vitrineCategories.map(c => [c.id, c]));
+    vitrineCategories = order.map(id => byId[id]).filter(Boolean);
+
+    try {
+        const res = await fetchManager.reorderCategories(order);
+        if (!res.ok) throw new Error('reorder failed');
+    } catch (err) {
+        console.error('Reorder error:', err);
+        notify('error', 'Não foi possível salvar a ordem');
+        await loadVitrineCategories(); // resync from server
+    }
+}
+
+// ── Create / edit modal ──
+let categoryModalMode = 'create';
+let categoryModalId = null;
+let categoryModalColor = VITRINE_CATEGORY_COLORS[0];
+
+function renderColorSwatches() {
+    const wrap = document.getElementById('vt-color-swatches');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    VITRINE_CATEGORY_COLORS.forEach(color => {
+        const sw = document.createElement('button');
+        sw.type = 'button';
+        sw.className = 'vt-swatch' + (color === categoryModalColor ? ' selected' : '');
+        sw.style.background = color;
+        sw.addEventListener('click', () => {
+            categoryModalColor = color;
+            wrap.querySelectorAll('.vt-swatch').forEach(s => s.classList.remove('selected'));
+            sw.classList.add('selected');
+        });
+        wrap.appendChild(sw);
+    });
+}
+
+function openCategoryModal(mode, cat) {
+    categoryModalMode = mode;
+    categoryModalId = cat?.id || null;
+    categoryModalColor = cat?.color || VITRINE_CATEGORY_COLORS[0];
+
+    document.getElementById('category-modal-title').textContent = mode === 'edit' ? 'Editar categoria' : 'Nova categoria';
+    document.getElementById('category-name-input').value = cat?.name || '';
+    document.getElementById('category-modal-save').textContent = mode === 'edit' ? 'Salvar' : 'Criar';
+    document.getElementById('category-modal-delete').classList.toggle('hidden', mode !== 'edit');
+
+    const err = document.getElementById('category-modal-error');
+    err.classList.add('hidden');
+    err.textContent = '';
+
+    const btnContainer = document.querySelector('#categoryModal .buttonContent');
+    setElementState(btnContainer, 'content');
+
+    renderColorSwatches();
+    document.getElementById('categoryModal').classList.add('show');
+    setTimeout(() => document.getElementById('category-name-input').focus(), 50);
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').classList.remove('show');
+}
+
+function showCategoryError(msg) {
+    const err = document.getElementById('category-modal-error');
+    err.textContent = msg;
+    err.classList.remove('hidden');
+}
+
+async function saveCategoryModal() {
+    const name = document.getElementById('category-name-input').value.trim();
+    if (name.length < 2 || name.length > 30) {
+        showCategoryError('O nome deve ter entre 2 e 30 caracteres.');
+        return;
+    }
+
+    const btnContainer = document.querySelector('#categoryModal .buttonContent');
+    setElementState(btnContainer, 'loading');
+
+    try {
+        const res = categoryModalMode === 'edit'
+            ? await fetchManager.updateCategory(categoryModalId, { name, color: categoryModalColor })
+            : await fetchManager.createCategory({ name, color: categoryModalColor });
+
+        if (res.ok) {
+            closeCategoryModal();
+            notify('success', categoryModalMode === 'edit' ? 'Categoria atualizada' : 'Categoria criada');
+            await loadVitrineCategories();
+            renderVitrineProducts(vitrineProducts); // refresh "Adicionar a" submenus
+        } else {
+            showCategoryError(res.result?.error || 'Erro ao salvar a categoria.');
+            setElementState(btnContainer, 'content');
+        }
+    } catch (err) {
+        console.error('Save category error:', err);
+        showCategoryError('Erro de conexão.');
+        setElementState(btnContainer, 'content');
+    }
+}
+
+// ── Delete ──
+let deleteCategoryId = null;
+
+function openDeleteCategoryModal(cat) {
+    deleteCategoryId = cat.id;
+    document.getElementById('delete-category-name').textContent = cat.name;
+    const btnContainer = document.querySelector('#deleteCategoryModal .buttonContent');
+    setElementState(btnContainer, 'content');
+    document.getElementById('deleteCategoryModal').classList.add('show');
+}
+
+function closeDeleteCategoryModal() {
+    document.getElementById('deleteCategoryModal').classList.remove('show');
+    deleteCategoryId = null;
+}
+
+// ── Toggle a product's membership in a category (M2M) ──
+async function toggleProductCategory(product, categoryId, optEl, checkEl) {
+    const ids = product.category_ids || (product.category_ids = []);
+    const isOn = ids.includes(categoryId);
+    try {
+        const res = isOn
+            ? await fetchManager.removeProductFromCategory(product.id, categoryId)
+            : await fetchManager.addProductToCategory(product.id, categoryId);
+        if (!res.ok) throw new Error('toggle failed');
+
+        if (isOn) {
+            product.category_ids = ids.filter(id => id !== categoryId);
+            optEl.classList.remove('active');
+            checkEl.textContent = '';
+        } else {
+            ids.push(categoryId);
+            optEl.classList.add('active');
+            checkEl.textContent = '✓';
+        }
+    } catch (err) {
+        console.error('Toggle category error:', err);
+        notify('error', 'Erro ao atualizar categoria');
+    }
+}
+
+// ── Wire up modal controls (once on load) ──
+document.getElementById('btn-add-category')?.addEventListener('click', () => openCategoryModal('create'));
+document.getElementById('category-modal-save')?.addEventListener('click', saveCategoryModal);
+document.getElementById('category-modal-cancel')?.addEventListener('click', closeCategoryModal);
+document.getElementById('category-modal-close')?.addEventListener('click', closeCategoryModal);
+document.getElementById('categoryModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCategoryModal();
+});
+document.getElementById('category-name-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveCategoryModal();
+});
+document.getElementById('category-modal-delete')?.addEventListener('click', () => {
+    const cat = vitrineCategories.find(c => c.id === categoryModalId);
+    if (!cat) return;
+    closeCategoryModal();
+    openDeleteCategoryModal(cat);
+});
+
+document.getElementById('confirm-delete-category')?.addEventListener('click', async () => {
+    if (!deleteCategoryId) return;
+    const goneId = deleteCategoryId;
+    const btnContainer = document.querySelector('#deleteCategoryModal .buttonContent');
+    setElementState(btnContainer, 'loading');
+    try {
+        const res = await fetchManager.deleteCategory(goneId);
+        if (res.ok) {
+            closeDeleteCategoryModal();
+            notify('success', 'Categoria excluída');
+            await loadVitrineCategories();
+            // Drop the deleted id from local product assignments + refresh cards.
+            vitrineProducts.forEach(p => {
+                if (Array.isArray(p.category_ids)) p.category_ids = p.category_ids.filter(id => id !== goneId);
+            });
+            renderVitrineProducts(vitrineProducts);
+        } else {
+            notify('error', res.result?.error || 'Erro ao excluir');
+            setElementState(btnContainer, 'content');
+        }
+    } catch (err) {
+        console.error('Delete category error:', err);
+        notify('error', 'Erro de conexão');
+        setElementState(btnContainer, 'content');
+    }
+});
+document.getElementById('deleteCategoryModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeDeleteCategoryModal();
+});
+document.querySelector('#deleteCategoryModal .cancel-btn')?.addEventListener('click', closeDeleteCategoryModal);
 
 // ============================================================================
 // SELLER ONBOARDING (Pagar.me) — Fullscreen preset inside vitrine-container

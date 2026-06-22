@@ -358,6 +358,58 @@ const fetchManager = {
         return response;
     },
 
+    // ── Vitrine categories ──
+    async getSellerCategories() {
+        const response = await fetchRoutes(`/api/marketplace/seller/categories`);
+        return response;
+    },
+
+    async createCategory(data) {
+        const response = await fetchRoutes(`/api/marketplace/seller/categories`, {
+            method: "POST",
+            body: JSON.stringify(data)
+        });
+        return response;
+    },
+
+    async updateCategory(id, data) {
+        const response = await fetchRoutes(`/api/marketplace/seller/categories/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(data)
+        });
+        return response;
+    },
+
+    async deleteCategory(id) {
+        const response = await fetchRoutes(`/api/marketplace/seller/categories/${id}`, {
+            method: "DELETE"
+        });
+        return response;
+    },
+
+    async reorderCategories(order) {
+        const response = await fetchRoutes(`/api/marketplace/seller/categories/reorder`, {
+            method: "PUT",
+            body: JSON.stringify({ order })
+        });
+        return response;
+    },
+
+    async addProductToCategory(productId, categoryId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/categories`, {
+            method: "POST",
+            body: JSON.stringify({ category_id: categoryId })
+        });
+        return response;
+    },
+
+    async removeProductFromCategory(productId, categoryId) {
+        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/categories/${categoryId}`, {
+            method: "DELETE"
+        });
+        return response;
+    },
+
     async getMarketplaceProducts() {
         const response = await fetchRoutes(`/api/marketplace/products`);
         return response;
