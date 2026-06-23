@@ -81,105 +81,91 @@ a {
     color: var(--ap-success);
 }
 
-/* ===================== Vitrine context bar ===================== */
-/* Sticky strip below the topbar that anchors the product to its vitrine.
+/* Left side of the header: brand + (optional) vitrine breadcrumb */
+.vt-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Vitrine breadcrumb inside the header: │ [avatar] Vitrine ✓ › Produto.
    Hidden by default; revealed by script.js once the vitrine is loaded. */
-.vt-vitrine-bar {
-    position: sticky;
-    top: 55px;
-    z-index: 25;
-    background: var(--ap-bg-card);
-    border-bottom: 1px solid var(--ap-border);
-}
-
-.vt-vitrine-bar[hidden] {
-    display: none;
-}
-
-/* When the vitrine bar is visible, push the sticky checkout below it */
-body.has-vitrine-bar .vt-checkout {
-    top: 110px;
-}
-
-/* Breadcrumb trail: [← avatar Vitrine ✓] › Produto */
-.vt-vb-inner {
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: 10px 24px;
+.vt-crumb {
     display: flex;
     align-items: center;
     gap: 9px;
     min-width: 0;
 }
 
-/* Store identity = the single link back to the vitrine */
-.vt-vb-identity {
+.vt-crumb[hidden] {
+    display: none;
+}
+
+.vt-crumb-div {
+    width: 1px;
+    height: 22px;
+    flex-shrink: 0;
+    background: var(--ap-border);
+}
+
+/* Store identity = the link to the vitrine */
+.vt-crumb-store {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
-    margin-left: -6px;
-    padding: 5px 10px 5px 6px;
-    border-radius: 9px;
+    margin: -4px 0;
+    padding: 4px 8px;
+    border-radius: 8px;
     color: var(--ap-text-primary);
     transition: background 0.15s;
 }
 
-.vt-vb-identity:hover {
+.vt-crumb-store:hover {
     background: var(--ap-bg-muted);
 }
 
-.vt-vb-back-icon {
-    color: var(--ap-text-muted);
+.vt-crumb-avatar {
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
-    transition: transform 0.15s, color 0.15s;
-}
-
-.vt-vb-identity:hover .vt-vb-back-icon {
-    color: var(--ap-text-secondary);
-    transform: translateX(-2px);
-}
-
-.vt-vb-avatar {
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-    border-radius: 7px;
+    border-radius: 6px;
     overflow: hidden;
     display: grid;
     place-items: center;
     font-family: var(--ap-font-heading);
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     color: #fff;
 }
 
-.vt-vb-avatar img {
+.vt-crumb-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.vt-vb-name {
+.vt-crumb-name {
     font-family: var(--ap-font-heading);
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: var(--ap-text-primary);
     letter-spacing: -0.01em;
     white-space: nowrap;
 }
 
-.vt-vb-verified {
+.vt-crumb-verified {
     color: var(--ap-accent);
     flex-shrink: 0;
 }
 
-.vt-vb-crumb-sep {
+.vt-crumb-sep {
     color: var(--ap-text-placeholder);
     flex-shrink: 0;
 }
 
-.vt-vb-crumb-current {
+.vt-crumb-current {
     font-size: 13px;
     color: var(--ap-text-muted);
     min-width: 0;
@@ -472,7 +458,6 @@ body.has-vitrine-bar .vt-checkout {
 /* ===================== Checkout card ===================== */
 .vt-checkout {
     position: sticky;
-    /* Clears the topbar; bumped to also clear the vitrine bar when it's present */
     top: 86px;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
@@ -1085,6 +1070,12 @@ body.has-vitrine-bar .vt-checkout {
     .grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    /* Tight header: keep brand + store, drop the breadcrumb tail */
+    .vt-crumb-sep,
+    .vt-crumb-current {
+        display: none;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1116,13 +1107,8 @@ body.has-vitrine-bar .vt-checkout {
         grid-template-columns: 1fr;
     }
 
-    .vt-vb-inner {
-        padding: 9px 16px;
-    }
-
-    /* On phones, keep just the store identity; drop the breadcrumb tail */
-    .vt-vb-crumb-sep,
-    .vt-vb-crumb-current {
+    /* Free up header room on phones: brand text + store identity stay */
+    .vt-secure-chip {
         display: none;
     }
 }
@@ -1136,8 +1122,7 @@ body.has-vitrine-bar .vt-checkout {
     .vt-cta,
     .vt-service,
     .vt-seller.is-vitrine,
-    .vt-vb-identity,
-    .vt-vb-back-icon,
+    .vt-crumb-store,
     .pcard,
     .buy-btn {
         transition: none;

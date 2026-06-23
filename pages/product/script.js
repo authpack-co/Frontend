@@ -270,7 +270,7 @@
         const products = res.result.products || [];
         const vitrineUrl = `/pages/vitrine/?loja=${vitrine.id}`;
 
-        renderVitrineContextBar(vitrine, vitrineUrl, product);
+        renderVitrineCrumb(vitrine, vitrineUrl, product);
         renderVitrineBand(vitrine, vitrineUrl, products.length);
         renderRelated(selectRelated(product, products), vitrineUrl);
     }
@@ -297,17 +297,16 @@
         return siblings.sort(bySalesDesc).slice(0, 3);
     }
 
-    // Reveal the sticky breadcrumb below the topbar — "← Vitrine › Produto".
-    // The store chunk is the single link back to the vitrine. Only shown for
-    // published vitrines.
-    function renderVitrineContextBar(v, url, product) {
-        const bar = document.getElementById('vt-vitrine-bar');
-        if (!bar) return;
+    // Reveal the in-header breadcrumb — "│ Vitrine › Produto". The store chunk
+    // links to the vitrine. Only shown for published vitrines.
+    function renderVitrineCrumb(v, url, product) {
+        const crumb = document.getElementById('vt-crumb');
+        if (!crumb) return;
 
-        document.getElementById('vt-vb-identity').setAttribute('href', url);
+        document.getElementById('vt-crumb-store').setAttribute('href', url);
 
         // Avatar — same fallback chain as the checkout band
-        const avatarEl = document.getElementById('vt-vb-avatar');
+        const avatarEl = document.getElementById('vt-crumb-avatar');
         if (v.avatar_url) {
             const img = document.createElement('img');
             img.src = v.avatar_url;
@@ -318,14 +317,13 @@
             fillInitial(avatarEl, v.display_name);
         }
 
-        document.getElementById('vt-vb-name').textContent = v.display_name;
-        if (v.verified) document.getElementById('vt-vb-verified').style.display = '';
+        document.getElementById('vt-crumb-name').textContent = v.display_name;
+        if (v.verified) document.getElementById('vt-crumb-verified').style.display = '';
 
         // Breadcrumb tail = the current product
-        document.getElementById('vt-vb-crumb-current').textContent = nameOf(product);
+        document.getElementById('vt-crumb-current').textContent = nameOf(product);
 
-        bar.hidden = false;
-        document.body.classList.add('has-vitrine-bar');
+        crumb.hidden = false;
     }
 
     // Upgrade the seller block into a clickable vitrine band.
