@@ -26,6 +26,8 @@
         renderProduct(product);
         setElementState(container, 'content');
         setupCheckout(product);
+        // Vitrine context (band + related) — fetched after main content, non-blocking
+        loadVitrineContext(product);
     } catch (err) {
         console.error('Error loading product:', err);
         setElementState(container, 'empty');
@@ -248,8 +250,230 @@
     }
 
     // ====================================================================
+    // VITRINE CONTEXT (band + related products)
+    // ====================================================================
+
+    async function loadVitrineContext(product) {
+        if (!product.vitrine_id) return;
+
+        let res;
+        try {
+            res = await fetchManager.getVitrine(product.vitrine_id);
+        } catch (err) {
+            console.error('Error loading vitrine context:', err);
+            return;
+        }
+
+        if (!res.ok || !res.result?.vitrine) return;
+
+        const vitrine = res.result.vitrine;
+        const products = res.result.products || [];
+        const vitrineUrl = `/pages/vitrine/?loja=${vitrine.id}`;
+
+        renderVitrineContextBar(vitrine, vitrineUrl, product);
+        renderVitrineBand(vitrine, vitrineUrl, products.length);
+        renderRelated(selectRelated(product, products), vitrineUrl);
+    }
+
+    // Pick which sibling products to show. Categories come from the vitrine's own
+    // taxonomy (category_ids), which only the vitrine response carries — so we read
+    // this product's categories from its entry in that list. If it shares at least
+    // one category, show those siblings; otherwise just a few best-sellers. Both
+    // lists are ordered by sales (best first).
+    function selectRelated(product, allProducts) {
+        const siblings = allProducts.filter(p => p.id !== product.id);
+        const bySalesDesc = (a, b) => salesOf(b) - salesOf(a);
+
+        const self = allProducts.find(p => p.id === product.id);
+        const myCats = (self && self.category_ids) || [];
+
+        if (myCats.length) {
+            return siblings
+                .filter(p => (p.category_ids || []).some(id => myCats.includes(id)))
+                .sort(bySalesDesc);
+        }
+
+        // No category on this product → a few best-sellers
+        return siblings.sort(bySalesDesc).slice(0, 3);
+    }
+
+    // Reveal the sticky breadcrumb below the topbar — "← Vitrine › Produto".
+    // The store chunk is the single link back to the vitrine. Only shown for
+    // published vitrines.
+    function renderVitrineContextBar(v, url, product) {
+        const bar = document.getElementById('vt-vitrine-bar');
+        if (!bar) return;
+
+        document.getElementById('vt-vb-identity').setAttribute('href', url);
+
+        // Avatar — same fallback chain as the checkout band
+        const avatarEl = document.getElementById('vt-vb-avatar');
+        if (v.avatar_url) {
+            const img = document.createElement('img');
+            img.src = v.avatar_url;
+            img.alt = v.display_name;
+            img.onerror = function () { this.remove(); fillInitial(avatarEl, v.display_name); };
+            avatarEl.appendChild(img);
+        } else {
+            fillInitial(avatarEl, v.display_name);
+        }
+
+        document.getElementById('vt-vb-name').textContent = v.display_name;
+        if (v.verified) document.getElementById('vt-vb-verified').style.display = '';
+
+        // Breadcrumb tail = the current product
+        document.getElementById('vt-vb-crumb-current').textContent = nameOf(product);
+
+        bar.hidden = false;
+        document.body.classList.add('has-vitrine-bar');
+    }
+
+    // Upgrade the seller block into a clickable vitrine band.
+    function renderVitrineBand(v, url, productsCount) {
+        const band = document.getElementById('vt-seller');
+        band.setAttribute('href', url);
+        band.classList.add('is-vitrine');
+
+        // Avatar — vitrine identity overrides the raw creator picture
+        const avatarEl = document.getElementById('vt-seller-avatar');
+        avatarEl.innerHTML = '';
+        avatarEl.style.background = '';
+        avatarEl.textContent = '';
+        if (v.avatar_url) {
+            const img = document.createElement('img');
+            img.src = v.avatar_url;
+            img.alt = v.display_name;
+            img.onerror = function () { this.remove(); fillInitial(avatarEl, v.display_name); };
+            avatarEl.appendChild(img);
+        } else {
+            fillInitial(avatarEl, v.display_name);
+        }
+
+        document.getElementById('vt-seller-name').textContent = v.display_name;
+        const count = Number(productsCount || 0);
+        document.getElementById('vt-seller-meta').textContent = count > 0
+            ? `${count} ${count === 1 ? 'produto' : 'produtos'}${v.verified ? ' · vitrine verificada' : ''}`
+            : 'Vitrine';
+        if (v.verified) document.getElementById('vt-seller-verified').style.display = '';
+        document.getElementById('vt-seller-go').style.display = '';
+    }
+
+    function renderRelated(siblings, vitrineUrl) {
+        if (!siblings.length) return;
+
+        const section = document.getElementById('vt-related');
+        const track = document.getElementById('vt-related-track');
+        document.getElementById('vt-related-all').setAttribute('href', vitrineUrl);
+
+        track.innerHTML = siblings.slice(0, 8).map(relatedCardHtml).join('');
+        section.hidden = false;
+    }
+
+    // Identical to the vitrine's card renderer (pages/vitrine/script.js cardHtml).
+    // Keep in sync with the vitrine until these are extracted into a shared module.
+    function relatedCardHtml(p) {
+        const billing = p.billing_type || 'one_time';
+        const soldout = stockState(p).state === 'out';
+        const period = billing === 'subscription' ? `<span class="price-per">/mês</span>` : '';
+        const btn = soldout
+            ? `<span class="buy-btn ghost">Esgotado</span>`
+            : `<a class="buy-btn" href="${productUrl(p)}">Ver produto ${ARROW}</a>`;
+
+        return `
+        <article class="pcard">
+            <div class="pcard-top">
+                <span class="pcat">${billing === 'subscription' ? 'Assinatura' : 'Acesso'}</span>
+                <span class="billing-badge ${billing}">${billing === 'subscription' ? 'Assinatura' : 'Único'}</span>
+            </div>
+            <h3 class="pname">${esc(nameOf(p))}</h3>
+            <p class="pdesc">${esc(p.description || '')}</p>
+            <div class="pservices">${servicesIcons(p, 5)}</div>
+            ${stockHtml(p)}
+            <div class="pcard-foot">
+                <div>
+                    <div class="price-row"><span class="price-cur">R$</span><span class="price-amt">${formatBRL(p.price_cents)}</span>${period}</div>
+                    <div class="psales"><b>${discreetCount(salesOf(p))}</b> ${salesOf(p) === 1 ? 'venda' : 'vendas'}</div>
+                </div>
+                ${btn}
+            </div>
+        </article>`;
+    }
+
+    // Stock dot + text for cards — identical to the vitrine's stockHtml.
+    function stockHtml(p) {
+        const s = stockState(p);
+        if (s.state === 'ok') return `<div class="stock ok"><span class="stock-dot"></span><span>Sem limite de vagas</span></div>`;
+        if (s.state === 'limited') return `<div class="stock ok"><span class="stock-dot"></span><span><b>${s.remaining}</b> vagas restantes</span></div>`;
+        if (s.state === 'warn') return `<div class="stock warn"><span class="stock-dot"></span><span>Últimas <b>${s.remaining}</b> vagas</span></div>`;
+        return `<div class="stock out"><span class="stock-dot"></span><b>Esgotado</b></div>`;
+    }
+
+    function fillInitial(el, name) {
+        const [c1, c2] = paletteFor(name || '?');
+        el.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+        el.textContent = initialFor(name);
+    }
+
+    // ====================================================================
     // HELPERS
     // ====================================================================
+
+    const ARROW = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+
+    function nameOf(p) { return p.name || p.package_name || 'Produto'; }
+    function salesOf(p) { return Number(p.total_sales_count || 0); }
+    function productUrl(p) { return `/pages/product/?product=${p.id}`; }
+
+    function formatBRL(cents) {
+        return (Number(cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Discreet sales display: exact under 10, otherwise rounded down to one
+    // significant figure with a "+" (e.g. 11 → "10+", 470 → "400+"). Mirrors vitrine.
+    function discreetCount(n) {
+        n = Number(n || 0);
+        if (n < 10) return String(n);
+        const step = Math.pow(10, Math.floor(Math.log10(n)));
+        return (Math.floor(n / step) * step).toLocaleString('pt-BR') + '+';
+    }
+
+    function initialFor(str) {
+        return String(str || '?').replace(/^www\./, '').charAt(0).toUpperCase();
+    }
+
+    function esc(str) {
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function stockState(p) {
+        if (p.stock == null) return { state: 'ok', remaining: null };
+        const remaining = Math.max(0, Number(p.stock) - Number(p.active_access_count || 0));
+        if (remaining <= 0) return { state: 'out', remaining: 0 };
+        if (remaining <= 5) return { state: 'warn', remaining };
+        return { state: 'limited', remaining };
+    }
+
+    // Service-icon row — identical to the vitrine's servicesIcons. Relies on the
+    // global AuthPackFavicon helper (faviconManager.js) for original→Google→initial.
+    function servicesIcons(p, max, size) {
+        const sessions = p.sessions || [];
+        const shown = sessions.slice(0, max);
+        const extra = sessions.length - shown.length;
+        const sizeStyle = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.45)}px` : '';
+        const icons = shown.map(s => {
+            const label = esc(s.name || extractDomain(s.url) || '?');
+            if (s.icon) {
+                const initial = initialFor(s.name || extractDomain(s.url));
+                const google = AuthPackFavicon.googleUrl(s.url);
+                return `<div class="svc-icon" title="${label}" style="${sizeStyle}"><img src="${s.icon}" alt="${label}" data-fav-google="${google}" data-fav-initial="${initial}" onerror="AuthPackFavicon.inlineError(this)"></div>`;
+            }
+            const [c1, c2] = paletteFor(s.name || s.url || '?');
+            return `<div class="svc-icon" title="${label}" style="background:linear-gradient(150deg,${c1},${c2});${sizeStyle}">${initialFor(s.name || extractDomain(s.url))}</div>`;
+        }).join('');
+        return icons + (extra > 0 ? `<span class="svc-more">+${extra}</span>` : '');
+    }
 
     function extractDomain(url) {
         if (!url) return '';

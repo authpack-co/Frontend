@@ -39,6 +39,32 @@
         </span>
     </header>
 
+    <!-- Vitrine context bar — a breadcrumb trail that places the product inside its
+         vitrine. Revealed by JS only when the product belongs to a published vitrine.
+         The store chunk is the single link back to the vitrine. -->
+    <div class="vt-vitrine-bar" id="vt-vitrine-bar" hidden>
+        <nav class="vt-vb-inner">
+            <a class="vt-vb-identity" id="vt-vb-identity" title="Voltar para a vitrine">
+                <svg class="vt-vb-back-icon" viewBox="0 0 24 24" width="16" height="16" fill="none"
+                    stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                </svg>
+                <span class="vt-vb-avatar" id="vt-vb-avatar"></span>
+                <span class="vt-vb-name" id="vt-vb-name"></span>
+                <svg id="vt-vb-verified" class="vt-vb-verified" style="display:none" viewBox="0 0 24 24" width="15"
+                    height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="m9 12 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                </svg>
+            </a>
+            <svg class="vt-vb-crumb-sep" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6" />
+            </svg>
+            <span class="vt-vb-crumb-current" id="vt-vb-crumb-current"></span>
+        </nav>
+    </div>
+
     <!-- Page -->
     <main class="vt-page">
         <div id="product-state" class="loading-state">
@@ -145,17 +171,46 @@
                             Acesso liberado na hora · Pagamento por Pagar.me
                         </div>
 
-                        <!-- Seller -->
-                        <div class="vt-seller" id="vt-seller">
+                        <!-- Seller / Vitrine -->
+                        <a class="vt-seller" id="vt-seller">
                             <div class="vt-seller-avatar" id="vt-seller-avatar"></div>
-                            <div>
-                                <div class="vt-seller-name" id="vt-seller-name"></div>
-                                <div class="vt-seller-meta">Vendedor</div>
+                            <div class="vt-seller-info">
+                                <div class="vt-seller-name-row">
+                                    <span class="vt-seller-name" id="vt-seller-name"></span>
+                                    <svg id="vt-seller-verified" class="vt-seller-verified" style="display:none"
+                                        viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m9 12 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                                    </svg>
+                                </div>
+                                <div class="vt-seller-meta" id="vt-seller-meta">Vendedor</div>
                             </div>
-                        </div>
+                            <span class="vt-seller-go" id="vt-seller-go" style="display:none">
+                                Ver vitrine
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
+                            </span>
+                        </a>
                     </aside>
 
                 </div>
+
+                <!-- More from this vitrine -->
+                <section class="vt-related" id="vt-related" hidden>
+                    <div class="vt-related-head">
+                        <h2 class="vt-related-title">Mais desta vitrine</h2>
+                        <a class="vt-related-all" id="vt-related-all">
+                            Ver tudo
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m9 18 6-6-6-6" />
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="grid" id="vt-related-track"></div>
+                </section>
             </div>
 
         </div>
