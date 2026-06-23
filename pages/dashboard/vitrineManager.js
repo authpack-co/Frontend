@@ -1083,12 +1083,12 @@ function updateQuickSummary() {
 // ============================================================================
 
 function renderVitrineProducts(products) {
-    const grid = document.getElementById('vitrine-products-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+    const container = document.getElementById('vitrine-products-grid');
+    if (!container) return;
+    container.innerHTML = '';
 
     if (!products || products.length === 0) {
-        grid.innerHTML = `
+        container.innerHTML = `
             <div class="vt-empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
@@ -1102,9 +1102,58 @@ function renderVitrineProducts(products) {
         return;
     }
 
-    products.forEach(product => {
-        const card = createVitrineProductCard(product);
-        grid.appendChild(card);
+    const makeGrid = (items) => {
+        const grid = document.createElement('div');
+        grid.className = 'vt-cat-grid';
+        items.forEach(p => grid.appendChild(createVitrineProductCard(p)));
+        return grid;
+    };
+
+    // No categories yet → a single flat grid (no section headers).
+    if (!vitrineCategories || vitrineCategories.length === 0) {
+        container.appendChild(makeGrid(products));
+        return;
+    }
+
+    // One section per category (in the seller's order), then "Outros" for
+    // products not in any category. A product in multiple categories repeats.
+    const sections = [];
+    vitrineCategories.forEach(cat => {
+        const items = products.filter(p => (p.category_ids || []).includes(cat.id));
+        if (items.length) sections.push({ cat, items });
+    });
+    const uncategorized = products.filter(p => !(p.category_ids || []).length);
+    if (uncategorized.length) sections.push({ cat: null, items: uncategorized });
+
+    // Edge case: categories exist but no product is tagged → flat grid.
+    if (sections.length === 0) {
+        container.appendChild(makeGrid(products));
+        return;
+    }
+
+    sections.forEach(({ cat, items }) => {
+        const section = document.createElement('div');
+        section.className = 'vt-cat-section';
+
+        const head = document.createElement('div');
+        head.className = 'vt-cat-section-head';
+        const dot = document.createElement('span');
+        dot.className = 'vt-cat-section-dot';
+        if (cat) dot.style.background = cat.color;
+        else dot.classList.add('vt-cat-section-dot-muted');
+        head.appendChild(dot);
+        const title = document.createElement('h4');
+        title.className = 'vt-cat-section-title';
+        title.textContent = cat ? cat.name : 'Outros';
+        head.appendChild(title);
+        const count = document.createElement('span');
+        count.className = 'vt-cat-section-count';
+        count.textContent = items.length;
+        head.appendChild(count);
+        section.appendChild(head);
+
+        section.appendChild(makeGrid(items));
+        container.appendChild(section);
     });
 }
 
@@ -1414,10 +1463,18 @@ function createVitrineProductCard(product) {
 
     optionsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        // Close any other open menu and clear its overflow override.
+        document.querySelectorAll('.vp-card.menu-open').forEach(c => {
+            if (c !== card) c.classList.remove('menu-open');
+        });
         document.querySelectorAll('.product-options:not(.hidden)').forEach(opt => {
             if (opt !== productOptions) opt.classList.add('hidden');
         });
+        const willOpen = productOptions.classList.contains('hidden');
         productOptions.classList.toggle('hidden');
+        // While open, let the card overflow so the "Adicionar a" flyout isn't
+        // clipped by .vp-card { overflow: hidden }.
+        card.classList.toggle('menu-open', willOpen);
     });
 
     overlay.appendChild(copyBtn);
@@ -1518,9 +1575,11 @@ async function persistCategoryOrder() {
     const current = vitrineCategories.map(c => c.id);
     if (order.length === current.length && order.every((id, i) => id === current[i])) return;
 
-    // Optimistic: reorder the local model to match the DOM.
+    // Optimistic: reorder the local model to match the DOM, and re-group the
+    // product sections so the dashboard reflects the new order immediately.
     const byId = Object.fromEntries(vitrineCategories.map(c => [c.id, c]));
     vitrineCategories = order.map(id => byId[id]).filter(Boolean);
+    renderVitrineProducts(vitrineProducts);
 
     try {
         const res = await fetchManager.reorderCategories(order);
@@ -1528,7 +1587,8 @@ async function persistCategoryOrder() {
     } catch (err) {
         console.error('Reorder error:', err);
         notify('error', 'Não foi possível salvar a ordem');
-        await loadVitrineCategories(); // resync from server
+        await loadVitrineCategories(); // resync chips from server
+        renderVitrineProducts(vitrineProducts); // and the product sections
     }
 }
 
@@ -5252,20 +5312,27 @@ async function copyVitrineLink() {
     return true;
 }
 
-// "Editar vitrine" → load current profile + open the modal
-document.getElementById('btn-edit-vitrine')?.addEventListener('click', async () => {
+// ── "Editar vitrine" modal (single-pane) ──
+async function openManageVitrineModal() {
+    const overlay = document.getElementById('manageVitrineModal');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
     const v = await ensureVitrineLoaded();
     populateVitrineModal(v);
-    utils.showModal('editVitrine');
-});
+}
 
-// "Compartilhar" (products header) → copy the public link with feedback
-document.getElementById('btn-share-vitrine')?.addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
-    const original = btn.innerHTML;
-    const ok = await copyVitrineLink();
-    btn.innerHTML = original.replace('Compartilhar', ok ? 'Link copiado' : 'Erro ao copiar');
-    setTimeout(() => { btn.innerHTML = original; }, 1500);
+function closeManageVitrineModal() {
+    const overlay = document.getElementById('manageVitrineModal');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('btn-manage-vitrine')?.addEventListener('click', openManageVitrineModal);
+document.getElementById('mv-close-btn')?.addEventListener('click', closeManageVitrineModal);
+document.getElementById('manageVitrineModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeManageVitrineModal();
 });
 
 // Copy button inside the modal
@@ -5284,7 +5351,7 @@ document.getElementById('vt-edit-published-toggle')?.addEventListener('click', f
 
 // Save
 document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
-    const modal = document.getElementById('editVitrineModal');
+    const modal = document.getElementById('manageVitrineModal');
     const buttonContent = modal.querySelector('.buttonContent');
     const val = (id) => (document.getElementById(id)?.value || '').trim();
 
@@ -5317,7 +5384,7 @@ document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
         setElementState(buttonContent, 'content');
         if (res.ok && res.result?.vitrine) {
             currentVitrine = res.result.vitrine;
-            utils.closeModals();
+            closeManageVitrineModal();
         } else {
             utils.setModalError(modal, res.result?.error || 'Não foi possível salvar. Tente novamente.');
         }

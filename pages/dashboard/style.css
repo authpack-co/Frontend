@@ -4487,13 +4487,13 @@ span.coming-soon {
     padding: 14px 16px;
 }
 
-/* Form rows — side-by-side fields */
-.vt-edit-modal .form-row {
+/* Form rows — side-by-side fields (vitrine edit form, now inside Gerenciar vitrine) */
+#mv-view-editar .form-row {
     display: flex;
     gap: 14px;
 }
 
-.vt-edit-modal .form-row>.form-group {
+#mv-view-editar .form-row>.form-group {
     flex: 1;
     min-width: 0;
 }
@@ -4567,18 +4567,66 @@ textarea.form-input {
 }
 
 @media (max-width: 600px) {
-    .vt-edit-modal .form-row {
+    #mv-view-editar .form-row {
         flex-direction: column;
         gap: 0;
     }
 }
 
-/* Product Cards Grid */
+/* Product Cards Grid — now a column of category sections */
 .vitrine-products-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 0;
+}
+
+/* The actual card grid lives inside each section (and in the flat fallback) */
+.vt-cat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
-    margin-top: 0;
+}
+
+/* Category section (dashboard) */
+.vt-cat-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vt-cat-section-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.vt-cat-section-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.vt-cat-section-dot-muted {
+    background: var(--ap-bg-hover);
+    border: 1px solid var(--ap-border-hover);
+}
+
+.vt-cat-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    margin: 0;
+}
+
+.vt-cat-section-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-hover);
+    border-radius: 999px;
+    padding: 2px 9px;
 }
 
 /* === Product Card (vp-*) === */
@@ -4597,6 +4645,13 @@ textarea.form-input {
 .vp-card:hover {
     border-color: var(--ap-border-hover);
     transform: translateY(-2px);
+}
+
+/* While its options menu is open, let the card overflow so the "Adicionar a"
+   category flyout isn't clipped, and lift it above sibling cards. */
+.vp-card.menu-open {
+    overflow: visible;
+    z-index: 30;
 }
 
 /* Header: title + badge */
@@ -4951,7 +5006,7 @@ textarea.form-input {
         gap: 12px;
     }
 
-    .vitrine-products-grid {
+    .vt-cat-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -5432,7 +5487,7 @@ textarea.form-input {
 
 /* Responsive */
 @media (max-width: 640px) {
-    .vitrine-products-grid {
+    .vt-cat-grid {
         grid-template-columns: 1fr;
     }
 
@@ -7818,8 +7873,30 @@ textarea:focus-visible {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 4px 0 18px;
+    margin: 4px 0 22px;
     flex-wrap: wrap;
+}
+
+/* "Editar vitrine" — single-pane override of the shared settings modal
+   (sidebar removed, centered, content-sized). */
+#manageVitrineModal .settings-modal.mv-single {
+    max-width: 560px;
+    height: auto;
+    max-height: 90vh;
+    position: relative;
+}
+
+#manageVitrineModal .settings-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+}
+
+/* Category create/delete modals must sit above the manage-vitrine modal (z 1100). */
+#categoryModal,
+#deleteCategoryModal {
+    z-index: 1200;
 }
 
 .vt-cat-add-btn {

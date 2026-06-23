@@ -177,7 +177,8 @@
     gap: 2px;
 }
 
-.settings-nav-item {
+.settings-nav-item,
+.mv-nav-item {
     display: flex;
     align-items: center;
     gap: 9px;
@@ -195,12 +196,14 @@
     transition: background 0.12s ease, color 0.12s ease;
 }
 
-.settings-nav-item:hover {
+.settings-nav-item:hover,
+.mv-nav-item:hover {
     background: var(--ap-bg-hover);
     color: var(--ap-text-secondary);
 }
 
-.settings-nav-item.active {
+.settings-nav-item.active,
+.mv-nav-item.active {
     background: var(--ap-bg-page);
     color: var(--ap-text-primary);
     font-weight: 600;
@@ -213,14 +216,16 @@
     background: var(--ap-bg-page);
 }
 
-.settings-view {
+.settings-view,
+.mv-view {
     display: none;
     flex-direction: column;
     gap: 16px;
     padding: 24px;
 }
 
-.settings-view.active {
+.settings-view.active,
+.mv-view.active {
     display: flex;
 }
 
