@@ -43,6 +43,9 @@
         _order = res.result?.data;
         if (!_order) { showGlobalError('Pedido não encontrado', 'Este link de pagamento é inválido ou foi removido.'); return; }
 
+        // Reveal the header breadcrumb into the vitrine (non-blocking)
+        loadVitrineCrumb(_order);
+
         switch (_order.status) {
             case 'expired': setElementState(container, 'expired'); return;
             case 'paid': setElementState(container, 'paid'); return;
@@ -810,6 +813,87 @@
     function getErrMsg(res) {
         const body = res.result || res.error || {};
         return body.message || body.error || 'Erro ao processar pagamento.';
+    }
+
+    // ====================================================================
+    // VITRINE BREADCRUMB (header) — mirrors the product page
+    // ====================================================================
+
+    // For marketplace orders, resolve the product → vitrine and reveal the
+    // in-header breadcrumb. Non-blocking; silently skips if anything is missing.
+    async function loadVitrineCrumb(order) {
+        if (!order || order.origin !== 'marketplace' || !order.product_id) return;
+
+        let pRes;
+        try { pRes = await fetchManager.getProductById(order.product_id); }
+        catch { return; }
+        if (!pRes.ok || !pRes.result?.product) return;
+
+        const product = pRes.result.product;
+        if (!product.vitrine_id) return;
+
+        let vRes;
+        try { vRes = await fetchManager.getVitrine(product.vitrine_id); }
+        catch { return; }
+        if (!vRes.ok || !vRes.result?.vitrine) return;
+
+        const vitrine = vRes.result.vitrine;
+        renderVitrineCrumb(vitrine, `/pages/vitrine/?loja=${vitrine.id}`, product);
+    }
+
+    // Reveal the in-header breadcrumb — "│ Vitrine › Produto". The store chunk
+    // links to the vitrine, the product chunk links back to the product page.
+    function renderVitrineCrumb(v, url, product) {
+        const crumb = document.getElementById('vt-crumb');
+        if (!crumb) return;
+
+        document.getElementById('vt-crumb-store').setAttribute('href', url);
+
+        const avatarEl = document.getElementById('vt-crumb-avatar');
+        if (v.avatar_url) {
+            const img = document.createElement('img');
+            img.src = v.avatar_url;
+            img.alt = v.display_name;
+            img.onerror = function () { this.remove(); fillInitial(avatarEl, v.display_name); };
+            avatarEl.appendChild(img);
+        } else {
+            fillInitial(avatarEl, v.display_name);
+        }
+
+        document.getElementById('vt-crumb-name').textContent = v.display_name;
+        if (v.verified) document.getElementById('vt-crumb-verified').style.display = '';
+
+        const currentEl = document.getElementById('vt-crumb-current');
+        currentEl.textContent = nameOf(product);
+        currentEl.setAttribute('href', productUrl(product));
+
+        crumb.hidden = false;
+    }
+
+    function nameOf(p) { return p.name || p.package_name || 'Produto'; }
+    function productUrl(p) { return `/pages/product/?product=${p.id}`; }
+
+    function fillInitial(el, name) {
+        const [c1, c2] = paletteFor(name || '?');
+        el.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+        el.textContent = initialFor(name);
+    }
+
+    function initialFor(str) {
+        return String(str || '?').replace(/^www\./, '').charAt(0).toUpperCase();
+    }
+
+    const AVATAR_PALETTES = [
+        ['#ef4444', '#b91c1c'], ['#f97316', '#c2410c'], ['#f59e0b', '#b45309'],
+        ['#10b981', '#047857'], ['#06b6d4', '#0e7490'], ['#3b82f6', '#1d4ed8'],
+        ['#6366f1', '#4338ca'], ['#8b5cf6', '#6d28d9'], ['#ec4899', '#be185d'],
+        ['#14b8a6', '#0f766e'], ['#84cc16', '#4d7c0f'], ['#0ea5e9', '#0369a1'],
+    ];
+
+    function paletteFor(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+        return AVATAR_PALETTES[Math.abs(h) % AVATAR_PALETTES.length];
     }
 
     // ====================================================================

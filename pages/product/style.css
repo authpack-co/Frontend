@@ -172,6 +172,13 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: color 0.15s;
+}
+
+a.vt-crumb-current:hover {
+    color: var(--ap-text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
 /* ===================== Page ===================== */

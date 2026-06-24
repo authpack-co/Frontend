@@ -320,8 +320,10 @@
         document.getElementById('vt-crumb-name').textContent = v.display_name;
         if (v.verified) document.getElementById('vt-crumb-verified').style.display = '';
 
-        // Breadcrumb tail = the current product
-        document.getElementById('vt-crumb-current').textContent = nameOf(product);
+        // Breadcrumb tail = the current product (links to its page)
+        const currentEl = document.getElementById('vt-crumb-current');
+        currentEl.textContent = nameOf(product);
+        currentEl.setAttribute('href', productUrl(product));
 
         crumb.hidden = false;
     }
