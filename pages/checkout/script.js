@@ -1,9 +1,10 @@
 // ============================================================================
 // Checkout Page — /pages/checkout/?orderId=...
 //
-// Flow:
-//   Step 1 "Dados"    — user picks method (card | pix) + fills all fields
-//   Step 2 "Pagamento"— result screen:
+// Flow (3-step slide):
+//   Step 1 "Método"    — user picks payment method (card | pix)
+//   Step 2 "Dados"     — customer details + card/pix fields
+//   Step 3 "Pagamento" — result screen:
 //      Card → Processing spinner → Success | Error
 //      Pix  → QR Code + copy + polling until confirmed
 //
@@ -18,6 +19,7 @@
     let _order = null;
     let _selectedMethod = 'credit_card';
     let _expiryInterval = null;
+    let _currentStep = 1;
 
     // ====================================================================
     // BOOT
@@ -54,6 +56,8 @@
                 renderCheckout(_order);
                 setupEvents();
                 setElementState(container, 'content');
+                // Set initial slide height after content is visible
+                requestAnimationFrame(() => updateSlideHeight());
                 startExpiryTimer();
                 break;
             default:
@@ -100,7 +104,7 @@
         if (!paymentMethods.includes('credit_card')) document.getElementById('ck-m-card-label').style.display = 'none';
         if (!paymentMethods.includes('pix')) document.getElementById('ck-m-pix-label').style.display = 'none';
 
-        // If only one method available, auto-select + hide selector
+        // If only one method available, auto-select + skip step 1
         if (paymentMethods.length === 1) {
             _selectedMethod = paymentMethods[0];
             document.getElementById('ck-methods').style.display = 'none';
@@ -116,7 +120,13 @@
         }
 
         switchMethod(_selectedMethod);
-        updateCTA();
+
+        // If single method, start on step 2 directly
+        if (paymentMethods.length === 1) {
+            showStep(2);
+        } else {
+            updateCTA();
+        }
     }
 
     // ====================================================================
@@ -148,10 +158,17 @@
         // CTA button (right column)
         document.getElementById('ck-submit').addEventListener('click', handleSubmit);
 
-        // Retry button
+        // Retry button — go back to step 2 (data) so user can fix card info
         document.getElementById('ck-btn-retry').addEventListener('click', () => {
-            showStep(1);
+            showStep(2);
             resetRightColumn();
+        });
+
+        // Back button — go to previous step
+        document.getElementById('ck-btn-back').addEventListener('click', () => {
+            if (_currentStep === 2) {
+                showStep(1);
+            }
         });
 
         // Pix copy
@@ -174,61 +191,113 @@
         const installRow = document.getElementById('ck-installments-row');
         if (method === 'pix') {
             cardForm.style.display = 'none';
-            pixNotice.style.display = 'block';
+            pixNotice.style.display = '';
             if (installRow) installRow.style.display = 'none';
         } else {
-            cardForm.style.display = 'block';
+            cardForm.style.display = '';
             pixNotice.style.display = 'none';
             const meta = _order?.metadata || {};
             if (_order && _order.billing_type !== 'subscription' && meta.allowInstallments) {
                 installRow.style.display = '';
             }
         }
+        requestAnimationFrame(() => updateSlideHeight());
     }
 
     function updateCTA() {
         if (!_order) return;
         const label = document.getElementById('ck-cta-label');
         const icon = document.getElementById('ck-cta-icon');
-        if (_selectedMethod === 'pix') {
-            label.textContent = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
-        } else {
-            const inst = getSelectedInstallments();
-            if (inst > 1) {
-                const per = Math.ceil(_order.amount_cents / inst);
-                label.textContent = `Pagar ${inst}x de ${formatCurrency(per)}`;
+
+        if (_currentStep === 1) {
+            // Step 1: just "Continue"
+            label.textContent = 'Continuar';
+        } else if (_currentStep === 2) {
+            // Step 2: show payment amount
+            if (_selectedMethod === 'pix') {
+                label.textContent = `Gerar Pix · ${formatCurrency(_order.amount_cents)}`;
             } else {
-                label.textContent = `Pagar ${formatCurrency(_order.amount_cents)}`;
+                const inst = getSelectedInstallments();
+                if (inst > 1) {
+                    const per = Math.ceil(_order.amount_cents / inst);
+                    label.textContent = `Pagar ${inst}x de ${formatCurrency(per)}`;
+                } else {
+                    label.textContent = `Pagar ${formatCurrency(_order.amount_cents)}`;
+                }
             }
         }
         if (icon) icon.style.display = '';
     }
 
     // ====================================================================
-    // STEP NAVIGATION
+    // STEP NAVIGATION (3-step slide)
     // ====================================================================
 
     function showStep(step) {
-        const panelDados = document.getElementById('ck-panel-dados');
-        const panelPag = document.getElementById('ck-panel-pagamento');
+        const track = document.getElementById('ck-slide-track');
         const s1 = document.getElementById('ck-s1');
         const s2 = document.getElementById('ck-s2');
-        const line = document.getElementById('ck-step-line');
+        const s3 = document.getElementById('ck-s3');
+        const line1 = document.getElementById('ck-step-line-1');
+        const line2 = document.getElementById('ck-step-line-2');
 
+        _currentStep = step;
+
+        // Slide the track
+        track.style.transform = `translateX(-${(step - 1) * 100}%)`;
+
+        // Adapt container height to active panel (after DOM reflow)
+        requestAnimationFrame(() => updateSlideHeight());
+
+        // Stepper indicators
         if (step === 1) {
-            panelDados.style.display = 'flex';
-            panelPag.style.display = 'none';
             s1.className = 'ck-step ck-step--active';
             s2.className = 'ck-step ck-step--pending';
-            line.classList.remove('ck-step__line--done');
-
+            s3.className = 'ck-step ck-step--pending';
+            line1.classList.remove('ck-step__line--done');
+            line2.classList.remove('ck-step__line--done');
         } else if (step === 2) {
-            panelDados.style.display = 'none';
-            panelPag.style.display = 'flex';
             s1.className = 'ck-step ck-step--done';
             s2.className = 'ck-step ck-step--active';
-            line.classList.add('ck-step__line--done');
+            s3.className = 'ck-step ck-step--pending';
+            line1.classList.add('ck-step__line--done');
+            line2.classList.remove('ck-step__line--done');
+        } else if (step === 3) {
+            s1.className = 'ck-step ck-step--done';
+            s2.className = 'ck-step ck-step--done';
+            s3.className = 'ck-step ck-step--active';
+            line1.classList.add('ck-step__line--done');
+            line2.classList.add('ck-step__line--done');
         }
+
+        // Back button visibility (show on step 2 only, if multiple methods)
+        const backBtn = document.getElementById('ck-btn-back');
+        const paymentMethods = _order?.payment_methods || ['credit_card'];
+        backBtn.style.display = (step === 2 && paymentMethods.length > 1) ? 'flex' : 'none';
+
+        // CTA visibility per step
+        const submitBtn = document.getElementById('ck-submit');
+        if (step === 3) {
+            submitBtn.style.display = 'none';
+        } else {
+            submitBtn.style.display = '';
+        }
+
+        // Update CTA label based on step
+        updateCTA();
+    }
+
+    /** Measures the active slide panel and sets an explicit height on the container */
+    function updateSlideHeight() {
+        // Ensure DOM has fully reflowed and painted before measuring
+        setTimeout(() => {
+            const slideContainer = document.querySelector('.ck-slide-container');
+            const panels = document.querySelectorAll('.ck-slide');
+            const activePanel = panels[_currentStep - 1];
+            if (!slideContainer || !activePanel) return;
+            const h = activePanel.offsetHeight;
+            slideContainer.style.height = h + 'px';
+        }, 10);
     }
 
     // ====================================================================
@@ -238,13 +307,22 @@
     async function handleSubmit() {
         hideFormError();
 
-        const customer = getCustomerPayload();
-        if (!customer) return;
+        // Step 1 → Step 2: advance to data entry
+        if (_currentStep === 1) {
+            showStep(2);
+            return;
+        }
 
-        if (_selectedMethod === 'credit_card') {
-            await doCardPayment(customer);
-        } else {
-            await doPixPayment(customer);
+        // Step 2 → Step 3: validate data & pay
+        if (_currentStep === 2) {
+            const customer = getCustomerPayload();
+            if (!customer) return;
+
+            if (_selectedMethod === 'credit_card') {
+                await doCardPayment(customer);
+            } else {
+                await doPixPayment(customer);
+            }
         }
     }
 
@@ -265,7 +343,7 @@
 
         const [expM, expY] = expiry.split('/');
 
-        showStep(2);
+        showStep(3);
         showResultState('processing');
         setCTALoading(true);
 
@@ -341,10 +419,31 @@
         return parseInt(select.value, 10) || 1;
     }
 
+    /**
+     * Finds the Pix transaction (with QR fields) anywhere in a pay response,
+     * regardless of how the gateway/backend nests it.
+     * Pagar.me v5 shape: { charges: [{ last_transaction: { qr_code, qr_code_url } }] }
+     */
+    function extractPixTransaction(body) {
+        if (!body || typeof body !== 'object') return null;
+
+        const charges = body.charges || body.transactions || [];
+        for (const charge of charges) {
+            const tx = charge?.last_transaction || charge;
+            if (tx && (tx.qr_code_url || tx.qr_code)) return tx;
+        }
+
+        // Some integrations put the QR fields directly on the order/response.
+        if (body.qr_code_url || body.qr_code) return body;
+        if (body.pix && (body.pix.qr_code_url || body.pix.qr_code)) return body.pix;
+
+        return null;
+    }
+
     // ── Pix Payment ───────────────────────────────────────────────────
     async function doPixPayment(customer) {
-        // → Step 2: processing spinner
-        showStep(2);
+        // → Step 3: processing spinner
+        showStep(3);
         showResultState('processing');
         setCTALoading(true);
 
@@ -359,11 +458,12 @@
                 throw new Error(getErrMsg(res));
             }
 
-            const charges = res.result?.charges || [];
-            const tx = charges[0]?.last_transaction;
+            // The pay endpoint may wrap the order under `data`/`order` or return it flat.
+            const body = res.result?.data || res.result?.order || res.result || {};
+            const pix = extractPixTransaction(body);
 
-            if (tx && tx.transaction_type === 'pix') {
-                showPixQR(tx.qr_code_url, tx.qr_code);
+            if (pix && (pix.qr_code_url || pix.qr_code)) {
+                showPixQR(pix.qr_code_url, pix.qr_code);
                 hideCTA();
 
                 pollOrder(orderId, {
@@ -374,11 +474,13 @@
                 return;
             }
 
-            showCardSuccess(); // fallback: direct success
+            // No QR in the response — surface it instead of silently "succeeding".
+            console.error('[checkout] Pix response without QR code:', res.result);
+            throw new Error('O QR Code do Pix não foi retornado pelo gateway. Tente novamente.');
 
         } catch (err) {
-            // Back to step 1 on pix generation error
-            showStep(1);
+            // Back to step 2 on pix generation error
+            showStep(2);
             showFormError(err.message || 'Erro ao gerar Pix.');
             resetRightColumn();
         }
@@ -398,6 +500,9 @@
         success.style.display = state === 'success' ? 'flex' : 'none';
         error.style.display = state === 'error' ? 'flex' : 'none';
         pix.style.display = state === 'pix' ? 'block' : 'none';
+
+        // Recalculate height after content change
+        requestAnimationFrame(() => updateSlideHeight());
     }
 
     function showCardSuccess() {
@@ -425,7 +530,11 @@
 
     function showPixQR(qrUrl, qrCode) {
         showResultState('pix');
-        if (qrUrl) document.getElementById('ck-pix-qr-img').src = qrUrl;
+        const img = document.getElementById('ck-pix-qr-img');
+        // Re-measure the slide height once the QR image has actually loaded,
+        // so the container doesn't collapse/clip while the image is fetching.
+        img.onload = () => updateSlideHeight();
+        if (qrUrl) img.src = qrUrl;
         if (qrCode) document.getElementById('ck-pix-code').textContent = qrCode;
         document.getElementById('ck-pix-waiting').classList.add('visible');
     }
@@ -688,12 +797,14 @@
         const el = document.getElementById('ck-error');
         el.textContent = msg;
         el.classList.add('visible');
+        requestAnimationFrame(() => updateSlideHeight());
     }
 
     function hideFormError() {
         const el = document.getElementById('ck-error');
         el.classList.remove('visible');
         el.textContent = '';
+        requestAnimationFrame(() => updateSlideHeight());
     }
 
     function getErrMsg(res) {

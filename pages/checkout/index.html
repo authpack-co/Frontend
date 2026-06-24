@@ -103,187 +103,209 @@
                     <!-- ━━━ LEFT: Form column ━━━ -->
                     <div class="ck-form-col">
 
-                        <!-- Stepper -->
+                        <!-- Stepper (3 steps) -->
                         <div class="ck-stepper" id="ck-stepper">
                             <div class="ck-step ck-step--active" id="ck-s1">
                                 <div class="ck-step__dot">
                                     <span class="ck-step__num">1</span>
                                     <svg class="ck-step__check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                 </div>
-                                <span class="ck-step__label">Dados</span>
+                                <span class="ck-step__label">Método</span>
                             </div>
-                            <div class="ck-step__line" id="ck-step-line"></div>
+                            <div class="ck-step__line" id="ck-step-line-1"></div>
                             <div class="ck-step ck-step--pending" id="ck-s2">
                                 <div class="ck-step__dot">
                                     <span class="ck-step__num">2</span>
+                                    <svg class="ck-step__check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                </div>
+                                <span class="ck-step__label">Dados</span>
+                            </div>
+                            <div class="ck-step__line" id="ck-step-line-2"></div>
+                            <div class="ck-step ck-step--pending" id="ck-s3">
+                                <div class="ck-step__dot">
+                                    <span class="ck-step__num">3</span>
                                     <svg class="ck-step__check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                 </div>
                                 <span class="ck-step__label">Pagamento</span>
                             </div>
                         </div>
 
-                        <!-- ── STEP 1: Dados ── -->
-                        <div id="ck-panel-dados" class="ck-panel">
+                        <!-- Slide container -->
+                        <div class="ck-slide-container">
+                            <div class="ck-slide-track" id="ck-slide-track">
 
-                            <h2 class="ck-panel__title">Forma de pagamento</h2>
+                                <!-- ── STEP 1: Método de Pagamento ── -->
+                                <div id="ck-panel-metodo" class="ck-panel ck-slide">
 
-                            <!-- Method selector -->
-                            <div class="ck-methods" id="ck-methods">
-                                <label class="ck-method ck-method--active" id="ck-m-card-label">
-                                    <input type="radio" name="ck_method" value="credit_card" id="ck-m-card" checked>
-                                    <div class="ck-method__check">
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                    </div>
-                                    <svg class="ck-method__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
-                                    <span class="ck-method__label">Cartão de Crédito</span>
-                                </label>
-                                <label class="ck-method" id="ck-m-pix-label">
-                                    <input type="radio" name="ck_method" value="pix" id="ck-m-pix">
-                                    <div class="ck-method__check">
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                    </div>
-                                    <svg class="ck-method__icon" width="20" height="20" viewBox="0 0 30 30" fill="currentColor"><path d="M 15 1.0996094 C 13.975 1.0996094 12.949922 1.4895313 12.169922 2.2695312 L 7.1894531 7.25 L 7.3398438 7.25 C 8.6098437 7.25 9.7992188 7.740625 10.699219 8.640625 L 14.189453 12.130859 C 14.639453 12.570859 15.360547 12.570859 15.810547 12.130859 L 19.300781 8.640625 C 20.200781 7.740625 21.390156 7.25 22.660156 7.25 L 22.810547 7.25 L 17.830078 2.2695312 C 17.050078 1.4895313 16.025 1.0996094 15 1.0996094 z M 5.6894531 8.75 L 2.2695312 12.169922 C 0.70953125 13.729922 0.70953125 16.270078 2.2695312 17.830078 L 5.6894531 21.25 L 7.3398438 21.25 C 8.2098438 21.25 9.030625 20.910781 9.640625 20.300781 L 13.130859 16.810547 C 14.160859 15.780547 15.839141 15.780547 16.869141 16.810547 L 20.359375 20.300781 C 20.969375 20.910781 21.790156 21.25 22.660156 21.25 L 24.310547 21.25 L 27.730469 17.830078 C 29.290469 16.270078 29.290469 13.729922 27.730469 12.169922 L 24.310547 8.75 L 22.660156 8.75 C 21.790156 8.75 20.969375 9.0892188 20.359375 9.6992188 L 16.869141 13.189453 C 16.359141 13.699453 15.68 13.960938 15 13.960938 C 14.32 13.960938 13.640859 13.699453 13.130859 13.189453 L 9.640625 9.6992188 C 9.030625 9.0892187 8.2098437 8.75 7.3398438 8.75 L 5.6894531 8.75 z M 15 17.539062 C 14.7075 17.539062 14.414453 17.649141 14.189453 17.869141 L 10.699219 21.359375 C 9.7992188 22.259375 8.6098437 22.75 7.3398438 22.75 L 7.1894531 22.75 L 12.169922 27.730469 C 13.729922 29.290469 16.270078 29.290469 17.830078 27.730469 L 22.810547 22.75 L 22.660156 22.75 C 21.390156 22.75 20.200781 22.259375 19.300781 21.359375 L 15.810547 17.869141 C 15.585547 17.649141 15.2925 17.539062 15 17.539062 z"></path></svg>
-                                    <span class="ck-method__label">Pix</span>
-                                </label>
-                            </div>
+                                    <h2 class="ck-panel__title">Forma de pagamento</h2>
 
-                            <!-- Customer fields (always visible) -->
-                            <div class="ck-row">
-                                <div class="ck-field">
-                                    <label class="ck-label" for="ck-doc">CPF ou CNPJ</label>
-                                    <input class="ck-input" id="ck-doc" type="text" placeholder="000.000.000-00" maxlength="18" inputmode="numeric" autocomplete="off">
-                                </div>
-                                <div class="ck-field">
-                                    <label class="ck-label" for="ck-phone">Celular</label>
-                                    <input class="ck-input" id="ck-phone" type="text" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel">
-                                </div>
-                            </div>
-
-                            <!-- Card fields -->
-                            <div id="ck-card-form">
-                                <div class="ck-field">
-                                    <label class="ck-label" for="ck-card-number">Número do cartão</label>
-                                    <input class="ck-input" id="ck-card-number" type="text" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" autocomplete="cc-number">
-                                </div>
-                                <div class="ck-field">
-                                    <label class="ck-label" for="ck-card-holder">Nome no cartão</label>
-                                    <input class="ck-input" id="ck-card-holder" type="text" placeholder="Ex: JOAO DA SILVA" autocomplete="cc-name">
-                                </div>
-                                <div class="ck-row">
-                                    <div class="ck-field">
-                                        <label class="ck-label" for="ck-card-expiry">Data de validade</label>
-                                        <input class="ck-input" id="ck-card-expiry" type="text" placeholder="MM/AA" maxlength="5" inputmode="numeric" autocomplete="cc-exp">
-                                    </div>
-                                    <div class="ck-field">
-                                        <label class="ck-label" for="ck-card-cvv">CVV</label>
-                                        <input class="ck-input" id="ck-card-cvv" type="text" placeholder="Ex.: 123" maxlength="4" inputmode="numeric" autocomplete="cc-csc">
-                                    </div>
-                                </div>
-
-                                <!-- Billing address -->
-                                <div class="ck-address-section">
-                                    <p class="ck-section-label">Endereço de cobrança</p>
-                                    <div class="ck-row">
-                                        <div class="ck-field">
-                                            <input class="ck-input" id="ck-zip" type="text" placeholder="CEP" maxlength="9" inputmode="numeric">
-                                        </div>
-                                        <div class="ck-field">
-                                            <input class="ck-input" id="ck-country" type="text" placeholder="País" maxlength="2" value="BR">
-                                        </div>
-                                    </div>
-                                    <div class="ck-field">
-                                        <input class="ck-input" id="ck-line1" type="text" placeholder="Número, Rua, Bairro (separados por vírgula)">
-                                    </div>
-                                    <div class="ck-field">
-                                        <input class="ck-input" id="ck-line2" type="text" placeholder="Complemento (opcional)">
-                                    </div>
-                                    <div class="ck-row">
-                                        <div class="ck-field">
-                                            <input class="ck-input" id="ck-city" type="text" placeholder="Cidade">
-                                        </div>
-                                        <div class="ck-field">
-                                            <input class="ck-input" id="ck-state" type="text" placeholder="UF" maxlength="2">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- PIX info (shown when PIX selected) -->
-                            <div id="ck-pix-info-panel" style="display:none">
-                                <div class="ck-pix-notice">
-                                    <div class="ck-pix-notice__icon">
-                                        <svg width="18" height="18" viewBox="0 0 30 30" fill="currentColor"><path d="M 15 1.0996094 C 13.975 1.0996094 12.949922 1.4895313 12.169922 2.2695312 L 7.1894531 7.25 L 7.3398438 7.25 C 8.6098437 7.25 9.7992188 7.740625 10.699219 8.640625 L 14.189453 12.130859 C 14.639453 12.570859 15.360547 12.570859 15.810547 12.130859 L 19.300781 8.640625 C 20.200781 7.740625 21.390156 7.25 22.660156 7.25 L 22.810547 7.25 L 17.830078 2.2695312 C 17.050078 1.4895313 16.025 1.0996094 15 1.0996094 z M 5.6894531 8.75 L 2.2695312 12.169922 C 0.70953125 13.729922 0.70953125 16.270078 2.2695312 17.830078 L 5.6894531 21.25 L 7.3398438 21.25 C 8.2098438 21.25 9.030625 20.910781 9.640625 20.300781 L 13.130859 16.810547 C 14.160859 15.780547 15.839141 15.780547 16.869141 16.810547 L 20.359375 20.300781 C 20.969375 20.910781 21.790156 21.25 22.660156 21.25 L 24.310547 21.25 L 27.730469 17.830078 C 29.290469 16.270078 29.290469 13.729922 27.730469 12.169922 L 24.310547 8.75 L 22.660156 8.75 C 21.790156 8.75 20.969375 9.0892188 20.359375 9.6992188 L 16.869141 13.189453 C 16.359141 13.699453 15.68 13.960938 15 13.960938 C 14.32 13.960938 13.640859 13.699453 13.130859 13.189453 L 9.640625 9.6992188 C 9.030625 9.0892187 8.2098437 8.75 7.3398438 8.75 L 5.6894531 8.75 z M 15 17.539062 C 14.7075 17.539062 14.414453 17.649141 14.189453 17.869141 L 10.699219 21.359375 C 9.7992188 22.259375 8.6098437 22.75 7.3398438 22.75 L 7.1894531 22.75 L 12.169922 27.730469 C 13.729922 29.290469 16.270078 29.290469 17.830078 27.730469 L 22.810547 22.75 L 22.660156 22.75 C 21.390156 22.75 20.200781 22.259375 19.300781 21.359375 L 15.810547 17.869141 C 15.585547 17.649141 15.2925 17.539062 15 17.539062 z"></path></svg>
-                                    </div>
-                                    <div>
-                                        <p class="ck-pix-notice__title">Pagamento instantâneo via Pix</p>
-                                        <p class="ck-pix-notice__text">Após confirmar, o QR Code será gerado. Você terá 30 minutos para pagar.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Form-level error -->
-                            <div class="ck-error" id="ck-error"></div>
-
-                        </div><!-- /ck-panel-dados -->
-
-                        <!-- ── STEP 2: Pagamento ── -->
-                        <div id="ck-panel-pagamento" class="ck-panel" style="display:none">
-
-                            <!-- Card: Processing -->
-                            <div id="ck-state-processing" class="ck-result">
-                                <div class="ck-result__spinner"></div>
-                                <h3 class="ck-result__title">Processando pagamento...</h3>
-                                <p class="ck-result__text">Aguarde enquanto confirmamos sua transação com o gateway.</p>
-                            </div>
-
-                            <!-- Card: Success -->
-                            <div id="ck-state-success" class="ck-result" style="display:none">
-                                <div class="ck-result__icon ck-result__icon--success">
-                                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                </div>
-                                <h3 class="ck-result__title">Pagamento confirmado!</h3>
-                                <p class="ck-result__text" id="ck-success-msg">Seu acesso já está ativo.</p>
-                            </div>
-
-                            <!-- Card: Error -->
-                            <div id="ck-state-error" class="ck-result" style="display:none">
-                                <div class="ck-result__icon ck-result__icon--error">
-                                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
-                                </div>
-                                <h3 class="ck-result__title">Pagamento recusado</h3>
-                                <p class="ck-result__text" id="ck-error-detail">Verifique os dados do cartão e tente novamente.</p>
-                            </div>
-
-                            <!-- PIX: QR Code -->
-                            <div id="ck-state-pix" style="display:none">
-                                <div class="ck-pix-card">
-                                    <div class="ck-pix-card__qr">
-                                        <img id="ck-pix-qr-img" src="" alt="QR Code Pix">
-                                    </div>
-                                    <div class="ck-pix-card__body">
-                                        <p class="ck-pix-card__label">Código Pix — Copia e Cola</p>
-                                        <div class="ck-pix-code-box">
-                                            <code id="ck-pix-code"></code>
-                                            <button class="ck-pix-copy-btn" id="ck-pix-copy-btn" type="button">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                                                Copiar
-                                            </button>
-                                        </div>
-                                        <div class="ck-pix-status">
-                                            <div class="ck-pix-waiting" id="ck-pix-waiting">
-                                                <span class="ck-pix-dot"></span>
-                                                Aguardando pagamento...
+                                    <!-- Method selector -->
+                                    <div class="ck-methods" id="ck-methods">
+                                        <label class="ck-method ck-method--active" id="ck-m-card-label">
+                                            <input type="radio" name="ck_method" value="credit_card" id="ck-m-card" checked>
+                                            <div class="ck-method__check">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                             </div>
-                                            <div class="ck-pix-confirmed" id="ck-pix-paid">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                                                Pix confirmado!
+                                            <svg class="ck-method__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>
+                                            <span class="ck-method__label">Cartão de Crédito</span>
+                                        </label>
+                                        <label class="ck-method" id="ck-m-pix-label">
+                                            <input type="radio" name="ck_method" value="pix" id="ck-m-pix">
+                                            <div class="ck-method__check">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                            </div>
+                                            <svg class="ck-method__icon" width="20" height="20" viewBox="0 0 30 30" fill="currentColor"><path d="M 15 1.0996094 C 13.975 1.0996094 12.949922 1.4895313 12.169922 2.2695312 L 7.1894531 7.25 L 7.3398438 7.25 C 8.6098437 7.25 9.7992188 7.740625 10.699219 8.640625 L 14.189453 12.130859 C 14.639453 12.570859 15.360547 12.570859 15.810547 12.130859 L 19.300781 8.640625 C 20.200781 7.740625 21.390156 7.25 22.660156 7.25 L 22.810547 7.25 L 17.830078 2.2695312 C 17.050078 1.4895313 16.025 1.0996094 15 1.0996094 z M 5.6894531 8.75 L 2.2695312 12.169922 C 0.70953125 13.729922 0.70953125 16.270078 2.2695312 17.830078 L 5.6894531 21.25 L 7.3398438 21.25 C 8.2098438 21.25 9.030625 20.910781 9.640625 20.300781 L 13.130859 16.810547 C 14.160859 15.780547 15.839141 15.780547 16.869141 16.810547 L 20.359375 20.300781 C 20.969375 20.910781 21.790156 21.25 22.660156 21.25 L 24.310547 21.25 L 27.730469 17.830078 C 29.290469 16.270078 29.290469 13.729922 27.730469 12.169922 L 24.310547 8.75 L 22.660156 8.75 C 21.790156 8.75 20.969375 9.0892188 20.359375 9.6992188 L 16.869141 13.189453 C 16.359141 13.699453 15.68 13.960938 15 13.960938 C 14.32 13.960938 13.640859 13.699453 13.130859 13.189453 L 9.640625 9.6992188 C 9.030625 9.0892187 8.2098437 8.75 7.3398438 8.75 L 5.6894531 8.75 z M 15 17.539062 C 14.7075 17.539062 14.414453 17.649141 14.189453 17.869141 L 10.699219 21.359375 C 9.7992188 22.259375 8.6098437 22.75 7.3398438 22.75 L 7.1894531 22.75 L 12.169922 27.730469 C 13.729922 29.290469 16.270078 29.290469 17.830078 27.730469 L 22.810547 22.75 L 22.660156 22.75 C 21.390156 22.75 20.200781 22.259375 19.300781 21.359375 L 15.810547 17.869141 C 15.585547 17.649141 15.2925 17.539062 15 17.539062 z"></path></svg>
+                                            <span class="ck-method__label">Pix</span>
+                                        </label>
+                                    </div>
+
+                                </div><!-- /ck-panel-metodo -->
+
+                                <!-- ── STEP 2: Dados ── -->
+                                <div id="ck-panel-dados" class="ck-panel ck-slide">
+
+                                    <h2 class="ck-panel__title">Seus dados</h2>
+
+                                    <!-- Customer fields (always visible) -->
+                                    <div class="ck-row">
+                                        <div class="ck-field">
+                                            <label class="ck-label" for="ck-doc">CPF ou CNPJ</label>
+                                            <input class="ck-input" id="ck-doc" type="text" placeholder="000.000.000-00" maxlength="18" inputmode="numeric" autocomplete="off">
+                                        </div>
+                                        <div class="ck-field">
+                                            <label class="ck-label" for="ck-phone">Celular</label>
+                                            <input class="ck-input" id="ck-phone" type="text" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel">
+                                        </div>
+                                    </div>
+
+                                    <!-- Card fields -->
+                                    <div id="ck-card-form">
+                                        <div class="ck-field">
+                                            <label class="ck-label" for="ck-card-number">Número do cartão</label>
+                                            <input class="ck-input" id="ck-card-number" type="text" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" autocomplete="cc-number">
+                                        </div>
+                                        <div class="ck-field">
+                                            <label class="ck-label" for="ck-card-holder">Nome no cartão</label>
+                                            <input class="ck-input" id="ck-card-holder" type="text" placeholder="Ex: JOAO DA SILVA" autocomplete="cc-name">
+                                        </div>
+                                        <div class="ck-row">
+                                            <div class="ck-field">
+                                                <label class="ck-label" for="ck-card-expiry">Data de validade</label>
+                                                <input class="ck-input" id="ck-card-expiry" type="text" placeholder="MM/AA" maxlength="5" inputmode="numeric" autocomplete="cc-exp">
+                                            </div>
+                                            <div class="ck-field">
+                                                <label class="ck-label" for="ck-card-cvv">CVV</label>
+                                                <input class="ck-input" id="ck-card-cvv" type="text" placeholder="Ex.: 123" maxlength="4" inputmode="numeric" autocomplete="cc-csc">
+                                            </div>
+                                        </div>
+
+                                        <!-- Billing address -->
+                                        <div class="ck-address-section">
+                                            <p class="ck-section-label">Endereço de cobrança</p>
+                                            <div class="ck-row">
+                                                <div class="ck-field">
+                                                    <input class="ck-input" id="ck-zip" type="text" placeholder="CEP" maxlength="9" inputmode="numeric">
+                                                </div>
+                                                <div class="ck-field">
+                                                    <input class="ck-input" id="ck-country" type="text" placeholder="País" maxlength="2" value="BR">
+                                                </div>
+                                            </div>
+                                            <div class="ck-field">
+                                                <input class="ck-input" id="ck-line1" type="text" placeholder="Número, Rua, Bairro (separados por vírgula)">
+                                            </div>
+                                            <div class="ck-field">
+                                                <input class="ck-input" id="ck-line2" type="text" placeholder="Complemento (opcional)">
+                                            </div>
+                                            <div class="ck-row">
+                                                <div class="ck-field">
+                                                    <input class="ck-input" id="ck-city" type="text" placeholder="Cidade">
+                                                </div>
+                                                <div class="ck-field">
+                                                    <input class="ck-input" id="ck-state" type="text" placeholder="UF" maxlength="2">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                        </div><!-- /ck-panel-pagamento -->
+                                    <!-- PIX info (shown when PIX selected) -->
+                                    <div id="ck-pix-info-panel" style="display:none">
+                                        <div class="ck-pix-notice">
+                                            <div class="ck-pix-notice__icon">
+                                                <svg width="18" height="18" viewBox="0 0 30 30" fill="currentColor"><path d="M 15 1.0996094 C 13.975 1.0996094 12.949922 1.4895313 12.169922 2.2695312 L 7.1894531 7.25 L 7.3398438 7.25 C 8.6098437 7.25 9.7992188 7.740625 10.699219 8.640625 L 14.189453 12.130859 C 14.639453 12.570859 15.360547 12.570859 15.810547 12.130859 L 19.300781 8.640625 C 20.200781 7.740625 21.390156 7.25 22.660156 7.25 L 22.810547 7.25 L 17.830078 2.2695312 C 17.050078 1.4895313 16.025 1.0996094 15 1.0996094 z M 5.6894531 8.75 L 2.2695312 12.169922 C 0.70953125 13.729922 0.70953125 16.270078 2.2695312 17.830078 L 5.6894531 21.25 L 7.3398438 21.25 C 8.2098438 21.25 9.030625 20.910781 9.640625 20.300781 L 13.130859 16.810547 C 14.160859 15.780547 15.839141 15.780547 16.869141 16.810547 L 20.359375 20.300781 C 20.969375 20.910781 21.790156 21.25 22.660156 21.25 L 24.310547 21.25 L 27.730469 17.830078 C 29.290469 16.270078 29.290469 13.729922 27.730469 12.169922 L 24.310547 8.75 L 22.660156 8.75 C 21.790156 8.75 20.969375 9.0892188 20.359375 9.6992188 L 16.869141 13.189453 C 16.359141 13.699453 15.68 13.960938 15 13.960938 C 14.32 13.960938 13.640859 13.699453 13.130859 13.189453 L 9.640625 9.6992188 C 9.030625 9.0892187 8.2098437 8.75 7.3398438 8.75 L 5.6894531 8.75 z M 15 17.539062 C 14.7075 17.539062 14.414453 17.649141 14.189453 17.869141 L 10.699219 21.359375 C 9.7992188 22.259375 8.6098437 22.75 7.3398438 22.75 L 7.1894531 22.75 L 12.169922 27.730469 C 13.729922 29.290469 16.270078 29.290469 17.830078 27.730469 L 22.810547 22.75 L 22.660156 22.75 C 21.390156 22.75 20.200781 22.259375 19.300781 21.359375 L 15.810547 17.869141 C 15.585547 17.649141 15.2925 17.539062 15 17.539062 z"></path></svg>
+                                            </div>
+                                            <div>
+                                                <p class="ck-pix-notice__title">Pagamento instantâneo via Pix</p>
+                                                <p class="ck-pix-notice__text">Após confirmar, o QR Code será gerado. Você terá 30 minutos para pagar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form-level error -->
+                                    <div class="ck-error" id="ck-error"></div>
+
+                                </div><!-- /ck-panel-dados -->
+
+                                <!-- ── STEP 3: Pagamento ── -->
+                                <div id="ck-panel-pagamento" class="ck-panel ck-slide">
+
+                                    <!-- Card: Processing -->
+                                    <div id="ck-state-processing" class="ck-result">
+                                        <div class="ck-result__spinner"></div>
+                                        <h3 class="ck-result__title">Processando pagamento...</h3>
+                                        <p class="ck-result__text">Aguarde enquanto confirmamos sua transação com o gateway.</p>
+                                    </div>
+
+                                    <!-- Card: Success -->
+                                    <div id="ck-state-success" class="ck-result" style="display:none">
+                                        <div class="ck-result__icon ck-result__icon--success">
+                                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                        </div>
+                                        <h3 class="ck-result__title">Pagamento confirmado!</h3>
+                                        <p class="ck-result__text" id="ck-success-msg">Seu acesso já está ativo.</p>
+                                    </div>
+
+                                    <!-- Card: Error -->
+                                    <div id="ck-state-error" class="ck-result" style="display:none">
+                                        <div class="ck-result__icon ck-result__icon--error">
+                                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                                        </div>
+                                        <h3 class="ck-result__title">Pagamento recusado</h3>
+                                        <p class="ck-result__text" id="ck-error-detail">Verifique os dados do cartão e tente novamente.</p>
+                                    </div>
+
+                                    <!-- PIX: QR Code -->
+                                    <div id="ck-state-pix" style="display:none">
+                                        <div class="ck-pix-card">
+                                            <div class="ck-pix-card__qr">
+                                                <img id="ck-pix-qr-img" src="" alt="QR Code Pix">
+                                            </div>
+                                            <div class="ck-pix-card__body">
+                                                <p class="ck-pix-card__label">Código Pix — Copia e Cola</p>
+                                                <div class="ck-pix-code-box">
+                                                    <code id="ck-pix-code"></code>
+                                                    <button class="ck-pix-copy-btn" id="ck-pix-copy-btn" type="button">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                                        Copiar
+                                                    </button>
+                                                </div>
+                                                <div class="ck-pix-status">
+                                                    <div class="ck-pix-waiting" id="ck-pix-waiting">
+                                                        <span class="ck-pix-dot"></span>
+                                                        Aguardando pagamento...
+                                                    </div>
+                                                    <div class="ck-pix-confirmed" id="ck-pix-paid">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                                        Pix confirmado!
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div><!-- /ck-panel-pagamento -->
+
+                            </div><!-- /ck-slide-track -->
+                        </div><!-- /ck-slide-container -->
 
                     </div><!-- /ck-form-col -->
 
@@ -331,9 +353,15 @@
                             </select>
                         </div>
 
+                        <!-- Back button (step 2 → step 1) -->
+                        <button class="ck-cta ck-cta--back" id="ck-btn-back" type="button" style="display:none">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Voltar
+                        </button>
+
                         <!-- CTA -->
                         <button class="ck-cta" id="ck-submit" type="button">
-                            <span id="ck-cta-label">Concluir pagamento</span>
+                            <span id="ck-cta-label">Continuar</span>
                             <svg id="ck-cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                             <div class="ck-cta-spinner" id="ck-cta-spinner" style="display:none"></div>
                         </button>

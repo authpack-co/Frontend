@@ -151,7 +151,10 @@ body {
     width: 100%;
     max-width: 920px;
     display: grid;
-    grid-template-columns: 1fr 340px;
+    /* minmax(0, …) lets the form column shrink below its content's min-content
+       width — without it the 3-panel slide track inflates the column and pushes
+       the summary aside past the card edge (clipped by overflow:hidden). */
+    grid-template-columns: minmax(0, 1fr) 340px;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
     border-radius: 20px;
@@ -248,13 +251,37 @@ body {
 .ck-step__line--done { background: var(--ap-accent); }
 
 /* ============================================================
+   Slide Container (horizontal slide between steps)
+   ============================================================ */
+.ck-slide-container {
+    overflow: hidden;
+    position: relative;
+    transition: height .4s cubic-bezier(.4, 0, .2, 1);
+    padding-bottom: 4px; /* prevent bottom cut-offs */
+    width: 100%;
+}
+
+.ck-slide-track {
+    display: flex;
+    align-items: flex-start;
+    transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+    width: 100%;
+}
+
+.ck-slide {
+    width: 100%;
+    flex: 0 0 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================================
    Panel (the actual form content area)
    ============================================================ */
 .ck-panel {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    animation: fadeUp .2s ease;
 }
 
 @keyframes fadeUp {
@@ -379,6 +406,13 @@ body {
     border-color: var(--ap-border-focus);
     background: var(--ap-bg-card);
     box-shadow: 0 0 0 3px rgba(96,165,250,.12);
+}
+
+/* Card form fields container */
+#ck-card-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* Billing address section */
@@ -790,6 +824,22 @@ body {
 .ck-cta--outline:hover:not(:disabled) {
     background: var(--ap-bg-hover);
     border-color: var(--ap-border-hover);
+    transform: none;
+    box-shadow: none;
+}
+
+.ck-cta--back {
+    background: transparent;
+    border: 1.5px solid var(--ap-border);
+    color: var(--ap-text-secondary);
+    margin-top: 0;
+    font-size: 14px;
+    padding: 12px 20px;
+}
+.ck-cta--back:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
     transform: none;
     box-shadow: none;
 }
