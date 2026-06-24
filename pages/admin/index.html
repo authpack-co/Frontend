@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <!-- Bloqueio CSS imediato: impede qualquer paint antes de validar o admin -->
+    <style id="ap-block-style">
+        html {
+            visibility: hidden !important;
+        }
+    </style>
+
+    <!-- Auth Guard: exige sessão válida E role 'admin' -->
+    <script>
+        (function () {
+            'use strict';
+
+            const LOGIN_URL = '/pages/login/';
+            const DASHBOARD_URL = '/pages/dashboard/';
+            const CURRENT_PATH = '/pages/admin/';
+
+            let released = false;
+
+            function release() {
+                if (released) return;
+                released = true;
+                try {
+                    const blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle?.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    document.documentElement.style.visibility = '';
+                } catch (e) { /* ignore */ }
+            }
+
+            function redirectToLogin() {
+                try {
+                    window.location.replace(LOGIN_URL + '?redirect=' + encodeURIComponent(CURRENT_PATH));
+                } catch (e) {
+                    release();
+                }
+            }
+
+            const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+
+            fetch(serverURL + '/api/auth/', { credentials: 'include' })
+                .then(function (res) {
+                    if (!res.ok) return Promise.reject('unauth');
+                    return res.json();
+                })
+                .then(function (json) {
+                    if (json && json.data && json.data.role === 'admin') {
+                        release();
+                    } else {
+                        // Autenticado mas não-admin → manda pro dashboard.
+                        window.location.replace(DASHBOARD_URL);
+                    }
+                })
+                .catch(function () {
+                    redirectToLogin();
+                });
+        })();
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>AuthPack — Admin</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+    <link rel="stylesheet" href="/assets/styles/animations.css">
+    <link rel="stylesheet" href="/assets/styles/modals.css">
+    <link rel="stylesheet" href="/pages/admin/admin.css">
+
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) { }
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
+</head>
+
+<body>
+    <div class="admin-shell">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <span class="admin-brand-mark">A</span>
+                <span class="admin-brand-name">AuthPack <em>Admin</em></span>
+            </div>
+
+            <nav class="admin-nav">
+                <button class="admin-nav-item active" data-view="financeiro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Financeiro</span>
+                </button>
+                <button class="admin-nav-item" data-view="usuarios">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Usuários</span>
+                </button>
+                <button class="admin-nav-item" data-view="vendedores">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+                    <span>Vendedores</span>
+                </button>
+                <button class="admin-nav-item" data-view="administradores">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Administradores</span>
+                </button>
+                <button class="admin-nav-item" data-view="leads" disabled title="Em breve">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <span>Leads</span>
+                    <em class="admin-soon">em breve</em>
+                </button>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <button class="admin-nav-item" id="admin-theme-toggle" onclick="AuthPackTheme && AuthPackTheme.toggle()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <span>Tema</span>
+                </button>
+                <a class="admin-nav-item" href="/pages/dashboard/">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+                    <span>Voltar ao painel</span>
+                </a>
+                <button class="admin-nav-item admin-nav-item--danger" id="admin-logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile top bar -->
+        <header class="admin-topbar">
+            <button class="admin-burger" id="admin-burger" aria-label="Menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="admin-brand-name">AuthPack <em>Admin</em></span>
+        </header>
+        <div class="admin-overlay" id="admin-overlay"></div>
+
+        <!-- Main -->
+        <main class="admin-main">
+            <!-- FINANCEIRO -->
+            <section class="admin-view active" data-view="financeiro">
+                <div class="admin-view-head">
+                    <h1>Financeiro</h1>
+                    <p>Receita da plataforma, taxas e saques pendentes.</p>
+                </div>
+
+                <div class="admin-cards" id="fin-cards"></div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-head">
+                        <h2>Receita por período</h2>
+                        <div class="admin-period-controls">
+                            <input type="date" id="fin-from" class="admin-input">
+                            <span>até</span>
+                            <input type="date" id="fin-to" class="admin-input">
+                            <select id="fin-granularity" class="admin-input">
+                                <option value="day">Por dia</option>
+                                <option value="month">Por mês</option>
+                            </select>
+                            <button class="admin-btn admin-btn-primary" id="fin-apply">Aplicar</button>
+                        </div>
+                    </div>
+                    <div class="admin-chart-wrap"><canvas id="fin-chart"></canvas></div>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-head"><h2>Saques pendentes</h2></div>
+                    <div id="fin-withdrawals"></div>
+                </div>
+            </section>
+
+            <!-- USUÁRIOS -->
+            <section class="admin-view" data-view="usuarios">
+                <div class="admin-view-head">
+                    <h1>Usuários</h1>
+                    <p>Busque, inspecione e gerencie contas.</p>
+                </div>
+                <div class="admin-toolbar">
+                    <input type="search" id="users-search" class="admin-input admin-input-grow" placeholder="Buscar por nome ou email…">
+                    <select id="users-role-filter" class="admin-input">
+                        <option value="">Todas as roles</option>
+                        <option value="user">Usuário</option>
+                        <option value="seller">Vendedor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <select id="users-status-filter" class="admin-input">
+                        <option value="">Todos os status</option>
+                        <option value="active">Ativo</option>
+                        <option value="suspended">Suspenso</option>
+                    </select>
+                </div>
+                <div id="users-list"></div>
+            </section>
+
+            <!-- VENDEDORES -->
+            <section class="admin-view" data-view="vendedores">
+                <div class="admin-view-head">
+                    <h1>Vendedores</h1>
+                    <p>Parceiros aprovados para vender na Vitrine.</p>
+                    <button class="admin-btn admin-btn-primary" id="seller-create-btn">+ Cadastrar vendedor</button>
+                </div>
+                <div id="sellers-list"></div>
+            </section>
+
+            <!-- ADMINISTRADORES -->
+            <section class="admin-view" data-view="administradores">
+                <div class="admin-view-head">
+                    <h1>Administradores</h1>
+                    <p>Quem tem acesso a este painel.</p>
+                </div>
+                <div id="admins-list"></div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-head"><h2>Histórico de ações</h2></div>
+                    <div id="admins-audit"></div>
+                </div>
+            </section>
+
+            <!-- LEADS (placeholder) -->
+            <section class="admin-view" data-view="leads">
+                <div class="admin-view-head"><h1>Leads</h1><p>Em breve.</p></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Detail drawer (reutilizado por usuários e vendedores) -->
+    <div class="admin-drawer-overlay" id="admin-drawer">
+        <div class="admin-drawer">
+            <button class="admin-drawer-close" id="admin-drawer-close" aria-label="Fechar">×</button>
+            <div class="admin-drawer-body" id="admin-drawer-body"></div>
+        </div>
+    </div>
+
+    <script src="/pages/admin/admin.js" defer></script>
+    <script src="/pages/admin/financial.js" defer></script>
+    <script src="/pages/admin/users.js" defer></script>
+    <script src="/pages/admin/sellers.js" defer></script>
+    <script src="/pages/admin/onboarding.js" defer></script>
+    <script src="/pages/admin/admins.js" defer></script>
+</body>
+
+</html>
