@@ -118,10 +118,9 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span>Administradores</span>
                 </button>
-                <button class="admin-nav-item" data-view="leads" disabled title="Em breve">
+                <button class="admin-nav-item" data-view="leads">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     <span>Leads</span>
-                    <em class="admin-soon">em breve</em>
                 </button>
             </nav>
 
@@ -231,9 +230,21 @@
                 </div>
             </section>
 
-            <!-- LEADS (placeholder) -->
+            <!-- LEADS -->
             <section class="admin-view" data-view="leads">
-                <div class="admin-view-head"><h1>Leads</h1><p>Em breve.</p></div>
+                <div class="admin-view-head">
+                    <h1>Leads</h1>
+                    <p>Candidaturas enviadas pelo "Torne-se parceiro" no dashboard.</p>
+                </div>
+                <div class="admin-toolbar">
+                    <select id="leads-status-filter" class="admin-input">
+                        <option value="">Todos</option>
+                        <option value="new">Novos</option>
+                        <option value="contacted">Contatados</option>
+                        <option value="archived">Arquivados</option>
+                    </select>
+                </div>
+                <div id="leads-list"></div>
             </section>
         </main>
     </div>
@@ -252,6 +263,7 @@
     <script src="/pages/admin/sellers.js" defer></script>
     <script src="/pages/admin/onboarding.js" defer></script>
     <script src="/pages/admin/admins.js" defer></script>
+    <script src="/pages/admin/leads.js" defer></script>
 </body>
 
 </html>

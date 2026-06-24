@@ -1,62 +1,11 @@
 /* ============================================================
-   AuthPack — Vitrine Pública (light-only standalone page)
-   Tokens copied from theme-tokens.css (light values).
+   AuthPack — Vitrine Pública
+   Design tokens (light + dark) come from theme-tokens.css.
+   The theme follows the user's choice (data-theme="dark"),
+   persisted in localStorage via themeManager.js — same as /dashboard.
    ============================================================ */
 :root {
-    color-scheme: only light;
-    --ap-bg-page: #f4f6f9;
-    --ap-bg-card: #ffffff;
-    --ap-bg-card-alt: #f9fafb;
-    --ap-bg-input: #f3f4f6;
-    --ap-bg-hover: #f0f1f3;
-    --ap-bg-muted: #e5e7eb;
-    --ap-bg-header: rgba(255, 255, 255, 0.88);
-
-    --ap-text-primary: #111827;
-    --ap-text-secondary: #374151;
-    --ap-text-muted: #6b7280;
-    --ap-text-placeholder: #9ca3af;
-    --ap-text-inverse: #ffffff;
-
-    --ap-border: #e5e7eb;
-    --ap-border-hover: #d1d5db;
-
-    --ap-accent: #60a5fa;
-    --ap-accent-hover: #4f90e8;
-    --ap-accent-light: #eff6ff;
-    --ap-accent-muted: #dbeafe;
-    --ap-accent-strong: #2563eb;
-
-    --ap-success: #16a34a;
-    --ap-success-light: #f0fdf4;
-    --ap-success-border: #bbf7d0;
-    --ap-success-text: #15803d;
-
-    --ap-warning: #d97706;
-    --ap-warning-light: #fffbeb;
-    --ap-warning-border: #fde68a;
-    --ap-warning-text: #b45309;
-
-    --ap-danger: #dc2626;
-    --ap-danger-light: #fef2f2;
-    --ap-danger-text: #b91c1c;
-
-    --ap-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --ap-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
-    --ap-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.06);
-    --ap-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
-
-    --ap-font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-    --ap-font-heading: 'Sora', 'Inter', sans-serif;
-    --ap-font-data: 'Fira Code', monospace;
-
-    --ap-radius-sm: 6px;
-    --ap-radius-md: 8px;
-    --ap-radius-lg: 12px;
-    --ap-radius-xl: 16px;
-    --ap-radius-2xl: 20px;
-    --ap-radius-full: 9999px;
-
+    color-scheme: light dark;
     --maxw: 1140px;
 }
 
@@ -64,11 +13,11 @@
 *::before, *::after { box-sizing: border-box; }
 
 html, body { margin: 0; padding: 0; }
-html { background: #f4f6f9; }
+html { background: var(--ap-bg-page); }
 
 body {
     font-family: var(--ap-font-body);
-    background: #f4f6f9;
+    background: var(--ap-bg-page);
     color: var(--ap-text-secondary);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -623,7 +572,7 @@ button { font-family: inherit; cursor: pointer; }
     border: 0;
     border-radius: var(--ap-radius-md);
     background: var(--ap-text-primary);
-    color: #fff;
+    color: var(--ap-text-inverse);
     font-size: 13.5px;
     font-weight: 600;
     white-space: nowrap;
@@ -823,8 +772,8 @@ button { font-family: inherit; cursor: pointer; }
 
 .trust-ico.t1 { background: var(--ap-success-light); color: var(--ap-success); }
 .trust-ico.t2 { background: var(--ap-accent-light); color: var(--ap-accent-strong); }
-.trust-ico.t3 { background: #fff4ed; color: #ea7317; }
-.trust-ico.t4 { background: #f1eeff; color: #6366f1; }
+.trust-ico.t3 { background: rgba(234, 115, 23, 0.12); color: #ea7317; }
+.trust-ico.t4 { background: rgba(99, 102, 241, 0.14); color: #6366f1; }
 
 .trust-item b {
     display: block;

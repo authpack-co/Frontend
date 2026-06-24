@@ -155,7 +155,7 @@ window.AP = (function () {
         });
 
         const initial = (location.hash || '').replace('#', '');
-        const valid = ['financeiro', 'usuarios', 'vendedores', 'administradores'];
+        const valid = ['financeiro', 'usuarios', 'vendedores', 'administradores', 'leads'];
         showView(valid.includes(initial) ? initial : 'financeiro');
     }
 

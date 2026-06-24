@@ -237,6 +237,17 @@ const fetchManager = {
         return response;
     },
 
+    // Leads
+
+    async submitLead(data) {
+        const response = await fetchRoutes(`/api/leads`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(data),
+        });
+        return response;
+    },
+
     // Users
 
     async getUserInfo() {
@@ -304,15 +315,6 @@ const fetchManager = {
 
     async getSellerAccountStatus() {
         const response = await fetchRoutes(`/api/marketplace/seller/account/status`);
-        return response;
-    },
-
-    async startSellerOnboarding(data) {
-        const response = await fetchRoutes(`/api/marketplace/seller/onboarding`, {
-            method: "POST",
-            credentials: "include",
-            body: data ? JSON.stringify(data) : undefined
-        });
         return response;
     },
 

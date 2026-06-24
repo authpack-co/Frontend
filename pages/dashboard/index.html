@@ -92,6 +92,66 @@
 <body>
     <!-- Hidden structures -->
     <div class="modals">
+
+        <!-- Torne-se parceiro / vendedor -->
+        <div class="modal-overlay" id="partnerModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Venda no AuthPack</h2>
+                    <button class="close-btn" id="partner-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Step 1: vantagens -->
+                    <div id="partner-step-1">
+                        <p style="color:var(--ap-text-muted);font-size:14px;margin:0 0 14px;">
+                            Transforme seus acessos em uma loja própria e venda com pagamentos e entrega
+                            automatizados.</p>
+                        <ul style="list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:10px;">
+                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Sem mensalidade — você só paga quando vende</li>
+                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Comissão única de 8% por venda</li>
+                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Pagamentos e entrega automatizados</li>
+                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Sua vitrine própria com link compartilhável</li>
+                        </ul>
+                        <button class="btn btn-primary" id="partner-want" style="width:100%;">Quero vender</button>
+                    </div>
+
+                    <!-- Step 2: formulário -->
+                    <div id="partner-step-2" style="display:none">
+                        <p style="color:var(--ap-text-muted);font-size:14px;margin:0 0 16px;">
+                            Preencha seus dados e nossa equipe entra em contato.</p>
+                        <div class="form-group">
+                            <label class="form-label">Nome *</label>
+                            <input type="text" class="form-input" id="partner-name" placeholder="Seu nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefone / WhatsApp *</label>
+                            <input type="text" class="form-input" id="partner-phone" placeholder="(11) 99999-9999"
+                                inputmode="tel">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">O que você quer vender? *</label>
+                            <textarea class="form-input" id="partner-what" rows="3"
+                                placeholder="Conte rapidamente o que pretende vender"></textarea>
+                        </div>
+                        <span class="error-message hidden" id="partner-error"></span>
+                        <div class="buttonContent content-state" style="margin-top:6px;">
+                            <div class="preset-content">
+                                <button class="btn btn-primary" id="partner-submit" style="width:100%;">Enviar
+                                    candidatura</button>
+                            </div>
+                            <div class="preset-loading">
+                                <button class="btn btn-primary" style="width:100%;">
+                                    <div class="spinner"></div>
+                                </button>
+                            </div>
+                        </div>
+                        <p style="text-align:center;color:var(--ap-text-muted);font-size:12px;margin:12px 0 0;">
+                            Entraremos em contato em até 1 dia útil.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Extension Required Modal -->
         <div class="modal-overlay" id="extensionRequiredModal">
             <div class="modal ext-modal">
@@ -952,7 +1012,7 @@
                     </svg>
                     Início
                 </li>
-                <li class="nav-item" data-view="vitrine">
+                <li class="nav-item" data-view="vitrine" id="nav-vitrine" style="display:none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5" />
@@ -961,6 +1021,23 @@
                         <path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05" />
                     </svg>
                     Minha vitrine
+                </li>
+                <!-- Admin only: link para o painel interno -->
+                <li class="nav-item" id="nav-admin" style="display:none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Painel admin
+                </li>
+                <!-- Usuário comum: candidatura a parceiro/vendedor -->
+                <li class="nav-item" id="nav-partner" style="display:none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    Torne-se parceiro
                 </li>
             </ul>
         </nav>
@@ -1969,787 +2046,7 @@
                         </div>
                     </div>
 
-                    <!-- ONBOARDING: Seller registration full-screen form -->
-                    <div class="preset preset-vitrine-onboarding">
-                        <div class="vt-onboarding-page">
-
-                            <!-- Header -->
-                            <div class="vt-onboarding-page-header">
-                                <div class="vt-onboarding-page-title">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-                                        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-                                        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-                                    </svg>
-                                    <div>
-                                        <h2>Cadastro de recebedor</h2>
-                                        <p>Preencha seus dados para começar a receber pagamentos.</p>
-                                    </div>
-                                </div>
-                                <button class="vt-onboarding-back-btn" id="onboarding-back-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                    Voltar
-                                </button>
-                            </div>
-
-                            <!-- Type Tabs -->
-                            <div class="onboarding-tabs">
-                                <button class="onboarding-tab active" data-type="individual">Pessoa Física</button>
-                                <button class="onboarding-tab" data-type="corporation">Pessoa Jurídica</button>
-                            </div>
-
-                            <!-- Scrollable body -->
-                            <div class="vt-onboarding-page-body custom-scrollbar">
-
-
-                                <!-- ══════════════ PF Fields ══════════════ -->
-                                <div id="onb-pf-fields">
-                                    <div class="vt-onboarding-columns">
-
-                                        <!-- Left col: Personal data + Address + Phone -->
-                                        <div>
-                                            <p class="vt-onboarding-col-title">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <circle cx="12" cy="8" r="4" />
-                                                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                                                </svg>
-                                                Dados pessoais
-                                            </p>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Nome completo *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-name"
-                                                            placeholder="Nome completo" autocomplete="name">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">CPF *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-document"
-                                                            placeholder="000.000.000-00" maxlength="14" data-mask="cpf"
-                                                            inputmode="numeric">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Nome da mãe *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-mother_name"
-                                                            placeholder="Nome da mãe">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Data de nascimento *</label>
-                                                        <input type="date" class="form-input" id="onb-pf-birthdate">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Renda mensal *</label>
-                                                        <div class="input-prefix-wrapper">
-                                                            <span class="input-prefix">R$</span>
-                                                            <input type="text" class="form-input"
-                                                                id="onb-pf-monthly_income" placeholder="0,00"
-                                                                data-mask="currency" inputmode="numeric">
-                                                        </div>
-                                                        <span class="form-input-hint">Digite o valor em reais (ex: 5000
-                                                            = R$ 5.000,00)</span>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Ocupação profissional *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-pf-professional_occupation"
-                                                            placeholder="Ex: Desenvolvedor">
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="form-label">Site (opcional)</label>
-                                                    <input type="url" class="form-input" id="onb-site_url"
-                                                        placeholder="https://seusite.com">
-                                                </div>
-
-                                                <h4 class="onboarding-section-title">Telefone *</h4>
-                                                <div class="form-group">
-                                                    <label class="form-label">Celular *</label>
-                                                    <input type="text" class="form-input" id="onb-pf-phone"
-                                                        placeholder="(11) 99999-9999" maxlength="15" data-mask="phone"
-                                                        inputmode="tel">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Right col: Address -->
-                                        <div>
-                                            <p class="vt-onboarding-col-title">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                    <circle cx="12" cy="10" r="3" />
-                                                </svg>
-                                                Endereço
-                                            </p>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">CEP *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-zip_code"
-                                                            placeholder="00000-000" maxlength="9" data-mask="cep"
-                                                            inputmode="numeric">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Rua *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-street"
-                                                            placeholder="Rua" autocomplete="address-line1">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Número *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-street_number"
-                                                            placeholder="Número">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Complemento</label>
-                                                        <input type="text" class="form-input" id="onb-pf-complementary"
-                                                            placeholder="Apto, sala...">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Bairro *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-neighborhood"
-                                                            placeholder="Bairro">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Cidade *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-city"
-                                                            placeholder="Cidade" autocomplete="address-level2">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Estado *</label>
-                                                        <input type="text" class="form-input" id="onb-pf-state"
-                                                            placeholder="UF" maxlength="2"
-                                                            autocomplete="address-level1">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Ponto de referência</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-pf-reference_point" placeholder="Próximo a...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- ══════════════ PJ Fields ══════════════ -->
-                                <div id="onb-pj-fields" class="hidden">
-                                    <div class="vt-onboarding-columns">
-                                        <!-- Left col: Company data -->
-                                        <div>
-                                            <p class="vt-onboarding-col-title">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <rect width="16" height="20" x="4" y="2" rx="2" />
-                                                    <path d="M9 22v-4h6v4" />
-                                                    <path
-                                                        d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M8 10h.01M8 14h.01M16 10h.01M16 14h.01" />
-                                                </svg>
-                                                Dados da empresa
-                                            </p>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Razão social *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-trading_name"
-                                                            placeholder="Razão social">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Nome fantasia *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-company_name"
-                                                            placeholder="Nome fantasia">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">CNPJ *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-document"
-                                                            placeholder="00.000.000/0000-00" maxlength="18"
-                                                            data-mask="cnpj" inputmode="numeric">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Receita anual *</label>
-                                                        <div class="input-prefix-wrapper">
-                                                            <span class="input-prefix">R$</span>
-                                                            <input type="text" class="form-input"
-                                                                id="onb-pj-annual_revenue" placeholder="0,00"
-                                                                data-mask="currency" inputmode="numeric">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Tipo da empresa *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-pj-corporation_type" placeholder="Ex: LTDA, S.A.">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Data de fundação *</label>
-                                                        <input type="date" class="form-input" id="onb-pj-founding_date">
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="form-label">Site (opcional)</label>
-                                                    <input type="url" class="form-input" id="onb-pj-site_url"
-                                                        placeholder="https://seusite.com">
-                                                </div>
-                                                <h4 class="onboarding-section-title">Telefone da empresa *</h4>
-                                                <div class="form-group">
-                                                    <label class="form-label">Celular *</label>
-                                                    <input type="text" class="form-input" id="onb-pj-phone"
-                                                        placeholder="(11) 99999-9999" maxlength="15" data-mask="phone"
-                                                        inputmode="tel">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Right col: Company address -->
-                                        <div>
-                                            <p class="vt-onboarding-col-title">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                    <circle cx="12" cy="10" r="3" />
-                                                </svg>
-                                                Endereço da empresa
-                                            </p>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">CEP *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-zip_code"
-                                                            placeholder="00000-000" maxlength="9" data-mask="cep"
-                                                            inputmode="numeric">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Rua *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-street"
-                                                            placeholder="Rua">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Número *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-street_number"
-                                                            placeholder="Número">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Complemento</label>
-                                                        <input type="text" class="form-input" id="onb-pj-complementary"
-                                                            placeholder="Apto, sala...">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Bairro *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-neighborhood"
-                                                            placeholder="Bairro">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Cidade *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-city"
-                                                            placeholder="Cidade">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Estado *</label>
-                                                        <input type="text" class="form-input" id="onb-pj-state"
-                                                            placeholder="UF" maxlength="2">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Ponto de referência</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-pj-reference_point" placeholder="Próximo a...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Legal representative -->
-                                    <h4 class="onboarding-section-title" style="margin-top:24px;">Representante Legal *
-                                    </h4>
-                                    <div class="vt-onboarding-columns" style="margin-top:14px;">
-                                        <div>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Nome *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-name"
-                                                            placeholder="Nome completo">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">E-mail *</label>
-                                                        <input type="email" class="form-input" id="onb-partner-email"
-                                                            placeholder="email@exemplo.com">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">CPF *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-document"
-                                                            placeholder="000.000.000-00" maxlength="14" data-mask="cpf"
-                                                            inputmode="numeric">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Nome da mãe *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-mother_name" placeholder="Nome da mãe">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Data de nascimento *</label>
-                                                        <input type="date" class="form-input"
-                                                            id="onb-partner-birthdate">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Renda mensal *</label>
-                                                        <div class="input-prefix-wrapper">
-                                                            <span class="input-prefix">R$</span>
-                                                            <input type="text" class="form-input"
-                                                                id="onb-partner-monthly_income" placeholder="0,00"
-                                                                data-mask="currency" inputmode="numeric">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Ocupação profissional *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-professional_occupation"
-                                                            placeholder="Ex: Gerente">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Celular *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-phone"
-                                                            placeholder="(11) 99999-9999" maxlength="15"
-                                                            data-mask="phone" inputmode="tel">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p class="vt-onboarding-col-title" style="margin-top:0;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                    <circle cx="12" cy="10" r="3" />
-                                                </svg>
-                                                Endereço do representante
-                                            </p>
-                                            <div class="onboarding-form">
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">CEP *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-zip_code"
-                                                            placeholder="00000-000" maxlength="9" data-mask="cep"
-                                                            inputmode="numeric">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Rua *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-street"
-                                                            placeholder="Rua">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Número *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-street_number" placeholder="Número">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Complemento</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-complementary" placeholder="Apto, sala...">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Bairro *</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-neighborhood" placeholder="Bairro">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Cidade *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-city"
-                                                            placeholder="Cidade">
-                                                    </div>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group">
-                                                        <label class="form-label">Estado *</label>
-                                                        <input type="text" class="form-input" id="onb-partner-state"
-                                                            placeholder="UF" maxlength="2">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label class="form-label">Ponto de referência</label>
-                                                        <input type="text" class="form-input"
-                                                            id="onb-partner-reference_point" placeholder="Próximo a...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- ══════════════ Bank Account (common) ══════════════ -->
-                                <h4 class="onboarding-section-title" style="margin-top:24px;">Conta bancária *</h4>
-                                <div class="vt-onboarding-columns" style="margin-top:14px;">
-                                    <div>
-                                        <div class="onboarding-form">
-                                            <div class="form-row">
-                                                <div class="form-group">
-                                                    <label class="form-label">Nome do titular *</label>
-                                                    <input type="text" class="form-input" id="onb-bank-holder_name"
-                                                        placeholder="Nome do titular">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="form-label">Banco *</label>
-                                                    <select class="form-input" id="onb-bank-bank">
-                                                        <option value="">Selecione...</option>
-                                                        <option value="001">001 - Banco do Brasil</option>
-                                                        <option value="033">033 - Santander</option>
-                                                        <option value="104">104 - Caixa Econômica Federal</option>
-                                                        <option value="237">237 - Bradesco</option>
-                                                        <option value="260">260 - Nubank</option>
-                                                        <option value="341">341 - Itaú</option>
-                                                        <option value="077">077 - Inter</option>
-                                                        <option value="212">212 - Banco Original</option>
-                                                        <option value="422">422 - Safra</option>
-                                                        <option value="745">745 - Citibank</option>
-                                                        <option value="041">041 - Banrisul</option>
-                                                        <option value="070">070 - BRB</option>
-                                                        <option value="121">121 - Agibank</option>
-                                                        <option value="136">136 - Unicred</option>
-                                                        <option value="748">748 - Sicredi</option>
-                                                        <option value="756">756 - Sicoob</option>
-                                                        <option value="other">Outro (digitar)</option>
-                                                    </select>
-                                                    <input type="text" class="form-input hidden"
-                                                        id="onb-bank-bank-other"
-                                                        placeholder="Código COMPE de 3 dígitos (ex: 341)"
-                                                        inputmode="numeric" maxlength="3" style="margin-top:6px;">
-                                                </div>
-                                            </div>
-                                            <div class="info-box" style="margin-top:8px;">
-                                                <span class="info-text" style="font-size:12px;">
-                                                    O documento e tipo do titular da conta serão preenchidos
-                                                    automaticamente com base nos dados do recebedor cadastrado acima.
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="onboarding-form">
-                                            <div class="form-row">
-                                                <div class="form-group">
-                                                    <label class="form-label">Agência *</label>
-                                                    <input type="text" class="form-input" id="onb-bank-branch_number"
-                                                        placeholder="1234" inputmode="numeric" maxlength="4">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="form-label">Dígito da agência</label>
-                                                    <input type="text" class="form-input"
-                                                        id="onb-bank-branch_check_digit" placeholder="0" maxlength="1"
-                                                        inputmode="numeric">
-                                                </div>
-                                            </div>
-                                            <div class="form-row">
-                                                <div class="form-group">
-                                                    <label class="form-label">Número da conta *</label>
-                                                    <input type="text" class="form-input" id="onb-bank-account_number"
-                                                        placeholder="12345" inputmode="numeric" maxlength="13">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="form-label">Dígito da conta *</label>
-                                                    <input type="text" class="form-input"
-                                                        id="onb-bank-account_check_digit" placeholder="0" maxlength="1"
-                                                        inputmode="numeric">
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="form-label">Tipo da conta *</label>
-                                                <select class="form-input" id="onb-bank-type">
-                                                    <option value="checking">Corrente</option>
-                                                    <option value="savings">Poupança</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div><!-- /.vt-onboarding-page-body -->
-
-                            <!-- Footer -->
-                            <div class="vt-onboarding-page-footer">
-                                <span class="error-message hidden" id="onboarding-error"></span>
-                                <div class="buttonContent content-state" style="margin-left:auto;">
-                                    <div class="preset-content">
-                                        <button class="btn btn-primary" id="onboarding-submit">Cadastrar</button>
-                                    </div>
-                                    <div class="preset-loading">
-                                        <button class="btn btn-primary">
-                                            <div class="spinner"></div>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div><!-- /.vt-onboarding-page -->
-                    </div><!-- /.preset-vitrine-onboarding -->
-
-                    <!-- ── GATE (landing-style seller registration screen for non-seller users) ── -->
-                    <div class="preset preset-vitrine-gate">
-                        <div class="vt-gate-header">
-                            <h2>Minha vitrine</h2>
-                            <p>Venda seus acessos com pagamentos integrados e gestão completa.</p>
-                        </div>
-
-                        <section class="vt-gate">
-                            <!-- ── HERO ── -->
-                            <div class="vt-gate-hero">
-                                <div class="vt-hero-copy">
-                                    <div class="vt-eyebrow">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path
-                                                d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                            <path d="M5 21h14" />
-                                        </svg>
-                                        Minha Vitrine · recurso Plus
-                                    </div>
-
-                                    <h1 class="vt-gate-title">
-                                        Sua vitrine de vendas <span class="accent">começa aqui</span>
-                                    </h1>
-
-                                    <p class="vt-gate-sub">
-                                        Transforme seus acessos em uma loja própria: publique seus pacotes, receba
-                                        pagamentos automaticamente e gerencie clientes e distribuições — tudo dentro
-                                        do AuthPack.
-                                    </p>
-
-                                    <div class="vt-cta-row">
-                                        <button class="vt-gate-cta" id="vt-gate-cta">
-                                            Cadastrar-se como vendedor
-                                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path d="M5 12h14" />
-                                                <path d="m12 5 7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                        <span class="vt-cta-note">
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path
-                                                    d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                                <path d="M5 21h14" />
-                                            </svg>
-                                            Incluso no AuthPack Plus
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Storefront preview mockup -->
-                                <div class="vt-preview-wrap">
-                                    <div class="vt-preview-glow"></div>
-                                    <div class="vt-preview">
-                                        <div class="vt-preview-bar">
-                                            <div class="vt-preview-dots"><i></i><i></i><i></i></div>
-                                            <div class="vt-preview-url">
-                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                </svg>
-                                                authpack.co/loja/<span id="vt-preview-slug"></span>
-                                            </div>
-                                        </div>
-                                        <div class="vt-preview-body">
-                                            <div class="vt-store-head">
-                                                <div class="vt-store-avatar" id="vt-preview-avatar">?</div>
-                                                <div class="vt-store-meta">
-                                                    <h4>
-                                                        Loja do <span id="vt-preview-name"></span>
-                                                        <span class="vt-verified">
-                                                            <svg width="15" height="15" viewBox="0 0 24 24"
-                                                                fill="currentColor">
-                                                                <path d="M9 12l2 2 4-4" stroke="currentColor"
-                                                                    stroke-width="2.4" fill="none"
-                                                                    stroke-linecap="round" stroke-linejoin="round" />
-                                                                <circle cx="12" cy="12" r="9" stroke="currentColor"
-                                                                    stroke-width="1.8" fill="none" />
-                                                            </svg>
-                                                        </span>
-                                                    </h4>
-                                                    <span>Vendedor verificado · 4 produtos</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="vt-store-grid">
-                                                <div class="vtp-card">
-                                                    <div class="vtp-header">
-                                                        <h5 class="vtp-name">Pacote Criativo</h5>
-                                                        <span class="vtp-badge one-time">Único</span>
-                                                    </div>
-                                                    <div class="vtp-icons">
-                                                        <div class="vtp-icon" style="background:#10a37f">C</div>
-                                                        <div class="vtp-icon" style="background:#7c3aed">M</div>
-                                                        <div class="vtp-icon" style="background:#2563eb">D</div>
-                                                    </div>
-                                                    <div class="vtp-price-row">
-                                                        <span class="vtp-price">R$ 29,90</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="vtp-card">
-                                                    <div class="vtp-header">
-                                                        <h5 class="vtp-name">Studio Pro</h5>
-                                                        <span class="vtp-badge subscription">Assinatura</span>
-                                                    </div>
-                                                    <div class="vtp-icons">
-                                                        <div class="vtp-icon" style="background:#ef4444">S</div>
-                                                        <div class="vtp-icon" style="background:#0ea5e9">P</div>
-                                                    </div>
-                                                    <div class="vtp-price-row">
-                                                        <span class="vtp-price">R$ 19,90</span>
-                                                        <span class="vtp-period">/mês</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="vtp-card wide">
-                                                    <div class="vtp-mini-stat">
-                                                        <span class="vtp-stat-ico">
-                                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor" stroke-width="2"
-                                                                stroke-linecap="round" stroke-linejoin="round">
-                                                                <path d="M3 3v16a2 2 0 0 0 2 2h16" />
-                                                                <path d="m19 9-5 5-4-4-3 3" />
-                                                            </svg>
-                                                        </span>
-                                                        <div>
-                                                            <b>R$ 1.248</b>
-                                                            <span>vendas nos últimos 7 dias</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="vtp-trend">
-                                                        <i style="height:40%"></i>
-                                                        <i style="height:60%"></i>
-                                                        <i style="height:45%"></i>
-                                                        <i style="height:80%"></i>
-                                                        <i style="height:65%"></i>
-                                                        <i style="height:100%"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ── BENEFITS ── -->
-                            <div class="vt-benefits">
-                                <p class="vt-benefits-label">Por que vender no AuthPack</p>
-                                <div class="vt-benefits-grid">
-                                    <div class="vt-benefit">
-                                        <div class="vt-benefit-ico b1">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
-                                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                                                <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
-                                                <path d="M2 7h20" />
-                                            </svg>
-                                        </div>
-                                        <h3>Venda seus acessos</h3>
-                                        <p>Publique suas contas e assinaturas como produtos, com pagamento único ou
-                                            recorrente.</p>
-                                    </div>
-
-                                    <div class="vt-benefit">
-                                        <div class="vt-benefit-ico b2">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <line x1="4" x2="4" y1="21" y2="14" />
-                                                <line x1="4" x2="4" y1="10" y2="3" />
-                                                <line x1="12" x2="12" y1="21" y2="12" />
-                                                <line x1="12" x2="12" y1="8" y2="3" />
-                                                <line x1="20" x2="20" y1="21" y2="16" />
-                                                <line x1="20" x2="20" y1="12" y2="3" />
-                                                <line x1="2" x2="6" y1="14" y2="14" />
-                                                <line x1="10" x2="14" y1="8" y2="8" />
-                                                <line x1="18" x2="22" y1="16" y2="16" />
-                                            </svg>
-                                        </div>
-                                        <h3>Controle das sessões</h3>
-                                        <p>Defina quantos acessos cada produto libera e administre tudo em um só
-                                            painel.</p>
-                                    </div>
-
-                                    <div class="vt-benefit">
-                                        <div class="vt-benefit-ico b3">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                <circle cx="9" cy="7" r="4" />
-                                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                            </svg>
-                                        </div>
-                                        <h3>Gestão de clientes</h3>
-                                        <p>Acompanhe quem comprou e gerencie acessos de forma simples, sem planilhas.
-                                        </p>
-                                    </div>
-
-                                    <div class="vt-benefit">
-                                        <div class="vt-benefit-ico b4">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path d="M3 3v16a2 2 0 0 0 2 2h16" />
-                                                <path d="m19 9-5 5-4-4-3 3" />
-                                            </svg>
-                                        </div>
-                                        <h3>Vendas e saques</h3>
-                                        <p>Veja receita, número de vendas e saques atualizados em tempo
-                                            real.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    <!-- ── VITRINE CONTENT (seller dashboard) ── -->
+                    <!-- VITRINE CONTENT: seller dashboard (products, KPIs, withdrawals) -->
                     <div class="preset preset-vitrine-content">
 
                         <!-- ── Onboarding Banner (shown for pending users) ── -->
@@ -3818,6 +3115,13 @@
                                         Após o vencimento, você pode assinar novamente.</p>
                                 </div>
 
+                                <!-- Role-based (vendedor/admin): benefícios Plus inclusos pelo papel -->
+                                <div class="sc-plan-state" id="sc-plan-state-role" style="display:none">
+                                    <p class="sc-plan-text">Seu papel: <strong id="sc-plan-role-label">—</strong></p>
+                                    <p class="sc-plan-sub">Todos os benefícios do Plus estão inclusos. Não é necessário
+                                        assinar.</p>
+                                </div>
+
                             </div>
                         </div>
 
@@ -3921,6 +3225,7 @@
     <script src="/pages/dashboard/contentRenderer.js"></script>
     <script src="/pages/dashboard/vitrineManager.js"></script>
     <script src="/pages/dashboard/settings.js"></script>
+    <script src="/pages/dashboard/partner.js"></script>
 </body>
 
 </html>
