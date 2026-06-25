@@ -78,9 +78,9 @@
     function renderCheckout(order) {
         const meta = order.metadata || {};
         const paymentMethods = order.payment_methods || ['credit_card'];
+        // 8% commission model: the buyer pays the clean price — no service fee added.
         const totalCents = order.amount_cents || 0;
-        const feeCents = meta.platformFeeCents || 0;
-        const productCents = meta.productPriceCents || (totalCents - feeCents);
+        const productCents = totalCents;
 
         // Product name
         const productName = order.product_name || meta.planName || 'Produto';
@@ -95,10 +95,11 @@
             priceLine.textContent = 'Pagamento único';
         }
 
-        // Breakdown
+        // Breakdown — no separate service fee line (commission is on the seller side).
         document.getElementById('ck-breakdown-product-value').textContent = formatCurrency(productCents);
-        document.getElementById('ck-breakdown-fee-value').textContent = formatCurrency(feeCents);
         document.getElementById('ck-breakdown-total-value').textContent = formatCurrency(totalCents);
+        const feeRow = document.querySelector('.ck-breakdown__row--fee');
+        if (feeRow) feeRow.style.display = 'none';
         if (order.billing_type === 'subscription') {
             document.getElementById('ck-breakdown-product-label').textContent = 'Assinatura mensal';
         }

@@ -43,10 +43,10 @@
         const sessions = p.sessions || [];
         const billingType = p.billing_type || 'one_time';
 
-        // Must match backend PLATFORM_FEE_CENTS
-        const SERVICE_FEE = 99;
+        // Modelo de comissão 8%: o cliente paga o preço limpo do produto, sem taxa
+        // somada (a comissão sai do vendedor).
         const priceVal = (p.price_cents || 0) / 100;
-        const totalCents = (p.price_cents || 0) + SERVICE_FEE;
+        const totalCents = (p.price_cents || 0);
         const totalVal = totalCents / 100;
         const fmt = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

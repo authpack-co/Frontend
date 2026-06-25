@@ -10,9 +10,6 @@ let vitrineCategories = [];
 let vitrineCategoriesEditable = false;
 let vitrineLoaded = false;
 // True when the seller is a registered recipient who no longer has Plus.
-// Used to keep the seller status badge as "Inativa" even after the dashboard
-// data loads (which would otherwise flip it back to "Ativo").
-let vitrineIsInactive = false;
 let createProductState = {
     step: 1,
     packageId: null,
@@ -105,13 +102,9 @@ async function loadVitrineTab() {
     const container = document.getElementById('vitrine-container');
     setElementState(container, 'loading');
 
-    // Always hide banners first
-    hideOnboardingBanner();
+    // Reset banner + ensure "Criar produto" is visible (it may have been hidden
+    // in the KYC-pending state).
     hideKycBanner();
-    hideInactiveBanner();
-    // Reset any leftover "inactive" styling and ensure "Criar produto" is
-    // visible by default (it may have been hidden in KYC/inactive state)
-    _setVitrineInactive(false);
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
     // Seller status is now role-based (set manually by the admin team). Selling
@@ -180,27 +173,6 @@ async function loadVitrineTab() {
         setElementState(container, 'vitrine-content');
         vitrineLoaded = true;
     }
-}
-
-// Toggle the "inactive" visual treatment on the products section.
-function _setVitrineInactive(inactive) {
-    vitrineIsInactive = inactive;
-    const productsSection = document.querySelector('.vt-products-section');
-    if (productsSection) productsSection.classList.toggle('vt-inactive', inactive);
-}
-
-function hideInactiveBanner() {
-    document.getElementById('vt-inactive-banner')?.classList.add('hidden');
-}
-
-function showOnboardingBanner() {
-    const banner = document.getElementById('vt-onboarding-banner');
-    if (banner) banner.classList.remove('hidden');
-}
-
-function hideOnboardingBanner() {
-    const banner = document.getElementById('vt-onboarding-banner');
-    if (banner) banner.classList.add('hidden');
 }
 
 function showKycBanner() {
@@ -324,11 +296,10 @@ function getDailyTotals(filteredOrders) {
 }
 
 // ── Receita bruta do período usando dados completos do sales-history ──
-// Mesma fórmula do modal: total_amount_cents - R$0,99 (taxa fixa de plataforma)
+// Bruto = total_amount_cents (preço limpo pago pelo comprador).
 function computeGrossFromHistory(days) {
     if (!allSalesHistory || allSalesHistory.length === 0) return null;
 
-    const PLATFORM_FEE = 99;
     const now = new Date();
     const today = new Date(now);
     today.setHours(23, 59, 59, 999);
@@ -342,7 +313,7 @@ function computeGrossFromHistory(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d >= startOfDay && d <= today) {
-                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+                gross += (order.total_amount_cents || 0);
             }
         });
     } else {
@@ -353,7 +324,7 @@ function computeGrossFromHistory(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d >= cutoff && d <= today) {
-                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+                gross += (order.total_amount_cents || 0);
             }
         });
     }
@@ -367,7 +338,6 @@ function computeGrossFromHistory(days) {
 function buildGrossChartFromHistory(days, isHourly) {
     if (!allSalesHistory || allSalesHistory.length === 0) return null;
 
-    const PLATFORM_FEE = 99;
     const pad = v => String(v).padStart(2, '0');
     const now = new Date();
     const result = {};
@@ -380,7 +350,7 @@ function buildGrossChartFromHistory(days, isHourly) {
             if (d < startOfDay) return;
             const key = `${pad(d.getHours())}:00`;
             if (!result[key]) result[key] = 0;
-            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            result[key] += (order.total_amount_cents || 0);
         });
     } else {
         const cutoff = new Date(now);
@@ -391,7 +361,7 @@ function buildGrossChartFromHistory(days, isHourly) {
             if (d < cutoff) return;
             const key = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
             if (!result[key]) result[key] = 0;
-            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            result[key] += (order.total_amount_cents || 0);
         });
     }
 
@@ -407,14 +377,11 @@ function computeKPIs(filteredOrders) {
     for (const orders of Object.values(filteredOrders)) {
         for (const order of orders) {
             totalRevenue += order.seller_amount_cents;
-            // Receita bruta = total pago pelo comprador menos a taxa fixa de plataforma (R$0,99)
-            // — mesma lógica usada no modal de histórico de vendas
-            const PLATFORM_FEE = 99;
+            // Bruto = total pago pelo comprador (preço limpo). Fallback p/ pedidos
+            // sem total_amount_cents: seller_amount + comissão da plataforma.
             const gatewayFee = order.gateway_fee_cents || 0;
             const platformFee = order.platform_fee_cents || 0;
-            totalGross += order.total_amount_cents
-                ? Math.max(0, order.total_amount_cents - PLATFORM_FEE)
-                : Math.max(0, order.seller_amount_cents + gatewayFee);
+            totalGross += order.total_amount_cents || Math.max(0, (order.seller_amount_cents || 0) + platformFee);
             totalFees += gatewayFee + platformFee;
             totalSales++;
         }
@@ -425,9 +392,8 @@ function computeKPIs(filteredOrders) {
 // ── KPIs do período para "Performance de vendas" + "Resumo rápido" ──
 // Reaproveita allSalesHistory (tem total_amount_cents correto, mesma janela do
 // gráfico) e cai para o cache de raw_orders quando o histórico ainda não chegou.
-// Mesmas fórmulas do histórico: bruto = total - R$0,99; líquido = seller_amount.
+// Mesmas fórmulas do histórico: bruto = total_amount_cents; líquido = seller_amount.
 function applyVitrinePeriodKPIs(days) {
-    const PLATFORM_FEE = 99;
     let gross = 0, net = 0, sales = 0;
 
     if (allSalesHistory && allSalesHistory.length > 0) {
@@ -443,7 +409,7 @@ function applyVitrinePeriodKPIs(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d < start || d > end) return;
-            gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            gross += (order.total_amount_cents || 0);
             net += order.seller_amount_cents || 0;
             sales++;
         });
@@ -517,10 +483,8 @@ async function loadSellerDashboardData() {
 
             vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
-            // Keep the "Inativa" badge for former-Plus sellers — the recipient
-            // is still active on the gateway, but the vitrine is not selling.
             const statusEl = document.getElementById('fin-seller-status');
-            if (statusEl && !vitrineIsInactive) {
+            if (statusEl) {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
@@ -1678,29 +1642,6 @@ document.getElementById('deleteCategoryModal')?.addEventListener('click', (e) =>
 });
 document.querySelector('#deleteCategoryModal .cancel-btn')?.addEventListener('click', closeDeleteCategoryModal);
 
-// Check onboarding status (pending state)
-document.getElementById('btn-continue-onboarding')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-continue-onboarding');
-    btn.disabled = true;
-    btn.textContent = 'Verificando...';
-
-    try {
-        const res = await fetchManager.getSellerAccountStatus();
-        if (res.ok && res.result?.data?.charges_enabled) {
-            notify('success', 'Seu cadastro foi aprovado! Recarregando...');
-            setTimeout(() => loadVitrine(), 1500);
-        } else {
-            notify('info', 'Seu cadastro ainda está em análise.');
-            btn.textContent = 'Ver status';
-            btn.disabled = false;
-        }
-    } catch (err) {
-        console.error('Onboarding status check error:', err);
-        btn.textContent = 'Ver status';
-        btn.disabled = false;
-    }
-});
-
 // KYC link button — generate and open the Pagar.me biometric verification link
 document.getElementById('btn-kyc-link')?.addEventListener('click', async () => {
     const btnContainer = document.getElementById('btn-kyc-link-container');
@@ -2346,10 +2287,9 @@ function renderSalesHistory(orders) {
             grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
         }
 
-        // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma
-        // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa gateway
-        const plataformaFeeCents = 99; // Taxa fixa de R$ 0,99 adicionada no checkout
-        const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
+        // receita = valor bruto (preço limpo pago pelo comprador) = total_amount_cents
+        // liquido = valor líquido que o seller recebe (92%) = seller_amount_cents
+        const receita = order.total_amount_cents || 0;
         const liquido = order.seller_amount_cents || 0;
 
         totalRevenue += receita;
@@ -2750,8 +2690,7 @@ function renderProductDetails(data, wrapEl) {
             if (!grouped[y]) grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
             if (!grouped[y].months[m]) grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
 
-            const plataformaFeeCents = 99;
-            const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
+            const receita = order.total_amount_cents || 0;
             const liquido = order.seller_amount_cents || 0;
 
             grouped[y].revenue += receita;
