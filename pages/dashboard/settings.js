@@ -430,7 +430,7 @@
             if (badgeEl) scHide(badgeEl);
             if (priceEl) priceEl.textContent = 'Gratuito';
             if (noteEl) {
-                noteEl.textContent = 'Você está no plano Free. Assine o Plus para criar e monetizar sem limites.';
+                noteEl.textContent = 'Você está no plano Free. Assine o Plus para ter pacotes, sessões e usuários sem limites.';
                 scShow(noteEl);
             }
         }
