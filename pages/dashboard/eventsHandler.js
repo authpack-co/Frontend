@@ -1036,8 +1036,11 @@ const createPackageHandler = async (event) => {
         return utils.closeModals();
     }
 
+    // É o primeiro pacote do usuário? (verificado antes de inserir no array local)
+    const isFirstPackage = packagesList.userCollection.length === 0;
+
     // Se não tiver packages, seta estado de content
-    if (packagesList.userCollection.length === 0) {
+    if (isFirstPackage) {
         setElementState(document.querySelector("#packages-list"), "collection");
     }
 
@@ -1076,6 +1079,12 @@ const createPackageHandler = async (event) => {
 
     // Atualiza o contador do plano free (x/3) após criar pacote
     updateFreePlanPackageCounter();
+
+    // Primeiro pacote criado → abre o tutorial "Adicionar sessão" (uma única vez).
+    // Pequeno atraso para a animação do card e o scroll assentarem antes do overlay.
+    if (isFirstPackage && window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
+        setTimeout(() => AuthPackOnboarding.open(), 650);
+    }
 };
 
 confirmCreatePackageBtn.addEventListener('click', createPackageHandler);
