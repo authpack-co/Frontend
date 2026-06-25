@@ -634,19 +634,15 @@ async function renderPackageDetails(pkg, isCollection = true) {
         activePreset.classList.remove('package-inactive');
     }
 
-    // Atualiza título
-    const title = activePreset.querySelector('.header-top h2') || activePreset.querySelector('.package-info-title h2');
+    // Atualiza título (collection usa o .header-top; access é montado abaixo)
+    const title = activePreset.querySelector('.header-top h2');
     if (title) title.textContent = pkg.name;
 
-    // Atualiza dados do dono do pacote (apenas na access view)
-    if (!isCollection && pkg.owner) {
-        const ownerNameEl = activePreset.querySelector('.package-owner-name');
-        const ownerAvatarEl = activePreset.querySelector('.package-owner-avatar');
-        if (ownerNameEl) ownerNameEl.textContent = pkg.owner.name || '—';
-        if (ownerAvatarEl) {
-            ownerAvatarEl.src = pkg.owner.picture || '';
-            ownerAvatarEl.alt = pkg.owner.name || '';
-        }
+    // Header da aba "Meus acessos": referencia a vitrine de origem (com
+    // identidade, contatos e descrição) ou, no acesso direto/compartilhado,
+    // uma estética neutra focada em quem compartilhou.
+    if (!isCollection) {
+        renderAccessHeader(pkg, activePreset);
     }
 
     // Atualiza data de criação
@@ -727,6 +723,160 @@ async function renderPackageDetails(pkg, isCollection = true) {
         loadPackageStats(pkg, period);
     }
 
+}
+
+// ============================================================================
+// HEADER DA ABA "MEUS ACESSOS"
+// ============================================================================
+
+// Ícones (inline) usados no header de acessos.
+const ACCESS_ICONS = {
+    package: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>`,
+    verified: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5l-8-3z" opacity=".16"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m8.5 12 2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    arrowUpRight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>`,
+    calendar: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>`,
+    link: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    whatsapp: `<svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.12.82.83-3.04-.2-.32a8.21 8.21 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.24-8.23 4.54 0 8.24 3.69 8.24 8.23s-3.71 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01s-.43.06-.66.31c-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.28z"/></svg>`,
+    telegram: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#229ED9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+    instagram: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>`,
+    site: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+};
+
+// Paletas determinísticas para avatares com inicial (sem imagem).
+const ACCESS_AVATAR_PALETTES = [
+    ['#60a5fa', '#2563eb'], ['#34d399', '#059669'], ['#f59e0b', '#b45309'],
+    ['#a78bfa', '#7c3aed'], ['#f472b6', '#be185d'], ['#22d3ee', '#0e7490'],
+];
+
+// Escapa texto para inserção segura via innerHTML (conteúdo e atributos).
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function accessPalette(name) {
+    const key = (name || '?').trim();
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash + key.charCodeAt(i)) % ACCESS_AVATAR_PALETTES.length;
+    return ACCESS_AVATAR_PALETTES[hash];
+}
+
+// Avatar com fallback de inicial em gradiente. Se a imagem falhar, o onerror
+// remove o <img> e a inicial (renderizada atrás) reaparece.
+function accessAvatar(name, url, className) {
+    const [c1, c2] = accessPalette(name);
+    const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+    const img = url
+        ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name || '')}" onerror="this.remove()">`
+        : '';
+    return `<span class="${className} ph-avatar" style="background:linear-gradient(150deg, ${c1}, ${c2})"><span class="ph-avatar-initial">${escapeHtml(initial)}</span>${img}</span>`;
+}
+
+function accessContactPill(href, icon, label) {
+    return `<a class="ph-pill" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer nofollow">${icon}${label}</a>`;
+}
+
+// Linha de canais de suporte da vitrine. Retorna '' quando não há contatos.
+function renderAccessContacts(contacts) {
+    if (!contacts) return '';
+    const items = [];
+    if (contacts.whatsapp) items.push(accessContactPill(`https://wa.me/${encodeURIComponent(contacts.whatsapp)}`, ACCESS_ICONS.whatsapp, 'WhatsApp'));
+    if (contacts.telegram) items.push(accessContactPill(`https://t.me/${encodeURIComponent(contacts.telegram)}`, ACCESS_ICONS.telegram, 'Telegram'));
+    if (contacts.instagram) items.push(accessContactPill(`https://instagram.com/${encodeURIComponent(contacts.instagram)}`, ACCESS_ICONS.instagram, 'Instagram'));
+    if (contacts.website) items.push(accessContactPill(contacts.website, ACCESS_ICONS.site, 'Site'));
+    if (!items.length) return '';
+    return `<div class="ph-contacts"><span class="ph-contacts-label">Suporte:</span>${items.join('')}</div>`;
+}
+
+// Monta o header de um pacote na aba "Meus acessos". Os valores assíncronos
+// (online / entrou em / renova em) são preenchidos depois por loadAccessOverview.
+function renderAccessHeader(pkg, activePreset) {
+    const header = activePreset.querySelector('.package-info-header');
+    if (!header) return;
+
+    const fromVitrine = pkg.accessOrigin === 'product' && pkg.vitrine;
+    header.className = 'package-info-header ' + (fromVitrine ? 'is-vitrine' : 'is-direct');
+
+    const name = escapeHtml(pkg.name || '');
+    const desc = pkg.description
+        ? `<p class="ph-desc">${escapeHtml(pkg.description)}</p>`
+        : '';
+    const onlineTag = `<span class="ph-online"><span class="ph-online-dot"></span><span class="online-count-value">0 online</span></span>`;
+    const joinedItem = `<span class="ph-meta-item">${ACCESS_ICONS.calendar} Entrou em <strong class="joined-at-value">—</strong></span>`;
+
+    if (fromVitrine) {
+        const v = pkg.vitrine;
+        const verified = v.verified
+            ? `<span class="ph-verified">${ACCESS_ICONS.verified} Verificada</span>`
+            : '';
+        const link = v.is_published
+            ? `<a class="ph-vitrine-link" href="/pages/vitrine/?loja=${encodeURIComponent(v.id)}">Ver vitrine ${ACCESS_ICONS.arrowUpRight}</a>`
+            : '';
+        const renewsItem = `<span class="ph-meta-item">${ACCESS_ICONS.refresh} <span class="renews-at-label">Renova em</span> <strong class="renews-at-value">—</strong></span>`;
+
+        header.innerHTML = `
+            <div class="ph-vitrine-band">
+                <div class="ph-vitrine-id">
+                    ${accessAvatar(v.display_name, v.avatar_url, 'ph-vitrine-avatar')}
+                    <div class="ph-vitrine-meta">
+                        <span class="ph-eyebrow">Adquirido na vitrine</span>
+                        <div class="ph-vitrine-name-row">
+                            <span class="ph-vitrine-name">${escapeHtml(v.display_name || '')}</span>
+                            ${verified}
+                        </div>
+                    </div>
+                </div>
+                ${link}
+            </div>
+            ${renderAccessContacts(v.contacts)}
+            <div class="ph-hero">
+                <div class="ph-hero-top">
+                    <div class="ph-hero-title">
+                        <span class="ph-pkg-icon">${ACCESS_ICONS.package}</span>
+                        <h2>${name}</h2>
+                    </div>
+                    ${onlineTag}
+                </div>
+                ${desc}
+                <div class="ph-meta">
+                    ${joinedItem}
+                    ${renewsItem}
+                </div>
+            </div>
+        `;
+    } else {
+        const owner = pkg.owner || {};
+        const sharedBy = `
+            <span class="ph-meta-item ph-shared-by">Compartilhado por
+                <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
+            </span>`;
+
+        header.innerHTML = `
+            <div class="ph-direct-band">
+                ${ACCESS_ICONS.link}
+                <span>Acesso compartilhado diretamente com você — fora de uma vitrine.</span>
+            </div>
+            <div class="ph-hero">
+                <div class="ph-hero-top">
+                    <div class="ph-hero-title">
+                        <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
+                        <h2>${name}</h2>
+                    </div>
+                    ${onlineTag}
+                </div>
+                ${desc}
+                <div class="ph-meta">
+                    ${sharedBy}
+                    ${joinedItem}
+                </div>
+            </div>
+        `;
+    }
 }
 
 // Seleciona um pacote
@@ -820,12 +970,12 @@ async function loadAccessOverview(pkg, activePreset) {
             joinedAtEl.textContent = '—';
         }
 
-        // Atualiza "Renova em" / "Expira em"
+        // Atualiza "Renova em" / "Expira em" (só existe no header de vitrine)
         const renewsAtEl = activePreset.querySelector('.package-info-header .renews-at-value');
-        const renewsLabelEl = renewsAtEl ? renewsAtEl.previousElementSibling : null;
+        const renewsLabelEl = activePreset.querySelector('.package-info-header .renews-at-label');
 
         if (renewsLabelEl) {
-            renewsLabelEl.textContent = billingType === 'one_time' ? 'Expira em:' : 'Renova em:';
+            renewsLabelEl.textContent = billingType === 'one_time' ? 'Expira em' : 'Renova em';
         }
 
         if (renewsAtEl && renewsAt) {
