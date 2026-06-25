@@ -24,12 +24,34 @@
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- Header — AuthPack brand + (when the product belongs to a published vitrine)
+         a breadcrumb into the vitrine, all in one bar. -->
     <header class="vt-topbar">
-        <a href="/" class="vt-brand">
-            <img src="/assets/images/favicon-128x128.png" alt="AuthPack" class="vt-brand-img">
-            <span class="vt-brand-name">AuthPack</span>
-        </a>
+        <div class="vt-topbar-left">
+            <a href="/" class="vt-brand">
+                <img src="/assets/images/favicon-128x128.png" alt="AuthPack" class="vt-brand-img">
+                <span class="vt-brand-name">AuthPack</span>
+            </a>
+            <!-- Vitrine breadcrumb — revealed by JS only for published vitrines.
+                 The store chunk is the link to the vitrine. -->
+            <div class="vt-crumb" id="vt-crumb" hidden>
+                <span class="vt-crumb-div"></span>
+                <a class="vt-crumb-store" id="vt-crumb-store" title="Ver a vitrine">
+                    <span class="vt-crumb-avatar" id="vt-crumb-avatar"></span>
+                    <span class="vt-crumb-name" id="vt-crumb-name"></span>
+                    <svg id="vt-crumb-verified" class="vt-crumb-verified" style="display:none" viewBox="0 0 24 24"
+                        width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 12 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                    </svg>
+                </a>
+                <svg class="vt-crumb-sep" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6" />
+                </svg>
+                <a class="vt-crumb-current" id="vt-crumb-current" title="Ver o produto"></a>
+            </div>
+        </div>
         <span class="vt-secure-chip">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
@@ -115,10 +137,6 @@
                                 <span class="vt-brk-lbl" id="vt-brk-product-label">Produto</span>
                                 <span class="vt-brk-val" id="vt-brk-product-val"></span>
                             </div>
-                            <div class="vt-brk-row">
-                                <span class="vt-brk-lbl">Taxa de serviço</span>
-                                <span class="vt-brk-val">R$ 0,99</span>
-                            </div>
                             <div class="vt-brk-row vt-brk-total">
                                 <span class="vt-brk-lbl">Total</span>
                                 <span class="vt-brk-val" id="vt-brk-total-val"></span>
@@ -145,17 +163,46 @@
                             Acesso liberado na hora · Pagamento por Pagar.me
                         </div>
 
-                        <!-- Seller -->
-                        <div class="vt-seller" id="vt-seller">
+                        <!-- Seller / Vitrine -->
+                        <a class="vt-seller" id="vt-seller">
                             <div class="vt-seller-avatar" id="vt-seller-avatar"></div>
-                            <div>
-                                <div class="vt-seller-name" id="vt-seller-name"></div>
-                                <div class="vt-seller-meta">Vendedor</div>
+                            <div class="vt-seller-info">
+                                <div class="vt-seller-name-row">
+                                    <span class="vt-seller-name" id="vt-seller-name"></span>
+                                    <svg id="vt-seller-verified" class="vt-seller-verified" style="display:none"
+                                        viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m9 12 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                                    </svg>
+                                </div>
+                                <div class="vt-seller-meta" id="vt-seller-meta">Vendedor</div>
                             </div>
-                        </div>
+                            <span class="vt-seller-go" id="vt-seller-go" style="display:none">
+                                Ver vitrine
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
+                            </span>
+                        </a>
                     </aside>
 
                 </div>
+
+                <!-- More from this vitrine -->
+                <section class="vt-related" id="vt-related" hidden>
+                    <div class="vt-related-head">
+                        <h2 class="vt-related-title">Mais desta vitrine</h2>
+                        <a class="vt-related-all" id="vt-related-all">
+                            Ver tudo
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor"
+                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m9 18 6-6-6-6" />
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="grid" id="vt-related-track"></div>
+                </section>
             </div>
 
         </div>
@@ -166,6 +213,7 @@
     <script src="/assets/scripts/fetchManager.js"></script>
     <script src="/assets/scripts/elementState.js"></script>
     <script src="/assets/scripts/paymentModal.js"></script>
+    <script src="/assets/scripts/faviconManager.js"></script>
     <script src="/pages/product/script.js"></script>
 </body>
 

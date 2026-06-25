@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
 
 /* ============================================================
    Reset
@@ -16,41 +16,170 @@ body {
 }
 
 /* ============================================================
-   Header
+   Header — shared with the product page (kept identical).
+   Keep in sync with pages/product/style.css.
    ============================================================ */
-.ck-header {
+.vt-topbar {
     position: sticky;
     top: 0;
-    z-index: 20;
-    padding: 0 48px;
-    height: 60px;
+    z-index: 30;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 14px 28px;
     background: var(--ap-bg-header);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--ap-border);
 }
 
-.ck-logo {
+.vt-brand {
     display: flex;
     align-items: center;
-    gap: 9px;
-    font-size: 1rem;
-    font-weight: 700;
+    gap: 10px;
     color: var(--ap-text-primary);
+    font-weight: 700;
     text-decoration: none;
 }
-.ck-logo:hover { opacity: 0.8; }
-.ck-logo img { width: 24px; height: 24px; border-radius: 5px; }
 
-.ck-header-secure {
-    display: flex;
+.vt-brand-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+}
+
+.vt-brand-name {
+    font-family: var(--ap-font-heading);
+    font-size: 16px;
+    letter-spacing: -0.01em;
+}
+
+.vt-secure-chip {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 12px;
     color: var(--ap-text-muted);
+}
+
+.vt-secure-chip svg {
+    color: var(--ap-success);
+}
+
+/* Left side of the header: brand + (optional) vitrine breadcrumb */
+.vt-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.vt-crumb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.vt-crumb[hidden] {
+    display: none;
+}
+
+.vt-crumb-div {
+    width: 1px;
+    height: 22px;
+    flex-shrink: 0;
+    background: var(--ap-border);
+}
+
+.vt-crumb-store {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin: -4px 0;
+    padding: 4px 8px;
+    border-radius: 8px;
+    color: var(--ap-text-primary);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.vt-crumb-store:hover {
+    background: var(--ap-bg-muted);
+}
+
+.vt-crumb-avatar {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-family: var(--ap-font-heading);
+    font-weight: 700;
+    font-size: 11px;
+    color: #fff;
+}
+
+.vt-crumb-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vt-crumb-name {
+    font-family: var(--ap-font-heading);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.vt-crumb-verified {
+    color: var(--ap-accent);
+    flex-shrink: 0;
+}
+
+.vt-crumb-sep {
+    color: var(--ap-text-placeholder);
+    flex-shrink: 0;
+}
+
+.vt-crumb-current {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+    text-decoration: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s;
+}
+
+a.vt-crumb-current:hover {
+    color: var(--ap-text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 880px) {
+    .vt-crumb-sep,
+    .vt-crumb-current {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .vt-topbar {
+        padding: 12px 16px;
+    }
+
+    .vt-secure-chip {
+        display: none;
+    }
 }
 
 /* ============================================================
@@ -151,7 +280,10 @@ body {
     width: 100%;
     max-width: 920px;
     display: grid;
-    grid-template-columns: 1fr 340px;
+    /* minmax(0, …) lets the form column shrink below its content's min-content
+       width — without it the 3-panel slide track inflates the column and pushes
+       the summary aside past the card edge (clipped by overflow:hidden). */
+    grid-template-columns: minmax(0, 1fr) 340px;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
     border-radius: 20px;
@@ -248,13 +380,37 @@ body {
 .ck-step__line--done { background: var(--ap-accent); }
 
 /* ============================================================
+   Slide Container (horizontal slide between steps)
+   ============================================================ */
+.ck-slide-container {
+    overflow: hidden;
+    position: relative;
+    transition: height .4s cubic-bezier(.4, 0, .2, 1);
+    padding-bottom: 4px; /* prevent bottom cut-offs */
+    width: 100%;
+}
+
+.ck-slide-track {
+    display: flex;
+    align-items: flex-start;
+    transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+    width: 100%;
+}
+
+.ck-slide {
+    width: 100%;
+    flex: 0 0 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================================
    Panel (the actual form content area)
    ============================================================ */
 .ck-panel {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    animation: fadeUp .2s ease;
 }
 
 @keyframes fadeUp {
@@ -379,6 +535,13 @@ body {
     border-color: var(--ap-border-focus);
     background: var(--ap-bg-card);
     box-shadow: 0 0 0 3px rgba(96,165,250,.12);
+}
+
+/* Card form fields container */
+#ck-card-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* Billing address section */
@@ -790,6 +953,22 @@ body {
 .ck-cta--outline:hover:not(:disabled) {
     background: var(--ap-bg-hover);
     border-color: var(--ap-border-hover);
+    transform: none;
+    box-shadow: none;
+}
+
+.ck-cta--back {
+    background: transparent;
+    border: 1.5px solid var(--ap-border);
+    color: var(--ap-text-secondary);
+    margin-top: 0;
+    font-size: 14px;
+    padding: 12px 20px;
+}
+.ck-cta--back:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
     transform: none;
     box-shadow: none;
 }

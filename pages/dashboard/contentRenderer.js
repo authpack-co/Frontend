@@ -47,8 +47,7 @@ function createPackageElement(pkg, isAccess = false) {
         const stackIcon = createElement('div', 'stack-icon');
         const img = document.createElement('img');
         img.alt = session.name;
-        img.src = session.icon;
-        img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+        AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
         stackIcon.appendChild(img);
         iconStack.appendChild(stackIcon);
     });
@@ -238,8 +237,7 @@ function createCollectionSessionCardElement(session) {
     const icon = document.createElement('img');
     icon.className = 'session-card-icon';
     icon.alt = session.name;
-    icon.src = session.icon;
-    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
 
     const headerText = createElement('div', 'session-card-header-text');
 
@@ -298,8 +296,7 @@ function createSessionCardElement(session) {
     const icon = document.createElement('img');
     icon.className = 'session-card-icon';
     icon.alt = session.name;
-    icon.src = session.icon;
-    icon.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
 
     const headerText = createElement('div', 'session-card-header-text');
 
@@ -436,8 +433,8 @@ function createUserAccessHistoryTable(data) {
         serviceIcon.className = 'service-icon';
 
         const img = document.createElement('img');
-        img.src = item.session.icon;
         img.alt = '';
+        AuthPackFavicon.apply(img, { icon: item.session.icon, url: item.session.url });
 
         const serviceName = document.createElement('span');
         serviceName.textContent = item.session.name;
@@ -1190,7 +1187,7 @@ function renderSessionDetails(session, pkg, period) {
 
     headerTitle.textContent = pkg.name;
 
-    sessionLogo.src = session.icon;
+    AuthPackFavicon.apply(sessionLogo, { icon: session.icon, url: session.url });
     sessionName.textContent = session.name;
     sessionDomain.textContent = new URL(session.url).hostname.replace(/^www\./, "");
 
@@ -2216,7 +2213,7 @@ function processUserAccessHistory(accessHistory, pkg) {
 }
 
 function renderUserInfo(userInfo) {
-    const { name, email, picture, plan } = userInfo;
+    const { name, email, picture, plan, role } = userInfo;
 
     // Trigger elements (Header)
     const profileName = document.querySelector('header.main-header .header-actions .profile-name');
@@ -2239,40 +2236,59 @@ function renderUserInfo(userInfo) {
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
-    // Plus plan features
-    if (plan === 'plus') {
-        // Hide all "Assinar Plus" buttons
-        document.querySelectorAll('.plus-subscribe-btn').forEach(btn => {
-            btn.style.display = 'none';
-        });
+    // Roles que recebem os benefícios do Plus (whitelist explícita — espelha
+    // PLUS_BENEFIT_ROLES no backend). NÃO use role !== 'user'.
+    const PLUS_BENEFIT_ROLES = ['seller', 'admin'];
+    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || plan === 'plus';
 
-        // Hide sidebar upgrade card entirely for Plus users
+    // "Minha vitrine" só aparece para vendedores (admin usa o painel admin).
+    const navVitrine = document.getElementById('nav-vitrine');
+    if (navVitrine) navVitrine.style.display = role === 'seller' ? '' : 'none';
+
+    // Admin: atalho para o painel interno.
+    const navAdmin = document.getElementById('nav-admin');
+    if (navAdmin) {
+        navAdmin.style.display = role === 'admin' ? '' : 'none';
+        navAdmin.onclick = () => { window.location.href = '/pages/admin/'; };
+    }
+
+    // Usuário comum: candidatura a parceiro/vendedor (abre o modal).
+    const navPartner = document.getElementById('nav-partner');
+    if (navPartner) {
+        navPartner.style.display = role === 'user' ? '' : 'none';
+        navPartner.onclick = () => { if (window.openPartnerModal) window.openPartnerModal(); };
+    }
+
+    // Badge do perfil: papel (Vendedor/Admin) tem prioridade sobre Plus; senão
+    // Plus para assinantes; usuário comum não recebe badge.
+    let badgeLabel = null;
+    if (role === 'admin') badgeLabel = 'Admin';
+    else if (role === 'seller') badgeLabel = 'Vendedor';
+    else if (plan === 'plus') badgeLabel = 'Plus';
+
+    if (hasPlusBenefits) {
+        // Esconde toda a UI de upgrade — seller/admin/plus não assinam.
+        document.querySelectorAll('.plus-subscribe-btn').forEach(btn => { btn.style.display = 'none'; });
         const sidebarPlusCard = document.getElementById('sidebar-plus-card');
         if (sidebarPlusCard) sidebarPlusCard.style.display = 'none';
 
-        // Add premium blue border to profile pictures
-        if (profilePictureWrapper) {
-            profilePictureWrapper.classList.add('plus-avatar');
-        }
-        if (sidebarProfilePictureWrapper) {
-            sidebarProfilePictureWrapper.classList.add('plus-avatar');
-        }
+        if (profilePictureWrapper) profilePictureWrapper.classList.add('plus-avatar');
+        if (sidebarProfilePictureWrapper) sidebarProfilePictureWrapper.classList.add('plus-avatar');
+    }
 
-        // Add "Plus" badge to the header profile container
+    if (badgeLabel) {
         const profileTrigger = document.getElementById('profile-trigger');
         if (profileTrigger && !profileTrigger.querySelector('.plus-badge')) {
             const badge = document.createElement('span');
             badge.className = 'plus-badge';
-            badge.textContent = 'Plus';
+            badge.textContent = badgeLabel;
             profileTrigger.appendChild(badge);
         }
-
-        // Add "Plus" badge to the sidebar profile container
         const sidebarProfile = document.getElementById('sidebar-profile');
         if (sidebarProfile && !sidebarProfile.querySelector('.plus-badge')) {
             const badge = document.createElement('span');
             badge.className = 'plus-badge';
-            badge.textContent = 'Plus';
+            badge.textContent = badgeLabel;
             sidebarProfile.appendChild(badge);
         }
     }

@@ -97,14 +97,27 @@
         const plan       = user.plan;
         const planStatus = user.plan_status;
         const expiresAt  = user.plan_expires_at;
+        const role       = user.role;
 
         const elFree     = scEl('sc-plan-state-free');
         const elPlus     = scEl('sc-plan-state-plus');
         const elCanceled = scEl('sc-plan-state-canceled');
+        const elRole     = scEl('sc-plan-state-role');
 
         scHide(elFree);
         scHide(elPlus);
         scHide(elCanceled);
+        scHide(elRole);
+
+        // Vendedor/admin têm os benefícios do Plus pelo papel — não assinam.
+        // Whitelist explícita (espelha PLUS_BENEFIT_ROLES no backend).
+        const PLUS_BENEFIT_ROLES = ['seller', 'admin'];
+        if (PLUS_BENEFIT_ROLES.includes(role)) {
+            scShow(elRole);
+            const lbl = scEl('sc-plan-role-label');
+            if (lbl) lbl.textContent = role === 'admin' ? 'Administrador' : 'Vendedor';
+            return;
+        }
 
         if (plan === 'plus' && planStatus === 'canceled') {
             scShow(elCanceled);
@@ -355,6 +368,20 @@
         const priceEl = scEl('bl-plan-price');
         const renewEl = scEl('bl-plan-renew');
         const noteEl  = scEl('bl-plan-note');
+
+        // Vendedor/admin: benefícios Plus inclusos pelo papel — sem cobrança.
+        const role = scUserData && scUserData.role;
+        if (role === 'seller' || role === 'admin') {
+            if (nameEl)  nameEl.textContent = 'Benefícios Plus inclusos';
+            scSetStatusBadge(badgeEl, role === 'admin' ? 'Administrador' : 'Vendedor', 'paid');
+            if (priceEl) priceEl.textContent = 'Incluso';
+            if (renewEl) renewEl.textContent = '';
+            if (noteEl) {
+                noteEl.textContent = 'Seu papel já inclui todos os recursos do Plus. Nenhuma assinatura é necessária.';
+                scShow(noteEl);
+            }
+            return;
+        }
 
         const plan      = billing.plan;
         const status    = billing.plan_status;

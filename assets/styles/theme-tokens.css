@@ -45,6 +45,7 @@
     --ap-accent-hover: #4f90e8;
     --ap-accent-light: #eff6ff;
     --ap-accent-muted: #dbeafe;
+    --ap-accent-strong: #2563eb;
     --ap-accent-subtle: rgba(37, 99, 235, 0.08);
 
     /* ── Success ── */
@@ -141,6 +142,7 @@
     --ap-accent-hover: #54a1e4;
     --ap-accent-light: rgba(24, 83, 153, 0.1);
     --ap-accent-muted: rgba(65, 132, 228, 0.15);
+    --ap-accent-strong: #60a5fa;
     --ap-accent-subtle: rgba(24, 83, 153, 0.1);
 
     /* ── Success ── */

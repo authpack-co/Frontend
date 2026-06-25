@@ -4,11 +4,12 @@
 // ============================================================================
 
 let vitrineProducts = [];
+let vitrineCategories = [];
+// Whether the category bar allows mutations (create/edit/drag/assign). True for
+// an active Plus seller; false for an inactive (former-Plus) read-only vitrine.
+let vitrineCategoriesEditable = false;
 let vitrineLoaded = false;
 // True when the seller is a registered recipient who no longer has Plus.
-// Used to keep the seller status badge as "Inativa" even after the dashboard
-// data loads (which would otherwise flip it back to "Ativo").
-let vitrineIsInactive = false;
 let createProductState = {
     step: 1,
     packageId: null,
@@ -101,45 +102,23 @@ async function loadVitrineTab() {
     const container = document.getElementById('vitrine-container');
     setElementState(container, 'loading');
 
-    // Always hide banners first
-    hideOnboardingBanner();
+    // Reset banner + ensure "Criar produto" is visible (it may have been hidden
+    // in the KYC-pending state).
     hideKycBanner();
-    hideInactiveBanner();
-    // Reset any leftover "inactive" styling and ensure "Criar produto" is
-    // visible by default (it may have been hidden in KYC/inactive state)
-    _setVitrineInactive(false);
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
-    const isPlus = !!currentUserInfo && currentUserInfo.plan === 'plus';
+    // Seller status is now role-based (set manually by the admin team). Selling
+    // no longer depends on Plus, and non-sellers don't even see this nav item —
+    // so this is a defensive guard.
+    const isSeller = !!currentUserInfo && currentUserInfo.role === 'seller';
+    if (!isSeller) {
+        _setVitrineDashboardVisible(false);
+        vitrineLoaded = true;
+        return;
+    }
 
     try {
-        // Account status is plan-agnostic, so we can also detect former sellers
-        // (registered recipients who have since lost Plus).
-        const accountRes = await fetchManager.getSellerAccountStatus();
-        console.log('[Vitrine] Account status:', accountRes);
-
-        const isSeller = accountRes.ok && accountRes.result?.connected;
-
-        // Not a registered seller → seller gate. The gate CTA decides the next
-        // step (subscribe Plus vs. open onboarding).
-        if (!isSeller) {
-            _setVitrineDashboardVisible(false);
-            setElementState(container, 'vitrine-gate');
-            _populateGatePreview();
-            vitrineLoaded = true;
-            return;
-        }
-
-        // Registered seller without active Plus → inactive vitrine. They keep
-        // read access and can withdraw their remaining balance, but cannot sell
-        // (no new products; buyers are blocked at checkout).
-        if (!isPlus) {
-            await loadInactiveVitrine();
-            vitrineLoaded = true;
-            return;
-        }
-
-        // State 2: Account exists — check live KYC status
+        // Seller by role — check live KYC status to decide if selling is unlocked.
         const kycRes = await fetchManager.getSellerKycStatus();
         console.log('[Vitrine] KYC status:', kycRes);
 
@@ -158,6 +137,8 @@ async function loadVitrineTab() {
             // Load products (render empty state if none)
             const productsRes = await fetchManager.getSellerProducts();
             vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
+            vitrineCategoriesEditable = true;
+            await loadVitrineCategories();
             renderVitrineProducts(vitrineProducts);
 
             // Load dashboard data (handles API failures gracefully)
@@ -175,6 +156,8 @@ async function loadVitrineTab() {
         console.log('[Vitrine] Products:', productsRes);
         vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
 
+        vitrineCategoriesEditable = true;
+        await loadVitrineCategories();
         renderVitrineProducts(vitrineProducts);
         setElementState(container, 'vitrine-content');
 
@@ -184,103 +167,12 @@ async function loadVitrineTab() {
         vitrineLoaded = true;
     } catch (err) {
         console.error('Error loading vitrine:', err);
-        _setVitrineDashboardVisible(false);
-        setElementState(container, 'vitrine-gate');
-        _populateGatePreview();
+        // Seller by role but data failed to load — show the dashboard shell so
+        // the seller still has access (data calls handle their own failures).
+        _setVitrineDashboardVisible(true);
+        setElementState(container, 'vitrine-content');
         vitrineLoaded = true;
     }
-}
-
-// ── Inactive vitrine: registered seller who no longer has Plus ──
-// Shows the full dashboard (read-only) so the seller can still see their data
-// and withdraw the remaining balance, but dims the products section and blocks
-// any selling action. The withdrawal flow (hero + Sacar) stays fully live.
-async function loadInactiveVitrine() {
-    const container = document.getElementById('vitrine-container');
-
-    _setVitrineDashboardVisible(true);
-    setElementState(container, 'vitrine-content');
-
-    // Mark the vitrine as inactive: dim products + block selling actions.
-    _setVitrineInactive(true);
-    showInactiveBanner();
-    updateGatewayStatusBar(false);
-    document.getElementById('btn-create-product')?.classList.add('hidden');
-
-    const statusEl = document.getElementById('fin-seller-status');
-    if (statusEl) {
-        statusEl.className = 'fin-seller-mini-status inactive';
-        statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Inativa';
-    }
-
-    // Load products (rendered read-only) — withdrawal stays available via the hero.
-    const productsRes = await fetchManager.getSellerProducts();
-    vitrineProducts = productsRes.ok ? (productsRes.result?.products || []) : [];
-    renderVitrineProducts(vitrineProducts);
-
-    // Load dashboard data (balance + KPIs). Withdraw button remains functional.
-    loadSellerDashboardData();
-}
-
-// Toggle the "inactive" visual treatment on the products section.
-function _setVitrineInactive(inactive) {
-    vitrineIsInactive = inactive;
-    const productsSection = document.querySelector('.vt-products-section');
-    if (productsSection) productsSection.classList.toggle('vt-inactive', inactive);
-}
-
-function showInactiveBanner() {
-    document.getElementById('vt-inactive-banner')?.classList.remove('hidden');
-}
-
-function hideInactiveBanner() {
-    document.getElementById('vt-inactive-banner')?.classList.add('hidden');
-}
-
-// "Assinar Plus" CTA inside the inactive banner → open the Plus modal.
-document.getElementById('btn-reactivate-plus')?.addEventListener('click', () => {
-    utils.showModal('plusSubscribe');
-});
-
-// ============================================================================
-// GATE OVERLAY HELPERS
-// ============================================================================
-
-// Single gate screen for every non-seller state. The "Cadastrar-se como
-// vendedor" CTA centralizes the next step:
-//   - not Plus    → open the Plus subscription modal
-//   - already Plus → proceed to the seller onboarding form
-function handleSellerRegisterClick() {
-    if (!currentUserInfo || currentUserInfo.plan !== 'plus') {
-        utils.showModal('plusSubscribe');
-    } else {
-        openOnboardingPage();
-    }
-}
-
-document.getElementById('vt-gate-cta')?.addEventListener('click', handleSellerRegisterClick);
-
-function _populateGatePreview() {
-    const firstName = (currentUserInfo?.name || '').split(' ')[0] || 'você';
-    const slug = firstName.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
-
-    const nameEl = document.getElementById('vt-preview-name');
-    const slugEl = document.getElementById('vt-preview-slug');
-    const avatarEl = document.getElementById('vt-preview-avatar');
-
-    if (nameEl) nameEl.textContent = firstName;
-    if (slugEl) slugEl.textContent = slug || firstName;
-    if (avatarEl) avatarEl.textContent = firstName.charAt(0).toUpperCase();
-}
-
-function showOnboardingBanner() {
-    const banner = document.getElementById('vt-onboarding-banner');
-    if (banner) banner.classList.remove('hidden');
-}
-
-function hideOnboardingBanner() {
-    const banner = document.getElementById('vt-onboarding-banner');
-    if (banner) banner.classList.add('hidden');
 }
 
 function showKycBanner() {
@@ -404,11 +296,10 @@ function getDailyTotals(filteredOrders) {
 }
 
 // ── Receita bruta do período usando dados completos do sales-history ──
-// Mesma fórmula do modal: total_amount_cents - R$0,99 (taxa fixa de plataforma)
+// Bruto = total_amount_cents (preço limpo pago pelo comprador).
 function computeGrossFromHistory(days) {
     if (!allSalesHistory || allSalesHistory.length === 0) return null;
 
-    const PLATFORM_FEE = 99;
     const now = new Date();
     const today = new Date(now);
     today.setHours(23, 59, 59, 999);
@@ -422,7 +313,7 @@ function computeGrossFromHistory(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d >= startOfDay && d <= today) {
-                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+                gross += (order.total_amount_cents || 0);
             }
         });
     } else {
@@ -433,7 +324,7 @@ function computeGrossFromHistory(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d >= cutoff && d <= today) {
-                gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+                gross += (order.total_amount_cents || 0);
             }
         });
     }
@@ -447,7 +338,6 @@ function computeGrossFromHistory(days) {
 function buildGrossChartFromHistory(days, isHourly) {
     if (!allSalesHistory || allSalesHistory.length === 0) return null;
 
-    const PLATFORM_FEE = 99;
     const pad = v => String(v).padStart(2, '0');
     const now = new Date();
     const result = {};
@@ -460,7 +350,7 @@ function buildGrossChartFromHistory(days, isHourly) {
             if (d < startOfDay) return;
             const key = `${pad(d.getHours())}:00`;
             if (!result[key]) result[key] = 0;
-            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            result[key] += (order.total_amount_cents || 0);
         });
     } else {
         const cutoff = new Date(now);
@@ -471,7 +361,7 @@ function buildGrossChartFromHistory(days, isHourly) {
             if (d < cutoff) return;
             const key = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
             if (!result[key]) result[key] = 0;
-            result[key] += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            result[key] += (order.total_amount_cents || 0);
         });
     }
 
@@ -487,14 +377,11 @@ function computeKPIs(filteredOrders) {
     for (const orders of Object.values(filteredOrders)) {
         for (const order of orders) {
             totalRevenue += order.seller_amount_cents;
-            // Receita bruta = total pago pelo comprador menos a taxa fixa de plataforma (R$0,99)
-            // — mesma lógica usada no modal de histórico de vendas
-            const PLATFORM_FEE = 99;
+            // Bruto = total pago pelo comprador (preço limpo). Fallback p/ pedidos
+            // sem total_amount_cents: seller_amount + comissão da plataforma.
             const gatewayFee = order.gateway_fee_cents || 0;
             const platformFee = order.platform_fee_cents || 0;
-            totalGross += order.total_amount_cents
-                ? Math.max(0, order.total_amount_cents - PLATFORM_FEE)
-                : Math.max(0, order.seller_amount_cents + gatewayFee);
+            totalGross += order.total_amount_cents || Math.max(0, (order.seller_amount_cents || 0) + platformFee);
             totalFees += gatewayFee + platformFee;
             totalSales++;
         }
@@ -505,9 +392,8 @@ function computeKPIs(filteredOrders) {
 // ── KPIs do período para "Performance de vendas" + "Resumo rápido" ──
 // Reaproveita allSalesHistory (tem total_amount_cents correto, mesma janela do
 // gráfico) e cai para o cache de raw_orders quando o histórico ainda não chegou.
-// Mesmas fórmulas do histórico: bruto = total - R$0,99; líquido = seller_amount.
+// Mesmas fórmulas do histórico: bruto = total_amount_cents; líquido = seller_amount.
 function applyVitrinePeriodKPIs(days) {
-    const PLATFORM_FEE = 99;
     let gross = 0, net = 0, sales = 0;
 
     if (allSalesHistory && allSalesHistory.length > 0) {
@@ -523,7 +409,7 @@ function applyVitrinePeriodKPIs(days) {
         allSalesHistory.forEach(order => {
             const d = new Date(order.created_at);
             if (d < start || d > end) return;
-            gross += Math.max(0, (order.total_amount_cents || 0) - PLATFORM_FEE);
+            gross += (order.total_amount_cents || 0);
             net += order.seller_amount_cents || 0;
             sales++;
         });
@@ -597,10 +483,8 @@ async function loadSellerDashboardData() {
 
             vitrineData.ordersByDate = processRawOrders(data.raw_orders || []);
 
-            // Keep the "Inativa" badge for former-Plus sellers — the recipient
-            // is still active on the gateway, but the vitrine is not selling.
             const statusEl = document.getElementById('fin-seller-status');
-            if (statusEl && !vitrineIsInactive) {
+            if (statusEl) {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
@@ -1073,12 +957,12 @@ function updateQuickSummary() {
 // ============================================================================
 
 function renderVitrineProducts(products) {
-    const grid = document.getElementById('vitrine-products-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+    const container = document.getElementById('vitrine-products-grid');
+    if (!container) return;
+    container.innerHTML = '';
 
     if (!products || products.length === 0) {
-        grid.innerHTML = `
+        container.innerHTML = `
             <div class="vt-empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
@@ -1092,9 +976,58 @@ function renderVitrineProducts(products) {
         return;
     }
 
-    products.forEach(product => {
-        const card = createVitrineProductCard(product);
-        grid.appendChild(card);
+    const makeGrid = (items) => {
+        const grid = document.createElement('div');
+        grid.className = 'vt-cat-grid';
+        items.forEach(p => grid.appendChild(createVitrineProductCard(p)));
+        return grid;
+    };
+
+    // No categories yet → a single flat grid (no section headers).
+    if (!vitrineCategories || vitrineCategories.length === 0) {
+        container.appendChild(makeGrid(products));
+        return;
+    }
+
+    // One section per category (in the seller's order), then "Outros" for
+    // products not in any category. A product in multiple categories repeats.
+    const sections = [];
+    vitrineCategories.forEach(cat => {
+        const items = products.filter(p => (p.category_ids || []).includes(cat.id));
+        if (items.length) sections.push({ cat, items });
+    });
+    const uncategorized = products.filter(p => !(p.category_ids || []).length);
+    if (uncategorized.length) sections.push({ cat: null, items: uncategorized });
+
+    // Edge case: categories exist but no product is tagged → flat grid.
+    if (sections.length === 0) {
+        container.appendChild(makeGrid(products));
+        return;
+    }
+
+    sections.forEach(({ cat, items }) => {
+        const section = document.createElement('div');
+        section.className = 'vt-cat-section';
+
+        const head = document.createElement('div');
+        head.className = 'vt-cat-section-head';
+        const dot = document.createElement('span');
+        dot.className = 'vt-cat-section-dot';
+        if (cat) dot.style.background = cat.color;
+        else dot.classList.add('vt-cat-section-dot-muted');
+        head.appendChild(dot);
+        const title = document.createElement('h4');
+        title.className = 'vt-cat-section-title';
+        title.textContent = cat ? cat.name : 'Outros';
+        head.appendChild(title);
+        const count = document.createElement('span');
+        count.className = 'vt-cat-section-count';
+        count.textContent = items.length;
+        head.appendChild(count);
+        section.appendChild(head);
+
+        section.appendChild(makeGrid(items));
+        container.appendChild(section);
     });
 }
 
@@ -1157,9 +1090,8 @@ function createVitrineProductCard(product) {
             const icon = document.createElement('div');
             icon.className = 'vp-icon';
             const img = document.createElement('img');
-            img.src = s.icon;
             img.alt = s.name;
-            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+            AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
             icon.appendChild(img);
 
             // Add +N badge on the last visible icon if there are more
@@ -1339,6 +1271,51 @@ function createVitrineProductCard(product) {
         productOptions.appendChild(pauseBtn);
     }
 
+    // "Adicionar a" — category submenu (flyout). Only when the seller can edit
+    // and has at least one category.
+    if (vitrineCategoriesEditable && vitrineCategories.length > 0) {
+        const addToItem = document.createElement('div');
+        addToItem.className = 'vt-add-to-item';
+
+        const addToBtn = document.createElement('button');
+        addToBtn.className = 'vt-add-to-btn';
+        addToBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="M12 5v14"/>
+            </svg>`;
+        addToBtn.appendChild(document.createTextNode('Adicionar a'));
+        const caret = document.createElement('span');
+        caret.className = 'vt-add-to-caret';
+        caret.textContent = '‹';
+        addToBtn.appendChild(caret);
+        addToBtn.addEventListener('click', (e) => e.stopPropagation());
+        addToItem.appendChild(addToBtn);
+
+        const submenu = document.createElement('div');
+        submenu.className = 'vt-cat-submenu';
+        vitrineCategories.forEach(cat => {
+            const isOn = (product.category_ids || []).includes(cat.id);
+            const opt = document.createElement('button');
+            opt.className = 'vt-cat-submenu-item' + (isOn ? ' active' : '');
+            opt.innerHTML = `<span class="vt-cat-dot" style="background:${cat.color}"></span>`;
+            const lbl = document.createElement('span');
+            lbl.className = 'vt-cat-submenu-name';
+            lbl.textContent = cat.name;
+            opt.appendChild(lbl);
+            const check = document.createElement('span');
+            check.className = 'vt-cat-submenu-check';
+            check.textContent = isOn ? '✓' : '';
+            opt.appendChild(check);
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleProductCategory(product, cat.id, opt, check);
+            });
+            submenu.appendChild(opt);
+        });
+        addToItem.appendChild(submenu);
+        productOptions.appendChild(addToItem);
+    }
+
     productOptions.appendChild(editBtn);
 
     const deleteBtn = document.createElement('button');
@@ -1360,10 +1337,18 @@ function createVitrineProductCard(product) {
 
     optionsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        // Close any other open menu and clear its overflow override.
+        document.querySelectorAll('.vp-card.menu-open').forEach(c => {
+            if (c !== card) c.classList.remove('menu-open');
+        });
         document.querySelectorAll('.product-options:not(.hidden)').forEach(opt => {
             if (opt !== productOptions) opt.classList.add('hidden');
         });
+        const willOpen = productOptions.classList.contains('hidden');
         productOptions.classList.toggle('hidden');
+        // While open, let the card overflow so the "Adicionar a" flyout isn't
+        // clipped by .vp-card { overflow: hidden }.
+        card.classList.toggle('menu-open', willOpen);
     });
 
     overlay.appendChild(copyBtn);
@@ -1376,714 +1361,286 @@ function createVitrineProductCard(product) {
 
 
 // ============================================================================
-// SELLER ONBOARDING (Pagar.me) — Fullscreen preset inside vitrine-container
+// VITRINE CATEGORIES
 // ============================================================================
 
-let onboardingType = 'individual';
+// Must mirror backend src/utils/vitrineCategoryColors.js
+const VITRINE_CATEGORY_COLORS = ['#3b82f6', '#22c55e', '#8b5cf6', '#f97316', '#ec4899'];
 
-// ── Preset navigation ──────────────────────────────────────────────────────
-
-function openOnboardingPage() {
-    const container = document.getElementById('vitrine-container');
-    if (!container) return;
-    setElementState(container, 'vitrine-onboarding');
-    resetOnboardingForm();
-}
-
-function closeOnboardingPage() {
-    const container = document.getElementById('vitrine-container');
-    if (!container) return;
-    if (!container.classList.contains('vitrine-onboarding-state')) return;
-    vitrineLoaded = false;
-    loadVitrineTab();
-}
-
-// ── Form reset ─────────────────────────────────────────────────────────────
-
-function resetOnboardingForm() {
-    onboardingType = 'individual';
-    updateOnboardingTabs();
-
-    // Reset all inputs and selects within the preset
-    document.querySelectorAll('.preset-vitrine-onboarding input, .preset-vitrine-onboarding select').forEach(el => {
-        if (el.tagName === 'SELECT') {
-            el.selectedIndex = 0;
-        } else {
-            el.value = '';
-            delete el.dataset.rawValue;
-        }
-    });
-
-    const otherInput = document.getElementById('onb-bank-bank-other');
-    if (otherInput) otherInput.classList.add('hidden');
-
-    const errorEl = document.getElementById('onboarding-error');
-    if (errorEl) {
-        errorEl.classList.add('hidden');
-        errorEl.textContent = '';
+// Fetch + render the seller's categories. Called whenever the products load.
+async function loadVitrineCategories() {
+    try {
+        const res = await fetchManager.getSellerCategories();
+        vitrineCategories = res.ok ? (res.result?.categories || []) : [];
+    } catch (err) {
+        console.error('Error loading categories:', err);
+        vitrineCategories = [];
     }
-
-    const submitBtn = document.getElementById('onboarding-submit');
-    const btnContainer = submitBtn?.closest('.buttonContent');
-    if (btnContainer) setElementState(btnContainer, 'content');
+    renderCategoryBar();
 }
 
-// ── Tab switching ──────────────────────────────────────────────────────────
+function renderCategoryBar() {
+    const addBtn = document.getElementById('btn-add-category');
+    const chips = document.getElementById('vt-cat-chips');
+    if (!chips) return;
 
-function updateOnboardingTabs() {
-    document.querySelectorAll('.onboarding-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.type === onboardingType);
-    });
-    const pfFields = document.getElementById('onb-pf-fields');
-    const pjFields = document.getElementById('onb-pj-fields');
-    if (pfFields) pfFields.classList.toggle('hidden', onboardingType !== 'individual');
-    if (pjFields) pjFields.classList.toggle('hidden', onboardingType !== 'corporation');
-}
+    if (addBtn) addBtn.classList.toggle('hidden', !vitrineCategoriesEditable);
 
-// ── Input Masks ────────────────────────────────────────────────────────────
+    chips.innerHTML = '';
+    vitrineCategories.forEach(cat => {
+        const chip = document.createElement('div');
+        chip.className = 'vt-cat-chip';
+        chip.dataset.catId = cat.id;
+        chip.draggable = vitrineCategoriesEditable;
 
-function maskCPF(el) {
-    el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g, '').slice(0, 11);
-        if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
-        else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-        else if (v.length > 3) v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
-        el.value = v;
-    });
-}
+        const dot = document.createElement('span');
+        dot.className = 'vt-cat-dot';
+        dot.style.background = cat.color;
+        chip.appendChild(dot);
 
-function maskCNPJ(el) {
-    el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g, '').slice(0, 14);
-        if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/, '$1.$2.$3/$4-$5');
-        else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, '$1.$2.$3/$4');
-        else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-        else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,3})$/, '$1.$2');
-        el.value = v;
-    });
-}
+        const name = document.createElement('span');
+        name.className = 'vt-cat-name';
+        name.textContent = cat.name;
+        chip.appendChild(name);
 
-function maskCPFCNPJ(el) {
-    el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g, '').slice(0, 14);
-        if (v.length <= 11) {
-            // CPF format
-            if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
-            else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-            else if (v.length > 3) v = v.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
-        } else {
-            // CNPJ format
-            if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/, '$1.$2.$3/$4-$5');
-            else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, '$1.$2.$3/$4');
-            else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{1,3})$/, '$1.$2.$3');
-            else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,3})$/, '$1.$2');
+        if (vitrineCategoriesEditable) {
+            chip.title = 'Editar categoria';
+            chip.addEventListener('click', () => {
+                // A drag just ended on this chip — swallow the click.
+                if (chip.dataset.justDragged) { delete chip.dataset.justDragged; return; }
+                openCategoryModal('edit', cat);
+            });
+            attachChipDrag(chip);
         }
-        el.value = v;
+
+        chips.appendChild(chip);
     });
 }
 
-function maskCEP(el) {
-    el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g, '').slice(0, 8);
-        if (v.length > 5) v = v.replace(/^(\d{5})(\d{1,3})$/, '$1-$2');
-        el.value = v;
+// ── Drag-and-drop reorder (native, dependency-free) ──
+let draggedChip = null;
+
+function attachChipDrag(chip) {
+    chip.addEventListener('dragstart', (e) => {
+        draggedChip = chip;
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    chip.addEventListener('dragend', () => {
+        chip.classList.remove('dragging');
+        chip.dataset.justDragged = '1';
+        setTimeout(() => { delete chip.dataset.justDragged; }, 300);
+        draggedChip = null;
+        persistCategoryOrder();
+    });
+    chip.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!draggedChip || draggedChip === chip) return;
+        const chips = document.getElementById('vt-cat-chips');
+        const rect = chip.getBoundingClientRect();
+        const after = (e.clientX - rect.left) > rect.width / 2;
+        chips.insertBefore(draggedChip, after ? chip.nextSibling : chip);
     });
 }
 
-function maskPhone(el) {
-    el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g, '').slice(0, 11);
-        if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-        else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4,5})(\d{0,4})$/, '($1) $2-$3');
-        else if (v.length > 2) v = v.replace(/^(\d{2})(\d{1,5})$/, '($1) $2');
-        else if (v.length > 0) v = v.replace(/^(\d{1,2})$/, '($1');
-        el.value = v;
-    });
-}
+async function persistCategoryOrder() {
+    const chips = document.getElementById('vt-cat-chips');
+    const order = Array.from(chips.querySelectorAll('.vt-cat-chip')).map(c => c.dataset.catId);
+    const current = vitrineCategories.map(c => c.id);
+    if (order.length === current.length && order.every((id, i) => id === current[i])) return;
 
-function maskCurrency(el) {
-    el.addEventListener('input', () => {
-        // Allow only digits, commas and dots
-        let raw = el.value.replace(/[^\d,]/g, '');
-        // Store raw for payload
-        el.dataset.rawValue = raw;
-        // Format as Brazilian currency display
-        const numStr = raw.replace(',', '.');
-        const num = parseFloat(numStr);
-        if (!isNaN(num) && raw !== '') {
-            el.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-    });
-}
+    // Optimistic: reorder the local model to match the DOM, and re-group the
+    // product sections so the dashboard reflects the new order immediately.
+    const byId = Object.fromEntries(vitrineCategories.map(c => [c.id, c]));
+    vitrineCategories = order.map(id => byId[id]).filter(Boolean);
+    renderVitrineProducts(vitrineProducts);
 
-function applyInputMasks() {
-    const maskMap = {
-        'cpf': maskCPF,
-        'cnpj': maskCNPJ,
-        'cpf-cnpj': maskCPFCNPJ,
-        'cep': maskCEP,
-        'phone': maskPhone,
-        'currency': maskCurrency,
-    };
-    document.querySelectorAll('.preset-vitrine-onboarding [data-mask]').forEach(el => {
-        const maskFn = maskMap[el.dataset.mask];
-        if (maskFn) maskFn(el);
-    });
-}
-
-// Apply masks once DOM is ready
-applyInputMasks();
-
-// ── Helper: get raw digits from a masked field ──────────────────────────────
-
-function getOnboardingValue(id) {
-    const el = document.getElementById(id);
-    return el ? el.value.trim() : '';
-}
-
-function getRawDigits(id) {
-    const el = document.getElementById(id);
-    if (!el) return '';
-    return el.value.replace(/\D/g, '');
-}
-
-function getCurrencyCents(id) {
-    const el = document.getElementById(id);
-    if (!el) return 0;
-    // Value is shown as "5.000,00" — parse as float, multiply by 100
-    const raw = el.value.replace(/\./g, '').replace(',', '.');
-    const reais = parseFloat(raw) || 0;
-    return Math.round(reais * 100);
-}
-
-function getPhoneParts(id) {
-    // id is the unified phone field e.g. "onb-pf-phone"
-    const digits = getRawDigits(id);
-    return {
-        ddd: digits.slice(0, 2),
-        number: digits.slice(2),
-    };
-}
-
-function getBankCode() {
-    const select = document.getElementById('onb-bank-bank');
-    if (!select) return '';
-    if (select.value === 'other') {
-        const otherInput = document.getElementById('onb-bank-bank-other');
-        return otherInput ? otherInput.value.replace(/\D/g, '') : '';
+    try {
+        const res = await fetchManager.reorderCategories(order);
+        if (!res.ok) throw new Error('reorder failed');
+    } catch (err) {
+        console.error('Reorder error:', err);
+        notify('error', 'Não foi possível salvar a ordem');
+        await loadVitrineCategories(); // resync chips from server
+        renderVitrineProducts(vitrineProducts); // and the product sections
     }
-    return select.value;
 }
 
-function formatDateBR(dateStr) {
-    if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-');
-    // Clamp year to exactly 4 digits to avoid browser quirks (e.g. "20000")
-    const year = y ? y.slice(0, 4).padStart(4, '0') : '0000';
-    return `${d}/${m}/${year}`;
-}
+// ── Create / edit modal ──
+let categoryModalMode = 'create';
+let categoryModalId = null;
+let categoryModalColor = VITRINE_CATEGORY_COLORS[0];
 
-function showOnboardingError(msg) {
-    const el = document.getElementById('onboarding-error');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.remove('hidden');
-}
-
-// ── Validation utilities ──────────────────────────────────────────────────
-
-function isValidCPF(cpf) {
-    if (cpf.length !== 11) return false;
-    if (/^(\d)\1{10}$/.test(cpf)) return false;
-    let sum = 0;
-    for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
-    let rem = (sum * 10) % 11;
-    if (rem === 10) rem = 0;
-    if (rem !== parseInt(cpf[9])) return false;
-    sum = 0;
-    for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
-    rem = (sum * 10) % 11;
-    if (rem === 10) rem = 0;
-    return rem === parseInt(cpf[10]);
-}
-
-function isValidCNPJ(cnpj) {
-    if (cnpj.length !== 14) return false;
-    if (/^(\d)\1{13}$/.test(cnpj)) return false;
-    const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    let sum = 0;
-    for (let i = 0; i < 12; i++) sum += parseInt(cnpj[i]) * w1[i];
-    let rem = sum % 11;
-    const d1 = rem < 2 ? 0 : 11 - rem;
-    if (d1 !== parseInt(cnpj[12])) return false;
-    sum = 0;
-    for (let i = 0; i < 13; i++) sum += parseInt(cnpj[i]) * w2[i];
-    rem = sum % 11;
-    const d2 = rem < 2 ? 0 : 11 - rem;
-    return d2 === parseInt(cnpj[13]);
-}
-
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-const VALID_BR_STATES = new Set([
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-]);
-
-function isValidBRState(uf) {
-    return VALID_BR_STATES.has(uf.toUpperCase());
-}
-
-function isValidDate(dateStr, type) {
-    if (!dateStr) return false;
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return false;
-    const now = new Date();
-    const minDate = new Date('1900-01-01');
-    if (date < minDate || date > now) return false;
-    if (type === 'birth') {
-        const age = (now - date) / (365.25 * 24 * 60 * 60 * 1000);
-        if (age < 18) return false;
-    }
-    return true;
-}
-
-// ── Field highlight ───────────────────────────────────────────────────────
-
-function highlightField(id, msg) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add('invalid');
-    const existing = el.parentElement.querySelector('.form-field-error');
-    if (existing) existing.remove();
-    if (msg) {
-        const span = document.createElement('span');
-        span.className = 'form-field-error';
-        span.textContent = msg;
-        el.parentElement.appendChild(span);
-    }
-    el.addEventListener('input', function onInput() {
-        el.classList.remove('invalid');
-        const errSpan = el.parentElement.querySelector('.form-field-error');
-        if (errSpan) errSpan.remove();
-        el.removeEventListener('input', onInput);
-    });
-}
-
-function clearFieldHighlights() {
-    document.querySelectorAll('.preset-vitrine-onboarding .invalid').forEach(el => {
-        el.classList.remove('invalid');
-    });
-    document.querySelectorAll('.preset-vitrine-onboarding .form-field-error').forEach(el => {
-        el.remove();
-    });
-}
-
-// ── Address helper: fill N/A for optional-looking but API-required fields ─
-
-function fillAddressDefaults(address) {
-    if (!address.complementary) address.complementary = 'N/A';
-    if (!address.reference_point) address.reference_point = 'N/A';
-    return address;
-}
-
-// ── Address validation helper ─────────────────────────────────────────────
-
-function validateAddress(address, prefix, label) {
-    if (!address.street || !address.street_number || !address.neighborhood || !address.city || !address.state || !address.zip_code) {
-        return { error: `Preencha todos os campos do ${label}.` };
-    }
-    if (address.zip_code.length !== 8) {
-        highlightField(`${prefix}-zip_code`, 'CEP deve ter 8 dígitos');
-        return { error: 'O CEP informado deve ter exatamente 8 dígitos.' };
-    }
-    if (!isValidBRState(address.state)) {
-        highlightField(`${prefix}-state`, 'UF inválido');
-        return { error: 'O estado (UF) informado é inválido.' };
-    }
-    return null;
-}
-
-// ── Payload builder ────────────────────────────────────────────────────────
-
-function validateAndBuildPayload() {
-    clearFieldHighlights();
-    let register_information = { type: onboardingType };
-
-    if (onboardingType === 'individual') {
-        const name = getOnboardingValue('onb-pf-name');
-        const doc = getRawDigits('onb-pf-document');
-        const mother_name = getOnboardingValue('onb-pf-mother_name');
-        const rawBirthdate = getOnboardingValue('onb-pf-birthdate');
-        const birthdate = formatDateBR(rawBirthdate);
-        const monthly_income = getCurrencyCents('onb-pf-monthly_income');
-        const professional_occupation = getOnboardingValue('onb-pf-professional_occupation');
-        const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pf-phone');
-
-        if (!name || !doc || !mother_name || !rawBirthdate || !monthly_income || !professional_occupation) {
-            return { error: 'Preencha todos os dados pessoais obrigatórios.' };
-        }
-        if (!isValidCPF(doc)) {
-            highlightField('onb-pf-document', 'CPF inválido');
-            return { error: 'O CPF informado é inválido. Verifique os dígitos.' };
-        }
-        if (!isValidDate(rawBirthdate, 'birth')) {
-            highlightField('onb-pf-birthdate', 'Data inválida');
-            return { error: 'Data de nascimento inválida. Você deve ter pelo menos 18 anos.' };
-        }
-        if (monthly_income <= 0) {
-            highlightField('onb-pf-monthly_income', 'Informe um valor');
-            return { error: 'Informe a renda mensal.' };
-        }
-        const phoneDigits = getRawDigits('onb-pf-phone');
-        if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-            highlightField('onb-pf-phone', 'Telefone incompleto');
-            return { error: 'Telefone deve ter DDD + 8 ou 9 dígitos.' };
-        }
-
-        const address = fillAddressDefaults({
-            street: getOnboardingValue('onb-pf-street'),
-            complementary: getOnboardingValue('onb-pf-complementary'),
-            street_number: getOnboardingValue('onb-pf-street_number'),
-            neighborhood: getOnboardingValue('onb-pf-neighborhood'),
-            city: getOnboardingValue('onb-pf-city'),
-            state: getOnboardingValue('onb-pf-state').toUpperCase(),
-            zip_code: getRawDigits('onb-pf-zip_code'),
-            reference_point: getOnboardingValue('onb-pf-reference_point'),
+function renderColorSwatches() {
+    const wrap = document.getElementById('vt-color-swatches');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    VITRINE_CATEGORY_COLORS.forEach(color => {
+        const sw = document.createElement('button');
+        sw.type = 'button';
+        sw.className = 'vt-swatch' + (color === categoryModalColor ? ' selected' : '');
+        sw.style.background = color;
+        sw.addEventListener('click', () => {
+            categoryModalColor = color;
+            wrap.querySelectorAll('.vt-swatch').forEach(s => s.classList.remove('selected'));
+            sw.classList.add('selected');
         });
-        const addrErr = validateAddress(address, 'onb-pf', 'endereço');
-        if (addrErr) return addrErr;
-
-        register_information = {
-            ...register_information,
-            name,
-            document: doc,
-            mother_name,
-            birthdate,
-            monthly_income,
-            professional_occupation,
-            address,
-            phone_numbers: [{ ddd: phone_ddd, number: phone_number, type: 'mobile' }],
-        };
-    } else {
-        const company_name = getOnboardingValue('onb-pj-company_name');
-        const trading_name = getOnboardingValue('onb-pj-trading_name');
-        const doc = getRawDigits('onb-pj-document');
-        const annual_revenue = getCurrencyCents('onb-pj-annual_revenue');
-        const corporation_type = getOnboardingValue('onb-pj-corporation_type');
-        const founding_date = getOnboardingValue('onb-pj-founding_date');
-        const { ddd: phone_ddd, number: phone_number } = getPhoneParts('onb-pj-phone');
-
-        if (!company_name || !trading_name || !doc || !annual_revenue || !corporation_type || !founding_date) {
-            return { error: 'Preencha todos os dados da empresa obrigatórios.' };
-        }
-        if (!isValidCNPJ(doc)) {
-            highlightField('onb-pj-document', 'CNPJ inválido');
-            return { error: 'O CNPJ informado é inválido. Verifique os dígitos.' };
-        }
-        if (!isValidDate(founding_date, 'founding')) {
-            highlightField('onb-pj-founding_date', 'Data inválida');
-            return { error: 'Data de fundação inválida.' };
-        }
-        if (annual_revenue <= 0) {
-            highlightField('onb-pj-annual_revenue', 'Informe um valor');
-            return { error: 'Informe a receita anual.' };
-        }
-        const pjPhoneDigits = getRawDigits('onb-pj-phone');
-        if (pjPhoneDigits.length < 10 || pjPhoneDigits.length > 11) {
-            highlightField('onb-pj-phone', 'Telefone incompleto');
-            return { error: 'Telefone da empresa deve ter DDD + 8 ou 9 dígitos.' };
-        }
-
-        const main_address = fillAddressDefaults({
-            street: getOnboardingValue('onb-pj-street'),
-            complementary: getOnboardingValue('onb-pj-complementary'),
-            street_number: getOnboardingValue('onb-pj-street_number'),
-            neighborhood: getOnboardingValue('onb-pj-neighborhood'),
-            city: getOnboardingValue('onb-pj-city'),
-            state: getOnboardingValue('onb-pj-state').toUpperCase(),
-            zip_code: getRawDigits('onb-pj-zip_code'),
-            reference_point: getOnboardingValue('onb-pj-reference_point'),
-        });
-        const pjAddrErr = validateAddress(main_address, 'onb-pj', 'endereço da empresa');
-        if (pjAddrErr) return pjAddrErr;
-
-        const partnerName = getOnboardingValue('onb-partner-name');
-        const partnerEmail = getOnboardingValue('onb-partner-email');
-        const partnerDocument = getRawDigits('onb-partner-document');
-        const partnerMother = getOnboardingValue('onb-partner-mother_name');
-        const rawPartnerBirth = getOnboardingValue('onb-partner-birthdate');
-        const partnerBirth = formatDateBR(rawPartnerBirth);
-        const partnerIncome = getCurrencyCents('onb-partner-monthly_income');
-        const partnerJob = getOnboardingValue('onb-partner-professional_occupation');
-        const { ddd: partnerPhoneDdd, number: partnerPhoneNum } = getPhoneParts('onb-partner-phone');
-
-        if (!partnerName || !partnerEmail || !partnerDocument || !partnerMother || !rawPartnerBirth || !partnerIncome || !partnerJob) {
-            return { error: 'Preencha todos os dados do representante legal.' };
-        }
-        if (!isValidCPF(partnerDocument)) {
-            highlightField('onb-partner-document', 'CPF inválido');
-            return { error: 'O CPF do representante é inválido. Verifique os dígitos.' };
-        }
-        if (!isValidEmail(partnerEmail)) {
-            highlightField('onb-partner-email', 'E-mail inválido');
-            return { error: 'O e-mail do representante é inválido.' };
-        }
-        if (!isValidDate(rawPartnerBirth, 'birth')) {
-            highlightField('onb-partner-birthdate', 'Data inválida');
-            return { error: 'Data de nascimento do representante inválida. Deve ter pelo menos 18 anos.' };
-        }
-        if (partnerIncome <= 0) {
-            highlightField('onb-partner-monthly_income', 'Informe um valor');
-            return { error: 'Informe a renda mensal do representante.' };
-        }
-        const partnerPhoneDigits = getRawDigits('onb-partner-phone');
-        if (partnerPhoneDigits.length < 10 || partnerPhoneDigits.length > 11) {
-            highlightField('onb-partner-phone', 'Telefone incompleto');
-            return { error: 'Telefone do representante deve ter DDD + 8 ou 9 dígitos.' };
-        }
-
-        const partnerAddress = fillAddressDefaults({
-            street: getOnboardingValue('onb-partner-street'),
-            complementary: getOnboardingValue('onb-partner-complementary'),
-            street_number: getOnboardingValue('onb-partner-street_number'),
-            neighborhood: getOnboardingValue('onb-partner-neighborhood'),
-            city: getOnboardingValue('onb-partner-city'),
-            state: getOnboardingValue('onb-partner-state').toUpperCase(),
-            zip_code: getRawDigits('onb-partner-zip_code'),
-            reference_point: getOnboardingValue('onb-partner-reference_point'),
-        });
-        const partAddrErr = validateAddress(partnerAddress, 'onb-partner', 'endereço do representante');
-        if (partAddrErr) return partAddrErr;
-
-        register_information = {
-            ...register_information,
-            company_name,
-            trading_name,
-            document: doc,
-            annual_revenue,
-            corporation_type,
-            founding_date,
-            main_address,
-            phone_numbers: [{ ddd: phone_ddd, number: phone_number, type: 'mobile' }],
-            managing_partners: [{
-                name: partnerName,
-                email: partnerEmail,
-                document: partnerDocument,
-                type: 'individual',
-                mother_name: partnerMother,
-                birthdate: partnerBirth,
-                monthly_income: partnerIncome,
-                professional_occupation: partnerJob,
-                self_declared_legal_representative: true,
-                address: partnerAddress,
-                phone_numbers: [{ ddd: partnerPhoneDdd, number: partnerPhoneNum, type: 'mobile' }],
-            }],
-        };
-    }
-
-    // Bank account — document derived from recipient
-    const holder_name = getOnboardingValue('onb-bank-holder_name');
-    let holder_document, holder_type;
-    if (onboardingType === 'individual') {
-        holder_document = getRawDigits('onb-pf-document');
-        holder_type = 'individual';
-    } else {
-        holder_document = getRawDigits('onb-pj-document');
-        holder_type = 'company';
-    }
-    const bank = getBankCode();
-    const branch_number = getRawDigits('onb-bank-branch_number');
-    const branch_check_digit = getRawDigits('onb-bank-branch_check_digit') || undefined;
-    const account_number = getRawDigits('onb-bank-account_number');
-    const account_check_digit = getRawDigits('onb-bank-account_check_digit');
-    const accountType = document.getElementById('onb-bank-type')?.value || 'checking';
-
-    if (!holder_name || !bank || !branch_number || !account_number || !account_check_digit) {
-        return { error: 'Preencha todos os dados bancários obrigatórios.' };
-    }
-    if (bank.length !== 3) {
-        return { error: 'O código do banco deve ter 3 dígitos (código COMPE). Ex: 260 para Nubank, 341 para Itaú.' };
-    }
-    if (branch_number.length < 1 || branch_number.length > 4) {
-        highlightField('onb-bank-branch_number', 'Entre 1 e 4 dígitos');
-        return { error: 'A agência deve ter entre 1 e 4 dígitos.' };
-    }
-    if (account_number.length < 1 || account_number.length > 13) {
-        highlightField('onb-bank-account_number', 'Máximo 13 dígitos');
-        return { error: 'O número da conta deve ter no máximo 13 dígitos.' };
-    }
-    if (account_check_digit.length !== 1) {
-        highlightField('onb-bank-account_check_digit', '1 dígito');
-        return { error: 'O dígito da conta deve ter exatamente 1 dígito.' };
-    }
-
-    const default_bank_account = {
-        holder_name,
-        holder_type,
-        holder_document,
-        bank,
-        branch_number,
-        account_number,
-        account_check_digit,
-        type: accountType,
-    };
-    if (branch_check_digit) default_bank_account.branch_check_digit = branch_check_digit;
-
-    return { register_information, default_bank_account };
-}
-
-// ── Pagar.me error mapping ────────────────────────────────────────────────
-
-const PAGARME_FIELD_MAP = {
-    'holder_name': { label: 'Nome do titular', id: 'onb-bank-holder_name' },
-    'holder_document': { label: 'Documento do titular' },
-    'branch_number': { label: 'Agência', id: 'onb-bank-branch_number' },
-    'account_number': { label: 'Número da conta', id: 'onb-bank-account_number' },
-    'account_check_digit': { label: 'Dígito da conta', id: 'onb-bank-account_check_digit' },
-    'branch_check_digit': { label: 'Dígito da agência', id: 'onb-bank-branch_check_digit' },
-    'bank': { label: 'Banco', id: 'onb-bank-bank' },
-    'name': { label: 'Nome' },
-    'document': { label: 'Documento' },
-    'email': { label: 'E-mail' },
-    'birthdate': { label: 'Data de nascimento' },
-    'mother_name': { label: 'Nome da mãe' },
-    'monthly_income': { label: 'Renda mensal' },
-    'annual_revenue': { label: 'Receita anual' },
-    'company_name': { label: 'Nome fantasia' },
-    'trading_name': { label: 'Razão social' },
-    'zip_code': { label: 'CEP' },
-    'street': { label: 'Rua' },
-    'street_number': { label: 'Número' },
-    'neighborhood': { label: 'Bairro' },
-    'city': { label: 'Cidade' },
-    'state': { label: 'Estado' },
-};
-
-const PAGARME_MSG_MAP = {
-    'is invalid': 'valor inválido',
-    'is required': 'campo obrigatório',
-    'must be filled': 'campo obrigatório',
-    'has already been taken': 'já está em uso',
-    'must be equal to recipient document': 'deve ser igual ao documento do recebedor',
-    'must be a number': 'deve ser um número',
-    'size must be': 'tamanho inválido',
-};
-
-function formatPagarmeError(details) {
-    if (!details || typeof details !== 'object') return null;
-    const hints = [];
-    const entries = Array.isArray(details) ? details.map((m, i) => [String(i), m]) : Object.entries(details);
-    for (const [field, msgs] of entries) {
-        const mapped = PAGARME_FIELD_MAP[field];
-        const label = mapped?.label || field;
-        if (mapped?.id) highlightField(mapped.id);
-        const msgText = Array.isArray(msgs) ? msgs.join(', ') : String(msgs);
-        let translated = msgText;
-        for (const [en, pt] of Object.entries(PAGARME_MSG_MAP)) {
-            translated = translated.replace(new RegExp(en, 'gi'), pt);
-        }
-        hints.push(`${label}: ${translated}`);
-    }
-    return hints.length > 0 ? hints.join('; ') : null;
-}
-
-// ── Event Listeners ────────────────────────────────────────────────────────
-
-// Back button
-document.getElementById('onboarding-back-btn')?.addEventListener('click', closeOnboardingPage);
-
-// Tab switching
-document.querySelectorAll('.onboarding-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        onboardingType = tab.dataset.type;
-        updateOnboardingTabs();
+        wrap.appendChild(sw);
     });
-});
+}
 
-// Bank "other" toggle
-document.getElementById('onb-bank-bank')?.addEventListener('change', (e) => {
-    const otherInput = document.getElementById('onb-bank-bank-other');
-    if (otherInput) {
-        otherInput.classList.toggle('hidden', e.target.value !== 'other');
-        if (e.target.value !== 'other') otherInput.value = '';
-    }
-});
+function openCategoryModal(mode, cat) {
+    categoryModalMode = mode;
+    categoryModalId = cat?.id || null;
+    categoryModalColor = cat?.color || VITRINE_CATEGORY_COLORS[0];
 
-// Submit handler
-document.getElementById('onboarding-submit')?.addEventListener('click', async () => {
-    const submitBtn = document.getElementById('onboarding-submit');
-    const btnContainer = submitBtn?.closest('.buttonContent');
+    document.getElementById('category-modal-title').textContent = mode === 'edit' ? 'Editar categoria' : 'Nova categoria';
+    document.getElementById('category-name-input').value = cat?.name || '';
+    document.getElementById('category-modal-save').textContent = mode === 'edit' ? 'Salvar' : 'Criar';
+    document.getElementById('category-modal-delete').classList.toggle('hidden', mode !== 'edit');
 
-    const payload = validateAndBuildPayload();
-    if (payload.error) {
-        showOnboardingError(payload.error);
+    const err = document.getElementById('category-modal-error');
+    err.classList.add('hidden');
+    err.textContent = '';
+
+    const btnContainer = document.querySelector('#categoryModal .buttonContent');
+    setElementState(btnContainer, 'content');
+
+    renderColorSwatches();
+    document.getElementById('categoryModal').classList.add('show');
+    setTimeout(() => document.getElementById('category-name-input').focus(), 50);
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').classList.remove('show');
+}
+
+function showCategoryError(msg) {
+    const err = document.getElementById('category-modal-error');
+    err.textContent = msg;
+    err.classList.remove('hidden');
+}
+
+async function saveCategoryModal() {
+    const name = document.getElementById('category-name-input').value.trim();
+    if (name.length < 2 || name.length > 30) {
+        showCategoryError('O nome deve ter entre 2 e 30 caracteres.');
         return;
     }
 
-    const errorEl = document.getElementById('onboarding-error');
-    if (errorEl) { errorEl.classList.add('hidden'); errorEl.textContent = ''; }
-
-    if (btnContainer) setElementState(btnContainer, 'loading');
+    const btnContainer = document.querySelector('#categoryModal .buttonContent');
+    setElementState(btnContainer, 'loading');
 
     try {
-        const res = await fetchManager.startSellerOnboarding(payload);
-        console.log('[Vitrine] Onboarding response:', res);
+        const res = categoryModalMode === 'edit'
+            ? await fetchManager.updateCategory(categoryModalId, { name, color: categoryModalColor })
+            : await fetchManager.createCategory({ name, color: categoryModalColor });
 
         if (res.ok) {
-            closeOnboardingPage();
-            notify('success', 'Cadastro enviado com sucesso! Aguarde a aprovação.');
-            setTimeout(() => {
-                vitrineLoaded = false;
-                loadVitrineTab();
-            }, 1500);
+            closeCategoryModal();
+            notify('success', categoryModalMode === 'edit' ? 'Categoria atualizada' : 'Categoria criada');
+            await loadVitrineCategories();
+            renderVitrineProducts(vitrineProducts); // refresh "Adicionar a" submenus
         } else {
-            const details = res.result?.details;
-            console.error('[Vitrine] Onboarding API error:', res.result?.error, details);
-
-            let errMsg = 'Não foi possível completar o cadastro. Verifique os dados e tente novamente.';
-            if (details) {
-                const fieldHints = formatPagarmeError(details);
-                if (fieldHints) errMsg += ` (${fieldHints})`;
-            }
-            showOnboardingError(errMsg);
-            if (btnContainer) setElementState(btnContainer, 'content');
+            showCategoryError(res.result?.error || 'Erro ao salvar a categoria.');
+            setElementState(btnContainer, 'content');
         }
     } catch (err) {
-        console.error('Seller onboarding error:', err);
-        showOnboardingError('Erro de conexão. Tente novamente.');
-        if (btnContainer) setElementState(btnContainer, 'content');
+        console.error('Save category error:', err);
+        showCategoryError('Erro de conexão.');
+        setElementState(btnContainer, 'content');
     }
-});
+}
 
+// ── Delete ──
+let deleteCategoryId = null;
 
+function openDeleteCategoryModal(cat) {
+    deleteCategoryId = cat.id;
+    document.getElementById('delete-category-name').textContent = cat.name;
+    const btnContainer = document.querySelector('#deleteCategoryModal .buttonContent');
+    setElementState(btnContainer, 'content');
+    document.getElementById('deleteCategoryModal').classList.add('show');
+}
 
+function closeDeleteCategoryModal() {
+    document.getElementById('deleteCategoryModal').classList.remove('show');
+    deleteCategoryId = null;
+}
 
-// Check onboarding status (pending state)
-document.getElementById('btn-continue-onboarding')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-continue-onboarding');
-    btn.disabled = true;
-    btn.textContent = 'Verificando...';
-
+// ── Toggle a product's membership in a category (M2M) ──
+async function toggleProductCategory(product, categoryId, optEl, checkEl) {
+    const ids = product.category_ids || (product.category_ids = []);
+    const isOn = ids.includes(categoryId);
     try {
-        const res = await fetchManager.getSellerAccountStatus();
-        if (res.ok && res.result?.data?.charges_enabled) {
-            notify('success', 'Seu cadastro foi aprovado! Recarregando...');
-            setTimeout(() => loadVitrine(), 1500);
+        const res = isOn
+            ? await fetchManager.removeProductFromCategory(product.id, categoryId)
+            : await fetchManager.addProductToCategory(product.id, categoryId);
+        if (!res.ok) throw new Error('toggle failed');
+
+        if (isOn) {
+            product.category_ids = ids.filter(id => id !== categoryId);
+            optEl.classList.remove('active');
+            checkEl.textContent = '';
         } else {
-            notify('info', 'Seu cadastro ainda está em análise.');
-            btn.textContent = 'Ver status';
-            btn.disabled = false;
+            ids.push(categoryId);
+            optEl.classList.add('active');
+            checkEl.textContent = '✓';
         }
     } catch (err) {
-        console.error('Onboarding status check error:', err);
-        btn.textContent = 'Ver status';
-        btn.disabled = false;
+        console.error('Toggle category error:', err);
+        notify('error', 'Erro ao atualizar categoria');
+    }
+}
+
+// ── Wire up modal controls (once on load) ──
+document.getElementById('btn-add-category')?.addEventListener('click', () => openCategoryModal('create'));
+document.getElementById('category-modal-save')?.addEventListener('click', saveCategoryModal);
+document.getElementById('category-modal-cancel')?.addEventListener('click', closeCategoryModal);
+document.getElementById('category-modal-close')?.addEventListener('click', closeCategoryModal);
+document.getElementById('categoryModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCategoryModal();
+});
+document.getElementById('category-name-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveCategoryModal();
+});
+document.getElementById('category-modal-delete')?.addEventListener('click', () => {
+    const cat = vitrineCategories.find(c => c.id === categoryModalId);
+    if (!cat) return;
+    closeCategoryModal();
+    openDeleteCategoryModal(cat);
+});
+
+document.getElementById('confirm-delete-category')?.addEventListener('click', async () => {
+    if (!deleteCategoryId) return;
+    const goneId = deleteCategoryId;
+    const btnContainer = document.querySelector('#deleteCategoryModal .buttonContent');
+    setElementState(btnContainer, 'loading');
+    try {
+        const res = await fetchManager.deleteCategory(goneId);
+        if (res.ok) {
+            closeDeleteCategoryModal();
+            notify('success', 'Categoria excluída');
+            await loadVitrineCategories();
+            // Drop the deleted id from local product assignments + refresh cards.
+            vitrineProducts.forEach(p => {
+                if (Array.isArray(p.category_ids)) p.category_ids = p.category_ids.filter(id => id !== goneId);
+            });
+            renderVitrineProducts(vitrineProducts);
+        } else {
+            notify('error', res.result?.error || 'Erro ao excluir');
+            setElementState(btnContainer, 'content');
+        }
+    } catch (err) {
+        console.error('Delete category error:', err);
+        notify('error', 'Erro de conexão');
+        setElementState(btnContainer, 'content');
     }
 });
+document.getElementById('deleteCategoryModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeDeleteCategoryModal();
+});
+document.querySelector('#deleteCategoryModal .cancel-btn')?.addEventListener('click', closeDeleteCategoryModal);
 
 // KYC link button — generate and open the Pagar.me biometric verification link
 document.getElementById('btn-kyc-link')?.addEventListener('click', async () => {
@@ -2195,9 +1752,8 @@ function renderStepPackages() {
             const iconWrap = document.createElement('div');
             iconWrap.className = 'stack-icon';
             const img = document.createElement('img');
-            img.src = s.icon;
             img.alt = s.name;
-            img.onerror = function () { this.src = '../../assets/images/fallback-session-icon.png'; this.onerror = null; };
+            AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
             iconWrap.appendChild(img);
             icons.appendChild(iconWrap);
         });
@@ -2731,10 +2287,9 @@ function renderSalesHistory(orders) {
             grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
         }
 
-        // receita = valor bruto (o que o seller definiu como preço do produto) = total - taxa plataforma
-        // liquido = valor líquido (o que o seller recebe) = total - taxa plataforma - taxa gateway
-        const plataformaFeeCents = 99; // Taxa fixa de R$ 0,99 adicionada no checkout
-        const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
+        // receita = valor bruto (preço limpo pago pelo comprador) = total_amount_cents
+        // liquido = valor líquido que o seller recebe (92%) = seller_amount_cents
+        const receita = order.total_amount_cents || 0;
         const liquido = order.seller_amount_cents || 0;
 
         totalRevenue += receita;
@@ -3135,8 +2690,7 @@ function renderProductDetails(data, wrapEl) {
             if (!grouped[y]) grouped[y] = { revenue: 0, net: 0, sales: 0, months: {} };
             if (!grouped[y].months[m]) grouped[y].months[m] = { revenue: 0, net: 0, sales: 0, list: [] };
 
-            const plataformaFeeCents = 99;
-            const receita = Math.max(0, (order.total_amount_cents || 0) - plataformaFeeCents);
+            const receita = order.total_amount_cents || 0;
             const liquido = order.seller_amount_cents || 0;
 
             grouped[y].revenue += receita;
@@ -4920,20 +4474,27 @@ async function copyVitrineLink() {
     return true;
 }
 
-// "Editar vitrine" → load current profile + open the modal
-document.getElementById('btn-edit-vitrine')?.addEventListener('click', async () => {
+// ── "Editar vitrine" modal (single-pane) ──
+async function openManageVitrineModal() {
+    const overlay = document.getElementById('manageVitrineModal');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
     const v = await ensureVitrineLoaded();
     populateVitrineModal(v);
-    utils.showModal('editVitrine');
-});
+}
 
-// "Compartilhar" (products header) → copy the public link with feedback
-document.getElementById('btn-share-vitrine')?.addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
-    const original = btn.innerHTML;
-    const ok = await copyVitrineLink();
-    btn.innerHTML = original.replace('Compartilhar', ok ? 'Link copiado' : 'Erro ao copiar');
-    setTimeout(() => { btn.innerHTML = original; }, 1500);
+function closeManageVitrineModal() {
+    const overlay = document.getElementById('manageVitrineModal');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('btn-manage-vitrine')?.addEventListener('click', openManageVitrineModal);
+document.getElementById('mv-close-btn')?.addEventListener('click', closeManageVitrineModal);
+document.getElementById('manageVitrineModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeManageVitrineModal();
 });
 
 // Copy button inside the modal
@@ -4952,7 +4513,7 @@ document.getElementById('vt-edit-published-toggle')?.addEventListener('click', f
 
 // Save
 document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
-    const modal = document.getElementById('editVitrineModal');
+    const modal = document.getElementById('manageVitrineModal');
     const buttonContent = modal.querySelector('.buttonContent');
     const val = (id) => (document.getElementById(id)?.value || '').trim();
 
@@ -4985,7 +4546,7 @@ document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
         setElementState(buttonContent, 'content');
         if (res.ok && res.result?.vitrine) {
             currentVitrine = res.result.vitrine;
-            utils.closeModals();
+            closeManageVitrineModal();
         } else {
             utils.setModalError(modal, res.result?.error || 'Não foi possível salvar. Tente novamente.');
         }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
     <title>Vitrine — AuthPack</title>
     <meta name="description" content="Conheça os produtos deste vendedor no AuthPack">
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
@@ -13,8 +13,20 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
     <link rel="stylesheet" href="/assets/styles/elementState.css">
     <link rel="stylesheet" href="/pages/vitrine/style.css">
+
+    <!-- Theme: FOUC prevention + manager (respects the theme chosen in /dashboard) -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) { }
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
 <body>
@@ -119,13 +131,12 @@
                         </svg>
                         <input id="search-input" type="text" placeholder="Buscar produto ou serviço…" autocomplete="off" />
                     </div>
+                    <!-- Category filter pills: Todos + each category -->
+                    <div class="cat-pills" id="category-pills" style="display:none"></div>
                 </div>
 
-                <!-- Featured product -->
-                <section class="featured" id="featured-block" style="display:none"></section>
-
-                <!-- Product grid -->
-                <div class="grid" id="product-grid"></div>
+                <!-- Catalog: one section per category (each with a featured hero + grid) -->
+                <div id="category-sections"></div>
 
                 <!-- Empty (search) -->
                 <div class="empty" id="empty-state">
@@ -206,6 +217,7 @@
     <script src="/assets/scripts/envManager.js"></script>
     <script src="/assets/scripts/fetchManager.js"></script>
     <script src="/assets/scripts/elementState.js"></script>
+    <script src="/assets/scripts/faviconManager.js"></script>
     <script src="/pages/vitrine/script.js"></script>
 </body>
 

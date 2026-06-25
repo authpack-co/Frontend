@@ -15,6 +15,9 @@
     }
 
     let PRODUCTS = [];
+    let CATEGORIES = [];
+    // 'all' → every category as ordered sections; a category id → only that one.
+    let selectedCategory = 'all';
     let activeSort = 'featured';
     let query = '';
 
@@ -47,6 +50,7 @@
 
         const { vitrine, stats, products } = res.result;
         PRODUCTS = products || [];
+        CATEGORIES = res.result.categories || [];
 
         renderSeller(vitrine, stats);
         setElementState(container, 'content');
@@ -131,20 +135,144 @@
     // ========================================================================
 
     function renderCatalog() {
-        renderProducts();
+        selectedCategory = 'all';
+        renderCategoryPills();
 
+        // Sort tabs are always visible and act as a filter over the current view.
         document.getElementById('tabs').addEventListener('click', e => {
             const btn = e.target.closest('.tab');
             if (!btn) return;
             activeSort = btn.dataset.sort;
             document.querySelectorAll('#tabs .tab').forEach(t => t.classList.toggle('active', t === btn));
-            renderProducts();
+            renderView();
         });
 
         document.getElementById('search-input').addEventListener('input', e => {
             query = e.target.value;
-            renderProducts();
+            renderView();
         });
+
+        renderView();
+    }
+
+    // Category filter pills: "Todos" (all categories, in order) + one per
+    // category. Hidden when the seller has no categories (single flat list).
+    function renderCategoryPills() {
+        const wrap = document.getElementById('category-pills');
+        if (!wrap) return;
+        if (CATEGORIES.length === 0) {
+            wrap.style.display = 'none';
+            return;
+        }
+        wrap.style.display = '';
+
+        const pill = (id, label, color) => {
+            const dot = color ? `<span class="pill-dot" style="background:${esc(color)}"></span>` : '';
+            const active = id === selectedCategory ? ' active' : '';
+            return `<button class="cat-pill${active}" data-cat="${esc(id)}">${dot}${esc(label)}</button>`;
+        };
+
+        wrap.innerHTML = pill('all', 'Todos', null) +
+            CATEGORIES.map(c => pill(c.id, c.name, c.color)).join('');
+
+        wrap.querySelectorAll('.cat-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.cat;
+                if (id === selectedCategory) return;
+                selectedCategory = id;
+                wrap.querySelectorAll('.cat-pill').forEach(b => b.classList.toggle('active', b === btn));
+                renderView();
+            });
+        });
+    }
+
+    // Renders the catalog for the current pill + sort + search.
+    //   • "Todos": one section per category (in order), then "Outros".
+    //   • A single category: only that category's section (no header).
+    // Each real category leads with its best-seller as a featured hero.
+    function renderView() {
+        const container = document.getElementById('category-sections');
+        const emptyEl = document.getElementById('empty-state');
+        const q = query.trim();
+        const matching = PRODUCTS.filter(matchesQuery);
+
+        let sections;
+        let showHeaders;
+        if (CATEGORIES.length === 0) {
+            // No categories → a single flat section (keeps the original behavior).
+            sections = matching.length ? [{ cat: null, items: matching, flat: true }] : [];
+            showHeaders = false;
+        } else if (selectedCategory === 'all') {
+            sections = [];
+            CATEGORIES.forEach(cat => {
+                const items = matching.filter(p => (p.category_ids || []).includes(cat.id));
+                if (items.length) sections.push({ cat, items });
+            });
+            const uncategorized = matching.filter(p => !(p.category_ids || []).length);
+            if (uncategorized.length) sections.push({ cat: null, items: uncategorized });
+            showHeaders = true;
+        } else {
+            const cat = CATEGORIES.find(c => c.id === selectedCategory) || null;
+            const items = matching.filter(p => (p.category_ids || []).includes(selectedCategory));
+            sections = items.length ? [{ cat, items }] : [];
+            showHeaders = false;
+        }
+
+        if (sections.length === 0) {
+            container.innerHTML = '';
+            if (q) {
+                emptyEl.style.display = 'block';
+                document.getElementById('empty-query').textContent = q;
+            } else {
+                emptyEl.style.display = 'none';
+                container.innerHTML = `<div class="empty" style="display:block">Nenhum produto disponível.</div>`;
+            }
+        } else {
+            emptyEl.style.display = 'none';
+            container.innerHTML = sections.map(s => sectionHtml(s, showHeaders)).join('');
+            wireBuy();
+        }
+
+        const total = matching.length;
+        const cnt = document.getElementById('result-count');
+        if (q) {
+            cnt.textContent = `· ${total} ${total === 1 ? 'resultado' : 'resultados'}`;
+        } else {
+            cnt.textContent = `· ${PRODUCTS.length} ${PRODUCTS.length === 1 ? 'disponível' : 'disponíveis'}`;
+        }
+    }
+
+    // Builds one section: optional header + featured best-seller hero + grid of
+    // the rest. The featured pick is always the top seller (independent of the
+    // sort tab); the sort tab orders the remaining cards. Featured is skipped
+    // during search, for the uncategorized "Outros" group, and when nothing sold.
+    function sectionHtml({ cat, items, flat }, showHeader) {
+        const q = query.trim();
+
+        let featured = null;
+        let rest = items;
+        if (!q && (cat || flat) && items.length > 0) {
+            const top = items.reduce((a, b) => (salesOf(b) > salesOf(a) ? b : a), items[0]);
+            if (salesOf(top) > 0) {
+                featured = top;
+                rest = items.filter(p => p !== featured);
+            }
+        }
+        rest = sortProducts(rest);
+
+        let header = '';
+        if (showHeader) {
+            const dot = cat
+                ? `<span class="cat-dot" style="background:${esc(cat.color)}"></span>`
+                : `<span class="cat-dot cat-dot-muted"></span>`;
+            const title = cat ? esc(cat.name) : 'Outros';
+            header = `<div class="cat-section-head">${dot}<h3 class="cat-section-title">${title}</h3><span class="cat-section-count">${items.length}</span></div>`;
+        }
+
+        const feat = featured ? `<section class="featured">${featuredHtml(featured)}</section>` : '';
+        const grid = rest.length ? `<div class="grid">${rest.map(cardHtml).join('')}</div>` : '';
+
+        return `<section class="cat-section">${header}${feat}${grid}</section>`;
     }
 
     function matchesQuery(p) {
@@ -166,42 +294,6 @@
             arr.sort((a, b) => salesOf(b) - salesOf(a));
         }
         return arr;
-    }
-
-    function renderProducts() {
-        let list = PRODUCTS.filter(matchesQuery);
-        list = sortProducts(list);
-
-        const featBlock = document.getElementById('featured-block');
-        // Featured: only on Destaques tab, no search, and only when there's a
-        // clear best-seller (>1 product). The top seller becomes the hero card.
-        const showFeatured = activeSort === 'featured' && !query.trim() && list.length > 1 && salesOf(list[0]) > 0;
-
-        if (showFeatured) {
-            const feat = list[0];
-            featBlock.style.display = 'grid';
-            featBlock.innerHTML = featuredHtml(feat);
-            wireBuy(featBlock);
-            list = list.slice(1);
-        } else {
-            featBlock.style.display = 'none';
-            featBlock.innerHTML = '';
-        }
-
-        const grid = document.getElementById('product-grid');
-        grid.innerHTML = list.map(cardHtml).join('');
-
-        const total = list.length + (showFeatured ? 1 : 0);
-        const empty = document.getElementById('empty-state');
-        empty.style.display = total === 0 ? 'block' : 'none';
-        document.getElementById('empty-query').textContent = query.trim();
-
-        const cnt = document.getElementById('result-count');
-        if (query.trim()) {
-            cnt.textContent = `· ${total} ${total === 1 ? 'resultado' : 'resultados'}`;
-        } else {
-            cnt.textContent = `· ${PRODUCTS.length} ${PRODUCTS.length === 1 ? 'disponível' : 'disponíveis'}`;
-        }
     }
 
     // ========================================================================
@@ -266,7 +358,9 @@
         const icons = shown.map(s => {
             const label = esc(s.name || extractDomain(s.url) || '?');
             if (s.icon) {
-                return `<div class="svc-icon" title="${label}" style="${sizeStyle}"><img src="${s.icon}" alt="${label}" onerror="this.parentNode.textContent='${initialFor(s.name || extractDomain(s.url))}'"></div>`;
+                const initial = initialFor(s.name || extractDomain(s.url));
+                const google = AuthPackFavicon.googleUrl(s.url);
+                return `<div class="svc-icon" title="${label}" style="${sizeStyle}"><img src="${s.icon}" alt="${label}" data-fav-google="${google}" data-fav-initial="${initial}" onerror="AuthPackFavicon.inlineError(this)"></div>`;
             }
             const [c1, c2] = paletteFor(s.name || s.url || '?');
             return `<div class="svc-icon" title="${label}" style="background:linear-gradient(150deg,${c1},${c2});${sizeStyle}">${initialFor(s.name || extractDomain(s.url))}</div>`;

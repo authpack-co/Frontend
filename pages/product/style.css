@@ -81,6 +81,106 @@ a {
     color: var(--ap-success);
 }
 
+/* Left side of the header: brand + (optional) vitrine breadcrumb */
+.vt-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Vitrine breadcrumb inside the header: │ [avatar] Vitrine ✓ › Produto.
+   Hidden by default; revealed by script.js once the vitrine is loaded. */
+.vt-crumb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.vt-crumb[hidden] {
+    display: none;
+}
+
+.vt-crumb-div {
+    width: 1px;
+    height: 22px;
+    flex-shrink: 0;
+    background: var(--ap-border);
+}
+
+/* Store identity = the link to the vitrine */
+.vt-crumb-store {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin: -4px 0;
+    padding: 4px 8px;
+    border-radius: 8px;
+    color: var(--ap-text-primary);
+    transition: background 0.15s;
+}
+
+.vt-crumb-store:hover {
+    background: var(--ap-bg-muted);
+}
+
+.vt-crumb-avatar {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-family: var(--ap-font-heading);
+    font-weight: 700;
+    font-size: 11px;
+    color: #fff;
+}
+
+.vt-crumb-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vt-crumb-name {
+    font-family: var(--ap-font-heading);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.vt-crumb-verified {
+    color: var(--ap-accent);
+    flex-shrink: 0;
+}
+
+.vt-crumb-sep {
+    color: var(--ap-text-placeholder);
+    flex-shrink: 0;
+}
+
+.vt-crumb-current {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s;
+}
+
+a.vt-crumb-current:hover {
+    color: var(--ap-text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 /* ===================== Page ===================== */
 .vt-page {
     flex: 1;
@@ -614,7 +714,7 @@ a {
     flex-shrink: 0;
 }
 
-/* Seller */
+/* Seller / Vitrine band */
 .vt-seller {
     margin-top: 18px;
     padding-top: 16px;
@@ -623,6 +723,307 @@ a {
     align-items: center;
     gap: 10px;
 }
+
+/* Clickable variant (when the product belongs to a published vitrine) */
+.vt-seller.is-vitrine {
+    margin: 18px -10px 0;
+    padding: 12px 10px;
+    border-radius: 12px;
+    border-top: 1px solid var(--ap-border);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.vt-seller.is-vitrine:hover {
+    background: var(--ap-bg-muted);
+}
+
+.vt-seller-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.vt-seller-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.vt-seller-verified {
+    color: var(--ap-accent);
+    flex-shrink: 0;
+}
+
+.vt-seller-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-accent);
+}
+
+.vt-seller.is-vitrine:hover .vt-seller-go {
+    color: var(--ap-accent-hover);
+}
+
+/* ===================== Related (Mais desta vitrine) ===================== */
+.vt-related {
+    width: 100%;
+    max-width: 1040px;
+    margin: 56px auto 0;
+}
+
+.vt-related-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.vt-related-title {
+    font-family: var(--ap-font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    letter-spacing: -0.02em;
+}
+
+.vt-related-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-accent);
+}
+
+.vt-related-all:hover {
+    color: var(--ap-accent-hover);
+}
+
+/* Product cards — duplicated verbatim from pages/vitrine/style.css (.pcard family)
+   so the "Mais desta vitrine" cards are identical to the vitrine's. Keep in sync
+   with the vitrine until these are extracted into a shared stylesheet. */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.pcard {
+    display: flex;
+    flex-direction: column;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
+    padding: 18px;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.pcard:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ap-shadow-lg);
+    border-color: var(--ap-border-hover);
+}
+
+.pcard-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.pcat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.pcat::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--ap-accent);
+}
+
+.billing-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: var(--ap-radius-full);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.billing-badge.one_time { background: var(--ap-accent-light); color: var(--ap-accent-strong); }
+.billing-badge.subscription { background: var(--ap-success-light); color: var(--ap-success-text); }
+
+.pname {
+    font-family: var(--ap-font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ap-text-primary);
+    margin: 0 0 6px;
+    line-height: 1.2;
+}
+
+.pdesc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ap-text-muted);
+    margin: 0 0 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pservices {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.svc-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: var(--ap-font-heading);
+    font-weight: 700;
+    font-size: 12.5px;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.svc-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+.svc-more {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-input);
+    border-radius: 8px;
+    height: 28px;
+    padding: 0 9px;
+    display: grid;
+    place-items: center;
+}
+
+.pcard-foot {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--ap-border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.price-cur { font-family: var(--ap-font-heading); font-size: 13px; font-weight: 700; color: var(--ap-text-muted); }
+.price-amt {
+    font-family: var(--ap-font-heading);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ap-text-primary);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.price-per { font-size: 12px; color: var(--ap-text-muted); }
+
+.stock {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--ap-text-muted);
+    margin-bottom: 12px;
+}
+
+.stock-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.stock-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.2;
+}
+
+.stock.ok { color: var(--ap-success); }
+.stock.warn { color: var(--ap-warning); }
+.stock.out { color: var(--ap-danger); }
+.stock .stock-dot { background: currentColor; }
+.stock b { color: var(--ap-text-secondary); font-weight: 700; }
+.stock.warn b { color: var(--ap-warning-text); }
+.stock.out b { color: var(--ap-danger-text); }
+
+.psales {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+.psales b { color: var(--ap-text-secondary); font-weight: 700; }
+
+.buy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-text-primary);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background .15s ease, transform .1s ease;
+}
+
+.buy-btn:hover { background: color-mix(in oklab, var(--ap-text-primary) 86%, var(--ap-accent-strong)); }
+.buy-btn:active { transform: translateY(1px); }
+.buy-btn svg { transition: transform .15s ease; }
+.buy-btn:hover svg { transform: translateX(2px); }
+
+.buy-btn.ghost {
+    background: var(--ap-bg-input);
+    color: var(--ap-text-muted);
+    cursor: not-allowed;
+}
+.buy-btn.ghost:hover { background: var(--ap-bg-input); }
 
 .vt-seller-avatar {
     width: 34px;
@@ -672,6 +1073,16 @@ a {
     .vt-title {
         font-size: 30px;
     }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Tight header: keep brand + store, drop the breadcrumb tail */
+    .vt-crumb-sep,
+    .vt-crumb-current {
+        display: none;
+    }
 }
 
 @media (max-width: 600px) {
@@ -690,6 +1101,23 @@ a {
     .vt-price-amount {
         font-size: 32px;
     }
+
+    .vt-related {
+        margin-top: 40px;
+    }
+
+    .vt-related-title {
+        font-size: 18px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Free up header room on phones: brand text + store identity stay */
+    .vt-secure-chip {
+        display: none;
+    }
 }
 
 /* ===================== Reduced Motion ===================== */
@@ -699,7 +1127,11 @@ a {
     }
 
     .vt-cta,
-    .vt-service {
+    .vt-service,
+    .vt-seller.is-vitrine,
+    .vt-crumb-store,
+    .pcard,
+    .buy-btn {
         transition: none;
     }
 }
