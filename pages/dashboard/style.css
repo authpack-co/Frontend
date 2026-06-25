@@ -1660,116 +1660,284 @@ span.coming-soon {
 }
 
 /* ============================================
-   Package Info Header (Access View)
+   Package Info Header (Access View — "Meus acessos")
+   Dois estados: .is-vitrine (adquirido pela vitrine, com identidade +
+   contatos + descrição) e .is-direct (acesso compartilhado, estética neutra).
    ============================================ */
 .package-info-header {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 20px;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
+    overflow: hidden;
     margin-bottom: 16px;
 }
 
-/* Owner badge – top-right corner of the info board */
-.package-owner {
-    position: absolute;
-    display: flex;
-    top: 25%;
-    right: 20px;
-    transform: translateY(-50%);
+/* ── Faixa de identidade da vitrine ── */
+.ph-vitrine-band {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 15px 20px;
+    background: var(--ap-accent-light);
+    border-bottom: 1px solid var(--ap-accent-muted);
 }
 
-.package-owner-label {
-    font-size: 12px;
-    color: var(--ap-text-muted);
-    line-height: 1;
-}
-
-.package-owner-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ap-text-primary);
-    line-height: 1;
-    text-align: right;
-}
-
-.package-owner-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--ap-border);
-    align-self: flex-end;
-}
-
-
-.package-info-header .package-info-title {
+.ph-vitrine-id {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin: 0 0 4px 0;
+    gap: 12px;
 }
 
-.package-info-header .package-info-title .package-icon {
-    font-size: 18px;
+.ph-vitrine-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
 
-.package-info-header .package-info-title h2 {
-    margin: 0;
-    font-size: 20px;
+.ph-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ap-accent-strong);
+}
+
+.ph-vitrine-name-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.ph-vitrine-name {
+    font-size: 15.5px;
     font-weight: 700;
     color: var(--ap-text-primary);
 }
 
-.package-info-details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.ph-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--ap-accent-strong);
+    font-size: 11.5px;
+    font-weight: 600;
 }
 
-.package-info-label {
-    font-size: 14px;
-    color: var(--ap-text-muted);
+.ph-vitrine-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-accent-strong);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    transition: filter .15s;
+}
+
+.ph-vitrine-link:hover {
+    filter: brightness(1.07);
+}
+
+/* ── Faixa neutra (acesso direto / compartilhado) ── */
+.ph-direct-band {
     display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px 20px;
+    background: var(--ap-bg-card-alt);
+    border-bottom: 1px solid var(--ap-border);
+    color: var(--ap-text-muted);
+    font-size: 13px;
+}
+
+.ph-direct-band svg {
+    color: var(--ap-text-placeholder);
+    flex-shrink: 0;
+}
+
+/* ── Avatares (imagem com fallback de inicial em gradiente) ── */
+.ph-avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.ph-avatar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ph-vitrine-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    font-size: 18px;
+}
+
+.ph-shared-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 11px;
+}
+
+/* ── Linha de canais de suporte ── */
+.ph-contacts {
+    display: flex;
+    align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--ap-border);
 }
 
-.package-info-label span:first-child {
+.ph-contacts-label {
+    font-size: 12px;
+    color: var(--ap-text-placeholder);
+    margin-right: 2px;
+}
+
+.ph-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-card);
+    color: var(--ap-text-secondary);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1;
+    transition: border-color .15s, background .15s;
+}
+
+.ph-pill:hover {
+    border-color: var(--ap-border-hover);
+    background: var(--ap-bg-hover);
+}
+
+/* ── Bloco principal do pacote ── */
+.ph-hero {
+    padding: 18px 20px 20px;
+}
+
+.ph-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.ph-hero-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.ph-pkg-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--ap-accent-light);
+    color: var(--ap-accent-strong);
+}
+
+.ph-pkg-icon--muted {
+    background: var(--ap-bg-hover);
     color: var(--ap-text-muted);
 }
 
-.package-info-label span:last-child {
+.ph-hero-title h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -.01em;
     color: var(--ap-text-primary);
 }
 
-.online-count {
-    display: flex;
+.ph-online {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #4ade80;
-    font-size: 14px;
-    font-weight: 500;
-    margin-top: 4px;
+    color: var(--ap-success);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    padding-top: 7px;
 }
 
-.online-count .online-dot-lg {
+.ph-online-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #4ade80;
-    display: inline-block;
+    background: var(--ap-success);
+    box-shadow: 0 0 0 3px var(--ap-success-light);
 }
 
-.online-count svg {
-    width: 16px;
-    height: 16px;
+.ph-desc {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--ap-text-muted);
+    line-height: 1.55;
+    max-width: 92%;
+}
+
+.ph-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 15px;
+    border-top: 1px solid var(--ap-border);
+}
+
+.ph-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
+.ph-meta-item svg {
+    color: var(--ap-text-placeholder);
+}
+
+.ph-meta-item strong {
+    color: var(--ap-text-secondary);
+    font-weight: 600;
+}
+
+.ph-shared-by {
+    gap: 8px;
+}
+
+.ph-shared-who {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
 }
 
 /* ============================================
