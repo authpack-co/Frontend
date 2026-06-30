@@ -1587,6 +1587,10 @@ async function toggleProductCategory(product, categoryId, optEl, checkEl) {
             optEl.classList.add('active');
             checkEl.textContent = '✓';
         }
+
+        // Re-group the grid so the product moves to/from the category section
+        // immediately (mirrors saveCategoryModal / deleteCategory / reorder).
+        renderVitrineProducts(vitrineProducts);
     } catch (err) {
         console.error('Toggle category error:', err);
         notify('error', 'Erro ao atualizar categoria');

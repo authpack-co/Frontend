@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Programa de Parceiros AuthPack — Venda seus acessos</title>
+    <meta name="description"
+        content="Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes: sem mensalidade, comissão única de 8%, vitrine própria e pagamentos automatizados. Candidate-se e fale com nossa equipe.">
+    <meta name="keywords"
+        content="authpack parceiros, programa de parceiros authpack, vender acessos authpack, ser parceiro authpack, vendedor authpack, vitrine authpack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/parceiros/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Programa de Parceiros AuthPack — Venda seus acessos">
+    <meta property="og:description"
+        content="Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes: sem mensalidade, comissão única de 8%, vitrine própria e pagamentos automatizados.">
+    <meta property="og:url" content="https://authpack.co/parceiros/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Programa de Parceiros AuthPack — Venda seus acessos">
+    <meta name="twitter:description"
+        content="Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes: comissão única de 8%, vitrine própria e pagamentos automatizados.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+
+    <!-- Theme: FOUC prevention + manager -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) {}
+        })();
+    </script>
+    <script src="/assets/scripts/themeManager.js" defer></script>
+
+    <!-- ===== Structured data: Organization + WebPage + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "email": "team@authpack.co",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://authpack.co/parceiros/#webpage",
+          "url": "https://authpack.co/parceiros/",
+          "name": "Programa de Parceiros AuthPack",
+          "description": "Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes, com comissão única de 8%, vitrine própria e pagamentos automatizados.",
+          "inLanguage": "pt-BR",
+          "isPartOf": { "@id": "https://authpack.co/#website" },
+          "about": { "@id": "https://authpack.co/#organization" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Parceiros", "item": "https://authpack.co/parceiros/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "O que é o programa de parceiros do AuthPack?",
+              "acceptedAnswer": { "@type": "Answer", "text": "É o programa que autoriza pessoas a vender o acesso aos seus pacotes dentro do AuthPack. O parceiro monta sua vitrine, define seus pacotes e vende com pagamentos e entrega automatizados, pagando uma comissão única por venda." }
+            },
+            {
+              "@type": "Question",
+              "name": "Como me torno parceiro do AuthPack?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Preencha o formulário de candidatura nesta página. Nossa equipe analisa e entra em contato em até 1 dia útil para liberar o acesso de vendedor." }
+            },
+            {
+              "@type": "Question",
+              "name": "Quanto custa ser parceiro?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não há mensalidade. Você só paga quando vende: uma comissão única de 8% por venda. Pagamentos e entrega são automatizados pela plataforma." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <style>
+        /* ===== Página de Parceiros — layout de uma tela ===== */
+        .partner-main {
+            min-height: calc(100vh - 64px);
+            display: flex;
+            align-items: center;
+            background:
+                radial-gradient(1100px 520px at 85% -10%, rgba(155, 122, 232, 0.10), transparent 60%),
+                radial-gradient(900px 460px at 0% 110%, rgba(74, 110, 245, 0.08), transparent 60%),
+                var(--bg);
+        }
+
+        .partner-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 56px;
+            align-items: center;
+            width: 100%;
+            padding: 40px 0;
+        }
+
+        .partner-copy h1 {
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 14px 0 14px;
+        }
+
+        .partner-copy h1 .grad {
+            background: var(--grad-text);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .partner-copy .lede {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--ink-3);
+            max-width: 460px;
+            margin: 0 0 26px;
+        }
+
+        .partner-benefits {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .partner-benefits li {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            font-size: 14.5px;
+            color: var(--ink-2);
+            font-weight: 500;
+        }
+
+        .partner-benefits .ck {
+            flex: 0 0 22px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--grad-brand);
+            color: #fff;
+            display: grid;
+            place-items: center;
+        }
+
+        /* Form card */
+        .partner-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 28px 26px;
+            box-shadow: 0 30px 70px -30px rgba(14, 21, 48, 0.35);
+        }
+
+        .partner-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--ink);
+            margin: 0 0 4px;
+        }
+
+        .partner-card .sub {
+            font-size: 13.5px;
+            color: var(--ink-3);
+            margin: 0 0 20px;
+        }
+
+        .pf-group { margin-bottom: 14px; }
+
+        .pf-group label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink-2);
+            margin-bottom: 6px;
+        }
+
+        .pf-input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--line-2);
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
+            padding: 11px 13px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .pf-input::placeholder { color: var(--ink-3); opacity: .7; }
+
+        .pf-input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(74, 110, 245, 0.14);
+        }
+
+        textarea.pf-input { resize: vertical; min-height: 70px; }
+
+        .pf-error {
+            display: none;
+            font-size: 12.5px;
+            color: #d4313b;
+            margin: 2px 0 12px;
+        }
+
+        .pf-error.show { display: block; }
+
+        #partner-submit { width: 100%; justify-content: center; }
+        #partner-submit[disabled] { opacity: .7; cursor: default; }
+
+        .pf-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, .4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: pf-spin .7s linear infinite;
+        }
+
+        @keyframes pf-spin { to { transform: rotate(360deg); } }
+
+        .pf-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--ink-3);
+            margin: 13px 0 0;
+        }
+
+        /* Success state */
+        .partner-success { display: none; text-align: center; padding: 18px 6px; }
+        .partner-success.show { display: block; }
+
+        .partner-success .ok-ring {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--grad-brand);
+            display: grid;
+            place-items: center;
+            margin: 0 auto 16px;
+            color: #fff;
+        }
+
+        .partner-success h2 { margin-bottom: 6px; }
+
+        @media (max-width: 880px) {
+            .partner-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 36px 0;
+            }
+            .partner-main { min-height: 0; }
+            .partner-copy .lede { max-width: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== HERO + FORM ========== -->
+    <main class="partner-main">
+        <div class="container">
+            <div class="partner-grid">
+                <!-- Copy -->
+                <div class="partner-copy">
+                    <span class="eyebrow">
+                        <span class="dot"></span>
+                        <span class="pill">Parceiros</span>
+                        <span>Programa de Parceiros AuthPack</span>
+                    </span>
+                    <h1>Transforme seus acessos em uma <span class="grad">fonte de renda</span>.</h1>
+                    <p class="lede">O programa de parceiros do AuthPack autoriza você a vender o acesso aos seus pacotes — com sua própria vitrine, pagamentos e entrega automatizados. Candidate-se e nossa equipe entra em contato.</p>
+                    <ul class="partner-benefits">
+                        <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Comissão única de 8% por venda</li>
+                        <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Sem mensalidade — você só paga quando vende</li>
+                        <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Sua vitrine própria com link compartilhável</li>
+                        <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Pagamentos e entrega automatizados</li>
+                    </ul>
+                </div>
+
+                <!-- Form -->
+                <div class="partner-card">
+                    <div id="partner-form-wrap">
+                        <h2>Torne-se parceiro</h2>
+                        <p class="sub">Preencha seus dados e nossa equipe entra em contato em até 1 dia útil.</p>
+
+                        <div class="pf-group">
+                            <label for="partner-name">Nome completo</label>
+                            <input type="text" id="partner-name" class="pf-input" placeholder="Seu nome completo" autocomplete="name">
+                        </div>
+                        <div class="pf-group">
+                            <label for="partner-phone">Telefone / WhatsApp</label>
+                            <input type="text" id="partner-phone" class="pf-input" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="tel">
+                        </div>
+                        <div class="pf-group">
+                            <label for="partner-what">O que você quer vender?</label>
+                            <textarea id="partner-what" class="pf-input" rows="3" placeholder="Conte rapidamente o que pretende vender"></textarea>
+                        </div>
+
+                        <p class="pf-error" id="partner-error"></p>
+
+                        <button type="button" id="partner-submit" class="btn btn-grad btn-lg">Tornar-se parceiro</button>
+                        <p class="pf-hint">Resposta em até 1 dia útil. Ao enviar, você confirma a candidatura ao programa.</p>
+                    </div>
+
+                    <!-- Success -->
+                    <div class="partner-success" id="partner-success">
+                        <div class="ok-ring">
+                            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        </div>
+                        <h2>Candidatura enviada!</h2>
+                        <p class="sub" style="margin-bottom:0">Recebemos seus dados. Nossa equipe entra em contato em até <strong>1 dia útil</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/assets/scripts/envManager.js" defer></script>
+    <script src="/assets/scripts/fetchManager.js" defer></script>
+    <script src="/parceiros/parceiros.js" defer></script>
+</body>
+
+</html>

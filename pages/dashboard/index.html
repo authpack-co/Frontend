@@ -94,65 +94,6 @@
     <!-- Hidden structures -->
     <div class="modals">
 
-        <!-- Torne-se parceiro / vendedor -->
-        <div class="modal-overlay" id="partnerModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h2 class="modal-title">Venda no AuthPack</h2>
-                    <button class="close-btn" id="partner-close">×</button>
-                </div>
-                <div class="modal-body">
-                    <!-- Step 1: vantagens -->
-                    <div id="partner-step-1">
-                        <p style="color:var(--ap-text-muted);font-size:14px;margin:0 0 14px;">
-                            Transforme seus acessos em uma loja própria e venda com pagamentos e entrega
-                            automatizados.</p>
-                        <ul style="list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:10px;">
-                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Sem mensalidade — você só paga quando vende</li>
-                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Comissão única de 8% por venda</li>
-                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Pagamentos e entrega automatizados</li>
-                            <li style="display:flex;gap:8px;font-size:13.5px;color:var(--ap-text-secondary);"><span style="color:var(--ap-success-text);">✓</span> Sua vitrine própria com link compartilhável</li>
-                        </ul>
-                        <button class="btn btn-primary" id="partner-want" style="width:100%;">Quero vender</button>
-                    </div>
-
-                    <!-- Step 2: formulário -->
-                    <div id="partner-step-2" style="display:none">
-                        <p style="color:var(--ap-text-muted);font-size:14px;margin:0 0 16px;">
-                            Preencha seus dados e nossa equipe entra em contato.</p>
-                        <div class="form-group">
-                            <label class="form-label">Nome *</label>
-                            <input type="text" class="form-input" id="partner-name" placeholder="Seu nome completo">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Telefone / WhatsApp *</label>
-                            <input type="text" class="form-input" id="partner-phone" placeholder="(11) 99999-9999"
-                                inputmode="tel">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">O que você quer vender? *</label>
-                            <textarea class="form-input" id="partner-what" rows="3"
-                                placeholder="Conte rapidamente o que pretende vender"></textarea>
-                        </div>
-                        <span class="error-message hidden" id="partner-error"></span>
-                        <div class="buttonContent content-state" style="margin-top:6px;">
-                            <div class="preset-content">
-                                <button class="btn btn-primary" id="partner-submit" style="width:100%;">Enviar
-                                    candidatura</button>
-                            </div>
-                            <div class="preset-loading">
-                                <button class="btn btn-primary" style="width:100%;">
-                                    <div class="spinner"></div>
-                                </button>
-                            </div>
-                        </div>
-                        <p style="text-align:center;color:var(--ap-text-muted);font-size:12px;margin:12px 0 0;">
-                            Entraremos em contato em até 1 dia útil.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Extension Required Modal -->
         <div class="modal-overlay" id="extensionRequiredModal">
             <div class="modal ext-modal">
@@ -960,15 +901,6 @@
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
                     Painel admin
-                </li>
-                <!-- Usuário comum: candidatura a parceiro/vendedor -->
-                <li class="nav-item" id="nav-partner" style="display:none">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                        <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
-                    </svg>
-                    Torne-se parceiro
                 </li>
             </ul>
         </nav>
@@ -3082,7 +3014,6 @@
     <script src="/pages/dashboard/contentRenderer.js"></script>
     <script src="/pages/dashboard/vitrineManager.js"></script>
     <script src="/pages/dashboard/settings.js"></script>
-    <script src="/pages/dashboard/partner.js"></script>
 </body>
 
 </html>

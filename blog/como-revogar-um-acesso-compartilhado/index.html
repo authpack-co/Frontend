@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Como revogar um acesso compartilhado (e por que isso importa) | AuthPack</title>
+    <meta name="description"
+        content="Conceder acesso é fácil; o difícil é tirá-lo depois. Veja por que a revogação importa e como o AuthPack corta um acesso compartilhado sem precisar trocar nenhuma senha.">
+    <meta name="keywords"
+        content="revogar acesso compartilhado, remover acesso AuthPack, cancelar link de convite, tirar acesso da equipe, revogar link, AuthPack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/blog/como-revogar-um-acesso-compartilhado/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Como revogar um acesso compartilhado (e por que isso importa)">
+    <meta property="og:description"
+        content="Por que a revogação importa e como o AuthPack corta um acesso compartilhado sem precisar trocar nenhuma senha.">
+    <meta property="og:url" content="https://authpack.co/blog/como-revogar-um-acesso-compartilhado/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="article:published_time" content="2026-06-30">
+    <meta property="article:author" content="Equipe AuthPack">
+    <meta property="article:section" content="Segurança">
+    <meta property="article:tag" content="revogar acesso">
+    <meta property="article:tag" content="segurança">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Como revogar um acesso compartilhado">
+    <meta name="twitter:description"
+        content="Por que a revogação importa e como cortar um acesso compartilhado sem trocar nenhuma senha.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Article + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://authpack.co/blog/como-revogar-um-acesso-compartilhado/#article",
+          "headline": "Como revogar um acesso compartilhado (e por que isso importa)",
+          "description": "Por que a revogação importa e como o AuthPack corta um acesso compartilhado sem precisar trocar nenhuma senha.",
+          "image": "https://authpack.co/assets/images/landing-image-neutral.png",
+          "datePublished": "2026-06-30",
+          "dateModified": "2026-06-30",
+          "inLanguage": "pt-BR",
+          "author": { "@type": "Organization", "name": "Equipe AuthPack", "url": "https://authpack.co/" },
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "mainEntityOfPage": { "@type": "WebPage", "@id": "https://authpack.co/blog/como-revogar-um-acesso-compartilhado/" },
+          "keywords": "revogar acesso compartilhado, remover acesso, cancelar link de convite, AuthPack",
+          "about": { "@type": "SoftwareApplication", "name": "AuthPack", "applicationCategory": "BusinessApplication", "operatingSystem": "Web, Chrome" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" },
+            { "@type": "ListItem", "position": 3, "name": "Como revogar um acesso compartilhado", "item": "https://authpack.co/blog/como-revogar-um-acesso-compartilhado/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Como revogar um acesso que compartilhei no AuthPack?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Nas opções de compartilhamento do pacote, você pode desativar o link geral para impedir novas ativações ou revogar um link único específico. O acesso é cortado sem precisar trocar nenhuma senha." }
+            },
+            {
+              "@type": "Question",
+              "name": "Preciso trocar a senha para tirar o acesso de alguém?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não. Como o que foi compartilhado é a sessão e não a credencial, basta revogar o link ou o acesso. A senha original permanece a mesma e os outros membros não são afetados." }
+            },
+            {
+              "@type": "Question",
+              "name": "Por que a revogação é tão importante?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Porque conceder acesso é só metade do trabalho. Sem uma forma simples de retirar o acesso, credenciais ficam ativas para pessoas que já saíram, ampliando o risco. A revogação fácil é o que mantém o controle ao longo do tempo." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <nav class="breadcrumb" aria-label="Trilha de navegação">
+                <a href="/">Início</a><span class="sep">/</span>
+                <a href="/blog/">Blog</a><span class="sep">/</span>
+                <span>Revogar um acesso compartilhado</span>
+            </nav>
+
+            <article>
+                <header class="article-header">
+                    <div class="post-meta">
+                        <span class="post-tag">Segurança</span>
+                        <time datetime="2026-06-30">30 de junho de 2026</time>
+                        <span>·</span>
+                        <span>5 min de leitura</span>
+                    </div>
+                    <h1>Como revogar um acesso compartilhado (e por que isso importa)</h1>
+                    <p class="lede">Dar acesso é a parte fácil. O que separa um compartilhamento seguro de um problema futuro é conseguir <strong>tirar esse acesso</strong> depois — rápido, sem efeitos colaterais e sem trocar a senha de ninguém.</p>
+                    <div class="article-author">
+                        <img src="/assets/images/favicon-128x128.png" alt="AuthPack" width="40" height="40">
+                        <div>
+                            <div class="a-name">Equipe AuthPack</div>
+                            <div class="a-role">Segurança e compartilhamento de acesso</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="prose">
+                    <p>Quase toda discussão sobre compartilhar acesso foca em <em>conceder</em>. Mas a parte que realmente determina a segurança vem depois: o dia em que alguém sai do time, um projeto termina, um contrato encerra — e aquele acesso precisa sumir. Se tirar o acesso for difícil, ele simplesmente não é tirado. E credenciais ativas nas mãos de quem já saiu são um dos riscos mais comuns e mais subestimados.</p>
+
+                    <div class="callout">
+                        <div class="callout-label">A ideia central</div>
+                        <p style="margin:0">Quando você compartilha a <strong>senha</strong>, revogar significa trocar a senha e reavisar todos. Quando você compartilha a <strong>sessão</strong>, revogar é um clique — e ninguém mais é afetado.</p>
+                    </div>
+
+                    <h2>Por que revogar é tão importante</h2>
+                    <ul>
+                        <li><strong>Acesso que sobra vira risco.</strong> Ex-membros, ex-freelancers e ex-parceiros com acesso ativo ampliam a superfície de ataque sem nenhum benefício.</li>
+                        <li><strong>O custo de revogar define o comportamento.</strong> Se cortar o acesso dá trabalho, as pessoas adiam — e o acesso fica.</li>
+                        <li><strong>Controle granular evita o efeito dominó.</strong> Poder tirar uma pessoa sem mexer nas outras é o que torna a revogação algo rotineiro, e não uma operação de risco.</li>
+                    </ul>
+
+                    <h2>O problema de revogar quando você compartilhou a senha</h2>
+                    <p>Se o acesso foi dado entregando a credencial, a única forma real de revogar é <strong>trocar a senha</strong>. Isso derruba todo mundo de uma vez, exige redistribuir a nova senha para quem deveria continuar, e quebra integrações e 2FA pelo caminho. O atrito é tão grande que, na prática, quase ninguém faz — e o acesso antigo permanece.</p>
+
+                    <h2>Como revogar no AuthPack</h2>
+                    <p>Como o AuthPack <a href="/blog/como-compartilhar-acesso-sem-senha/">compartilha a sessão e não a senha</a>, a revogação é direta e cirúrgica. Nas opções de compartilhamento do pacote você tem dois controles:</p>
+                    <ol>
+                        <li><strong>Desativar o link geral.</strong> Impede novas ativações daquele convite aberto, fechando a "porta da frente" do pacote.</li>
+                        <li><strong>Revogar um link único.</strong> Corta o acesso de uma pessoa específica, sem tocar em mais ninguém — ideal quando você concedeu acesso individual.</li>
+                    </ol>
+                    <p>Em nenhum dos casos você precisa trocar a senha do serviço. A credencial original continua intacta e secreta com você; o que muda é apenas quem pode usar a sessão. Para ver o outro lado do fluxo, confira <a href="/blog/como-compartilhar-um-pacote/">como compartilhar um pacote</a>.</p>
+
+                    <blockquote>O melhor momento de pensar em como cortar um acesso é antes de concedê-lo. Com sessão em vez de senha, esse corte deixa de ser um evento e vira uma rotina de um clique.</blockquote>
+
+                    <h2>Boas práticas de revogação</h2>
+                    <ul>
+                        <li><strong>Prefira links únicos</strong> quando quiser poder cortar pessoa por pessoa.</li>
+                        <li><strong>Revise periodicamente</strong> quem ainda tem acesso a cada pacote.</li>
+                        <li><strong>Revogue na saída</strong> — fim de projeto, de contrato ou de vínculo — como parte do processo, não como exceção.</li>
+                        <li><strong>Desative links abertos</strong> que não estão mais em uso para reduzir convites circulando por aí.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h2>Perguntas frequentes</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>Como revogar um acesso que compartilhei no AuthPack?</summary>
+                            <p>Nas opções de compartilhamento do pacote, você pode desativar o link geral para impedir novas ativações ou revogar um link único específico. O acesso é cortado sem precisar trocar nenhuma senha.</p>
+                        </details>
+                        <details>
+                            <summary>Preciso trocar a senha para tirar o acesso de alguém?</summary>
+                            <p>Não. Como o que foi compartilhado é a sessão e não a credencial, basta revogar o link ou o acesso. A senha original permanece a mesma e os outros membros não são afetados.</p>
+                        </details>
+                        <details>
+                            <summary>Por que a revogação é tão importante?</summary>
+                            <p>Porque conceder acesso é só metade do trabalho. Sem uma forma simples de retirar o acesso, credenciais ficam ativas para pessoas que já saíram, ampliando o risco. A revogação fácil é o que mantém o controle ao longo do tempo.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="article-cta">
+                    <h3>Tenha o controle do acesso na mão</h3>
+                    <p>Compartilhe pela sessão e corte o acesso quando quiser — sem trocar senha.</p>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">Adicionar o AuthPack ao Chrome</a>
+                </div>
+
+                <div class="article-foot">
+                    <a class="back" href="/blog/">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                        Voltar ao blog
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="AuthPack" style="display:block">
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

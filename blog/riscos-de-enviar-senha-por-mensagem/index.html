@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Os riscos de mandar senha por WhatsApp ou Slack (e o que fazer no lugar) | AuthPack</title>
+    <meta name="description"
+        content="Enviar senha por WhatsApp, Slack ou e-mail parece prático, mas deixa a credencial exposta para sempre. Entenda os riscos e a alternativa: compartilhar a sessão, não a senha.">
+    <meta name="keywords"
+        content="enviar senha por whatsapp, mandar senha por mensagem, compartilhar senha slack, riscos de compartilhar senha, segurança de senha, AuthPack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Os riscos de mandar senha por WhatsApp ou Slack (e o que fazer no lugar)">
+    <meta property="og:description"
+        content="Enviar senha por mensagem deixa a credencial exposta para sempre. Entenda os riscos e a alternativa: compartilhar a sessão, não a senha.">
+    <meta property="og:url" content="https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="article:published_time" content="2026-06-30">
+    <meta property="article:author" content="Equipe AuthPack">
+    <meta property="article:section" content="Segurança">
+    <meta property="article:tag" content="segurança">
+    <meta property="article:tag" content="senhas">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Os riscos de mandar senha por WhatsApp ou Slack">
+    <meta name="twitter:description"
+        content="Enviar senha por mensagem deixa a credencial exposta para sempre. Veja a alternativa segura.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Article + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/#article",
+          "headline": "Os riscos de mandar senha por WhatsApp ou Slack (e o que fazer no lugar)",
+          "description": "Por que enviar senha por mensagem é arriscado e qual a alternativa segura: compartilhar a sessão autenticada em vez da credencial.",
+          "image": "https://authpack.co/assets/images/landing-image-neutral.png",
+          "datePublished": "2026-06-30",
+          "dateModified": "2026-06-30",
+          "inLanguage": "pt-BR",
+          "author": { "@type": "Organization", "name": "Equipe AuthPack", "url": "https://authpack.co/" },
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "mainEntityOfPage": { "@type": "WebPage", "@id": "https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/" },
+          "keywords": "enviar senha por whatsapp, mandar senha por mensagem, riscos de compartilhar senha, AuthPack",
+          "about": { "@type": "SoftwareApplication", "name": "AuthPack", "applicationCategory": "BusinessApplication", "operatingSystem": "Chrome" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" },
+            { "@type": "ListItem", "position": 3, "name": "Os riscos de mandar senha por WhatsApp ou Slack", "item": "https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "É perigoso mandar senha por WhatsApp?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sim. Mesmo com criptografia no transporte, a senha fica armazenada no histórico de quem recebeu, pode ser vista por backups, prints e dispositivos compartilhados, e continua válida indefinidamente. Você perde o controle sobre quem tem a credencial." }
+            },
+            {
+              "@type": "Question",
+              "name": "E se eu apagar a mensagem depois de enviar a senha?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Apagar a mensagem não resolve. A pessoa já pode ter lido, copiado, feito print ou guardado a senha em outro lugar. Uma vez exposta, a credencial deve ser considerada comprometida." }
+            },
+            {
+              "@type": "Question",
+              "name": "Qual a alternativa a enviar senha por mensagem?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Compartilhar a sessão autenticada em vez da senha. Com o AuthPack, a pessoa recebe o acesso já logado, sem nunca ver a credencial, e você pode revogar esse acesso a qualquer momento." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <nav class="breadcrumb" aria-label="Trilha de navegação">
+                <a href="/">Início</a><span class="sep">/</span>
+                <a href="/blog/">Blog</a><span class="sep">/</span>
+                <span>Riscos de mandar senha por mensagem</span>
+            </nav>
+
+            <article>
+                <header class="article-header">
+                    <div class="post-meta">
+                        <span class="post-tag">Segurança</span>
+                        <time datetime="2026-06-30">30 de junho de 2026</time>
+                        <span>·</span>
+                        <span>6 min de leitura</span>
+                    </div>
+                    <h1>Os riscos de mandar senha por WhatsApp ou Slack (e o que fazer no lugar)</h1>
+                    <p class="lede">Colar a senha numa mensagem é o atalho mais comum — e um dos mais perigosos. A credencial parece "só uma mensagem", mas a partir dali ela escapa do seu controle e fica exposta por tempo indeterminado.</p>
+                    <div class="article-author">
+                        <img src="/assets/images/favicon-128x128.png" alt="AuthPack" width="40" height="40">
+                        <div>
+                            <div class="a-name">Equipe AuthPack</div>
+                            <div class="a-role">Segurança e compartilhamento de acesso</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="prose">
+                    <p>"Login é esse, senha é aquela." A mensagem sai em segundos e o problema parece resolvido. Mas mandar uma senha por WhatsApp, Slack, Telegram, e-mail ou qualquer chat tem um efeito que poucos percebem na hora: a credencial deixa de ser sua e passa a existir, em texto puro, em lugares que você não controla mais.</p>
+
+                    <div class="callout">
+                        <div class="callout-label">Em uma linha</div>
+                        <p style="margin:0">O risco não é a mensagem ser interceptada no caminho — é a senha <strong>ficar parada</strong> em históricos, backups, prints e telas, válida para sempre, fora do seu alcance.</p>
+                    </div>
+
+                    <h2>O que realmente acontece quando você manda uma senha</h2>
+                    <ul>
+                        <li><strong>Ela fica no histórico.</strong> A mensagem permanece no aparelho de quem recebeu, em backups na nuvem e, muitas vezes, sincronizada em outros dispositivos da pessoa.</li>
+                        <li><strong>Vira print e cópia.</strong> Um print, um "copiar e colar" para um bloco de notas, e a senha se multiplica em lugares que ninguém rastreia.</li>
+                        <li><strong>Telas e notificações.</strong> A credencial aparece na tela de bloqueio, em telas compartilhadas em reunião, em notebooks abertos.</li>
+                        <li><strong>Não tem prazo de validade.</strong> Diferente de um acesso temporário, a senha continua funcionando até alguém lembrar de trocá-la — o que raramente acontece.</li>
+                        <li><strong>Acesso que não sai.</strong> Quando a pessoa sai do time ou do projeto, ela ainda tem a senha. Para revogar, é preciso trocar e reavisar todos.</li>
+                    </ul>
+
+                    <blockquote>Apagar a mensagem depois não desfaz nada. Se a senha foi vista uma vez, considere-a comprometida.</blockquote>
+
+                    <h2>"Mas o WhatsApp não é criptografado?"</h2>
+                    <p>É — e isso protege a mensagem <em>em trânsito</em>, contra quem tentaria interceptá-la no caminho. O ponto cego é o que acontece <strong>depois</strong> que ela chega: a senha vira um dado em repouso, armazenado no dispositivo do destinatário e em backups. A criptografia do transporte não te dá controle nenhum sobre cópias, prints ou sobre revogar o acesso mais tarde.</p>
+
+                    <h2>O que fazer no lugar: compartilhar a sessão, não a senha</h2>
+                    <p>A alternativa não é "mandar a senha de um jeito mais escondido" — é parar de mandar a senha. Em vez da credencial, você compartilha a <strong>sessão autenticada</strong>: o estado de "já estou logado". Quem recebe entra na conta sem nunca ver a senha, e você mantém o controle de ligar e desligar esse acesso. É o que o <a href="/blog/o-que-e-o-authpack/">AuthPack</a> faz:</p>
+                    <ol>
+                        <li>Você faz login no serviço uma vez e <a href="/blog/como-adicionar-sessao-a-um-pacote/">guarda a sessão em um pacote</a>.</li>
+                        <li><a href="/blog/como-compartilhar-um-pacote/">Compartilha o pacote</a> por um link — não a senha.</li>
+                        <li>A pessoa abre logada, <strong>sem ver a credencial</strong>.</li>
+                        <li>Quando não precisar mais, você <a href="/blog/como-revogar-um-acesso-compartilhado/">revoga o acesso</a> sem trocar senha nenhuma.</li>
+                    </ol>
+
+                    <h2>Se você realmente precisa enviar uma senha agora</h2>
+                    <p>Em uma emergência, sem ferramenta à mão, reduza o dano: evite mandar login e senha na mesma mensagem, use um canal que permita apagar, troque a senha logo depois que a pessoa entrar, e ative 2FA na conta. São paliativos — a solução de verdade é não depender de enviar a credencial. Veja também <a href="/blog/como-compartilhar-acesso-sem-senha/">como compartilhar acesso sem compartilhar a senha</a>.</p>
+
+                    <hr>
+
+                    <h2>Perguntas frequentes</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>É perigoso mandar senha por WhatsApp?</summary>
+                            <p>Sim. Mesmo com criptografia no transporte, a senha fica armazenada no histórico de quem recebeu, pode ser vista por backups, prints e dispositivos compartilhados, e continua válida indefinidamente. Você perde o controle sobre quem tem a credencial.</p>
+                        </details>
+                        <details>
+                            <summary>E se eu apagar a mensagem depois de enviar a senha?</summary>
+                            <p>Apagar a mensagem não resolve. A pessoa já pode ter lido, copiado, feito print ou guardado a senha em outro lugar. Uma vez exposta, a credencial deve ser considerada comprometida.</p>
+                        </details>
+                        <details>
+                            <summary>Qual a alternativa a enviar senha por mensagem?</summary>
+                            <p>Compartilhar a sessão autenticada em vez da senha. Com o AuthPack, a pessoa recebe o acesso já logado, sem nunca ver a credencial, e você pode revogar esse acesso a qualquer momento.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="article-cta">
+                    <h3>Pare de mandar senha por chat</h3>
+                    <p>Compartilhe o acesso, não a credencial — e revogue quando quiser.</p>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">Adicionar o AuthPack ao Chrome</a>
+                </div>
+
+                <div class="article-foot">
+                    <a class="back" href="/blog/">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                        Voltar ao blog
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="AuthPack" style="display:block">
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

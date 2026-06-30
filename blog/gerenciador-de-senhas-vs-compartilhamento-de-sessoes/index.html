@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Gerenciador de senhas vs. compartilhamento de sessões: qual usar | AuthPack</title>
+    <meta name="description"
+        content="Cofre de senhas ou compartilhamento de sessão? Entenda a diferença, quando cada um faz sentido e por que compartilhar a sessão resolve o que o gerenciador de senhas não resolve.">
+    <meta name="keywords"
+        content="gerenciador de senhas vs compartilhamento de sessões, cofre de senhas em equipe, compartilhar sessão, alternativa a cofre de senhas, AuthPack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Gerenciador de senhas vs. compartilhamento de sessões: qual usar">
+    <meta property="og:description"
+        content="A diferença entre cofre de senhas e compartilhamento de sessão, e quando cada um faz sentido para compartilhar acesso em equipe.">
+    <meta property="og:url" content="https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="article:published_time" content="2026-06-30">
+    <meta property="article:author" content="Equipe AuthPack">
+    <meta property="article:section" content="Segurança">
+    <meta property="article:tag" content="gerenciador de senhas">
+    <meta property="article:tag" content="compartilhamento de sessões">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Gerenciador de senhas vs. compartilhamento de sessões">
+    <meta name="twitter:description"
+        content="A diferença entre cofre de senhas e compartilhamento de sessão, e quando cada um faz sentido.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Article + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/#article",
+          "headline": "Gerenciador de senhas vs. compartilhamento de sessões: qual usar",
+          "description": "A diferença entre cofre de senhas e compartilhamento de sessão, quando cada um faz sentido e por que compartilhar a sessão cobre lacunas do gerenciador de senhas.",
+          "image": "https://authpack.co/assets/images/landing-image-neutral.png",
+          "datePublished": "2026-06-30",
+          "dateModified": "2026-06-30",
+          "inLanguage": "pt-BR",
+          "author": { "@type": "Organization", "name": "Equipe AuthPack", "url": "https://authpack.co/" },
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "mainEntityOfPage": { "@type": "WebPage", "@id": "https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/" },
+          "keywords": "gerenciador de senhas vs compartilhamento de sessões, cofre de senhas, compartilhar sessão, AuthPack",
+          "about": { "@type": "SoftwareApplication", "name": "AuthPack", "applicationCategory": "BusinessApplication", "operatingSystem": "Chrome" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" },
+            { "@type": "ListItem", "position": 3, "name": "Gerenciador de senhas vs. compartilhamento de sessões", "item": "https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Qual a diferença entre gerenciador de senhas e compartilhamento de sessões?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Um gerenciador de senhas guarda e compartilha a credencial — a senha continua sendo a senha. O compartilhamento de sessões dá acesso ao estado já autenticado, sem revelar a credencial, e permite revogar o acesso sem trocar a senha." }
+            },
+            {
+              "@type": "Question",
+              "name": "Compartilhamento de sessões substitui o gerenciador de senhas?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não totalmente. O gerenciador de senhas é ótimo para guardar suas próprias credenciais com segurança. O compartilhamento de sessões resolve melhor o caso de dar acesso a outras pessoas sem expor a senha. Eles se complementam." }
+            },
+            {
+              "@type": "Question",
+              "name": "Quando devo usar compartilhamento de sessões?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sempre que precisar dar acesso a uma conta para um time ou pessoa e o serviço não tiver multiusuário decente, especialmente quando você quer poder cortar esse acesso depois sem trocar a senha de todos." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <nav class="breadcrumb" aria-label="Trilha de navegação">
+                <a href="/">Início</a><span class="sep">/</span>
+                <a href="/blog/">Blog</a><span class="sep">/</span>
+                <span>Gerenciador de senhas vs. compartilhamento de sessões</span>
+            </nav>
+
+            <article>
+                <header class="article-header">
+                    <div class="post-meta">
+                        <span class="post-tag">Segurança</span>
+                        <time datetime="2026-06-30">30 de junho de 2026</time>
+                        <span>·</span>
+                        <span>6 min de leitura</span>
+                    </div>
+                    <h1>Gerenciador de senhas vs. compartilhamento de sessões: qual usar</h1>
+                    <p class="lede">São ferramentas que parecem competir, mas resolvem problemas diferentes. Entender essa diferença evita escolher a solução errada — e ajuda a usar as duas onde cada uma brilha.</p>
+                    <div class="article-author">
+                        <img src="/assets/images/favicon-128x128.png" alt="AuthPack" width="40" height="40">
+                        <div>
+                            <div class="a-name">Equipe AuthPack</div>
+                            <div class="a-role">Segurança e compartilhamento de acesso</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="prose">
+                    <p>Quando o assunto é "compartilhar acesso com segurança", a primeira resposta costuma ser "use um gerenciador de senhas". É um bom conselho — mas incompleto. Cofres de senha e compartilhamento de sessões operam em camadas diferentes, e confundi-los leva a frustração: você adota um cofre esperando resolver o compartilhamento de uma conta de equipe e descobre que a credencial continua exposta.</p>
+
+                    <h2>O que cada um realmente faz</h2>
+
+                    <h3>Gerenciador de senhas (cofre)</h3>
+                    <p>Guarda credenciais — usuário e senha — de forma criptografada e organizada. Bons cofres preenchem logins automaticamente e permitem "compartilhar" um item com a equipe. Mas a unidade que ele manipula <strong>é a senha</strong>. Mesmo quando o cofre esconde o texto, quem tem o item geralmente consegue usar ou revelar a credencial real. A conta continua sendo "de todos".</p>
+
+                    <h3>Compartilhamento de sessões</h3>
+                    <p>Compartilha o <strong>estado autenticado</strong> — o "já estou logado" — em vez da credencial. Quem recebe entra na conta sem nunca ver a senha. O acesso é concedido e <strong>revogado</strong> sob controle, sem mexer na senha original. É a abordagem do <a href="/blog/o-que-e-o-authpack/">AuthPack</a>.</p>
+
+                    <h2>Comparação direta</h2>
+                    <ul>
+                        <li><strong>O que é compartilhado:</strong> cofre → a senha; sessão → o acesso já autenticado.</li>
+                        <li><strong>A pessoa vê a credencial?</strong> cofre → muitas vezes sim; sessão → não.</li>
+                        <li><strong>Revogar acesso de uma pessoa:</strong> cofre → costuma exigir trocar a senha; sessão → corta o acesso sem trocar nada.</li>
+                        <li><strong>Serviços sem multiusuário:</strong> cofre → continua sendo conta única compartilhada; sessão → resolve bem, é o cenário ideal.</li>
+                        <li><strong>Melhor para:</strong> cofre → guardar suas próprias senhas; sessão → dar acesso a terceiros sem expor a credencial.</li>
+                    </ul>
+
+                    <blockquote>O cofre protege a senha. O compartilhamento de sessões evita ter que entregá-la. Não é "um ou outro" — é saber qual problema você está resolvendo.</blockquote>
+
+                    <h2>Quando usar cada um</h2>
+                    <p><strong>Use um gerenciador de senhas</strong> para guardar com segurança as credenciais que são suas, gerar senhas fortes e preencher logins. É a base da sua higiene de senhas pessoais.</p>
+                    <p><strong>Use compartilhamento de sessões</strong> quando precisar <a href="/blog/como-dar-acesso-ao-time-sem-senha/">dar acesso a uma conta para outras pessoas</a> — um time, um cliente, um grupo — especialmente em serviços sem login multiusuário e quando você quer poder <a href="/blog/como-revogar-um-acesso-compartilhado/">cortar o acesso depois</a> sem afetar o resto.</p>
+
+                    <div class="callout">
+                        <div class="callout-label">Resumo</div>
+                        <p style="margin:0">Eles se complementam. Guarde suas senhas no cofre; compartilhe acesso com outras pessoas pela sessão. O erro é usar o cofre para o que ele não foi feito: distribuir uma conta sem expor a credencial.</p>
+                    </div>
+
+                    <hr>
+
+                    <h2>Perguntas frequentes</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>Qual a diferença entre gerenciador de senhas e compartilhamento de sessões?</summary>
+                            <p>Um gerenciador de senhas guarda e compartilha a credencial — a senha continua sendo a senha. O compartilhamento de sessões dá acesso ao estado já autenticado, sem revelar a credencial, e permite revogar o acesso sem trocar a senha.</p>
+                        </details>
+                        <details>
+                            <summary>Compartilhamento de sessões substitui o gerenciador de senhas?</summary>
+                            <p>Não totalmente. O gerenciador de senhas é ótimo para guardar suas próprias credenciais com segurança. O compartilhamento de sessões resolve melhor o caso de dar acesso a outras pessoas sem expor a senha. Eles se complementam.</p>
+                        </details>
+                        <details>
+                            <summary>Quando devo usar compartilhamento de sessões?</summary>
+                            <p>Sempre que precisar dar acesso a uma conta para um time ou pessoa e o serviço não tiver multiusuário decente, especialmente quando você quer poder cortar esse acesso depois sem trocar a senha de todos.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="article-cta">
+                    <h3>Compartilhe acesso sem entregar a senha</h3>
+                    <p>Use a sessão, não a credencial — e revogue quando quiser.</p>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">Adicionar o AuthPack ao Chrome</a>
+                </div>
+
+                <div class="article-foot">
+                    <a class="back" href="/blog/">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                        Voltar ao blog
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="AuthPack" style="display:block">
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
