@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Como adicionar uma sessão a um pacote no AuthPack (passo a passo) | AuthPack</title>
+    <meta name="description"
+        content="Tutorial passo a passo para adicionar uma sessão a um pacote no AuthPack: instale a extensão, abra o serviço já logado, capture a sessão e nomeie. Em 7 passos.">
+    <meta name="keywords"
+        content="adicionar sessão AuthPack, como adicionar sessão a um pacote, capturar sessão AuthPack, tutorial AuthPack, adicionar acesso ao pacote, extensão AuthPack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Como adicionar uma sessão a um pacote no AuthPack">
+    <meta property="og:description"
+        content="Passo a passo para capturar uma sessão autenticada e adicioná-la a um pacote no AuthPack, em 7 passos simples.">
+    <meta property="og:url" content="https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="article:published_time" content="2026-06-30">
+    <meta property="article:author" content="Equipe AuthPack">
+    <meta property="article:section" content="Tutoriais">
+    <meta property="article:tag" content="AuthPack">
+    <meta property="article:tag" content="adicionar sessão">
+    <meta property="article:tag" content="tutorial">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Como adicionar uma sessão a um pacote no AuthPack">
+    <meta name="twitter:description"
+        content="Passo a passo para capturar uma sessão autenticada e adicioná-la a um pacote no AuthPack.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Article + HowTo + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#article",
+          "headline": "Como adicionar uma sessão a um pacote no AuthPack",
+          "description": "Tutorial passo a passo para capturar uma sessão autenticada e adicioná-la a um pacote no AuthPack, usando a extensão do navegador.",
+          "image": "https://authpack.co/assets/images/landing-image-neutral.png",
+          "datePublished": "2026-06-30",
+          "dateModified": "2026-06-30",
+          "inLanguage": "pt-BR",
+          "author": { "@type": "Organization", "name": "Equipe AuthPack", "url": "https://authpack.co/" },
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "mainEntityOfPage": { "@type": "WebPage", "@id": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/" },
+          "keywords": "adicionar sessão AuthPack, como adicionar sessão a um pacote, capturar sessão, tutorial AuthPack",
+          "about": { "@type": "SoftwareApplication", "name": "AuthPack", "applicationCategory": "BusinessApplication", "operatingSystem": "Chrome" }
+        },
+        {
+          "@type": "HowTo",
+          "name": "Como adicionar uma sessão a um pacote no AuthPack",
+          "description": "Passo a passo para capturar a sessão autenticada de um serviço e guardá-la em um pacote do AuthPack.",
+          "inLanguage": "pt-BR",
+          "totalTime": "PT3M",
+          "tool": [
+            { "@type": "HowToTool", "name": "Extensão AuthPack para Chrome" }
+          ],
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Instalar a extensão", "text": "Instale a extensão do AuthPack no seu navegador a partir da Chrome Web Store.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-1" },
+            { "@type": "HowToStep", "position": 2, "name": "Abrir o serviço já logado", "text": "Navegue até o site cuja sessão você quer guardar, já autenticado na sua conta.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-2" },
+            { "@type": "HowToStep", "position": 3, "name": "Clicar no ícone do AuthPack", "text": "Com o site aberto, clique no ícone da extensão na barra do navegador para abrir a sua coleção de pacotes.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-3" },
+            { "@type": "HowToStep", "position": 4, "name": "Escolher o pacote e abrir o menu", "text": "Encontre o pacote onde a sessão deve entrar e clique nos três pontinhos para abrir o menu.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-4" },
+            { "@type": "HowToStep", "position": 5, "name": "Clicar em Nova sessão", "text": "No menu, escolha Nova sessão. O AuthPack captura a sessão do site que está aberto.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-5" },
+            { "@type": "HowToStep", "position": 6, "name": "Dar um nome à sessão", "text": "Escolha um nome que ajude a reconhecer a sessão depois e confirme em Ok.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-6" },
+            { "@type": "HowToStep", "position": 7, "name": "Pronto", "text": "A sessão já faz parte do pacote. Repita em outros sites para completar o pacote e depois compartilhe.", "url": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/#passo-7" }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" },
+            { "@type": "ListItem", "position": 3, "name": "Como adicionar uma sessão a um pacote no AuthPack", "item": "https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Preciso da extensão para adicionar uma sessão?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sim. A captura da sessão acontece no navegador através da extensão do AuthPack. É ela que lê a sessão autenticada do site aberto e a guarda no pacote escolhido." }
+            },
+            {
+              "@type": "Question",
+              "name": "O AuthPack guarda a minha senha ao adicionar uma sessão?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não. O AuthPack captura a sessão já autenticada — o estado de \"já estou logado\" — e não a sua senha. Quem recebe o acesso entra logado sem nunca ver a credencial." }
+            },
+            {
+              "@type": "Question",
+              "name": "Quantas sessões cabem em um pacote?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Um pacote pode reunir várias sessões de serviços diferentes. O contador ao lado do pacote (por exemplo 1/5) mostra quantas sessões já foram adicionadas em relação ao limite daquele pacote." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <nav class="breadcrumb" aria-label="Trilha de navegação">
+                <a href="/">Início</a><span class="sep">/</span>
+                <a href="/blog/">Blog</a><span class="sep">/</span>
+                <span>Adicionar uma sessão a um pacote</span>
+            </nav>
+
+            <article>
+                <header class="article-header">
+                    <div class="post-meta">
+                        <span class="post-tag">Tutorial</span>
+                        <time datetime="2026-06-30">30 de junho de 2026</time>
+                        <span>·</span>
+                        <span>4 min de leitura</span>
+                    </div>
+                    <h1>Como adicionar uma sessão a um pacote no AuthPack</h1>
+                    <p class="lede">Adicionar uma sessão a um pacote é o coração do AuthPack: é assim que você guarda o acesso a um serviço para usar depois ou compartilhar com a equipe. O processo leva menos de um minuto e cabe em <strong>7 passos</strong>.</p>
+                    <div class="article-author">
+                        <img src="/assets/images/favicon-128x128.png" alt="AuthPack" width="40" height="40">
+                        <div>
+                            <div class="a-name">Equipe AuthPack</div>
+                            <div class="a-role">Tutoriais do produto</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="prose">
+                    <p>No AuthPack, uma <strong>sessão</strong> é o acesso já autenticado a um serviço — o estado de "já estou logado". Em vez de anotar e-mail e senha, você captura essa sessão e a guarda dentro de um <a href="/blog/o-que-e-o-authpack/">pacote</a>. Depois é só usar quando precisar ou compartilhar com quem você autorizar, <a href="/blog/como-compartilhar-acesso-sem-senha/">sem revelar a credencial</a>.</p>
+
+                    <div class="callout">
+                        <div class="callout-label">Antes de começar</div>
+                        <p style="margin:0">Você precisa de duas coisas: a <strong>extensão do AuthPack</strong> instalada e já ter criado pelo menos <strong>um pacote</strong> na sua coleção. Se ainda não tem um pacote, crie um primeiro — o tutorial abaixo continua de onde o pacote já existe.</p>
+                    </div>
+
+                    <h2>Passo a passo</h2>
+
+                    <h3 id="passo-1">Passo 1 · Instale a extensão</h3>
+                    <p>Adicione a extensão do AuthPack ao seu navegador pela <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener">Chrome Web Store</a>. É rápido e gratuito. A extensão é a interface por onde as sessões são capturadas e usadas.</p>
+
+                    <h3 id="passo-2">Passo 2 · Abra o serviço que quer adicionar</h3>
+                    <p>Navegue até o site cuja sessão você quer guardar — <strong>já logado na sua conta</strong>. É exatamente essa sessão autenticada que vai entrar no pacote, então certifique-se de estar dentro do serviço antes de continuar.</p>
+
+                    <h3 id="passo-3">Passo 3 · Clique no ícone do AuthPack</h3>
+                    <p>Com o site aberto, clique no ícone da extensão na barra do navegador. O AuthPack abre mostrando a sua <strong>coleção de pacotes</strong>.</p>
+
+                    <h3 id="passo-4">Passo 4 · Escolha o pacote e abra o menu</h3>
+                    <p>Na sua coleção, encontre o pacote onde a sessão deve entrar e clique nos <strong>três pontinhos</strong> (···) dele. Isso abre o menu de ações do pacote.</p>
+
+                    <h3 id="passo-5">Passo 5 · Clique em "Nova sessão"</h3>
+                    <p>No menu que abriu, escolha <strong>Nova sessão</strong>. O AuthPack captura automaticamente a sessão do site que está aberto naquele momento.</p>
+
+                    <h3 id="passo-6">Passo 6 · Dê um nome à sessão</h3>
+                    <p>Escolha um nome que ajude a reconhecê-la depois — como "Minha conta" ou "Conta do time" — e confirme em <strong>Ok</strong>. Esse nome é só um rótulo para você e a equipe identificarem a sessão dentro do pacote.</p>
+
+                    <h3 id="passo-7">Passo 7 · Pronto!</h3>
+                    <p>A sessão já faz parte do pacote e aparece na lista, com o contador atualizado (por exemplo, <strong>1/5</strong>). Repita os passos 2 a 6 em outros sites para adicionar mais sessões ao mesmo pacote — e, quando ele estiver completo, é só compartilhar.</p>
+
+                    <blockquote>Cada pacote pode reunir várias sessões de serviços diferentes. Pense nele como uma pasta de acessos: você junta tudo o que faz sentido andar junto e distribui de uma vez.</blockquote>
+
+                    <h2>O que fazer depois</h2>
+                    <ul>
+                        <li><strong>Adicione mais sessões</strong> ao mesmo pacote, repetindo o fluxo em cada serviço.</li>
+                        <li><strong>Compartilhe o pacote</strong> com quem você autorizar — eles entram logados sem ver a senha.</li>
+                        <li><strong>Revogue o acesso</strong> quando alguém não precisar mais, sem trocar credencial nenhuma.</li>
+                    </ul>
+
+                    <hr>
+
+                    <h2>Perguntas frequentes</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>Preciso da extensão para adicionar uma sessão?</summary>
+                            <p>Sim. A captura da sessão acontece no navegador através da extensão do AuthPack. É ela que lê a sessão autenticada do site aberto e a guarda no pacote escolhido.</p>
+                        </details>
+                        <details>
+                            <summary>O AuthPack guarda a minha senha ao adicionar uma sessão?</summary>
+                            <p>Não. O AuthPack captura a sessão já autenticada — o estado de "já estou logado" — e não a sua senha. Quem recebe o acesso entra logado sem nunca ver a credencial.</p>
+                        </details>
+                        <details>
+                            <summary>Quantas sessões cabem em um pacote?</summary>
+                            <p>Um pacote pode reunir várias sessões de serviços diferentes. O contador ao lado do pacote (por exemplo 1/5) mostra quantas sessões já foram adicionadas em relação ao limite daquele pacote.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="article-cta">
+                    <h3>Comece a guardar seus acessos</h3>
+                    <p>Instale a extensão e adicione sua primeira sessão a um pacote em segundos.</p>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">Adicionar o AuthPack ao Chrome</a>
+                </div>
+
+                <div class="article-foot">
+                    <a class="back" href="/blog/">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                        Voltar ao blog
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="AuthPack" style="display:block">
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

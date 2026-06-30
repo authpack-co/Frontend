@@ -43,6 +43,69 @@
   </url>
 
   <url>
+    <loc>https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-criar-seu-primeiro-pacote/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-compartilhar-um-pacote/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-usar-um-acesso-recebido/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-dar-acesso-ao-time-sem-senha/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/compartilhar-acessos-em-hackathons/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-revogar-um-acesso-compartilhado/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://authpack.co/blog/como-compartilhar-acesso-sem-senha/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>

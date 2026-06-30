@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== Primary SEO ===== -->
+    <title>Compartilhar acessos em hackathons: como o time usa as mesmas contas | AuthPack</title>
+    <meta name="description"
+        content="Em hackathons o time precisa das mesmas contas de API, deploy e ferramentas sob pressão de tempo. Veja como compartilhar acessos rápido e sem espalhar senhas com o AuthPack.">
+    <meta name="keywords"
+        content="compartilhar acesso hackathon, contas compartilhadas hackathon, acesso em equipe hackathon, compartilhar API key time, ferramentas hackathon, AuthPack">
+    <meta name="author" content="Equipe AuthPack">
+    <link rel="canonical" href="https://authpack.co/blog/compartilhar-acessos-em-hackathons/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="Compartilhar acessos em hackathons: como o time usa as mesmas contas">
+    <meta property="og:description"
+        content="Como dar a todo o time acesso às mesmas contas e ferramentas durante um hackathon, sem perder tempo nem espalhar senhas.">
+    <meta property="og:url" content="https://authpack.co/blog/compartilhar-acessos-em-hackathons/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="article:published_time" content="2026-06-30">
+    <meta property="article:author" content="Equipe AuthPack">
+    <meta property="article:section" content="Guias">
+    <meta property="article:tag" content="hackathon">
+    <meta property="article:tag" content="equipes">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Compartilhar acessos em hackathons">
+    <meta name="twitter:description"
+        content="Como dar a todo o time acesso às mesmas contas durante um hackathon, sem perder tempo nem espalhar senhas.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/blog/blog.css">
+
+    <!-- ===== Structured data: Article + Breadcrumb + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "@id": "https://authpack.co/blog/compartilhar-acessos-em-hackathons/#article",
+          "headline": "Compartilhar acessos em hackathons: como o time usa as mesmas contas",
+          "description": "Como dar a todo o time acesso às mesmas contas e ferramentas durante um hackathon, sem perder tempo nem espalhar senhas.",
+          "image": "https://authpack.co/assets/images/landing-image-neutral.png",
+          "datePublished": "2026-06-30",
+          "dateModified": "2026-06-30",
+          "inLanguage": "pt-BR",
+          "author": { "@type": "Organization", "name": "Equipe AuthPack", "url": "https://authpack.co/" },
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "mainEntityOfPage": { "@type": "WebPage", "@id": "https://authpack.co/blog/compartilhar-acessos-em-hackathons/" },
+          "keywords": "compartilhar acesso hackathon, contas compartilhadas hackathon, acesso em equipe, AuthPack",
+          "about": { "@type": "SoftwareApplication", "name": "AuthPack", "applicationCategory": "BusinessApplication", "operatingSystem": "Chrome" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Início", "item": "https://authpack.co/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://authpack.co/blog/" },
+            { "@type": "ListItem", "position": 3, "name": "Compartilhar acessos em hackathons", "item": "https://authpack.co/blog/compartilhar-acessos-em-hackathons/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Como o time compartilha as mesmas contas em um hackathon?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Uma pessoa faz login nas ferramentas necessárias e guarda as sessões em um pacote do AuthPack. Em seguida compartilha esse pacote por um link com o time. Todos passam a usar as mesmas contas, já logados, sem que as senhas circulem pelo grupo." }
+            },
+            {
+              "@type": "Question",
+              "name": "É seguro compartilhar acesso em um hackathon?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Mais seguro do que colar senhas no chat do time. Compartilhando a sessão em vez da credencial, ninguém vê a senha e o acesso pode ser revogado quando o evento terminar." }
+            },
+            {
+              "@type": "Question",
+              "name": "Dá para remover o acesso de todos quando o hackathon acabar?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sim. Basta desativar o link de convite ou revogar o acesso do pacote. Como nenhuma senha foi compartilhada, o acesso some sem precisar trocar credenciais." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ========== -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="AuthPack" style="display:block">
+                <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/#como">Como funciona</a>
+                <a href="/#recursos">Recursos</a>
+                <a href="/#equipes">Para equipes</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <div class="nav-visitor">
+                    <a href="/pages/login/" class="btn btn-ghost">Entrar</a>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5h8.5M5.4 17.5l4.2-7.2M12.6 21.5l4.2-7.2"/></svg>
+                        Adicionar ao Chrome
+                    </a>
+                </div>
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main class="blog-main">
+        <div class="blog-wrap">
+            <nav class="breadcrumb" aria-label="Trilha de navegação">
+                <a href="/">Início</a><span class="sep">/</span>
+                <a href="/blog/">Blog</a><span class="sep">/</span>
+                <span>Compartilhar acessos em hackathons</span>
+            </nav>
+
+            <article>
+                <header class="article-header">
+                    <div class="post-meta">
+                        <span class="post-tag">Guia</span>
+                        <time datetime="2026-06-30">30 de junho de 2026</time>
+                        <span>·</span>
+                        <span>5 min de leitura</span>
+                    </div>
+                    <h1>Compartilhar acessos em hackathons: como o time usa as mesmas contas</h1>
+                    <p class="lede">Em um hackathon, o relógio é o inimigo. O time precisa entrar nas mesmas contas de deploy, API e ferramentas <strong>ao mesmo tempo</strong> — e ninguém quer perder 20 minutos copiando senha no chat. Dá para resolver isso em um link.</p>
+                    <div class="article-author">
+                        <img src="/assets/images/favicon-128x128.png" alt="AuthPack" width="40" height="40">
+                        <div>
+                            <div class="a-name">Equipe AuthPack</div>
+                            <div class="a-role">Compartilhamento de acesso para times</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="prose">
+                    <p>Hackathon é um ambiente específico: time montado na hora, prazo curtíssimo e uma pilha de ferramentas que todo mundo precisa acessar simultaneamente — a conta de deploy, o provedor de e-mail de teste, o painel da API patrocinadora, a conta de design, o banco de dados na nuvem. O reflexo é mandar tudo no grupo: "login é X, senha é Y". Funciona, mas cria bagunça e risco que sobram depois que o evento acaba.</p>
+
+                    <div class="callout">
+                        <div class="callout-label">A ideia central</div>
+                        <p style="margin:0">Junte todas as contas do projeto em <strong>um pacote</strong> e compartilhe o pacote com o time por um link. Todos entram logados nas mesmas ferramentas — e, no fim do evento, você desliga o acesso de uma vez.</p>
+                    </div>
+
+                    <h2>Por que o "manda no grupo" atrapalha em hackathon</h2>
+                    <ul>
+                        <li><strong>Tempo perdido.</strong> Cada pessoa logando manualmente em cinco serviços é tempo que não vira código.</li>
+                        <li><strong>Senhas espalhadas.</strong> No fim, as credenciais ficam no histórico de um chat que ninguém apaga.</li>
+                        <li><strong>2FA travando.</strong> O segundo fator chega no celular de uma pessoa só, e o time inteiro espera.</li>
+                        <li><strong>Acesso que sobra.</strong> Depois do evento, todo mundo ainda tem as senhas — inclusive de contas pessoais que alguém emprestou.</li>
+                    </ul>
+
+                    <h2>O fluxo rápido com o AuthPack</h2>
+                    <p>O <a href="/blog/o-que-e-o-authpack/">AuthPack</a> foi feito pra esse tipo de situação — compartilhar acesso rápido, sem revelar senha. No começo do hackathon:</p>
+                    <ol>
+                        <li>Uma pessoa do time faz login em cada ferramenta e <a href="/blog/como-adicionar-sessao-a-um-pacote/">guarda a sessão em um pacote</a> — por exemplo, um pacote chamado "Hackathon".</li>
+                        <li>Todas as contas do projeto ficam juntas nesse pacote.</li>
+                        <li>Ela <a href="/blog/como-compartilhar-um-pacote/">compartilha o pacote</a> por um link no grupo do time.</li>
+                        <li>Cada integrante abre o link, ativa, e passa a acessar todas as ferramentas — já logado, <strong>sem ver nenhuma senha</strong>.</li>
+                        <li>Acabou o hackathon? Você <a href="/blog/como-revogar-um-acesso-compartilhado/">desativa o link e revoga o acesso</a>. Pronto, ninguém mais entra.</li>
+                    </ol>
+
+                    <blockquote>O melhor momento para pensar em cortar o acesso é antes de compartilhá-lo. Com sessão em vez de senha, esse corte é um clique — não uma troca de senha em pânico no domingo à noite.</blockquote>
+
+                    <h2>Vale para além do hackathon</h2>
+                    <p>O mesmo padrão serve para qualquer grupo temporário que precisa das mesmas contas: um trabalho de faculdade em equipe, um projeto entre amigos, um mutirão de fim de semana, uma maratona de programação. Sempre que mais de uma pessoa precisa do mesmo acesso por um tempo limitado, compartilhar a sessão é mais rápido e mais limpo do que passar a senha.</p>
+
+                    <hr>
+
+                    <h2>Perguntas frequentes</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>Como o time compartilha as mesmas contas em um hackathon?</summary>
+                            <p>Uma pessoa faz login nas ferramentas necessárias e guarda as sessões em um pacote do AuthPack. Em seguida compartilha esse pacote por um link com o time. Todos passam a usar as mesmas contas, já logados, sem que as senhas circulem pelo grupo.</p>
+                        </details>
+                        <details>
+                            <summary>É seguro compartilhar acesso em um hackathon?</summary>
+                            <p>Mais seguro do que colar senhas no chat do time. Compartilhando a sessão em vez da credencial, ninguém vê a senha e o acesso pode ser revogado quando o evento terminar.</p>
+                        </details>
+                        <details>
+                            <summary>Dá para remover o acesso de todos quando o hackathon acabar?</summary>
+                            <p>Sim. Basta desativar o link de convite ou revogar o acesso do pacote. Como nenhuma senha foi compartilhada, o acesso some sem precisar trocar credenciais.</p>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="article-cta">
+                    <h3>Monte o acesso do time em minutos</h3>
+                    <p>Junte as contas do projeto em um pacote e compartilhe com o time num link.</p>
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-on-dark btn-lg">Adicionar o AuthPack ao Chrome</a>
+                </div>
+
+                <div class="article-foot">
+                    <a class="back" href="/blog/">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+                        Voltar ao blog
+                    </a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="AuthPack" style="display:block">
+                        <span class="wordmark" style="font-size:19px"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="/#como">Como funciona</a></li>
+                        <li><a href="/#recursos">Recursos</a></li>
+                        <li><a href="/#equipes">Para equipes</a></li>
+                        <li><a href="/blog/">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/pages/login/">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Segurança</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional ●</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
