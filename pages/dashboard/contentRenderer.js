@@ -2402,13 +2402,6 @@ function renderUserInfo(userInfo) {
         navAdmin.onclick = () => { window.location.href = '/pages/admin/'; };
     }
 
-    // Usuário comum: candidatura a parceiro/vendedor (abre o modal).
-    const navPartner = document.getElementById('nav-partner');
-    if (navPartner) {
-        navPartner.style.display = role === 'user' ? '' : 'none';
-        navPartner.onclick = () => { if (window.openPartnerModal) window.openPartnerModal(); };
-    }
-
     // Badge do perfil: papel (Vendedor/Admin) tem prioridade sobre Plus; senão
     // Plus para assinantes; usuário comum não recebe badge.
     let badgeLabel = null;

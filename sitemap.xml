@@ -21,6 +21,13 @@
   </url>
 
   <url>
+    <loc>https://authpack.co/parceiros/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://authpack.co/pages/promo-plus/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
@@ -44,6 +51,20 @@
 
   <url>
     <loc>https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-funciona-o-programa-de-parceiros-do-authpack/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://authpack.co/blog/como-vender-acessos-no-authpack/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
