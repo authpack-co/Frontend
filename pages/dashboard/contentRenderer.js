@@ -1019,7 +1019,7 @@ async function loadAccessOverview(pkg, activePreset) {
 async function loadPackageStats(pkg, period) {
     const contentPreset = document.querySelector('#package-details .preset-collection');
 
-    const newUsersStat = contentPreset.querySelector(".new-users-stat");
+    const usesStat = contentPreset.querySelector(".uses-stat");
     const sessionsStat = contentPreset.querySelector(".sessions-stat");
     const usersStat = contentPreset.querySelector(".users-stat");
 
@@ -1037,6 +1037,7 @@ async function loadPackageStats(pkg, period) {
 
             pkg.stats = {
                 totalSessions: pkg.sessions.length,
+                totalConnections: rawPackageAccessHistory.length,
                 totalUsers: pkg.users.length,
                 totalUsersOnline: 0,
                 sessionsOnline: {},
@@ -1102,9 +1103,7 @@ async function loadPackageStats(pkg, period) {
     // Stats container
     const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
 
-    // New users stats
-    const newUsersValue = newUsersStat.querySelector(".stat-metric-value");
-    const newUsersSub = newUsersStat.querySelector(".stat-metric-sublabel");
+    // Crescimento de novos usuários no período — usado no sublabel do card de Usuários
     const newUsersFiltered = filterByLastDays(pkg.stats.newUsersByDate, period);
     const newUsersCount = Object.values(newUsersFiltered).reduce((acc, curr) => acc + curr, 0);
 
@@ -1118,8 +1117,11 @@ async function loadPackageStats(pkg, period) {
         percentageIncrease = "0";
     }
 
-    newUsersValue.textContent = String(newUsersCount);
-    newUsersSub.textContent = `(+${percentageIncrease}%)`;
+    // Uses stats (total de conexões no histórico do pacote)
+    const usesValue = usesStat.querySelector(".stat-metric-value");
+    const usesSub = usesStat.querySelector(".stat-metric-sublabel");
+    usesValue.textContent = String(pkg.stats ? pkg.stats.totalConnections : 0);
+    usesSub.textContent = "";
 
     // Sessions stats
     const sessionsValue = sessionsStat.querySelector(".stat-metric-value");
@@ -1130,13 +1132,14 @@ async function loadPackageStats(pkg, period) {
         ? `/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
         : "";
 
-    // Users stats
+    // Users stats (+ crescimento no sublabel, em verde)
     const usersValue = usersStat.querySelector(".stat-metric-value");
     const usersSub = usersStat.querySelector(".stat-metric-sublabel");
     usersValue.textContent = String(totalUsers);
-    usersSub.textContent = isFreePlanBasicPkg
-        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage}`
-        : "";
+    const growthHtml = `<span class="stat-metric-growth">+${percentageIncrease}%</span>`;
+    usersSub.innerHTML = isFreePlanBasicPkg
+        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage} · ${growthHtml}`
+        : growthHtml;
 
     // Online users stat
     const onlineStat = contentPreset.querySelector(".online-users-stat");

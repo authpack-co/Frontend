@@ -1164,6 +1164,11 @@ span.coming-soon {
     min-height: 16px;
 }
 
+.stat-metric-growth {
+    color: var(--ap-success);
+    font-weight: 600;
+}
+
 .online-pulse-dot {
     width: 8px;
     height: 8px;
