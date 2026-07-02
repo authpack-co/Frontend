@@ -1164,6 +1164,11 @@ span.coming-soon {
     min-height: 16px;
 }
 
+.stat-metric-growth {
+    color: var(--ap-success);
+    font-weight: 600;
+}
+
 .online-pulse-dot {
     width: 8px;
     height: 8px;
@@ -1364,6 +1369,24 @@ span.coming-soon {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 160px;
+}
+
+/* Tag "Criador" ao lado do nome do dono no painel de usuários */
+.creator-tag {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ap-accent);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-accent-muted);
+    border-radius: 4px;
+    padding: 2px 6px;
+    line-height: 1;
+    user-select: none;
 }
 
 .item-icon {

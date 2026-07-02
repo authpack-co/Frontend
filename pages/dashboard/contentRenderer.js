@@ -366,27 +366,35 @@ function createUserElement(user) {
     info.appendChild(pictureWrapper);
     info.appendChild(nameEl);
 
+    // Criador do pacote: tag "Criador" ao lado do nome.
+    if (user.isCreator) {
+        const creatorTag = createElement('span', 'creator-tag', 'Criador');
+        info.appendChild(creatorTag);
+    }
+
     // ACTIONS wrapper (remove btn + details btn)
     const actions = createElement('div', 'item-actions');
 
-    // REMOVE BUTTON (inside management-actions)
-    const managementActions = createElement('div', 'management-actions');
-    const removeBtn = createElement('div', 'remove-user-access-btn actionBtn');
-    removeBtn.title = 'Remover';
-    removeBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" 
-                            width="16"
-                            height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round"
-                            class="lucide lucide-user-minus-icon lucide-user-minus">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <line x1="22" x2="16" y1="11" y2="11" />
-                        </svg>
-    `;
-    managementActions.appendChild(removeBtn);
-    actions.appendChild(managementActions);
+    // REMOVE BUTTON (inside management-actions) — o criador não pode ser removido do pacote.
+    if (!user.isCreator) {
+        const managementActions = createElement('div', 'management-actions');
+        const removeBtn = createElement('div', 'remove-user-access-btn actionBtn');
+        removeBtn.title = 'Remover';
+        removeBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-user-minus-icon lucide-user-minus">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="22" x2="16" y1="11" y2="11" />
+                            </svg>
+        `;
+        managementActions.appendChild(removeBtn);
+        actions.appendChild(managementActions);
+    }
 
     // See details Button
     const seeDetailsBtn = createElement('button', 'btn btn-small details-btn', 'Ver detalhes');
@@ -703,7 +711,9 @@ async function renderPackageDetails(pkg, isCollection = true) {
 
         usersList.innerHTML = "";
 
-        pkg.users.forEach(user => {
+        // Criador sempre no topo (a ordem do JSON_ARRAYAGG não é garantida).
+        const orderedUsers = [...pkg.users].sort((a, b) => (b.isCreator ? 1 : 0) - (a.isCreator ? 1 : 0));
+        orderedUsers.forEach(user => {
             const userElement = createUserElement(user);
             usersList.appendChild(userElement);
         })
@@ -1009,7 +1019,7 @@ async function loadAccessOverview(pkg, activePreset) {
 async function loadPackageStats(pkg, period) {
     const contentPreset = document.querySelector('#package-details .preset-collection');
 
-    const newUsersStat = contentPreset.querySelector(".new-users-stat");
+    const usesStat = contentPreset.querySelector(".uses-stat");
     const sessionsStat = contentPreset.querySelector(".sessions-stat");
     const usersStat = contentPreset.querySelector(".users-stat");
 
@@ -1027,6 +1037,7 @@ async function loadPackageStats(pkg, period) {
 
             pkg.stats = {
                 totalSessions: pkg.sessions.length,
+                totalConnections: rawPackageAccessHistory.length,
                 totalUsers: pkg.users.length,
                 totalUsersOnline: 0,
                 sessionsOnline: {},
@@ -1092,9 +1103,7 @@ async function loadPackageStats(pkg, period) {
     // Stats container
     const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
 
-    // New users stats
-    const newUsersValue = newUsersStat.querySelector(".stat-metric-value");
-    const newUsersSub = newUsersStat.querySelector(".stat-metric-sublabel");
+    // Crescimento de novos usuários no período — usado no sublabel do card de Usuários
     const newUsersFiltered = filterByLastDays(pkg.stats.newUsersByDate, period);
     const newUsersCount = Object.values(newUsersFiltered).reduce((acc, curr) => acc + curr, 0);
 
@@ -1108,8 +1117,11 @@ async function loadPackageStats(pkg, period) {
         percentageIncrease = "0";
     }
 
-    newUsersValue.textContent = String(newUsersCount);
-    newUsersSub.textContent = `(+${percentageIncrease}%)`;
+    // Uses stats (total de conexões no histórico do pacote)
+    const usesValue = usesStat.querySelector(".stat-metric-value");
+    const usesSub = usesStat.querySelector(".stat-metric-sublabel");
+    usesValue.textContent = String(pkg.stats ? pkg.stats.totalConnections : 0);
+    usesSub.textContent = "";
 
     // Sessions stats
     const sessionsValue = sessionsStat.querySelector(".stat-metric-value");
@@ -1120,13 +1132,14 @@ async function loadPackageStats(pkg, period) {
         ? `/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
         : "";
 
-    // Users stats
+    // Users stats (+ crescimento no sublabel, em verde)
     const usersValue = usersStat.querySelector(".stat-metric-value");
     const usersSub = usersStat.querySelector(".stat-metric-sublabel");
     usersValue.textContent = String(totalUsers);
-    usersSub.textContent = isFreePlanBasicPkg
-        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage}`
-        : "";
+    const growthHtml = `<span class="stat-metric-growth">+${percentageIncrease}%</span>`;
+    usersSub.innerHTML = isFreePlanBasicPkg
+        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage} · ${growthHtml}`
+        : growthHtml;
 
     // Online users stat
     const onlineStat = contentPreset.querySelector(".online-users-stat");
