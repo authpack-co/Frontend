@@ -1,7 +1,7 @@
 /**
  * AuthPack Theme Manager
  * 
- * Controls theme switching between 'light' (default) and 'dark'.
+ * Controls theme switching between 'light' and 'dark' (default).
  * Theme preference is persisted in localStorage.
  * 
  * Usage:
@@ -15,7 +15,7 @@
 
     const STORAGE_KEY = 'authpack-theme';
     const THEMES = ['light', 'dark'];
-    const DEFAULT_THEME = 'light';
+    const DEFAULT_THEME = 'dark';
 
     /**
      * Get the saved theme or fallback to default.
