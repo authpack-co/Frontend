@@ -934,6 +934,20 @@ function setElementState(element, newState) {
 
     // Adiciona o novo estado
     element.classList.add(`${newState}-state`);
+
+    // Coleção vazia: o onboarding já cobre CTA + modelos, então o
+    // #package-details ("Nada por aqui / Selecione um pacote") não deve
+    // aparecer — só o onboarding. Sincroniza sempre que a lista muda de estado.
+    if (element.id === "packages-list") syncPackageDetailsVisibility();
+}
+
+// Esconde o #package-details quando a coleção está vazia (estado de onboarding).
+function syncPackageDetailsVisibility() {
+    const packagesEl = document.querySelector("#packages-list");
+    const detailsEl = document.querySelector("#package-details");
+    if (!packagesEl || !detailsEl) return;
+    const isEmptyCollection = packagesEl.classList.contains("empty-collection-state");
+    detailsEl.style.display = isEmptyCollection ? "none" : "";
 }
 
 // Função para recarregar select de pacotes (se necessário)
@@ -2395,6 +2409,13 @@ function renderUserInfo(userInfo) {
     if (sidebarProfileName) sidebarProfileName.textContent = name;
     if (sidebarProfileEmail) sidebarProfileEmail.textContent = email;
     if (sidebarProfilePicture) sidebarProfilePicture.src = picture;
+
+    // Personaliza a saudação do onboarding do primeiro acesso ("Bem-vindo, João")
+    const obUserName = document.querySelector('.ob-onboarding .ob-user-name');
+    if (obUserName && name) {
+        const firstName = name.trim().split(/\s+/)[0];
+        obUserName.textContent = firstName ? `, ${firstName}` : '';
+    }
 
     // Salva userInfo globalmente
     currentUserInfo = userInfo;

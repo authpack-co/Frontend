@@ -75,6 +75,7 @@
     <link rel="stylesheet" href="/pages/dashboard/presets.css">
     <link rel="stylesheet" href="/pages/dashboard/settings.css">
     <link rel="stylesheet" href="/pages/dashboard/onboardingCarousel.css">
+    <link rel="stylesheet" href="/pages/dashboard/onboarding.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
     <link rel="stylesheet" href="/assets/styles/animations.css">
 
@@ -83,7 +84,7 @@
         (function () {
             try {
                 var t = localStorage.getItem('authpack-theme');
-                if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+                if (t !== 'light') document.documentElement.setAttribute('data-theme', 'dark');
             } catch (e) { }
         })();
     </script>
@@ -909,17 +910,9 @@
         <div class="sidebar-footer">
             <!-- Plus Upgrade Card (hidden for Plus users via JS) -->
             <div class="sidebar-upgrade-card" id="sidebar-plus-card">
-                <div class="sidebar-upgrade-header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                        <path d="M5 21h14" />
-                    </svg>
-                    <span>AuthPack Plus</span>
-                </div>
-                <p class="sidebar-upgrade-desc">Pacotes, sessões e usuários sem limites.</p>
-                <button class="plus-subscribe-btn sidebar-upgrade-btn">Ver benefícios</button>
+                <div class="sidebar-upgrade-title">AuthPack <span>Plus</span></div>
+                <p class="sidebar-upgrade-desc">Pacotes e sessões ilimitados.</p>
+                <button class="plus-subscribe-btn sidebar-upgrade-link">Fazer upgrade &rarr;</button>
             </div>
 
             <!-- Theme Toggle -->
@@ -1133,19 +1126,103 @@
                             <button class="btn btn-small create-package-btn">Novo pacote</button>
                         </div>
 
-                        <div class="collection-empty">
-                            <div class="empty-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="28"
-                                    height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
-                                    <path d="M12 22V12" />
-                                    <polyline points="3.29 7 12 12 20.71 7" />
-                                    <path d="m7.5 4.27 9 5.15" />
-                                </svg></div>
-                            <div class="empty-text">
-                                <h3>Nenhum pacote criado</h3>
-                                <p>Crie seu novo produto para começar a organizar suas sessões</p>
+                        <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
+                        <div class="ob-onboarding">
+
+                            <!-- Hero: conceito em 3 passos + ilustração -->
+                            <div class="ob-hero">
+                                <div class="ob-hero-main">
+                                    <div class="ob-eyebrow">Bem-vindo<span class="ob-user-name"></span></div>
+                                    <h2 class="ob-title">Organize e compartilhe<br>seus acessos</h2>
+
+                                    <div class="ob-steps">
+                                        <div class="ob-step">
+                                            <span class="ob-step-icon">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/></svg>
+                                            </span>
+                                            <span class="ob-step-text"><strong>Crie um pacote</strong> para agrupar acessos</span>
+                                        </div>
+                                        <div class="ob-step">
+                                            <span class="ob-step-icon">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
+                                            </span>
+                                            <span class="ob-step-text"><strong>Adicione sessões</strong> dos sites que você usa</span>
+                                        </div>
+                                        <div class="ob-step">
+                                            <span class="ob-step-icon">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
+                                            </span>
+                                            <span class="ob-step-text"><strong>Compartilhe</strong> o acesso sem revelar a senha</span>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-primary ob-cta create-package-btn">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        Criar pacote em branco
+                                    </button>
+                                </div>
+
+                                <!-- Ilustração (decorativa) -->
+                                <div class="ob-illustration" aria-hidden="true">
+                                    <div class="ob-mini-card-head">
+                                        <span class="ob-mini-avatar">T</span>
+                                        <div class="ob-mini-titles">
+                                            <div class="ob-mini-name">Trabalho</div>
+                                            <div class="ob-mini-sub">3 sessões</div>
+                                        </div>
+                                        <span class="ob-mini-count">3/5</span>
+                                    </div>
+                                    <div class="ob-mini-rows">
+                                        <div class="ob-mini-row"><span class="ob-mini-dot ob-dot-green"></span><span>Servidor interno</span></div>
+                                        <div class="ob-mini-row"><span class="ob-mini-dot ob-dot-purple"></span><span>Ferramenta de design</span></div>
+                                    </div>
+                                    <div class="ob-mini-share">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
+                                        <span class="ob-mini-share-label">Link de acesso ativo</span>
+                                        <span class="ob-mini-share-count">2 pessoas</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modelos prontos -->
+                            <div class="ob-templates">
+                                <div class="ob-templates-head">
+                                    <span class="ob-templates-title">Ou comece por um modelo</span>
+                                    <span class="ob-templates-hint">nomeia o pacote pra você — é só adicionar as sessões</span>
+                                </div>
+                                <div class="ob-templates-grid">
+
+                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
+                                        <span class="ob-tpl-icon ob-tpl-icon-ai">AI</span>
+                                        <span class="ob-tpl-name">Assinaturas de IA</span>
+                                        <span class="ob-tpl-desc">ChatGPT, Claude, Gemini…</span>
+                                    </button>
+
+                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
+                                        <span class="ob-tpl-icon ob-tpl-icon-stream">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 7 5 3-5 3z"/><rect width="20" height="15" x="2" y="4.5" rx="3"/></svg>
+                                        </span>
+                                        <span class="ob-tpl-name">Streaming</span>
+                                        <span class="ob-tpl-desc">Netflix, Spotify, Disney+…</span>
+                                    </button>
+
+                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
+                                        <span class="ob-tpl-icon ob-tpl-icon-work">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="4" y="8" width="16" height="12" rx="2"/></svg>
+                                        </span>
+                                        <span class="ob-tpl-name">Trabalho</span>
+                                        <span class="ob-tpl-desc">Figma, Canva, Notion…</span>
+                                    </button>
+
+                                    <button class="ob-tpl ob-tpl-blank create-package-btn">
+                                        <span class="ob-tpl-icon ob-tpl-icon-blank">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                        </span>
+                                        <span class="ob-tpl-name">Em branco</span>
+                                        <span class="ob-tpl-desc">Do meu jeito</span>
+                                    </button>
+
+                                </div>
                             </div>
                         </div>
                     </div>

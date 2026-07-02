@@ -999,6 +999,34 @@ createPackageBtns.forEach(createPackageBtn => {
     });
 });
 
+// Modelos prontos do onboarding: abrem o modal de criação já com o nome preenchido.
+const onboardingTemplateBtns = document.querySelectorAll('.ob-tpl-preset');
+onboardingTemplateBtns.forEach(tplBtn => {
+    tplBtn.addEventListener('click', () => {
+        // Verifica limite do plano free (3 pacotes basic)
+        if (currentUserInfo?.plan === 'free') {
+            const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
+            if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
+                utils.showModal("plusSubscribe");
+                return;
+            }
+        }
+
+        const presetName = (tplBtn.dataset.tplName || "").slice(0, 20);
+
+        utils.showModal("createPackage");
+        createPackageInput.value = presetName;
+
+        createPackageModal.addEventListener('transitionend', () => {
+            createPackageInput.focus();
+
+            // coloca o cursor no final
+            const len = createPackageInput.value.length;
+            createPackageInput.setSelectionRange(len, len);
+        }, { once: true });
+    });
+});
+
 const createPackageHandler = async (event) => {
     // Valida valor do input
     const packageName = createPackageInput.value.trim();
