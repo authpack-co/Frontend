@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy – AuthPack</title>
-    <meta name="description" content="Learn how AuthPack collects, uses, and protects your data.">
+    <meta name="description" content="Learn what data AuthPack collects, and how we process, store, and share it.">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
         <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
@@ -68,10 +68,10 @@
                 <span>Privacy Policy</span>
             </div>
             <h1>Privacy Policy</h1>
-            <p>How AuthPack collects, uses, and protects your information.</p>
+            <p>How AuthPack collects, processes, stores, and shares your information.</p>
             <div class="legal-hero-meta">
                 <span class="legal-badge">Legal</span>
-                <span class="legal-updated">Last updated: March 16, 2026</span>
+                <span class="legal-updated">Last updated: July 2, 2026</span>
             </div>
         </div>
     </div>
@@ -85,8 +85,12 @@
                 <span class="legal-toc-label">On this page</span>
                 <ul>
                     <li><a href="#collect" class="legal-toc-link">Information We Collect</a></li>
+                    <li><a href="#how-collect" class="legal-toc-link">When &amp; How We Collect It</a></li>
                     <li><a href="#use" class="legal-toc-link">How We Use Information</a></li>
-                    <li><a href="#storage" class="legal-toc-link">Local Data Storage</a></li>
+                    <li><a href="#processing" class="legal-toc-link">How We Process Data</a></li>
+                    <li><a href="#storage" class="legal-toc-link">Data Storage</a></li>
+                    <li><a href="#sharing" class="legal-toc-link">Data Sharing</a></li>
+                    <li><a href="#retention" class="legal-toc-link">Data Retention &amp; Deletion</a></li>
                     <li><a href="#consent" class="legal-toc-link">User Consent</a></li>
                     <li><a href="#third-party" class="legal-toc-link">Third-Party Services</a></li>
                     <li><a href="#security" class="legal-toc-link">Data Security</a></li>
@@ -99,58 +103,98 @@
         <!-- Main content -->
         <main class="legal-content">
 
-            <p class="legal-lead">AuthPack is committed to protecting your privacy. This policy describes how the AuthPack browser extension and platform handle data, what we collect, and why.</p>
+            <p class="legal-lead">AuthPack is a tool for capturing, restoring, and sharing access to online services without sharing passwords. Because that is its purpose, AuthPack necessarily handles authentication session data. This policy explains, in full, what data we collect, and how we process, store, and share it. We handle this data only for the purposes described below.</p>
 
             <section class="legal-section" id="collect">
                 <h2><span class="legal-section-num">01</span>Information We Collect</h2>
-                <p>AuthPack may store authentication session data locally in the user's browser to enable session restoration and automation across supported services. <strong>AuthPack does not collect or store user passwords.</strong></p>
-                <p>Some information may be transmitted securely to AuthPack servers to enable extension functionality:</p>
+                <p>To provide session capture, restoration, and sharing, AuthPack collects the following categories of data:</p>
                 <ul class="legal-list">
-                    <li>Account identifiers (e.g. Google user ID)</li>
-                    <li>Package metadata created or acquired by the user</li>
-                    <li>Device connection information for registered devices</li>
+                    <li><strong>Authentication session data.</strong> When a session is captured, or while you are connected to a session, AuthPack reads the authentication state of the target service from your browser. This includes browser cookies (including secure and HTTP-only cookies), <code>localStorage</code> entries, and <code>IndexedDB</code> contents for the relevant domains. Together these represent your logged-in session and are treated as sensitive data. <strong>AuthPack does not collect or store your account passwords.</strong></li>
+                    <li><strong>Account identifiers.</strong> An identifier from your sign-in provider (e.g. your Google user ID), along with your email, name, and profile picture.</li>
+                    <li><strong>Device information.</strong> A device fingerprint and connection details, used to register and authorize the devices on which you use AuthPack.</li>
+                    <li><strong>Package data.</strong> Metadata about the packages you create or acquire and the sessions within them.</li>
+                    <li><strong>Usage and access records.</strong> Records of when a session is accessed — including the user, device, package, session, and timestamps — used to keep shared sessions valid and to show usage history to package owners.</li>
                 </ul>
+            </section>
+
+            <section class="legal-section" id="how-collect">
+                <h2><span class="legal-section-num">02</span>When &amp; How We Collect It</h2>
+                <p>AuthPack collects authentication session data in two situations:</p>
+                <ul class="legal-list">
+                    <li><strong>On capture.</strong> When you (or a package owner) create or update a session, AuthPack takes a snapshot of the current logged-in state of the target service.</li>
+                    <li><strong>Continuously while connected.</strong> While you are connected to a session through AuthPack, the extension may periodically re-read the evolving session (cookies, <code>localStorage</code>, and <code>IndexedDB</code>) and send it to our servers so the shared session stays valid and up to date. This periodic collection applies to every session you connect through AuthPack — including packages you own, not only packages acquired from others.</li>
+                </ul>
+                <p>Before AuthPack applies a shared session to a site where you were already signed in, it also makes a one-time backup of your own pre-existing session for that site so it can be restored when you disconnect. That backup is kept locally on your device (see <a href="#storage" class="legal-inline-link">Data Storage</a>).</p>
             </section>
 
             <section class="legal-section" id="use">
-                <h2><span class="legal-section-num">02</span>How We Use Information</h2>
+                <h2><span class="legal-section-num">03</span>How We Use Information</h2>
                 <p>Information is used solely to operate the AuthPack service. This includes:</p>
                 <ul class="legal-list">
-                    <li>Enabling session restoration on user request</li>
-                    <li>Managing packages and access keys</li>
-                    <li>Maintaining registered device connections</li>
-                    <li>Improving reliability and performance of the extension</li>
+                    <li>Capturing and restoring sessions on your request</li>
+                    <li>Keeping shared sessions valid and up to date across a package's members</li>
+                    <li>Managing packages, access keys, and members</li>
+                    <li>Registering and authorizing your devices</li>
+                    <li>Providing usage and access history to package owners</li>
+                    <li>Maintaining the reliability, security, and performance of the service</li>
                 </ul>
-                <p>AuthPack does not sell, rent, or share personal information with third parties for advertising or marketing purposes.</p>
+                <p>AuthPack does not use your data for advertising, and does not sell or rent it.</p>
+            </section>
+
+            <section class="legal-section" id="processing">
+                <h2><span class="legal-section-num">04</span>How We Process Data</h2>
+                <ul class="legal-list">
+                    <li>Session data is compressed and transmitted over encrypted connections (HTTPS) between your browser and AuthPack servers.</li>
+                    <li>Your AuthPack sign-in credentials are stored in encrypted form on your device.</li>
+                    <li>As a security measure, session cookies applied by AuthPack are given a short lifetime and are refreshed while a session is active, so a shared session cannot persist unattended after you disconnect.</li>
+                </ul>
             </section>
 
             <section class="legal-section" id="storage">
-                <h2><span class="legal-section-num">03</span>Local Data Storage</h2>
-                <p>Sensitive session data is stored locally within the browser environment and may be encrypted to protect user security. This data is used exclusively to perform session restoration when explicitly requested by the user.</p>
+                <h2><span class="legal-section-num">05</span>Data Storage</h2>
+                <p><strong>On AuthPack servers.</strong> Session data is stored on AuthPack servers so it can be restored on your devices and made available to authorized members of the same package. This server-side copy is the reference version of the session and may be updated over time as the session changes. Account, package, device, and access-history data are also stored on our servers.</p>
+                <p><strong>Locally in your browser.</strong> AuthPack stores locally: your encrypted AuthPack sign-in token; the session currently applied to the active tab; and a temporary, one-time backup of your own pre-existing session for a site, so it can be restored when you disconnect. The personal-session backup is not uploaded to our servers.</p>
+            </section>
+
+            <section class="legal-section" id="sharing">
+                <h2><span class="legal-section-num">06</span>Data Sharing</h2>
+                <p>AuthPack's core function is to let users share access to online services through packages. As a result, authentication session data is shared between the members of a package:</p>
+                <ul class="legal-list">
+                    <li>If you create or own a package, the session data captured for that package is made available to the members you grant access to.</li>
+                    <li>If you acquire access to a package, you receive the session data needed to use it.</li>
+                    <li>While a session is active, the session of the member currently using it may be captured and redistributed to the package so that all authorized members keep valid access.</li>
+                    <li>Package owners can view access history for their packages, including which member and device connected to a session and when.</li>
+                </ul>
+                <p>This data is shared only with the users you authorize as members of your package. <strong>AuthPack does not sell, rent, or share your personal information with third parties for advertising or marketing purposes.</strong></p>
+            </section>
+
+            <section class="legal-section" id="retention">
+                <h2><span class="legal-section-num">07</span>Data Retention &amp; Deletion</h2>
+                <p>You remain in control of your data. You can update or delete sessions, remove members, or leave or revoke access to a package at any time. Deleting a session or a package removes the associated session data from AuthPack servers, and revoking a member ends their access to that package's sessions.</p>
             </section>
 
             <section class="legal-section" id="consent">
-                <h2><span class="legal-section-num">04</span>User Consent</h2>
-                <p>By installing and using the AuthPack extension, users acknowledge and consent to the data processing described in this policy. Users retain full control over when sessions are created, restored, or removed.</p>
+                <h2><span class="legal-section-num">08</span>User Consent</h2>
+                <p>By installing and using AuthPack, you acknowledge and consent to the collection, processing, storage, and sharing of data described in this policy. When you share a package, you are responsible for granting access only to people you trust, and only for services whose terms permit shared access. You retain control over when sessions are created, restored, shared, or removed.</p>
             </section>
 
             <section class="legal-section" id="third-party">
-                <h2><span class="legal-section-num">05</span>Third-Party Services</h2>
+                <h2><span class="legal-section-num">09</span>Third-Party Services</h2>
                 <p>AuthPack only interacts with third-party websites when the user explicitly accesses those services through the extension. AuthPack is not responsible for the privacy practices of external platforms.</p>
             </section>
 
             <section class="legal-section" id="security">
-                <h2><span class="legal-section-num">06</span>Data Security</h2>
-                <p>AuthPack implements technical safeguards to protect stored information and prevent unauthorized access, including encryption of locally stored session data where applicable.</p>
+                <h2><span class="legal-section-num">10</span>Data Security</h2>
+                <p>AuthPack implements technical safeguards to protect stored information and prevent unauthorized access, including encryption in transit (HTTPS), encryption of locally stored credentials, short-lived shared session cookies, and per-device authorization.</p>
             </section>
 
             <section class="legal-section" id="changes">
-                <h2><span class="legal-section-num">07</span>Changes to This Policy</h2>
+                <h2><span class="legal-section-num">11</span>Changes to This Policy</h2>
                 <p>We may update this Privacy Policy from time to time. Changes will be posted on this page with a revised date. Continued use of AuthPack after changes are posted constitutes acceptance of the updated policy.</p>
             </section>
 
             <section class="legal-section" id="contact">
-                <h2><span class="legal-section-num">08</span>Contact</h2>
+                <h2><span class="legal-section-num">12</span>Contact</h2>
                 <p>If you have questions or concerns about this Privacy Policy, please reach out:</p>
                 <a href="mailto:team@authpack.co" class="legal-contact-link">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
