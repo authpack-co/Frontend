@@ -1906,6 +1906,24 @@
                         </div>
                     </div>
 
+                    <!-- SELLER ONBOARDING: self-service recipient wizard (pending_seller) -->
+                    <div class="preset preset-onboarding">
+                        <div id="seller-onboarding-mount" class="so-wrap"></div>
+                    </div>
+
+                    <!-- SELLER CREATING: aguardando o webhook criar o recebedor -->
+                    <div class="preset preset-creating">
+                        <div class="so-creating">
+                            <div class="spinner large"></div>
+                            <h3 class="so-creating-title">Criando seu perfil de vendedor…</h3>
+                            <p class="so-creating-sub">Estamos registrando seus dados com nosso processador de pagamentos. Isso leva alguns segundos.</p>
+                            <div class="so-creating-slow hidden" id="so-creating-slow">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span>Está demorando mais que o normal. Pode fechar esta página — avisaremos por e-mail assim que estiver tudo pronto.</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- VITRINE CONTENT: seller dashboard (products, KPIs, withdrawals) -->
                     <div class="preset preset-vitrine-content">
 
@@ -3048,6 +3066,7 @@
     <script src="/pages/dashboard/onboardingCarousel.js"></script>
     <script src="/pages/dashboard/eventsHandler.js"></script>
     <script src="/pages/dashboard/contentRenderer.js"></script>
+    <script src="/pages/dashboard/sellerOnboarding.js"></script>
     <script src="/pages/dashboard/vitrineManager.js"></script>
     <script src="/pages/dashboard/settings.js"></script>
 </body>

@@ -8,7 +8,7 @@
     <!-- ===== Primary SEO ===== -->
     <title>Programa de Parceiros AuthPack — Venda seus acessos</title>
     <meta name="description"
-        content="Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes: sem mensalidade, comissão única de 8%, vitrine própria e pagamentos automatizados. Candidate-se e fale com nossa equipe.">
+        content="Torne-se parceiro do AuthPack e venda o acesso aos seus pacotes: sem mensalidade, comissão única de 8%, vitrine própria e pagamentos automatizados. Cadastro 100% online, feito por você em minutos.">
     <meta name="keywords"
         content="authpack parceiros, programa de parceiros authpack, vender acessos authpack, ser parceiro authpack, vendedor authpack, vitrine authpack">
     <meta name="author" content="Equipe AuthPack">
@@ -96,7 +96,7 @@
             {
               "@type": "Question",
               "name": "Como me torno parceiro do AuthPack?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Preencha o formulário de candidatura nesta página. Nossa equipe analisa e entra em contato em até 1 dia útil para liberar o acesso de vendedor." }
+              "acceptedAnswer": { "@type": "Answer", "text": "Clique em Tornar-se parceiro nesta página. Sua Minha Vitrine é liberada na hora e você mesmo preenche o cadastro de vendedor diretamente na plataforma, de forma segura — sem precisar falar com a equipe." }
             },
             {
               "@type": "Question",
@@ -269,6 +269,62 @@
             margin: 13px 0 0;
         }
 
+        .pf-badge {
+            display: inline-block;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--blue);
+            background: rgba(74, 110, 245, 0.10);
+            border: 1px solid rgba(74, 110, 245, 0.22);
+            border-radius: 999px;
+            padding: 4px 11px;
+            margin-bottom: 12px;
+        }
+
+        .pf-steps {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .pf-steps li {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            font-size: 14px;
+            color: var(--ink-2);
+        }
+
+        .pf-step-n {
+            flex: 0 0 24px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--line-2);
+            color: var(--ink);
+            font-size: 12.5px;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+        }
+
+        .pf-trust {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--ink-3);
+            margin: 14px 0 0;
+        }
+
+        .pf-trust svg { flex: 0 0 auto; color: var(--blue); }
+
         /* Success state */
         .partner-success { display: none; text-align: center; padding: 18px 6px; }
         .partner-success.show { display: block; }
@@ -337,7 +393,7 @@
                         <span>Programa de Parceiros AuthPack</span>
                     </span>
                     <h1>Transforme seus acessos em uma <span class="grad">fonte de renda</span>.</h1>
-                    <p class="lede">O programa de parceiros do AuthPack autoriza você a vender o acesso aos seus pacotes — com sua própria vitrine, pagamentos e entrega automatizados. Candidate-se e nossa equipe entra em contato.</p>
+                    <p class="lede">O programa de parceiros do AuthPack autoriza você a vender o acesso aos seus pacotes — com sua própria vitrine, pagamentos e entrega automatizados. O cadastro é 100% online: você mesmo faz, em minutos.</p>
                     <ul class="partner-benefits">
                         <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Comissão única de 8% por venda</li>
                         <li><span class="ck"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span> Sem mensalidade — você só paga quando vende</li>
@@ -346,38 +402,27 @@
                     </ul>
                 </div>
 
-                <!-- Form -->
+                <!-- CTA card -->
                 <div class="partner-card">
-                    <div id="partner-form-wrap">
-                        <h2>Torne-se parceiro</h2>
-                        <p class="sub">Preencha seus dados e nossa equipe entra em contato em até 1 dia útil.</p>
+                    <div id="partner-cta-wrap">
+                        <div class="pf-badge">100% online · sem espera</div>
+                        <h2>Comece agora, no seu ritmo</h2>
+                        <p class="sub">Sem formulário de contato e sem WhatsApp. Você mesmo faz o cadastro direto na plataforma, dentro da sua conta — de forma segura.</p>
 
-                        <div class="pf-group">
-                            <label for="partner-name">Nome completo</label>
-                            <input type="text" id="partner-name" class="pf-input" placeholder="Seu nome completo" autocomplete="name">
-                        </div>
-                        <div class="pf-group">
-                            <label for="partner-phone">Telefone / WhatsApp</label>
-                            <input type="text" id="partner-phone" class="pf-input" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="tel">
-                        </div>
-                        <div class="pf-group">
-                            <label for="partner-what">O que você quer vender?</label>
-                            <textarea id="partner-what" class="pf-input" rows="3" placeholder="Conte rapidamente o que pretende vender"></textarea>
-                        </div>
+                        <ul class="pf-steps">
+                            <li><span class="pf-step-n">1</span> Clique em <strong>Tornar-se parceiro</strong></li>
+                            <li><span class="pf-step-n">2</span> Sua <strong>Minha Vitrine</strong> é liberada na hora</li>
+                            <li><span class="pf-step-n">3</span> Preencha seus dados e comece a vender</li>
+                        </ul>
 
                         <p class="pf-error" id="partner-error"></p>
 
                         <button type="button" id="partner-submit" class="btn btn-grad btn-lg">Tornar-se parceiro</button>
-                        <p class="pf-hint">Resposta em até 1 dia útil. Ao enviar, você confirma a candidatura ao programa.</p>
-                    </div>
 
-                    <!-- Success -->
-                    <div class="partner-success" id="partner-success">
-                        <div class="ok-ring">
-                            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        </div>
-                        <h2>Candidatura enviada!</h2>
-                        <p class="sub" style="margin-bottom:0">Recebemos seus dados. Nossa equipe entra em contato em até <strong>1 dia útil</strong>.</p>
+                        <p class="pf-trust">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Pagamentos processados pelo Pagar.me, regulado pelo Banco Central.
+                        </p>
                     </div>
                 </div>
             </div>

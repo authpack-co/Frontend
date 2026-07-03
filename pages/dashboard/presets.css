@@ -112,6 +112,25 @@
     animation: fadeIn 0.3s ease-in forwards;
 }
 
+/* Seller self-service: wizard de cadastro + estado "criando perfil" */
+.preset-onboarding {
+    display: none;
+}
+
+.onboarding-state>.preset-onboarding {
+    display: block;
+    animation: fadeIn 0.25s ease-in forwards;
+}
+
+.preset-creating {
+    display: none;
+}
+
+.creating-state>.preset-creating {
+    display: block;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
 /* ===== Skeletons ====== */
 
 .skeleton {

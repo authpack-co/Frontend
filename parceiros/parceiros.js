@@ -1,23 +1,20 @@
 /**
- * AuthPack — Página de Parceiros (lead capture público)
+ * AuthPack — Página de Parceiros (CTA "Tornar-se parceiro")
  *
- * Fluxo: o visitante preenche nome, telefone e o que quer vender e clica em
- * "Tornar-se parceiro". O envio exige login (o e-mail vem da sessão, no backend):
- *   - se NÃO estiver logado, salvamos o formulário e mandamos para o login com
- *     redirect de volta para /parceiros/?submit=1, que retoma o envio ao voltar;
- *   - se estiver logado, enviamos direto via fetchManager.submitLead → POST /api/leads.
+ * Fluxo self-service (sem lead/WhatsApp): o visitante clica em "Tornar-se
+ * parceiro". A ação exige login (o e-mail vem da sessão, no backend):
+ *   - se NÃO estiver logado, mandamos para o login com redirect de volta para
+ *     /parceiros/?intent=1, que retoma a ação ao voltar;
+ *   - se estiver logado, chamamos fetchManager.becomeSellerIntent() (grava
+ *     role=pending_seller) e redirecionamos para a Home, onde a "Minha Vitrine"
+ *     já aparece desbloqueada com o badge "Novo" e o formulário de cadastro.
  */
 (function () {
     'use strict';
 
-    const STORE_KEY = 'ap-partner-lead';
-    const LOGIN_RETURN = '/parceiros/?submit=1';
+    const LOGIN_RETURN = '/parceiros/?intent=1';
+    const DASHBOARD_URL = '/pages/dashboard/?vitrine=novo';
 
-    const wrap = document.getElementById('partner-form-wrap');
-    const successEl = document.getElementById('partner-success');
-    const nameInput = document.getElementById('partner-name');
-    const phoneInput = document.getElementById('partner-phone');
-    const whatInput = document.getElementById('partner-what');
     const errorEl = document.getElementById('partner-error');
     const submitBtn = document.getElementById('partner-submit');
 
@@ -27,10 +24,12 @@
     let busy = false;
 
     function showError(msg) {
+        if (!errorEl) return;
         errorEl.textContent = msg;
         errorEl.classList.add('show');
     }
     function clearError() {
+        if (!errorEl) return;
         errorEl.textContent = '';
         errorEl.classList.remove('show');
     }
@@ -41,87 +40,40 @@
         submitBtn.innerHTML = on ? '<span class="pf-spinner"></span>' : defaultBtnHtml;
     }
 
-    function readForm() {
-        return {
-            name: (nameInput.value || '').trim(),
-            phone: (phoneInput.value || '').trim(),
-            what_to_sell: (whatInput.value || '').trim(),
-        };
-    }
-
-    function fillForm(data) {
-        if (!data) return;
-        if (data.name) nameInput.value = data.name;
-        if (data.phone) phoneInput.value = data.phone;
-        if (data.what_to_sell) whatInput.value = data.what_to_sell;
-    }
-
-    function readStored() {
-        try {
-            const raw = sessionStorage.getItem(STORE_KEY);
-            return raw ? JSON.parse(raw) : null;
-        } catch (e) { return null; }
-    }
-    function storeLead(data) {
-        try { sessionStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
-    }
-    function clearStored() {
-        try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
-    }
-
-    function showSuccess() {
-        clearStored();
-        if (wrap) wrap.style.display = 'none';
-        if (successEl) successEl.classList.add('show');
-        // limpa o ?submit=1 da URL sem recarregar
-        try { history.replaceState(null, '', '/parceiros/'); } catch (e) {}
-    }
-
-    async function submit() {
+    async function becomePartner() {
         if (busy) return;
         clearError();
-
-        const data = readForm();
-        if (!data.name || !data.phone || !data.what_to_sell) {
-            showError('Preencha nome, telefone e o que você quer vender.');
-            return;
-        }
-
         setLoading(true);
 
         try {
-            // 1. Exige login — o e-mail do lead vem da sessão (backend).
+            // 1. Exige login — a intenção é gravada na conta (backend).
             const auth = await fetchManager.getAuthenticatedUser();
             if (!auth.ok) {
-                storeLead(data);
                 window.location.href = '/pages/login/?redirect=' + encodeURIComponent(LOGIN_RETURN);
                 return;
             }
 
-            // 2. Envia a candidatura.
-            const res = await fetchManager.submitLead(data);
+            // 2. Marca a intenção (user → pending_seller) e vai para a Home.
+            const res = await fetchManager.becomeSellerIntent();
             if (res.ok) {
-                showSuccess();
+                window.location.href = DASHBOARD_URL;
             } else {
-                showError((res.result && res.result.errorMessage) || 'Não foi possível enviar. Tente novamente.');
+                showError((res.result && (res.result.error || res.result.errorMessage)) || 'Não foi possível continuar. Tente novamente.');
                 setLoading(false);
             }
         } catch (err) {
-            console.error('partner submit error:', err);
+            console.error('partner intent error:', err);
             showError('Erro de conexão. Tente novamente.');
             setLoading(false);
         }
     }
 
-    submitBtn.addEventListener('click', submit);
+    submitBtn.addEventListener('click', becomePartner);
 
     // ── Retorno do login ──────────────────────────────────────────────────
-    // Pré-preenche com o que foi salvo e, se voltou com ?submit=1, retoma o envio.
-    const stored = readStored();
-    fillForm(stored);
-
+    // Se voltou com ?intent=1, retoma a ação automaticamente.
     const params = new URLSearchParams(window.location.search);
-    if (params.get('submit') === '1' && stored) {
-        submit();
+    if (params.get('intent') === '1') {
+        becomePartner();
     }
 })();

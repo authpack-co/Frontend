@@ -2418,9 +2418,52 @@ function renderUserInfo(userInfo) {
     const PLUS_BENEFIT_ROLES = ['seller', 'admin'];
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || plan === 'plus';
 
-    // "Minha vitrine" só aparece para vendedores (admin usa o painel admin).
+    // "Minha vitrine" aparece para vendedores e para quem já manifestou intenção
+    // de vender (pending_seller — ainda sem recebedor). Admin usa o painel admin.
     const navVitrine = document.getElementById('nav-vitrine');
-    if (navVitrine) navVitrine.style.display = role === 'seller' ? '' : 'none';
+    if (navVitrine) {
+        const canSeeVitrine = role === 'seller' || role === 'pending_seller';
+        navVitrine.style.display = canSeeVitrine ? '' : 'none';
+
+        // Badge "Novo": destaca o recurso recém-desbloqueado para o aspirante a
+        // vendedor, some após o primeiro clique (persistido em localStorage).
+        const NOVO_SEEN_KEY = 'ap-vitrine-novo-seen';
+        let novoSeen = false;
+        try { novoSeen = localStorage.getItem(NOVO_SEEN_KEY) === '1'; } catch (e) {}
+
+        const existingBadge = navVitrine.querySelector('.nav-novo-badge');
+        if (role === 'pending_seller' && !novoSeen) {
+            if (!existingBadge) {
+                const badge = document.createElement('span');
+                badge.className = 'nav-novo-badge';
+                badge.textContent = 'Novo';
+                navVitrine.appendChild(badge);
+            }
+            navVitrine.addEventListener('click', function dismissNovo(e) {
+                // Só descarta em clique real do usuário — o auto-open (?vitrine=novo)
+                // dispara um clique programático que NÃO deve sumir com o badge.
+                if (e && !e.isTrusted) return;
+                try { localStorage.setItem(NOVO_SEEN_KEY, '1'); } catch (err) {}
+                navVitrine.querySelector('.nav-novo-badge')?.remove();
+                navVitrine.removeEventListener('click', dismissNovo);
+            });
+        } else if (existingBadge) {
+            existingBadge.remove();
+        }
+
+        // Vindo de /parceiros (?vitrine=novo): abre a aba automaticamente. Adiado
+        // para o fim da fila para rodar DEPOIS do init() terminar de montar a
+        // Home — senão a renderização da Home sobrescreve a troca de aba.
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (canSeeVitrine && params.get('vitrine') === 'novo') {
+                params.delete('vitrine');
+                const qs = params.toString();
+                history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+                setTimeout(() => navVitrine.click(), 0);
+            }
+        } catch (e) {}
+    }
 
     // Admin: atalho para o painel interno.
     const navAdmin = document.getElementById('nav-admin');
