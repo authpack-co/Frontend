@@ -2410,13 +2410,6 @@ function renderUserInfo(userInfo) {
     if (sidebarProfileEmail) sidebarProfileEmail.textContent = email;
     if (sidebarProfilePicture) sidebarProfilePicture.src = picture;
 
-    // Personaliza a saudação do onboarding do primeiro acesso ("Bem-vindo, João")
-    const obUserName = document.querySelector('.ob-onboarding .ob-user-name');
-    if (obUserName && name) {
-        const firstName = name.trim().split(/\s+/)[0];
-        obUserName.textContent = firstName ? `, ${firstName}` : '';
-    }
-
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 

@@ -72,6 +72,79 @@
     background: #fff;
 }
 
+/* ── Abas de seção ── */
+.oc-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 62px 14px 20px;
+    border-bottom: 1px solid var(--ap-border);
+    background: var(--ap-bg-card);
+}
+
+.oc-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    padding: 7px 12px;
+    font-family: var(--ap-font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s ease, color .15s ease;
+}
+
+.oc-tab:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-secondary);
+}
+
+.oc-tab.active {
+    background: var(--ap-accent-light);
+    color: var(--ap-accent-strong);
+}
+
+.oc-tab-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-muted);
+    flex-shrink: 0;
+}
+
+.oc-tab.active .oc-tab-num {
+    background: var(--ap-accent-strong);
+    color: #fff;
+}
+
+/* Botão de texto do slide final */
+.oc-done-btn {
+    background: none;
+    border: none;
+    color: var(--ap-text-muted);
+    font-family: var(--ap-font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 12px 8px;
+}
+
+.oc-done-btn:hover {
+    color: var(--ap-text-secondary);
+}
+
 /* ── Strip / track ── */
 .oc-viewport {
     flex: 1;
@@ -299,6 +372,11 @@
 @keyframes apBlink { 0%,45%{opacity:1} 50%,95%{opacity:0} 100%{opacity:1} }
 @keyframes apSpin { to { transform: rotate(360deg); } }
 
+/* Genéricas (usadas pelos demos novos: criar / extensão / compartilhar) */
+@keyframes ocRise { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+@keyframes ocFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes ocPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,.4); } 50% { box-shadow: 0 0 0 6px rgba(37,99,235,0); } }
+
 /* Scene 1: instalar (puzzle -> dropdown -> pin) */
 @keyframes s1cur {
     0%   { transform: translate(205px,330px) scale(1); }
@@ -411,6 +489,16 @@
         width: 100%;
         height: auto;
         max-height: 90vh;
+    }
+    .oc-head {
+        padding: 12px 54px 12px 14px;
+        gap: 4px;
+    }
+    .oc-tab {
+        padding: 7px 9px;
+    }
+    .oc-tab-label {
+        display: none;
     }
     .oc-demo {
         display: none;
