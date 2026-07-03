@@ -61,7 +61,7 @@ window.AP = (function () {
 
     // ── Badges ───────────────────────────────────────────
     function roleBadge(role) {
-        const map = { user: ['badge-user', 'Usuário'], seller: ['badge-seller', 'Vendedor'], admin: ['badge-admin', 'Admin'] };
+        const map = { user: ['badge-user', 'Usuário'], pending_seller: ['badge-user', 'Pré-vendedor'], seller: ['badge-seller', 'Vendedor'], admin: ['badge-admin', 'Admin'] };
         const [cls, label] = map[role] || map.user;
         return `<span class="admin-badge ${cls}">${label}</span>`;
     }

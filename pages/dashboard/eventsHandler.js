@@ -1000,8 +1000,7 @@ createPackageBtns.forEach(createPackageBtn => {
 });
 
 // Modelos prontos do onboarding: abrem o modal de criação já com o nome preenchido.
-const onboardingTemplateBtns = document.querySelectorAll('.ob-tpl-preset');
-onboardingTemplateBtns.forEach(tplBtn => {
+document.querySelectorAll('.ob-tpl-preset').forEach(tplBtn => {
     tplBtn.addEventListener('click', () => {
         // Verifica limite do plano free (3 pacotes basic)
         if (currentUserInfo?.plan === 'free') {
@@ -1012,19 +1011,20 @@ onboardingTemplateBtns.forEach(tplBtn => {
             }
         }
 
-        const presetName = (tplBtn.dataset.tplName || "").slice(0, 20);
-
         utils.showModal("createPackage");
-        createPackageInput.value = presetName;
+        createPackageInput.value = (tplBtn.dataset.tplName || "").slice(0, 20);
 
         createPackageModal.addEventListener('transitionend', () => {
             createPackageInput.focus();
-
-            // coloca o cursor no final
             const len = createPackageInput.value.length;
             createPackageInput.setSelectionRange(len, len);
         }, { once: true });
     });
+});
+
+// "Ver como funciona" abre o guia desde o começo (Seção 1 · Criar pacote).
+document.querySelector('.ob-how-btn')?.addEventListener('click', () => {
+    if (window.AuthPackOnboarding) AuthPackOnboarding.open({ startSection: 'create' });
 });
 
 const createPackageHandler = async (event) => {
@@ -1108,10 +1108,11 @@ const createPackageHandler = async (event) => {
     // Atualiza o contador do plano free (x/3) após criar pacote
     updateFreePlanPackageCounter();
 
-    // Primeiro pacote criado → abre o tutorial "Adicionar sessão" (uma única vez).
+    // Primeiro pacote criado → abre o guia direto na Seção 2 (adicionar sessões),
+    // pulando a de criar pacote, já que ele acabou de criar. Uma única vez.
     // Pequeno atraso para a animação do card e o scroll assentarem antes do overlay.
     if (isFirstPackage && window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
-        setTimeout(() => AuthPackOnboarding.open(), 650);
+        setTimeout(() => AuthPackOnboarding.open({ startSection: 'sessions' }), 650);
     }
 };
 

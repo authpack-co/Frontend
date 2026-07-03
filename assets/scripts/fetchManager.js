@@ -476,6 +476,34 @@ const fetchManager = {
         return response;
     },
 
+    // One-click "Tornar-se parceiro": records seller intent (user → pending_seller).
+    async becomeSellerIntent() {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/intent`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+        return response;
+    },
+
+    // Self-service recipient creation. Payload: { register_information, default_bank_account }.
+    async registerSeller(payload) {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/register`, {
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify(payload),
+        });
+        return response;
+    },
+
+    // Recipient status — used to poll whether the webhook already created the
+    // recipient row (connected: true) after self-service register.
+    async getSellerAccountStatus() {
+        const response = await fetchRoutes(`/api/marketplace/seller/account/status`, {
+            credentials: 'include',
+        });
+        return response;
+    },
+
     async getWithdrawalInfo() {
         const response = await fetchRoutes(`/api/marketplace/seller/withdrawal-info`);
         return response;

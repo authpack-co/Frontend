@@ -7511,3 +7511,256 @@ textarea:focus-visible {
 .vt-cat-submenu-item.active .vt-cat-submenu-name {
     font-weight: 600;
 }
+
+/* ============================================================================
+   Sidebar "Novo" badge (pending_seller — vitrine recém-desbloqueada)
+   ============================================================================ */
+.nav-novo-badge {
+    margin-left: auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: .02em;
+    color: #fff;
+    background: var(--ap-accent);
+    border-radius: 999px;
+    padding: 3px 7px;
+}
+
+/* ============================================================================
+   Seller Onboarding wizard (preset-onboarding inside #vitrine-container)
+   ============================================================================ */
+.so-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 4px 2px 8px;
+}
+
+.so-header { margin-bottom: 20px; }
+
+.so-trust {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(65, 132, 228, 0.06);
+    border: 1px solid rgba(65, 132, 228, 0.20);
+    border-radius: var(--ap-radius-md);
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ap-text-secondary);
+    margin-bottom: 18px;
+}
+.so-trust svg { flex: 0 0 auto; color: var(--ap-accent); margin-top: 1px; }
+.so-trust strong { color: var(--ap-text-primary); }
+
+.so-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.so-progress {
+    flex: 1;
+    height: 6px;
+    background: var(--ap-bg-muted);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.so-progress-bar {
+    height: 100%;
+    width: 0;
+    background: var(--ap-accent);
+    border-radius: 999px;
+    transition: width .25s ease;
+}
+.so-step-label {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+.so-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    margin: 4px 0 0;
+}
+
+.so-lead {
+    font-size: 14px;
+    color: var(--ap-text-secondary);
+    margin: 0 0 16px;
+}
+.so-note {
+    font-size: 12px;
+    color: var(--ap-text-secondary);
+    margin: 10px 0 0;
+}
+
+.so-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    margin: 22px 0 12px;
+}
+
+/* Steps */
+.so-step { display: none; }
+.so-step.is-active { display: block; animation: fadeIn .25s ease-in forwards; }
+
+/* .hidden precisa vencer o display do .btn (ordem da cascata) para esconder
+   os botões de navegação e o campo "outro banco" nos passos certos. */
+.so-wrap .hidden { display: none !important; }
+
+/* Scoped form primitives (dashboard has no base .form-input/.form-row) */
+.so-wrap .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+.so-wrap .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.so-wrap .form-row .form-group { margin-bottom: 0; }
+.so-wrap .form-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+.so-wrap .form-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-bg-page);
+    color: var(--ap-text-primary);
+    font: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+.so-wrap select.form-input { cursor: pointer; }
+.so-wrap .form-input::placeholder { color: var(--ap-text-secondary); opacity: .6; }
+.so-wrap .form-input:focus {
+    border-color: var(--ap-accent);
+    box-shadow: 0 0 0 3px rgba(65, 132, 228, 0.14);
+}
+.so-wrap .form-input.invalid {
+    border-color: #d4313b;
+    box-shadow: 0 0 0 3px rgba(212, 49, 59, 0.12);
+}
+.so-wrap .field-error-inline {
+    font-size: 11.5px;
+    color: #d4313b;
+    margin-top: 2px;
+}
+
+/* Type choice cards */
+.so-type-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.so-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
+    padding: 18px;
+    border: 1.5px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-page);
+    color: var(--ap-text-primary);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.so-type-card:hover { border-color: var(--ap-border-hover); }
+.so-type-card.active {
+    border-color: var(--ap-accent);
+    background: rgba(65, 132, 228, 0.06);
+}
+.so-type-card svg { color: var(--ap-accent); }
+.so-type-name { font-size: 15px; font-weight: 700; }
+.so-type-desc { font-size: 12.5px; color: var(--ap-text-secondary); }
+
+/* Review */
+.so-review-group { margin-bottom: 16px; }
+.so-review-group h5 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ap-text-secondary);
+    margin: 0 0 8px;
+}
+.so-review-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ap-border);
+    font-size: 13.5px;
+}
+.so-review-row span { color: var(--ap-text-secondary); }
+.so-review-row strong { color: var(--ap-text-primary); font-weight: 600; text-align: right; }
+
+/* Error + footer */
+.so-error {
+    font-size: 13px;
+    color: #d4313b;
+    margin: 16px 0 0;
+}
+.so-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+.so-footer .btn { min-width: 120px; justify-content: center; }
+
+/* Creating state (aguardando o webhook criar o recebedor) */
+.so-creating {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 48px 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.so-creating .spinner.large { margin-bottom: 12px; }
+.so-creating-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+    margin: 0;
+}
+.so-creating-sub {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ap-text-secondary);
+    margin: 0;
+}
+.so-creating-slow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--ap-bg-muted);
+    border-radius: var(--ap-radius-md);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ap-text-secondary);
+}
+.so-creating-slow svg { flex: 0 0 auto; margin-top: 1px; }
+.so-creating-slow.hidden { display: none !important; }
+
+@media (max-width: 640px) {
+    .so-wrap .form-row,
+    .so-type-cards { grid-template-columns: 1fr; }
+}

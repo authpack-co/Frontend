@@ -107,6 +107,27 @@ async function loadVitrineTab() {
     hideKycBanner();
     document.getElementById('btn-create-product')?.classList.remove('hidden');
 
+    // pending_seller: manifestou intenção mas ainda não tem recebedor. Em vez da
+    // vitrine, mostra o wizard de cadastro self-service. Ao concluir, o usuário
+    // vira 'seller' e recarregamos a aba já no fluxo normal (com banner de KYC).
+    const isPending = !!currentUserInfo && currentUserInfo.role === 'pending_seller';
+    if (isPending) {
+        _setVitrineDashboardVisible(false);
+        setElementState(container, 'onboarding');
+        if (window.SellerOnboarding) {
+            // A criação é síncrona (o register cria o recebedor e promove a
+            // seller antes de responder). Mostramos o loading durante a chamada
+            // e carregamos o painel no sucesso; em erro, voltamos ao formulário.
+            window.SellerOnboarding.mount({
+                onSubmitStart: () => enterCreatingState(container),
+                onSubmitSuccess: () => finishSellerCreation(),
+                onSubmitError: () => exitCreatingState(container),
+            });
+        }
+        vitrineLoaded = true;
+        return;
+    }
+
     // Seller status is now role-based (set manually by the admin team). Selling
     // no longer depends on Plus, and non-sellers don't even see this nav item —
     // so this is a defensive guard.
@@ -173,6 +194,42 @@ async function loadVitrineTab() {
         setElementState(container, 'vitrine-content');
         vitrineLoaded = true;
     }
+}
+
+// ── Estado "criando perfil" ─────────────────────────────────────────────────
+// A criação do recebedor é síncrona no backend (POST /account/register), mas a
+// chamada ao Pagar.me leva alguns segundos. Trocamos o formulário pelo loading
+// enquanto ela roda; no sucesso carregamos o painel, no erro voltamos ao form.
+// Aos 15s (Pagar.me lento), revelamos o aviso de que avisaremos por e-mail.
+let _sellerCreatingSlowTimer = null;
+
+function enterCreatingState(container) {
+    setElementState(container, 'creating');
+    const slow = document.getElementById('so-creating-slow');
+    if (slow) slow.classList.add('hidden');
+    clearTimeout(_sellerCreatingSlowTimer);
+    _sellerCreatingSlowTimer = setTimeout(() => {
+        document.getElementById('so-creating-slow')?.classList.remove('hidden');
+    }, 15000);
+}
+
+function exitCreatingState(container) {
+    clearTimeout(_sellerCreatingSlowTimer);
+    _sellerCreatingSlowTimer = null;
+    setElementState(container, 'onboarding');
+}
+
+function finishSellerCreation() {
+    clearTimeout(_sellerCreatingSlowTimer);
+    _sellerCreatingSlowTimer = null;
+    if (window.SellerOnboarding && typeof window.SellerOnboarding.clearDraft === 'function') {
+        window.SellerOnboarding.clearDraft();
+    }
+    // O backend já promoveu a seller; reflete no cliente e recarrega no fluxo
+    // normal (painel + banner de KYC).
+    if (currentUserInfo) currentUserInfo.role = 'seller';
+    vitrineLoaded = false;
+    loadVitrineTab();
 }
 
 function showKycBanner() {
