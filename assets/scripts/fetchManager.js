@@ -237,17 +237,6 @@ const fetchManager = {
         return response;
     },
 
-    // Leads
-
-    async submitLead(data) {
-        const response = await fetchRoutes(`/api/leads`, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(data),
-        });
-        return response;
-    },
-
     // Users
 
     async getUserInfo() {
