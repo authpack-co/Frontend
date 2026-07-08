@@ -120,7 +120,7 @@ window.AP = (function () {
 
     let currentView = null;
     function showView(name) {
-        if (!views[name] && name !== 'leads' && name !== 'financeiro') { /* allow built-ins */ }
+        if (!views[name] && name !== 'financeiro') { /* allow built-ins */ }
         document.querySelectorAll('.admin-nav-item[data-view]').forEach((b) => {
             b.classList.toggle('active', b.dataset.view === name);
         });
@@ -155,7 +155,7 @@ window.AP = (function () {
         });
 
         const initial = (location.hash || '').replace('#', '');
-        const valid = ['financeiro', 'usuarios', 'vendedores', 'administradores', 'leads'];
+        const valid = ['financeiro', 'usuarios', 'vendedores', 'administradores'];
         showView(valid.includes(initial) ? initial : 'financeiro');
     }
 

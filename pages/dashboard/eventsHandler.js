@@ -282,13 +282,17 @@ async function handleRemoveUser(e) {
     // Remove usuário do array local de usuários do package
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     const userIdx = packageData.users.findIndex(user => user.id == userId);
+    const removedUser = packageData.users[userIdx];
     packageData.users.splice(userIdx, 1);
 
     // Atualiza stats do package em cache
     packageData.stats.totalUsers -= 1;
 
-    // Recalcula tier do package (remoção de usuário pode rebaixar de Plus p/ Basic)
-    recalculateAllPackageTiers();
+    // Contador de pessoas: o criador não conta; pacote suspenso já não contava.
+    if (removedUser && !removedUser.isCreator && !packageData.suspended && currentUserInfo) {
+        currentUserInfo.peopleUsed = Math.max(0, Number(currentUserInfo.peopleUsed || 0) - 1);
+        updatePeopleCounter();
+    }
 
     // Notifica ação
     notify("success", "Usuário removido do pacote.");
@@ -877,50 +881,53 @@ closeBtns.forEach(item => item.addEventListener("click", event => {
 const plusSubscribeBtns = document.querySelectorAll('.plus-subscribe-btn');
 plusSubscribeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+        if (typeof annotatePlansModal === 'function') annotatePlansModal();
         utils.showModal("plusSubscribe");
     });
 });
 
-// Plus CTA (redirect to checkout page)
-const plusCtaBtn = document.querySelector('.plus-cta-btn');
-if (plusCtaBtn) {
-    plusCtaBtn.addEventListener('click', async () => {
-        if (plusCtaBtn.disabled) return;
+// Plan CTA (redirect to checkout page). Um botão por plano assinável
+// (data-plan="plus" | "business"). Enterprise é um link de contato (sem data-plan).
+const planChooseBtns = document.querySelectorAll('.plan-choose-btn[data-plan]');
+planChooseBtns.forEach(planBtn => {
+    planBtn.addEventListener('click', async () => {
+        if (planBtn.disabled) return;
 
-        plusCtaBtn.disabled = true;
-        const originalText = plusCtaBtn.textContent;
-        plusCtaBtn.textContent = 'Redirecionando...';
+        const plan = planBtn.dataset.plan;
+        planBtn.disabled = true;
+        const originalText = planBtn.textContent;
+        planBtn.textContent = 'Redirecionando...';
 
         try {
-            const res = await fetchManager.createCheckoutOrder({ origin: 'platform' });
+            const res = await fetchManager.createCheckoutOrder({ origin: 'platform', plan });
 
             if (!res.ok) {
                 const errMsg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                    ? 'Você já possui uma assinatura ativa.'
+                    ? 'Você já está neste plano.'
                     : res.result?.error || 'Erro ao iniciar checkout.';
                 alert(errMsg);
-                plusCtaBtn.disabled = false;
-                plusCtaBtn.textContent = originalText;
+                planBtn.disabled = false;
+                planBtn.textContent = originalText;
                 return;
             }
 
             const orderId = res.result?.id;
             if (!orderId) {
                 alert('Erro ao criar pedido. Tente novamente.');
-                plusCtaBtn.disabled = false;
-                plusCtaBtn.textContent = originalText;
+                planBtn.disabled = false;
+                planBtn.textContent = originalText;
                 return;
             }
 
             window.location.href = `/pages/checkout/?orderId=${orderId}`;
         } catch (err) {
-            console.error('Plus checkout redirect error:', err);
+            console.error('Plan checkout redirect error:', err);
             alert('Erro inesperado. Tente novamente.');
-            plusCtaBtn.disabled = false;
-            plusCtaBtn.textContent = originalText;
+            planBtn.disabled = false;
+            planBtn.textContent = originalText;
         }
     });
-}
+});
 
 const cancelBtns = document.querySelectorAll(".cancel-btn");
 cancelBtns.forEach(item => item.addEventListener("click", event => {
@@ -931,6 +938,7 @@ cancelBtns.forEach(item => item.addEventListener("click", event => {
 (() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgrade") === "plus") {
+        if (typeof annotatePlansModal === 'function') annotatePlansModal();
         utils.showModal("plusSubscribe");
 
         // Limpa o query param para não reabrir ao recarregar
@@ -977,15 +985,7 @@ const confirmCreatePackageBtn = createPackageModal.querySelector('.confirm-btn')
 const createPackageBtns = document.querySelectorAll('.create-package-btn');
 createPackageBtns.forEach(createPackageBtn => {
     createPackageBtn.addEventListener('click', () => {
-        // Verifica limite do plano free (3 pacotes basic)
-        if (currentUserInfo?.plan === 'free') {
-            const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
-            if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
-                utils.showModal("plusSubscribe");
-                return;
-            }
-        }
-
+        // Pacotes são ilimitados — sem gate de plano.
         utils.showModal("createPackage");
         createPackageInput.value = "";
 
@@ -1002,15 +1002,7 @@ createPackageBtns.forEach(createPackageBtn => {
 // Modelos prontos do onboarding: abrem o modal de criação já com o nome preenchido.
 document.querySelectorAll('.ob-tpl-preset').forEach(tplBtn => {
     tplBtn.addEventListener('click', () => {
-        // Verifica limite do plano free (3 pacotes basic)
-        if (currentUserInfo?.plan === 'free') {
-            const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
-            if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
-                utils.showModal("plusSubscribe");
-                return;
-            }
-        }
-
+        // Pacotes são ilimitados — sem gate de plano.
         utils.showModal("createPackage");
         createPackageInput.value = (tplBtn.dataset.tplName || "").slice(0, 20);
 
@@ -1076,9 +1068,6 @@ const createPackageHandler = async (event) => {
     const packageData = fetchCreatePackage.result.data;
     packagesList.userCollection.push(packageData);
 
-    // Atualiza contador x/3 (tier do novo pacote já vem correto do backend)
-    updateFreePlanPackageCounter();
-
     // fecha modal
     utils.closeModals();
 
@@ -1104,9 +1093,6 @@ const createPackageHandler = async (event) => {
     createdPackageEl.addEventListener("animationend", () => {
         createdPackageEl.classList.remove("fadeInFromRight");
     }, { once: true });
-
-    // Atualiza o contador do plano free (x/3) após criar pacote
-    updateFreePlanPackageCounter();
 
     // Primeiro pacote criado → abre o guia direto na Seção 2 (adicionar sessões),
     // pulando a de criar pacote, já que ele acabou de criar. Uma única vez.
@@ -1245,15 +1231,17 @@ const deletePackageHandler = async (event) => {
 
     // Deleta package no array local de packages
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
-    const deletedTier = packagesList.userCollection[packageIdx].tier;
+    const removedPkg = packagesList.userCollection[packageIdx];
     packagesList.userCollection.splice(packageIdx, 1);
 
-    // Se um Basic foi removido, verifica se algum Plus pode ser rebaixado
-    if (deletedTier === 'basic') {
-        downgradePlusAfterBasicDeletion();
-    } else {
-        // Plus removido: só atualiza o contador x/3
-        updateFreePlanPackageCounter();
+    // Contador de pessoas: desconta os membros externos do pacote deletado
+    // (criador não conta; pacote suspenso já não contava).
+    if (removedPkg && !removedPkg.suspended && currentUserInfo) {
+        const removedPeople = (removedPkg.users || []).filter(u => !u.isCreator).length;
+        if (removedPeople > 0) {
+            currentUserInfo.peopleUsed = Math.max(0, Number(currentUserInfo.peopleUsed || 0) - removedPeople);
+            updatePeopleCounter();
+        }
     }
 
     // fecha modal
@@ -1663,9 +1651,6 @@ const deleteSessionHandler = async (event) => {
     // Atualiza stats em cache
     if (affectedPkg.stats) affectedPkg.stats.totalSessions -= 1;
 
-    // Recalcula tier do package (remoção de sessão pode rebaixar de Plus p/ Basic)
-    recalculateAllPackageTiers();
-
     // fecha modal
     utils.closeModals();
 
@@ -1697,7 +1682,7 @@ const deleteSessionHandler = async (event) => {
         }
 
         // Re-renderiza completamente o painel de detalhes do pacote afetado
-        // (atualiza lista de sessões, stats, badges de tier, etc.)
+        // (atualiza lista de sessões, stats, etc.)
         renderPackageDetails(affectedPkg);
     }, { once: true });
 

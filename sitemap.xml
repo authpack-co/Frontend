@@ -21,7 +21,7 @@
   </url>
 
   <url>
-    <loc>https://authpack.co/parceiros/</loc>
+    <loc>https://authpack.co/pages/parceiros/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -129,6 +129,14 @@
   <url>
     <loc>https://authpack.co/blog/como-compartilhar-acesso-sem-senha/</loc>
     <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== Pricing ===== -->
+  <url>
+    <loc>https://authpack.co/pages/pricing/</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

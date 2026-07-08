@@ -60,6 +60,11 @@ const fetchManager = {
         return response;
     },
 
+    async getSharedPeople() {
+        const response = await fetchRoutes("/api/packages/people");
+        return response;
+    },
+
     async createPackage(packageDetails) {
         const processedData = JSON.stringify(packageDetails);
         const response = await fetchRoutes("/api/packages", {
@@ -234,17 +239,6 @@ const fetchManager = {
             credentials: "include"
         });
 
-        return response;
-    },
-
-    // Leads
-
-    async submitLead(data) {
-        const response = await fetchRoutes(`/api/leads`, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(data),
-        });
         return response;
     },
 

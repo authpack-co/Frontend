@@ -18,9 +18,9 @@
     let scBillingData   = null;
     let scBillingLoaded = false;
 
-    // Fallback price for the AuthPack Plus plan (R$ 16,90/mês), used when there
+    // Fallback price for the AuthPack Plus plan (R$ 39,90/mês), used when there
     // are no invoices yet to read the real amount from.
-    const PLUS_PRICE_CENTS = 1690;
+    const PLUS_PRICE_CENTS = 3990;
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -109,24 +109,25 @@
         scHide(elCanceled);
         scHide(elRole);
 
-        // Vendedor/admin têm os benefícios do Plus pelo papel — não assinam.
-        // Whitelist explícita (espelha PLUS_BENEFIT_ROLES no backend).
-        const PLUS_BENEFIT_ROLES = ['seller', 'admin'];
+        // Apenas papéis com benefício ilimitado (admin) não assinam. Vendedor
+        // agora é usuário normal e assina planos como qualquer um.
+        const PLUS_BENEFIT_ROLES = ['admin'];
         if (PLUS_BENEFIT_ROLES.includes(role)) {
             scShow(elRole);
             const lbl = scEl('sc-plan-role-label');
-            if (lbl) lbl.textContent = role === 'admin' ? 'Administrador' : 'Vendedor';
+            if (lbl) lbl.textContent = 'Administrador';
             return;
         }
 
-        if (plan === 'plus' && planStatus === 'canceled') {
+        const isPaid = !!plan && plan !== 'free';
+        if (isPaid && planStatus === 'canceled') {
             scShow(elCanceled);
             const untilEl = scEl('sc-plan-canceled-until');
             if (untilEl && expiresAt) {
-                untilEl.textContent = `Você continua no Plus até: ${scFormatDate(expiresAt)}`;
+                untilEl.textContent = `Você continua no plano até: ${scFormatDate(expiresAt)}`;
             }
 
-        } else if (plan === 'plus' && planStatus === 'active') {
+        } else if (isPaid && planStatus === 'active') {
             scShow(elPlus);
             const renewEl = scEl('sc-plan-renews-at');
             if (renewEl && expiresAt) {
@@ -369,15 +370,16 @@
         const renewEl = scEl('bl-plan-renew');
         const noteEl  = scEl('bl-plan-note');
 
-        // Vendedor/admin: benefícios Plus inclusos pelo papel — sem cobrança.
+        // Admin: benefícios inclusos pelo papel — sem cobrança. Vendedor NÃO entra
+        // mais aqui: é usuário normal e assina planos como qualquer um.
         const role = scUserData && scUserData.role;
-        if (role === 'seller' || role === 'admin') {
-            if (nameEl)  nameEl.textContent = 'Benefícios Plus inclusos';
-            scSetStatusBadge(badgeEl, role === 'admin' ? 'Administrador' : 'Vendedor', 'paid');
+        if (role === 'admin') {
+            if (nameEl)  nameEl.textContent = 'Benefícios inclusos';
+            scSetStatusBadge(badgeEl, 'Administrador', 'paid');
             if (priceEl) priceEl.textContent = 'Incluso';
             if (renewEl) renewEl.textContent = '';
             if (noteEl) {
-                noteEl.textContent = 'Seu papel já inclui todos os recursos do Plus. Nenhuma assinatura é necessária.';
+                noteEl.textContent = 'Seu papel de administrador já inclui todos os recursos. Nenhuma assinatura é necessária.';
                 scShow(noteEl);
             }
             return;
@@ -387,16 +389,18 @@
         const status    = billing.plan_status;
         const sub       = billing.subscription;
         const invoices  = billing.invoices || [];
-        // Plus without a subscription row = courtesy/trial grant (no charges).
-        const isTrial   = plan === 'plus' && !sub;
+        const isPaid    = !!plan && plan !== 'free';
+        const planLabel = isPaid ? `AuthPack ${plan.charAt(0).toUpperCase()}${plan.slice(1)}` : 'Plano Free';
+        // Plano pago sem subscription row = cortesia/trial (sem cobrança).
+        const isTrial   = isPaid && !sub;
         const priceCents = invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS;
         const currency   = (invoices[0] && invoices[0].currency) || 'BRL';
 
         if (renewEl) renewEl.textContent = '';
         if (noteEl)  scHide(noteEl);
 
-        if (plan === 'plus') {
-            if (nameEl) nameEl.textContent = 'AuthPack Plus';
+        if (isPaid) {
+            if (nameEl) nameEl.textContent = planLabel;
 
             if (isTrial) {
                 scSetStatusBadge(badgeEl, 'Cortesia', 'trial');
@@ -430,7 +434,7 @@
             if (badgeEl) scHide(badgeEl);
             if (priceEl) priceEl.textContent = 'Gratuito';
             if (noteEl) {
-                noteEl.textContent = 'Você está no plano Free. Assine o Plus para ter pacotes, sessões e usuários sem limites.';
+                noteEl.textContent = 'Você está no plano Free. Assine o Plus para compartilhar acesso com muito mais pessoas.';
                 scShow(noteEl);
             }
         }
@@ -460,7 +464,7 @@
 
         // Próxima cobrança — apenas quando a assinatura está ativa e vai renovar.
         // A cobrança ocorre em current_period_end (fim do ciclo já pago).
-        if (billing.plan === 'plus' && sub && sub.status === 'active'
+        if (billing.plan && billing.plan !== 'free' && sub && sub.status === 'active'
             && !sub.cancel_at_period_end && sub.current_period_end) {
             const dueTime = new Date(sub.current_period_end).getTime();
             periods.push({
