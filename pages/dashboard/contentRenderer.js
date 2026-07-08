@@ -586,7 +586,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
                         <path d="M12 17h.01"/>
                     </svg>
                 </div>
-                <span><strong>Acesso pausado:</strong> o dono excedeu o limite de pessoas do plano. Você volta assim que ele renovar ou liberar espaço.</span>
+                <span>Seu acesso a este pacote está pausado temporariamente.</span>
             `;
             activePreset.insertBefore(alertNote, activePreset.firstChild);
         }
@@ -2556,6 +2556,32 @@ function pmEscape(str) {
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// Marca o plano atual no modal de planos (card "Plano atual" desabilitado) para
+// que um assinante veja onde está e possa progredir (ex.: Plus → Business).
+function annotatePlansModal() {
+    const plan = currentUserInfo?.plan;
+    document.querySelectorAll('#plusSubscribeModal .plan-choose-btn[data-plan]').forEach(btn => {
+        const tier = btn.dataset.plan;
+        const card = btn.closest('.plan-card');
+        if (plan && plan === tier) {
+            btn.disabled = true;
+            btn.textContent = 'Plano atual';
+            if (card) card.classList.add('plan-card--current');
+        } else {
+            btn.disabled = false;
+            btn.textContent = tier === 'business' ? 'Assinar Business' : 'Assinar Plus';
+            if (card) card.classList.remove('plan-card--current');
+        }
+    });
+}
+
+// Abre o modal de planos (fecha o que estiver aberto e marca o plano atual).
+function openPlansModal() {
+    utils.closeModals();
+    annotatePlansModal();
+    utils.showModal('plusSubscribe');
+}
+
 // Abre o modal com a lista de pessoas por pacote (suspensos esmaecidos).
 async function openPeopleModal() {
     utils.showModal('people');
@@ -2585,6 +2611,21 @@ async function renderPeopleModal() {
         summary.innerHTML = over
             ? `<strong>${limitText}</strong> — você excedeu o limite do plano. As ${peopleUsed - peopleLimit} pessoas mais recentes ficaram sem acesso até você renovar ou reduzir.`
             : `<strong>${limitText}</strong> com acesso aos seus pacotes.`;
+    }
+
+    // Footer: plano atual + CTA de upgrade (some para planos ilimitados).
+    const footer = document.getElementById('peopleModalFooter');
+    if (footer) {
+        if (peopleLimit == null) {
+            footer.innerHTML = `<span class="pmf-plan">Plano ilimitado</span>`;
+        } else {
+            const planCap = (currentUserInfo?.plan || 'free');
+            const planName = planCap.charAt(0).toUpperCase() + planCap.slice(1);
+            footer.innerHTML =
+                `<span class="pmf-plan">Plano <strong>${planName}</strong> · até ${peopleLimit} pessoas</span>` +
+                `<button class="pmf-upgrade" type="button">Fazer upgrade &rarr;</button>`;
+            footer.querySelector('.pmf-upgrade')?.addEventListener('click', openPlansModal);
+        }
     }
 
     if (!packages || !packages.length) {

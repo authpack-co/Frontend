@@ -133,6 +133,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- ===== Pricing ===== -->
+  <url>
+    <loc>https://authpack.co/pages/pricing/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ===== Legal ===== -->
   <url>
     <loc>https://authpack.co/pages/legal/privacy/</loc>

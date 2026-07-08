@@ -698,6 +698,72 @@
     opacity: 0.45;
 }
 
+.people-modal-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--ap-border);
+    background: var(--ap-bg-page);
+}
+
+.people-modal-footer:empty {
+    display: none;
+}
+
+.pmf-plan {
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+}
+
+.pmf-plan strong {
+    color: var(--ap-text-secondary);
+    font-weight: 600;
+}
+
+.pmf-upgrade {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-accent);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 7px;
+    transition: background 0.15s ease;
+}
+
+.pmf-upgrade:hover {
+    background: var(--ap-accent-light);
+}
+
+/* Card do plano atual no modal de planos (marcado por annotatePlansModal). */
+.plan-card--current {
+    border-color: #22c55e !important;
+}
+
+.plan-card--current .plan-badge {
+    display: none;
+}
+
+.plan-card--current::after {
+    content: "Plano atual";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #22c55e;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
 /* ============ Plans selection modal (multi-tier: plus/business/enterprise) ============ */
 .plans-modal {
     max-width: 860px;

@@ -370,15 +370,16 @@
         const renewEl = scEl('bl-plan-renew');
         const noteEl  = scEl('bl-plan-note');
 
-        // Vendedor/admin: benefícios Plus inclusos pelo papel — sem cobrança.
+        // Admin: benefícios inclusos pelo papel — sem cobrança. Vendedor NÃO entra
+        // mais aqui: é usuário normal e assina planos como qualquer um.
         const role = scUserData && scUserData.role;
-        if (role === 'seller' || role === 'admin') {
-            if (nameEl)  nameEl.textContent = 'Benefícios Plus inclusos';
-            scSetStatusBadge(badgeEl, role === 'admin' ? 'Administrador' : 'Vendedor', 'paid');
+        if (role === 'admin') {
+            if (nameEl)  nameEl.textContent = 'Benefícios inclusos';
+            scSetStatusBadge(badgeEl, 'Administrador', 'paid');
             if (priceEl) priceEl.textContent = 'Incluso';
             if (renewEl) renewEl.textContent = '';
             if (noteEl) {
-                noteEl.textContent = 'Seu papel já inclui todos os recursos do Plus. Nenhuma assinatura é necessária.';
+                noteEl.textContent = 'Seu papel de administrador já inclui todos os recursos. Nenhuma assinatura é necessária.';
                 scShow(noteEl);
             }
             return;

@@ -881,6 +881,7 @@ closeBtns.forEach(item => item.addEventListener("click", event => {
 const plusSubscribeBtns = document.querySelectorAll('.plus-subscribe-btn');
 plusSubscribeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+        if (typeof annotatePlansModal === 'function') annotatePlansModal();
         utils.showModal("plusSubscribe");
     });
 });
@@ -902,7 +903,7 @@ planChooseBtns.forEach(planBtn => {
 
             if (!res.ok) {
                 const errMsg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                    ? 'Você já possui uma assinatura ativa.'
+                    ? 'Você já está neste plano.'
                     : res.result?.error || 'Erro ao iniciar checkout.';
                 alert(errMsg);
                 planBtn.disabled = false;
@@ -937,6 +938,7 @@ cancelBtns.forEach(item => item.addEventListener("click", event => {
 (() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgrade") === "plus") {
+        if (typeof annotatePlansModal === 'function') annotatePlansModal();
         utils.showModal("plusSubscribe");
 
         // Limpa o query param para não reabrir ao recarregar

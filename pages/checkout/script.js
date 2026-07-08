@@ -518,7 +518,13 @@
                 ? 'Sua assinatura foi realizada! O acesso será ativado assim que o pagamento for confirmado.'
                 : 'Seu acesso já está ativo.';
         } else {
-            msg = 'Sua assinatura do AuthPack Plus está ativa!';
+            // Plano vem do metadata do pedido (AuthPack Plus / Business / …).
+            let planName = 'AuthPack Plus';
+            try {
+                const m = typeof _order?.metadata === 'string' ? JSON.parse(_order.metadata) : (_order?.metadata || {});
+                if (m.planName) planName = m.planName;
+            } catch (e) {}
+            msg = `Sua assinatura do ${planName} está ativa!`;
         }
 
         document.getElementById('ck-success-msg').textContent = msg;
