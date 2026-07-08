@@ -329,7 +329,7 @@ function createSessionCardElement(session) {
 }
 
 // Gera o elemento DOM de um usuário conectado
-function createUserElement(user) {
+function createUserElement(user, suspended = false) {
     const container = document.createElement('div');
     container.className = 'list-item user';
     container.dataset.userId = user.id;
@@ -358,6 +358,12 @@ function createUserElement(user) {
     if (user.isCreator) {
         const creatorTag = createElement('span', 'creator-tag', 'Criador');
         info.appendChild(creatorTag);
+    }
+
+    // Suspenso (acima do limite do plano): esmaece a linha e sinaliza "sem acesso".
+    if (suspended) {
+        container.classList.add('suspended');
+        info.appendChild(createElement('span', 'suspended-tag', 'sem acesso'));
     }
 
     // ACTIONS wrapper (remove btn + details btn)
@@ -659,8 +665,10 @@ async function renderPackageDetails(pkg, isCollection = true) {
 
         // Criador sempre no topo (a ordem do JSON_ARRAYAGG não é garantida).
         const orderedUsers = [...pkg.users].sort((a, b) => (b.isCreator ? 1 : 0) - (a.isCreator ? 1 : 0));
+        const suspendedKeys = getSuspendedMembershipKeys();
         orderedUsers.forEach(user => {
-            const userElement = createUserElement(user);
+            const suspended = suspendedKeys.has(pkg.id + ':' + user.id);
+            const userElement = createUserElement(user, suspended);
             usersList.appendChild(userElement);
         })
     }
@@ -2456,6 +2464,39 @@ const PEOPLE_COUNTER_ICON = `<svg class="people-counter__icon" xmlns="http://www
 const INFO_COUNTER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
 
 /**
+ * Conjunto de memberships suspensas ("packageId:userId") — as diretas externas
+ * além do limite do plano, por ordem de chegada (granted_at). Espelha o cálculo
+ * do backend (rank vs. getUserPeopleLimit). Vazio quando o plano é ilimitado.
+ * Compras no marketplace (accessOrigin != 'direct') não entram no ranking.
+ */
+function getSuspendedMembershipKeys() {
+    const keys = new Set();
+    const limit = currentUserInfo?.peopleLimit;
+    if (limit == null) return keys; // ilimitado → ninguém suspenso
+
+    const memberships = [];
+    (packagesList.userCollection || []).forEach(pkg => {
+        (pkg.users || []).forEach(u => {
+            if (u.isCreator) return;
+            if (u.accessOrigin && u.accessOrigin !== 'direct') return;
+            memberships.push({ pkgId: pkg.id, userId: u.id, at: new Date(u.connectedAt || 0).getTime() });
+        });
+    });
+
+    // Ordem de chegada; empate estável por (packageId, userId) — igual ao backend.
+    memberships.sort((a, b) => {
+        if (a.at !== b.at) return a.at - b.at;
+        if (a.pkgId !== b.pkgId) return a.pkgId < b.pkgId ? -1 : 1;
+        return a.userId < b.userId ? -1 : 1;
+    });
+
+    memberships.forEach((m, i) => {
+        if (i >= limit) keys.add(m.pkgId + ':' + m.userId);
+    });
+    return keys;
+}
+
+/**
  * Renderiza/atualiza o contador de pessoas compartilhadas (X / limite) à esquerda
  * do botão "Novo pacote", em todos os headers de coleção. Fonte da verdade:
  * currentUserInfo.peopleUsed / .peopleLimit (peopleLimit null = ilimitado).
@@ -2566,7 +2607,10 @@ async function renderPeopleModal() {
             </div>`;
         }).join('');
         return `<div class="pm-package">
-            <div class="pm-package-name">${pmEscape(pkg.name)}</div>
+            <div class="pm-package-head">
+                <span class="pm-package-name">${pmEscape(pkg.name)}</span>
+                <span class="pm-package-count">${pkg.people.length}</span>
+            </div>
             <div class="pm-people">${rows}</div>
         </div>`;
     }).join('');

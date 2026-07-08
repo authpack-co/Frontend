@@ -530,73 +530,108 @@
    ============================================ */
 /* ============ People (shared) modal ============ */
 .people-modal {
-    max-width: 520px;
+    max-width: 500px;
     width: 100%;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .people-modal-summary {
-    padding: 12px 20px;
+    padding: 13px 20px;
     margin: 0;
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--ap-text-muted);
     line-height: 1.5;
+    background: var(--ap-bg-page);
     border-bottom: 1px solid var(--ap-border);
+    flex-shrink: 0;
 }
 
 .people-modal-summary strong {
     color: var(--ap-text-primary);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .people-modal-summary.over {
-    color: var(--ap-danger-text, #e06a6a);
-    background: rgba(239, 68, 68, 0.06);
+    color: #d98a8a;
+    background: rgba(239, 68, 68, 0.07);
+    border-bottom-color: rgba(239, 68, 68, 0.20);
 }
 
 .people-modal-summary.over strong {
     color: #f08a8a;
 }
 
+.people-modal .modal-body {
+    padding: 6px 0;
+    overflow-y: auto;
+    min-height: 0;
+}
+
 .people-modal-empty {
-    padding: 32px 20px;
+    padding: 40px 20px;
     text-align: center;
     color: var(--ap-text-muted);
     font-size: 14px;
 }
 
 .pm-package {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--ap-border);
+    padding: 10px 20px 14px;
 }
 
-.pm-package:last-child {
-    border-bottom: none;
+.pm-package + .pm-package {
+    border-top: 1px solid var(--ap-border);
+    padding-top: 14px;
+}
+
+.pm-package-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
 .pm-package-name {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     color: var(--ap-text-muted);
-    margin-bottom: 10px;
+}
+
+.pm-package-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+    background: var(--ap-bg-muted);
+    border-radius: 999px;
+    padding: 1px 8px;
+    line-height: 1.6;
 }
 
 .pm-people {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
 }
 
 .pm-person {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 11px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.pm-person:hover {
+    background: var(--ap-bg-hover);
 }
 
 .pm-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
     border-radius: 50%;
     overflow: hidden;
@@ -604,6 +639,7 @@
     align-items: center;
     justify-content: center;
     background: var(--ap-bg-muted);
+    border: 1px solid var(--ap-border);
 }
 
 .pm-avatar img {
@@ -613,20 +649,23 @@
 }
 
 .pm-avatar-fallback {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--ap-text-secondary);
+    text-transform: uppercase;
 }
 
 .pm-info {
     display: flex;
     flex-direction: column;
+    gap: 1px;
     min-width: 0;
     flex: 1;
 }
 
 .pm-name {
-    font-size: 14px;
+    font-size: 13.5px;
+    font-weight: 500;
     color: var(--ap-text-primary);
     white-space: nowrap;
     overflow: hidden;
@@ -643,17 +682,19 @@
 
 .pm-tag {
     flex-shrink: 0;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     color: #e06a6a;
     background: rgba(239, 68, 68, 0.10);
     border: 1px solid rgba(239, 68, 68, 0.25);
-    padding: 2px 8px;
+    padding: 2px 9px;
     border-radius: 999px;
+    white-space: nowrap;
 }
 
-/* Pessoa suspensa (acima do limite): esmaecida. */
-.pm-person.suspended {
+/* Pessoa suspensa (acima do limite): avatar e textos esmaecidos, tag em destaque. */
+.pm-person.suspended .pm-avatar,
+.pm-person.suspended .pm-info {
     opacity: 0.45;
 }
 
