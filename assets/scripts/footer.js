@@ -26,7 +26,7 @@
         .then(function (data) {
             if (!data || !data.data) return;
             var user = data.data;
-            var isPlus = user.plan === 'plus' || user.subscription_status === 'active';
+            var isPlus = (user.plan && user.plan !== 'free') || user.subscription_status === 'active';
 
             document.querySelectorAll('.nav-user').forEach(function (navUser) {
                 navUser.innerHTML = buildNavUser(user, isPlus);

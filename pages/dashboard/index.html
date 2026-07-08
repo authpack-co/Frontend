@@ -602,80 +602,74 @@
 
         <!-- Plus Subscribe Modal -->
         <div class="modal-overlay" id="plusSubscribeModal">
-            <div class="modal plus-modal">
+            <div class="modal plans-modal">
                 <button class="close-btn plus-close-btn">×</button>
-                <div class="plus-modal-content">
-                    <div class="plus-modal-left">
-                        <div class="plus-modal-header">
-                            <h2>AuthPack <span class="plus-highlight">Plus</span></h2>
-                            <p class="plus-subtitle">Para quem quer ir além.</p>
+                <div class="plans-modal-header">
+                    <h2>Escolha seu <span class="plus-highlight">plano</span></h2>
+                    <p>O único limite é com quantas pessoas você compartilha acesso. Crie pacotes e
+                        sessões à vontade em qualquer plano.</p>
+                </div>
+                <div class="plans-grid">
+                    <!-- Plus -->
+                    <div class="plan-card">
+                        <div class="plan-card-head"><span class="plan-name">Plus</span></div>
+                        <div class="plan-people"><strong>25</strong> pessoas</div>
+                        <div class="plan-price">
+                            <span class="plan-price-value">R$ 39,90</span>
+                            <span class="plan-price-period">/mês</span>
                         </div>
-                        <p class="plus-description">Crie e compartilhe seus acessos dentro do
-                            <strong>AuthPack</strong> sem os limites do plano Free.</p>
-                        <ul class="plus-benefits">
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M20 6 9 17l-5-5" />
-                                </svg>
-                                <span><strong>Pacotes ilimitados</strong></span>
-                            </li>
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M20 6 9 17l-5-5" />
-                                </svg>
-                                <span><strong>Sessões ilimitadas</strong> por pacote</span>
-                            </li>
-                            <li>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M20 6 9 17l-5-5" />
-                                </svg>
-                                <span><strong>Usuários ilimitados</strong> por pacote</span>
-                            </li>
+                        <ul class="plan-feats">
+                            <li>Pacotes e sessões ilimitados</li>
+                            <li>Compartilhe com até 25 pessoas</li>
+                            <li>Cancele quando quiser</li>
                         </ul>
-                        <div class="plus-pricing">
-                            <span class="plus-price">R$ 16,90</span>
-                            <span class="plus-period">/ mês</span>
-                            <span class="plus-cancel">Cancele quando quiser.</span>
-                        </div>
-                        <button class="plus-cta-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M7 17l9.2-9.2M17 17V7H7" />
-                            </svg> Fazer upgrade para Plus
-                        </button>
-
-                        <div class="plus-notes">
-                            <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                </svg> Pagamento seguro</span>
-                            <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
-                                </svg> Ativação imediata</span>
-                            <span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                    <path d="M21 3v5h-5" />
-                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                    <path d="M8 16H3v5" />
-                                </svg> Atualização instantânea da sua conta</span>
-                        </div>
+                        <button class="plan-choose-btn" data-plan="plus">Assinar Plus</button>
                     </div>
-                    <div class="plus-modal-right">
-                        <img src="/assets/images/plus-background.png" alt="AuthPack Plus">
+                    <!-- Business (destaque) -->
+                    <div class="plan-card plan-card--featured">
+                        <span class="plan-badge">Mais capacidade</span>
+                        <div class="plan-card-head"><span class="plan-name">Business</span></div>
+                        <div class="plan-people"><strong>50</strong> pessoas</div>
+                        <div class="plan-price">
+                            <span class="plan-price-value">R$ 99,90</span>
+                            <span class="plan-price-period">/mês</span>
+                        </div>
+                        <ul class="plan-feats">
+                            <li>Tudo do Plus</li>
+                            <li>Compartilhe com até 50 pessoas</li>
+                            <li>Ideal para times e grupos</li>
+                        </ul>
+                        <button class="plan-choose-btn" data-plan="business">Assinar Business</button>
                     </div>
+                    <!-- Enterprise (contato) -->
+                    <div class="plan-card">
+                        <div class="plan-card-head"><span class="plan-name">Enterprise</span></div>
+                        <div class="plan-people"><strong>Sob medida</strong></div>
+                        <div class="plan-price">
+                            <span class="plan-price-value">Sob consulta</span>
+                        </div>
+                        <ul class="plan-feats">
+                            <li>Pessoas ilimitadas</li>
+                            <li>Condições sob medida</li>
+                            <li>Suporte dedicado</li>
+                        </ul>
+                        <a class="plan-choose-btn plan-choose-btn--ghost"
+                            href="mailto:team@authpack.co?subject=Plano%20Enterprise">Falar com vendas</a>
+                    </div>
+                </div>
+                <p class="plans-note">Pagamento seguro · Ativação imediata · Cancele quando quiser</p>
+            </div>
+        </div>
+        <!-- People (shared) Modal -->
+        <div class="modal-overlay" id="peopleModal">
+            <div class="modal people-modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Pessoas com quem você compartilha</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="people-modal-summary" id="peopleModalSummary"></div>
+                <div class="modal-body custom-scrollbar" id="peopleModalBody">
+                    <!-- Populated by JS -->
                 </div>
             </div>
         </div>
@@ -910,8 +904,8 @@
         <div class="sidebar-footer">
             <!-- Plus Upgrade Card (hidden for Plus users via JS) -->
             <div class="sidebar-upgrade-card" id="sidebar-plus-card">
-                <div class="sidebar-upgrade-title">AuthPack <span>Plus</span></div>
-                <p class="sidebar-upgrade-desc">Pacotes e sessões ilimitados.</p>
+                <div class="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
+                <p class="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
                 <button class="plus-subscribe-btn sidebar-upgrade-link">Fazer upgrade &rarr;</button>
             </div>
 

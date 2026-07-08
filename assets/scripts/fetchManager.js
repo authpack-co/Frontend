@@ -60,6 +60,11 @@ const fetchManager = {
         return response;
     },
 
+    async getSharedPeople() {
+        const response = await fetchRoutes("/api/packages/people");
+        return response;
+    },
+
     async createPackage(packageDetails) {
         const processedData = JSON.stringify(packageDetails);
         const response = await fetchRoutes("/api/packages", {

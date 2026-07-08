@@ -5,13 +5,6 @@ let packagesList = {
 
 let currentUserInfo = null;
 
-// Limites do plano free
-const FREE_PLAN_LIMITS = {
-    basicPackages: 3,
-    sessionsPerBasicPackage: 5,
-    usersPerBasicPackage: 5,
-};
-
 // ============================================================================
 // FUNÇÕES AUXILIARES
 // ============================================================================
@@ -129,11 +122,6 @@ function createPackageElement(pkg, isAccess = false) {
     container.appendChild(cardBottom);
     container.appendChild(optionsBtn);
     container.appendChild(packageOptions);
-
-    // Plus tier: adiciona classe de destaque no pick
-    if (pkg.tier === 'plus') {
-        container.classList.add('plus-pick');
-    }
 
     // Inactive badge (⚠️) quando isActive === false
     if (pkg.isActive === false) {
@@ -577,48 +565,6 @@ async function renderPackageDetails(pkg, isCollection = true) {
 
     // Remove badges/alertas anteriores
     activePreset.querySelector('.inactive-alert-note')?.remove();
-    activePreset.querySelector('.plus-note-badge')?.remove();
-    activePreset.querySelector('.package-status-badge')?.remove();
-
-    if (isCollection) {
-        // Badge de status no canto superior direito do card-header (collection only)
-        const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
-        if (cardHeader && pkg.tier === 'plus') {
-            const statusBadge = createElement('div', 'package-status-badge');
-
-            if (isInactive) {
-                // Plus + inativo: badge de alerta âmbar
-                statusBadge.classList.add('status-badge--warning');
-                statusBadge.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                        <path d="M12 9v4"/>
-                        <path d="M12 17h.01"/>
-                    </svg>
-                    <span>Operação interrompida</span>
-                    <div class="status-badge-info">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 16v-4"/>
-                            <path d="M12 8h.01"/>
-                        </svg>
-                        <div class="status-badge-tooltip">Este pacote requer plano Plus</div>
-                    </div>
-                `;
-            } else {
-                // Apenas Plus: badge azul
-                statusBadge.classList.add('status-badge--plus');
-                statusBadge.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
-                    </svg>
-                    <span>Este pacote utiliza recursos Plus</span>
-                `;
-            }
-
-            cardHeader.appendChild(statusBadge);
-        }
-    }
 
     if (isInactive) {
         activePreset.classList.add('package-inactive');
@@ -634,7 +580,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
                         <path d="M12 17h.01"/>
                     </svg>
                 </div>
-                <span><strong>Operação interrompida:</strong> este pacote está temporariamente pausado.</span>
+                <span><strong>Acesso pausado:</strong> o dono excedeu o limite de pessoas do plano. Você volta assim que ele renovar ou liberar espaço.</span>
             `;
             activePreset.insertBefore(alertNote, activePreset.firstChild);
         }
@@ -1114,9 +1060,6 @@ async function loadPackageStats(pkg, period) {
         return; // Sai da função se não for o pacote correto
     }
 
-    // Stats container
-    const isFreePlanBasicPkg = currentUserInfo?.plan === 'free' && pkg.tier === 'basic';
-
     // Crescimento de novos usuários no período — usado no sublabel do card de Usuários
     const newUsersFiltered = filterByLastDays(pkg.stats.newUsersByDate, period);
     const newUsersCount = Object.values(newUsersFiltered).reduce((acc, curr) => acc + curr, 0);
@@ -1142,18 +1085,14 @@ async function loadPackageStats(pkg, period) {
     const sessionsSub = sessionsStat.querySelector(".stat-metric-sublabel");
     const totalSessions = pkg.stats ? pkg.stats.totalSessions : 0;
     sessionsValue.textContent = String(totalSessions);
-    sessionsSub.textContent = isFreePlanBasicPkg
-        ? `/${FREE_PLAN_LIMITS.sessionsPerBasicPackage}`
-        : "";
+    sessionsSub.textContent = "";
 
     // Users stats (+ crescimento no sublabel, em verde)
     const usersValue = usersStat.querySelector(".stat-metric-value");
     const usersSub = usersStat.querySelector(".stat-metric-sublabel");
     usersValue.textContent = String(totalUsers);
     const growthHtml = `<span class="stat-metric-growth">+${percentageIncrease}%</span>`;
-    usersSub.innerHTML = isFreePlanBasicPkg
-        ? `/${FREE_PLAN_LIMITS.usersPerBasicPackage} · ${growthHtml}`
-        : growthHtml;
+    usersSub.innerHTML = growthHtml;
 
     // Online users stat
     const onlineStat = contentPreset.querySelector(".online-users-stat");
@@ -2413,10 +2352,11 @@ function renderUserInfo(userInfo) {
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
-    // Roles que recebem os benefícios do Plus (whitelist explícita — espelha
-    // PLUS_BENEFIT_ROLES no backend). NÃO use role !== 'user'.
-    const PLUS_BENEFIT_ROLES = ['seller', 'admin'];
-    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || plan === 'plus';
+    // Roles com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
+    // Vendedor NÃO entra mais: é usuário normal e pode assinar planos.
+    const PLUS_BENEFIT_ROLES = ['admin'];
+    // Qualquer plano pago (plus/business/enterprise) ou papel com benefício.
+    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || (plan && plan !== 'free');
 
     // "Minha vitrine" aparece para vendedores e para quem já manifestou intenção
     // de vender (pending_seller — ainda sem recebedor). Admin usa o painel admin.
@@ -2477,7 +2417,7 @@ function renderUserInfo(userInfo) {
     let badgeLabel = null;
     if (role === 'admin') badgeLabel = 'Admin';
     else if (role === 'seller') badgeLabel = 'Vendedor';
-    else if (plan === 'plus') badgeLabel = 'Plus';
+    else if (plan && plan !== 'free') badgeLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
 
     if (hasPlusBenefits) {
         // Esconde toda a UI de upgrade — seller/admin/plus não assinam.
@@ -2507,30 +2447,32 @@ function renderUserInfo(userInfo) {
     }
 }
 
-// Atualiza o contador de pacotes básicos para usuários do plano free (x/3)
-function updateFreePlanPackageCounter() {
-    // Seleciona o header da preset-collection
-    const headerTop = document.querySelector('#packages-list .preset-collection .header-top');
-    if (!headerTop) return;
+// ============================================================================
+// CONTADOR DE PESSOAS (limitador único do plano)
+// ============================================================================
 
-    // Remove contador anterior se existir
-    headerTop.querySelector('.free-plan-counter')?.remove();
+// Ícones (Lucide) usados no pill do contador.
+const PEOPLE_COUNTER_ICON = `<svg class="people-counter__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+const INFO_COUNTER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
 
-    // Só mostra para plano free
-    if (currentUserInfo?.plan !== 'free') return;
+/**
+ * Renderiza/atualiza o contador de pessoas compartilhadas (X / limite) à esquerda
+ * do botão "Novo pacote", em todos os headers de coleção. Fonte da verdade:
+ * currentUserInfo.peopleUsed / .peopleLimit (peopleLimit null = ilimitado).
+ */
+function updatePeopleCounter() {
+    const used = Math.max(0, Number(currentUserInfo?.peopleUsed || 0));
+    const limit = currentUserInfo?.peopleLimit; // null/undefined = ilimitado
+    const unlimited = limit == null;
 
-    const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
-    const counter = document.createElement('span');
-    counter.className = 'free-plan-counter';
-    if (basicCount >= FREE_PLAN_LIMITS.basicPackages) {
-        counter.classList.add('at-limit');
-    }
-    counter.textContent = `${basicCount}/${FREE_PLAN_LIMITS.basicPackages} pacotes`;
+    const headers = document.querySelectorAll('#packages-list .header-top');
+    headers.forEach(headerTop => {
+        const createBtn = headerTop.querySelector('.create-package-btn');
+        const tabs = headerTop.querySelector('.card-tabs');
+        // Só nos headers de coleção (têm abas + botão de novo pacote).
+        if (!createBtn || !tabs) return;
 
-    // Garante que o botão "Novo pacote" está dentro de um wrapper flex
-    const createBtn = headerTop.querySelector('.create-package-btn');
-    if (createBtn) {
-        // Cria o wrapper na primeira chamada, reaproveita nas seguintes
+        // Agrupa contador + botão num wrapper flex à direita.
         let wrapper = headerTop.querySelector('.package-header-actions');
         if (!wrapper) {
             wrapper = document.createElement('div');
@@ -2538,167 +2480,96 @@ function updateFreePlanPackageCounter() {
             createBtn.parentNode.insertBefore(wrapper, createBtn);
             wrapper.appendChild(createBtn);
         }
-        // Insere o contador antes do botão, dentro do wrapper
-        wrapper.insertBefore(counter, createBtn);
-    } else {
-        headerTop.appendChild(counter);
-    }
-}
 
-// ============================================================================
-// RECÁLCULO DE TIER DE PACOTES
-// ============================================================================
+        let counter = wrapper.querySelector('.people-counter');
+        if (!counter) {
+            counter = document.createElement('span');
+            counter.className = 'people-counter';
+            counter.innerHTML = `${PEOPLE_COUNTER_ICON}<span class="people-counter__text"></span>` +
+                `<span class="people-counter__info" tabindex="0" role="img" aria-label="Sobre o limite de pessoas">` +
+                `${INFO_COUNTER_ICON}<span class="people-counter__tip">Pessoas com quem você compartilha acesso nos seus pacotes. Esse é o limite do seu plano — pacotes e sessões são ilimitados. Clique para ver a lista.</span></span>`;
+            // Clicar no pill abre o modal com a lista de pessoas por pacote.
+            counter.addEventListener('click', (e) => {
+                // Deixa o tooltip do ⓘ funcionar no hover sem competir com o clique.
+                openPeopleModal();
+            });
+            wrapper.insertBefore(counter, createBtn);
+        }
 
-/**
- * Recalcula o tier de um pacote individual com base nas regras de negócio:
- * Verifica apenas rebaixamento (Plus → Basic) com base nos limites de sessões e usuários.
- * Promoções (Basic → Plus) são calculadas exclusivamente pelo backend.
- * Retorna true se o tier mudou.
- */
-function recalculatePackageTier(pkg) {
-    // Só age sobre pacotes que o backend marcou como Plus
-    if (pkg.tier !== 'plus') return false;
-
-    const withinLimits =
-        pkg.sessions.length <= FREE_PLAN_LIMITS.sessionsPerBasicPackage &&
-        pkg.users.length <= FREE_PLAN_LIMITS.usersPerBasicPackage;
-
-    // Ainda ultrapassa os limites: não rebaixa
-    if (!withinLimits) return false;
-
-    // Rebaixamento: Plus → Basic
-    pkg.tier = 'basic';
-
-    // Remove design Plus do access-item na lista
-    const accessItem = document.querySelector(
-        `#packages-list .preset-collection .access-grid .access-item[data-package-id="${pkg.id}"]`
-    );
-    if (accessItem) {
-        accessItem.classList.remove('plus-pick');
-    }
-
-    return true;
-}
-
-/**
- * Recalcula o tier de TODOS os pacotes da coleção.
- * Deve ser chamado após eventos que afetam a posição ou contagens dos pacotes
- * (criar, excluir pacote, remover sessão, remover usuário).
- */
-function recalculateAllPackageTiers() {
-    let anyChanged = false;
-    let changedPkgIds = new Set();
-
-    packagesList.userCollection.forEach((pkg) => {
-        const changed = recalculatePackageTier(pkg);
-        if (changed) {
-            anyChanged = true;
-            changedPkgIds.add(pkg.id);
+        const textEl = counter.querySelector('.people-counter__text');
+        if (unlimited) {
+            textEl.innerHTML = `<strong>${used}</strong> pessoas`;
+            counter.classList.remove('at-limit', 'over-limit');
+        } else {
+            textEl.innerHTML = `<strong>${used}</strong> / ${limit} pessoas`;
+            counter.classList.toggle('over-limit', used > limit);
+            counter.classList.toggle('at-limit', used === limit);
         }
     });
-
-    // Sempre atualiza o contador x/3 (pode ter mudado mesmo sem rebaixamentos)
-    updateFreePlanPackageCounter();
-
-    if (!anyChanged) return;
-
-    // Se um pacote estiver selecionado nos detalhes, atualiza badge e stats
-    const contentCard = document.querySelector('#package-details');
-    const selectedPkgId = contentCard?.dataset.packageId;
-    if (selectedPkgId) {
-        const selectedPkg = packagesList.userCollection.find(p => p.id === selectedPkgId);
-        if (selectedPkg) {
-            // Atualiza o badge de status
-            const activePreset = contentCard.querySelector('.preset-collection');
-            if (activePreset) {
-                const cardHeader = activePreset.querySelector('.screen-section.primary .preset-content .card-header');
-                const existingBadge = activePreset.querySelector('.package-status-badge');
-                existingBadge?.remove();
-
-                if (cardHeader && selectedPkg.tier === 'plus') {
-                    const isInactive = selectedPkg.isActive === false;
-                    const statusBadge = createElement('div', 'package-status-badge');
-
-                    if (isInactive) {
-                        statusBadge.classList.add('status-badge--warning');
-                        statusBadge.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                                <path d="M12 9v4"/><path d="M12 17h.01"/>
-                            </svg>
-                            <span>Operação interrompida</span>`;
-                    } else {
-                        statusBadge.classList.add('status-badge--plus');
-                        statusBadge.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
-                            </svg>
-                            <span>Este pacote utiliza recursos Plus</span>`;
-                    }
-
-                    cardHeader.appendChild(statusBadge);
-                }
-            }
-
-            // Se o tier do pacote selecionado mudou, atualiza o painel de stats
-            // para que "x/5" ↔ "x" seja refletido imediatamente
-            if (changedPkgIds.has(selectedPkg.id) && selectedPkg.stats) {
-                const periodSelected = document.querySelector('.usage-chart-container .chart-period-select option:checked')?.value;
-                const period = periodSelected === 'today' ? 0 : (periodSelected === '7days' ? 7 : 30);
-                loadPackageStats(selectedPkg, period);
-            }
-        }
-    }
 }
 
-/**
- * Chamada após a exclusão de um package Basic.
- * Se o total de Basics cair abaixo de 3, rebaixa o Plus mais antigo que está
- * dentro dos limites de sessões/usuários (Plus apenas por regra de quantidade).
- */
-function downgradePlusAfterBasicDeletion() {
-    const basicCount = packagesList.userCollection.filter(pkg => pkg.tier === 'basic').length;
+// Escape mínimo para nomes/emails inseridos via innerHTML no modal.
+function pmEscape(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
-    // Ainda há 3 ou mais Basics — nenhum candidato a rebaixamento
-    if (basicCount >= FREE_PLAN_LIMITS.basicPackages) return;
+// Abre o modal com a lista de pessoas por pacote (suspensos esmaecidos).
+async function openPeopleModal() {
+    utils.showModal('people');
+    await renderPeopleModal();
+}
 
-    // Candidatos: Plus com ≤5 sessões E ≤5 usuários (Plus apenas por quantidade, não por uso)
-    const candidates = packagesList.userCollection.filter(pkg =>
-        pkg.tier === 'plus' &&
-        pkg.sessions.length <= FREE_PLAN_LIMITS.sessionsPerBasicPackage &&
-        pkg.users.length <= FREE_PLAN_LIMITS.usersPerBasicPackage
-    );
+async function renderPeopleModal() {
+    const body = document.getElementById('peopleModalBody');
+    const summary = document.getElementById('peopleModalSummary');
+    if (!body) return;
 
-    if (candidates.length === 0) {
-        updateFreePlanPackageCounter();
+    body.innerHTML = '<div class="spinner-container" style="height:160px;display:flex;align-items:center;justify-content:center;"><div class="spinner large"></div></div>';
+    if (summary) { summary.innerHTML = ''; summary.className = 'people-modal-summary'; }
+
+    const res = await fetchManager.getSharedPeople();
+    if (!res.ok || !res.result || !res.result.data) {
+        body.innerHTML = '<p class="people-modal-empty">Não foi possível carregar as pessoas.</p>';
         return;
     }
 
-    // Escolhe o mais antigo (createdAt mais cedo)
-    const oldest = candidates.reduce((prev, curr) =>
-        new Date(prev.createdAt) < new Date(curr.createdAt) ? prev : curr
-    );
+    const { peopleUsed, peopleLimit, packages } = res.result.data;
+    const over = peopleLimit != null && peopleUsed > peopleLimit;
 
-    // Rebaixa para Basic
-    oldest.tier = 'basic';
-
-    // Atualiza design do access-item na lista
-    const accessItem = document.querySelector(
-        `#packages-list .preset-collection .access-grid .access-item[data-package-id="${oldest.id}"]`
-    );
-    if (accessItem) {
-        accessItem.classList.remove('plus-pick');
+    if (summary) {
+        const limitText = peopleLimit == null ? `${peopleUsed} pessoas` : `${peopleUsed} / ${peopleLimit} pessoas`;
+        summary.className = 'people-modal-summary' + (over ? ' over' : '');
+        summary.innerHTML = over
+            ? `<strong>${limitText}</strong> — você excedeu o limite do plano. As ${peopleUsed - peopleLimit} pessoas mais recentes ficaram sem acesso até você renovar ou reduzir.`
+            : `<strong>${limitText}</strong> com acesso aos seus pacotes.`;
     }
 
-    // Se o pacote rebaixado estiver selecionado nos detalhes, remove o badge Plus
-    const contentCard = document.querySelector('#package-details');
-    if (contentCard?.dataset.packageId === oldest.id) {
-        const existingBadge = contentCard.querySelector('.package-status-badge');
-        existingBadge?.remove();
+    if (!packages || !packages.length) {
+        body.innerHTML = '<p class="people-modal-empty">Você ainda não compartilhou com ninguém.</p>';
+        return;
     }
 
-    // Atualiza o contador x/3
-    updateFreePlanPackageCounter();
+    body.innerHTML = packages.map(pkg => {
+        const rows = pkg.people.map(p => {
+            const avatar = p.picture
+                ? `<img src="${pmEscape(p.picture)}" alt="">`
+                : `<span class="pm-avatar-fallback">${pmEscape((p.name || '?').trim().charAt(0).toUpperCase())}</span>`;
+            return `<div class="pm-person${p.suspended ? ' suspended' : ''}">
+                <div class="pm-avatar">${avatar}</div>
+                <div class="pm-info">
+                    <span class="pm-name">${pmEscape(p.name || '—')}</span>
+                    <span class="pm-email">${pmEscape(p.email || '')}</span>
+                </div>
+                ${p.suspended ? '<span class="pm-tag">sem acesso</span>' : ''}
+            </div>`;
+        }).join('');
+        return `<div class="pm-package">
+            <div class="pm-package-name">${pmEscape(pkg.name)}</div>
+            <div class="pm-people">${rows}</div>
+        </div>`;
+    }).join('');
 }
 
 // ============================================================================
@@ -2731,9 +2602,8 @@ async function init() {
         true
     );
 
-
-    // Atualiza contador do plano free
-    updateFreePlanPackageCounter();
+    // Contador de pessoas (limitador único do plano)
+    updatePeopleCounter();
 
     // Verifica se há parâmetro de novo produto (vindo do checkout)
     const urlParams = new URLSearchParams(window.location.search);

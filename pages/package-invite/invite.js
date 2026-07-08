@@ -83,13 +83,10 @@
         }
     }
 
-    function renderTierPill(tier) {
+    function renderInvitePill() {
+        // Pacotes não têm mais tier — todo convite é um acesso compartilhado.
         const label = document.getElementById('tier-pill-label');
-        if (tier === 'plus') {
-            label.textContent = 'AuthPack Plus · acesso premium';
-        } else {
-            label.textContent = 'Acesso de cortesia · grátis';
-        }
+        if (label) label.textContent = 'Acesso compartilhado';
     }
 
     function showError(message) {
@@ -172,7 +169,7 @@
         document.getElementById('package-name').textContent = pkg.name;
         renderStack(pkg.sessions);
         renderOwner(owner);
-        renderTierPill(pkg.tier);
+        renderInvitePill();
         show(stateInvite);
     }
 

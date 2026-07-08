@@ -30,7 +30,7 @@
 
     function buildNavUser(user) {
         var firstName = (user.name || '').split(' ')[0];
-        var isPlus = user.plan === 'plus' || user.subscription_status === 'active';
+        var isPlus = (user.plan && user.plan !== 'free') || user.subscription_status === 'active';
         var plusBadge = isPlus ? '<span class="nav-plus-badge">Plus</span>' : '';
         var avatarClass = isPlus ? 'nav-avatar plus-avatar' : 'nav-avatar';
         return (
