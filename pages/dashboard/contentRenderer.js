@@ -2399,7 +2399,7 @@ function renderUserInfo(userInfo) {
             existingBadge.remove();
         }
 
-        // Vindo de /parceiros (?vitrine=novo): abre a aba automaticamente. Adiado
+        // Vindo de /pages/parceiros (?vitrine=novo): abre a aba automaticamente. Adiado
         // para o fim da fila para rodar DEPOIS do init() terminar de montar a
         // Home — senão a renderização da Home sobrescreve a troca de aba.
         try {

@@ -4,7 +4,7 @@
  * Fluxo self-service (sem lead/WhatsApp): o visitante clica em "Tornar-se
  * parceiro". A ação exige login (o e-mail vem da sessão, no backend):
  *   - se NÃO estiver logado, mandamos para o login com redirect de volta para
- *     /parceiros/?intent=1, que retoma a ação ao voltar;
+ *     /pages/parceiros/?intent=1, que retoma a ação ao voltar;
  *   - se estiver logado, chamamos fetchManager.becomeSellerIntent() (grava
  *     role=pending_seller) e redirecionamos para a Home, onde a "Minha Vitrine"
  *     já aparece desbloqueada com o badge "Novo" e o formulário de cadastro.
@@ -12,7 +12,7 @@
 (function () {
     'use strict';
 
-    const LOGIN_RETURN = '/parceiros/?intent=1';
+    const LOGIN_RETURN = '/pages/parceiros/?intent=1';
     const DASHBOARD_URL = '/pages/dashboard/?vitrine=novo';
 
     const errorEl = document.getElementById('partner-error');
