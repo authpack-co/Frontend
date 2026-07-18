@@ -185,8 +185,8 @@
         <div class="settings-overlay" id="manageVitrineModal">
             <div class="settings-modal mv-single">
                 <button class="settings-close-btn" id="mv-close-btn" title="Fechar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2" stroke-linecap="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -455,7 +455,9 @@
                 <div class="modal-header">
                     <div class="up-head">
                         <span class="up-head-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                                 <path d="M21 3v5h-5"></path>
                                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
@@ -474,7 +476,9 @@
                             <span class="up-status">Atualizando sessões…</span>
                             <span class="up-count">0/0</span>
                         </div>
-                        <div class="up-bar"><div class="up-bar-fill"></div></div>
+                        <div class="up-bar">
+                            <div class="up-bar-fill"></div>
+                        </div>
                     </div>
                     <ul class="up-list"></ul>
                     <p class="up-hint">Mantenha esta aba aberta — as abas dos serviços abrem e fecham sozinhas.</p>
@@ -876,20 +880,21 @@
                  abaixo reflete a seção selecionada. -->
             <div class="sidebar-sections">
                 <button class="sidebar-section-toggle collection-tab active" data-section="collection">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
-                        <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
-                        <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-folder-icon lucide-folder">
+                        <path
+                            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
                     </svg>
                     <span>Minha coleção</span>
                 </button>
                 <button class="sidebar-section-toggle access-tab" data-section="access">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
-                        <path d="m21 2-9.6 9.6" />
-                        <circle cx="7.5" cy="15.5" r="5.5" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-square-mouse-pointer-icon lucide-square-mouse-pointer">
+                        <path
+                            d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z" />
+                        <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
                     </svg>
                     <span>Meus acessos</span>
                 </button>
@@ -1094,70 +1099,91 @@
 
             <!-- Onboarding do primeiro pacote (mostrado quando a coleção está vazia) -->
             <div id="main-onboarding" class="main-onboarding" style="display:none;">
-                        <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
-                        <div class="ob-onboarding">
+                <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
+                <div class="ob-onboarding">
 
-                            <!-- Hero -->
-                            <div class="ob-hero">
-                                <h2 class="ob-title">Crie seu primeiro pacote</h2>
-                                <p class="ob-desc">Um pacote reúne suas sessões de login para você compartilhar o acesso — sem revelar a senha.</p>
-                                <div class="ob-actions">
-                                    <button class="btn btn-primary ob-cta create-package-btn">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        Criar pacote
-                                    </button>
-                                    <button type="button" class="ob-how-btn">Ver como funciona</button>
-                                </div>
-                            </div>
-
-                            <!-- Modelos prontos -->
-                            <div class="ob-templates">
-                                <div class="ob-templates-title">Ou comece por um modelo</div>
-                                <div class="ob-templates-grid">
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Assinaturas de IA</span>
-                                            <span class="ob-tpl-desc">ChatGPT, Claude…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 7 5 3-5 3z"/><rect width="20" height="15" x="2" y="4.5" rx="3"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Streaming</span>
-                                            <span class="ob-tpl-desc">Netflix, Spotify…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="4" y="8" width="16" height="12" rx="2"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Trabalho</span>
-                                            <span class="ob-tpl-desc">Figma, Notion…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-blank create-package-btn">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Em branco</span>
-                                            <span class="ob-tpl-desc">Do meu jeito</span>
-                                        </span>
-                                    </button>
-
-                                </div>
-                            </div>
+                    <!-- Hero -->
+                    <div class="ob-hero">
+                        <h2 class="ob-title">Crie seu primeiro pacote</h2>
+                        <p class="ob-desc">Um pacote reúne suas sessões de login para você compartilhar o acesso — sem
+                            revelar a senha.</p>
+                        <div class="ob-actions">
+                            <button class="btn btn-primary ob-cta create-package-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14" />
+                                    <path d="M5 12h14" />
+                                </svg>
+                                Criar pacote
+                            </button>
+                            <button type="button" class="ob-how-btn">Ver como funciona</button>
                         </div>
+                    </div>
+
+                    <!-- Modelos prontos -->
+                    <div class="ob-templates">
+                        <div class="ob-templates-title">Ou comece por um modelo</div>
+                        <div class="ob-templates-grid">
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Assinaturas de IA</span>
+                                    <span class="ob-tpl-desc">ChatGPT, Claude…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m10 7 5 3-5 3z" />
+                                        <rect width="20" height="15" x="2" y="4.5" rx="3" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Streaming</span>
+                                    <span class="ob-tpl-desc">Netflix, Spotify…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Trabalho</span>
+                                    <span class="ob-tpl-desc">Figma, Notion…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-blank create-package-btn">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 5v14" />
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Em branco</span>
+                                    <span class="ob-tpl-desc">Do meu jeito</span>
+                                </span>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
             </div><!-- /#main-onboarding -->
 
             <!-- Package Details -->
@@ -1841,10 +1867,16 @@
                         <div class="so-creating">
                             <div class="spinner large"></div>
                             <h3 class="so-creating-title">Criando seu perfil de vendedor…</h3>
-                            <p class="so-creating-sub">Estamos registrando seus dados com nosso processador de pagamentos. Isso leva alguns segundos.</p>
+                            <p class="so-creating-sub">Estamos registrando seus dados com nosso processador de
+                                pagamentos. Isso leva alguns segundos.</p>
                             <div class="so-creating-slow hidden" id="so-creating-slow">
-                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span>Está demorando mais que o normal. Pode fechar esta página — avisaremos por e-mail assim que estiver tudo pronto.</span>
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                <span>Está demorando mais que o normal. Pode fechar esta página — avisaremos por e-mail
+                                    assim que estiver tudo pronto.</span>
                             </div>
                         </div>
                     </div>
