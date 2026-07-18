@@ -1079,7 +1079,7 @@ const createPackageHandler = async (event) => {
     createdPackageEl.classList.add("fadeInFromRight");
 
     const packagesGrid = document.querySelector("#packages-list .preset-collection .access-grid");
-    packagesGrid.insertBefore(createdPackageEl, packagesGrid.lastChild);
+    packagesGrid.appendChild(createdPackageEl);
 
     // Seleciona package
     selectPackage(packageData.id)
@@ -1414,7 +1414,7 @@ const activatePackageHandler = async event => {
     packageEl.classList.add("fadeInFromRight");
 
     const packagesGrid = document.querySelector("#packages-list .preset-access .access-grid");
-    packagesGrid.insertBefore(packageEl, packagesGrid.lastChild);
+    packagesGrid.appendChild(packageEl);
 
     // Seleciona package
     selectPackage(packageData.id, false)
