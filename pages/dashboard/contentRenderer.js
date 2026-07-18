@@ -379,6 +379,38 @@ function createCollectionSessionCardElement(session, pkg) {
     return card;
 }
 
+// Card "Adicionar sessão": mesma silhueta de um session-card, mas como tile de ação.
+// Abre o #addSessionModal (captura em segundo plano → cria a sessão no pacote). Presente
+// só na collection view (dono), sempre como primeiro card do grid — inclusive quando o
+// pacote ainda não tem nenhuma sessão, para que a seção nunca fique vazia.
+function createAddSessionCardElement(pkg) {
+    const card = createElement('div', 'session-card add-session-card add-session-btn');
+    card.dataset.packageId = pkg.id;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+
+    const content = createElement('div', 'session-card-content add-session-content');
+
+    const plus = createElement('div', 'add-session-plus');
+    plus.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="M12 5v14"></path>
+        </svg>
+    `;
+
+    const title = createElement('h3', 'add-session-title', 'Adicionar sessão');
+    const subtitle = createElement('p', 'add-session-subtitle', 'Capture um serviço para compartilhar com o time');
+
+    content.appendChild(plus);
+    content.appendChild(title);
+    content.appendChild(subtitle);
+    card.appendChild(content);
+
+    return card;
+}
+
 // Gera o elemento DOM de uma sessão como card de grid (para access view)
 function createSessionCardElement(session, pkg) {
     const { card, footer } = buildSessionCardBase(session, pkg, false);
@@ -693,10 +725,12 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Renderiza sessões
     const sessionsPanelContainer = activePreset.querySelector(".sessions-panel-container");
 
-    if (pkg.sessions.length === 0) {
-        setElementState(sessionsPanelContainer, "empty");
-    } else {
+    // Na collection (dono) o card "Adicionar sessão" mora sempre no grid, então a seção nunca
+    // fica vazia — mostramos o content-state mesmo sem sessões. Na access view mantém o vazio.
+    if (isCollection || pkg.sessions.length > 0) {
         setElementState(sessionsPanelContainer, "content");
+    } else {
+        setElementState(sessionsPanelContainer, "empty");
     }
 
     // Seleciona container correto: grid para ambas as views
@@ -704,6 +738,10 @@ async function renderPackageDetails(pkg, isCollection = true) {
 
     if (sessionsContainer && pkg.sessions) {
         sessionsContainer.innerHTML = '';
+        // Dono: card de adicionar como primeiro item, sempre presente.
+        if (isCollection) {
+            sessionsContainer.appendChild(createAddSessionCardElement(pkg));
+        }
         pkg.sessions.forEach(session => {
             const sessionElement = createSessionElement(session, isCollection, pkg);
             sessionsContainer.appendChild(sessionElement);

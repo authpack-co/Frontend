@@ -7384,6 +7384,96 @@ textarea:focus-visible {
 
 .up-hint { margin: 14px 0 0; font-size: 12px; color: var(--ap-text-secondary); opacity: .85; }
 
+/* === Card "Adicionar sessão" (tile no grid de sessões) === */
+.add-session-card {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border-style: dashed;
+    border-color: var(--ap-border-hover);
+    background: var(--ap-bg-card-alt);
+    min-height: 188px;
+}
+.add-session-card:hover {
+    border-color: var(--ap-accent);
+    background: var(--ap-accent-muted);
+    transform: translateY(-2px);
+}
+.add-session-content { gap: 10px; align-items: center; }
+.add-session-plus {
+    width: 46px; height: 46px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--ap-accent-muted); color: var(--ap-accent);
+    transition: transform .2s ease;
+}
+.add-session-card:hover .add-session-plus { transform: scale(1.06); }
+.add-session-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ap-text-primary); }
+.add-session-subtitle {
+    margin: 0; font-size: 12px; color: var(--ap-text-secondary);
+    max-width: 180px; line-height: 1.35;
+}
+
+/* === Modal "Adicionar sessão" === */
+#addSessionModal .modal { width: min(520px, 94vw); }
+#addSessionModal[data-result="success"] .up-bar-fill { background: #16a34a; }
+#addSessionModal[data-phase="select"] .as-progress-body { display: none; }
+#addSessionModal[data-phase="progress"] .as-select-body { display: none; }
+#addSessionModal[data-phase="progress"] .as-cancel { display: none; }
+
+.as-warn {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 10px 12px; border-radius: var(--ap-radius-md);
+    background: var(--ap-warning-muted, rgba(234, 179, 8, .12));
+    border: 1px solid var(--ap-warning-border, rgba(234, 179, 8, .35));
+    font-size: 12.5px; color: var(--ap-text-secondary); line-height: 1.4;
+    margin-bottom: 14px;
+}
+.as-warn-icon { flex: none; color: #d97706; margin-top: 1px; }
+.as-warn strong { color: var(--ap-text-primary); }
+
+.as-search-row { margin-bottom: 14px; }
+.as-search { width: 100%; }
+.as-section-label {
+    margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .02em;
+    text-transform: uppercase; color: var(--ap-text-secondary);
+}
+.as-services {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px; max-height: 260px; overflow-y: auto; padding: 2px;
+}
+.as-service {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 11px; border-radius: var(--ap-radius-md);
+    background: var(--ap-bg-card-alt); border: 1px solid var(--ap-border);
+    cursor: pointer; text-align: left; position: relative;
+    transition: border-color .2s ease, background .2s ease;
+}
+.as-service:hover { border-color: var(--ap-border-hover); }
+.as-service.is-selected { border-color: var(--ap-accent); background: var(--ap-accent-muted); }
+.as-service-icon {
+    flex: none; width: 24px; height: 24px; border-radius: var(--ap-radius-sm);
+    object-fit: contain; background: var(--ap-bg-muted);
+}
+.as-service-icon--fb { display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); }
+.as-service-name {
+    flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--ap-text-primary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.as-service-check {
+    flex: none; width: 18px; height: 18px; border-radius: 50%;
+    display: grid; place-items: center; color: #fff; background: var(--ap-accent);
+    opacity: 0; transform: scale(.6); transition: all .18s ease;
+}
+.as-service.is-selected .as-service-check { opacity: 1; transform: scale(1); }
+.as-empty-search { margin: 10px 0 0; font-size: 12.5px; color: var(--ap-text-secondary); }
+.as-confirm-count { font-variant-numeric: tabular-nums; opacity: .9; }
+
+@keyframes fadeInFromTop {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.session-card.fadeInFromTop { animation: fadeInFromTop .28s ease; }
+
 /* ============================================
    Vitrine Categories
    ============================================ */

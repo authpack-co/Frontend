@@ -154,6 +154,7 @@ const listenerMap = [
     { selector: '.remove-user-access-btn', event: 'click', handler: setupRemoveUserAccessForm },
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
     { selector: '.update-package-btn', event: 'click', handler: handleUpdatePackage },
+    { selector: '.add-session-btn', event: 'click', handler: handleAddSession },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
@@ -473,6 +474,299 @@ function handleUpdatePackage(e) {
 
     // Dispara o refresh na extensão
     window.postMessage({ source: 'authpack-page', type: 'authpack:updatePackage', packageId, sessions }, location.origin);
+}
+
+// Catálogo de serviços comuns em times internos. `url` = superfície onde o dono já está
+// naturalmente logado; a captura acontece nessa URL. O usuário também pode colar qualquer URL.
+const ADD_SESSION_CATALOG = [
+    { name: 'Slack', url: 'https://app.slack.com/client' },
+    { name: 'GitHub', url: 'https://github.com' },
+    { name: 'Notion', url: 'https://www.notion.so' },
+    { name: 'Canva', url: 'https://www.canva.com' },
+    { name: 'Figma', url: 'https://www.figma.com/files' },
+    { name: 'Google', url: 'https://drive.google.com' },
+    { name: 'Trello', url: 'https://trello.com' },
+    { name: 'Linear', url: 'https://linear.app' },
+    { name: 'Jira', url: 'https://www.atlassian.com' },
+    { name: 'Asana', url: 'https://app.asana.com' },
+    { name: 'Miro', url: 'https://miro.com/app/dashboard' },
+    { name: 'ClickUp', url: 'https://app.clickup.com' },
+];
+
+// Normaliza uma entrada de URL/busca em { name, url } ou null se inválida.
+function normalizeServiceInput(raw) {
+    const value = (raw || '').trim();
+    if (!value) return null;
+    let urlStr = value;
+    if (!/^https?:\/\//i.test(urlStr)) urlStr = 'https://' + urlStr;
+    try {
+        const u = new URL(urlStr);
+        if (!u.hostname.includes('.')) return null;
+        const host = u.hostname.replace(/^www\./, '');
+        const name = host.split('.')[0];
+        return { name: name.charAt(0).toUpperCase() + name.slice(1), url: u.href };
+    } catch {
+        return null;
+    }
+}
+
+function handleAddSession(e) {
+    e.stopPropagation();
+
+    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas).
+    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
+        utils.showModal('extensionRequired');
+        return;
+    }
+
+    const packageId = this.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    if (!packageData) return;
+
+    const modal = document.getElementById('addSessionModal');
+    const pkgNameEl = modal.querySelector('.as-pkg-name');
+    const servicesEl = modal.querySelector('.as-services');
+    const searchEl = modal.querySelector('.as-search');
+    const emptySearchEl = modal.querySelector('.as-empty-search');
+    const confirmBtn = modal.querySelector('.as-confirm');
+    const confirmCountEl = modal.querySelector('.as-confirm-count');
+    const cancelBtn = modal.querySelector('.as-cancel');
+    const closeBtn = modal.querySelector('.as-close');
+    const statusEl = modal.querySelector('.as-status');
+    const countEl = modal.querySelector('.as-count');
+    const fillEl = modal.querySelector('.as-bar-fill');
+    const listEl = modal.querySelector('.as-list');
+
+    // Estado local do modal
+    const selected = new Map();               // key(url) -> { name, url }
+    const chipByKey = {};                     // key(url) -> chip element
+    const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
+    const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
+
+    // Reset visual
+    modal.dataset.phase = 'select';
+    pkgNameEl.textContent = packageData.name || '';
+    searchEl.value = '';
+    emptySearchEl.classList.add('hidden');
+    listEl.innerHTML = '';
+    fillEl.style.width = '0%';
+    countEl.textContent = '0/0';
+    statusEl.textContent = 'Capturando sessões…';
+    modal.removeAttribute('data-result');
+    confirmBtn.classList.remove('hidden');
+    confirmBtn.disabled = true;
+    cancelBtn.classList.remove('hidden');
+    closeBtn.classList.add('hidden');
+    closeBtn.disabled = true;
+
+    function syncConfirm() {
+        const n = selected.size;
+        confirmBtn.disabled = n === 0;
+        confirmCountEl.textContent = n ? `(${n})` : '';
+    }
+
+    function makeChip(service) {
+        const key = keyOf(service.url);
+        const chip = document.createElement('button');
+        chip.className = 'as-service';
+        chip.dataset.key = key;
+
+        const icon = document.createElement('img');
+        icon.className = 'as-service-icon';
+        icon.alt = '';
+        AuthPackFavicon.apply(icon, {
+            url: service.url,
+            onFinalError: () => {
+                const fb = document.createElement('span');
+                fb.className = 'as-service-icon as-service-icon--fb';
+                fb.textContent = (service.name || '?').trim().charAt(0).toUpperCase();
+                icon.replaceWith(fb);
+            }
+        });
+
+        const label = document.createElement('span');
+        label.className = 'as-service-name';
+        label.textContent = service.name;
+
+        const check = document.createElement('span');
+        check.className = 'as-service-check';
+        check.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5"></path>
+            </svg>`;
+
+        chip.append(icon, label, check);
+        chip.addEventListener('click', () => toggleService(service));
+        chipByKey[key] = chip;
+        return chip;
+    }
+
+    function toggleService(service) {
+        const key = keyOf(service.url);
+        const chip = chipByKey[key];
+        if (selected.has(key)) {
+            selected.delete(key);
+            chip && chip.classList.remove('is-selected');
+        } else {
+            selected.set(key, { name: service.name, url: service.url });
+            chip && chip.classList.add('is-selected');
+        }
+        syncConfirm();
+    }
+
+    function renderCatalog() {
+        servicesEl.innerHTML = '';
+        catalog.forEach(s => servicesEl.appendChild(makeChip(s)));
+    }
+    renderCatalog();
+    syncConfirm();
+
+    // Busca / adicionar URL custom
+    function applyFilter() {
+        const q = searchEl.value.trim().toLowerCase();
+        let visible = 0;
+        catalog.forEach(s => {
+            const chip = chipByKey[keyOf(s.url)];
+            if (!chip) return;
+            const match = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
+            chip.classList.toggle('hidden', !match);
+            if (match) visible++;
+        });
+        emptySearchEl.classList.toggle('hidden', visible > 0 || !q);
+    }
+
+    function addCustomFromSearch() {
+        const svc = normalizeServiceInput(searchEl.value);
+        if (!svc) return;
+        const key = keyOf(svc.url);
+        if (!chipByKey[key]) {
+            catalog.push(svc);
+            servicesEl.appendChild(makeChip(svc));
+        }
+        // Seleciona (se ainda não estiver) e limpa a busca
+        if (!selected.has(key)) toggleService(svc);
+        searchEl.value = '';
+        applyFilter();
+    }
+
+    searchEl.oninput = applyFilter;
+    searchEl.onkeydown = (ev) => {
+        if (ev.key === 'Enter') {
+            ev.preventDefault();
+            addCustomFromSearch();
+        }
+    };
+
+    // Progresso (fase 2) — cria uma linha por serviço
+    function buildProgressRows(services) {
+        listEl.innerHTML = '';
+        const rows = {};
+        services.forEach(s => {
+            const row = document.createElement('li');
+            row.className = 'up-item';
+            row.dataset.key = keyOf(s.url);
+            row.dataset.state = 'pending';
+
+            const icon = document.createElement('img');
+            icon.className = 'up-item-icon';
+            icon.alt = '';
+            AuthPackFavicon.apply(icon, {
+                url: s.url,
+                onFinalError: () => {
+                    const fb = document.createElement('span');
+                    fb.className = 'up-item-icon up-item-icon--fb';
+                    fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
+                    icon.replaceWith(fb);
+                }
+            });
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'up-item-name';
+            nameSpan.textContent = s.name;
+
+            const status = document.createElement('span');
+            status.className = 'up-item-status';
+
+            row.append(icon, nameSpan, status);
+            listEl.appendChild(row);
+            rows[keyOf(s.url)] = row;
+        });
+        return rows;
+    }
+
+    // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
+    function renderNewSessionCard(session) {
+        const preset = document.querySelector('.preset-collection');
+        const grid = preset && preset.querySelector('.sessions-panel .sessions-grid');
+        if (!grid) return;
+        const card = createSessionElement(session, true, packageData);
+        card.classList.add('fadeInFromTop');
+        const addCard = grid.querySelector('.add-session-card');
+        if (addCard && addCard.nextSibling) grid.insertBefore(card, addCard.nextSibling);
+        else grid.appendChild(card);
+        card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
+    }
+
+    function startCapture() {
+        const services = Array.from(selected.values());
+        const total = services.length;
+        if (total === 0) return;
+
+        modal.dataset.phase = 'progress';
+        confirmBtn.classList.add('hidden');
+        cancelBtn.classList.add('hidden');
+        closeBtn.classList.remove('hidden');
+        closeBtn.disabled = true;
+        statusEl.textContent = 'Capturando sessões…';
+        countEl.textContent = `0/${total}`;
+        fillEl.style.width = '0%';
+
+        const rows = buildProgressRows(services);
+
+        function onMessage(ev) {
+            if (ev.origin !== location.origin) return;
+            const d = ev.data;
+            if (d?.source !== 'authpack-extension') return;
+
+            if (d.type === 'authpack:addProgress') {
+                const row = rows[keyOf(d.current?.url)];
+                if (row) row.dataset.state = d.current.status === 'ok' ? 'ok' : 'error';
+                countEl.textContent = `${d.done}/${d.total}`;
+                fillEl.style.width = `${Math.round((d.done / d.total) * 100)}%`;
+                // Sessão criada → adiciona ao estado local e à tela na hora
+                if (d.current?.status === 'ok' && d.current.session) {
+                    packageData.sessions.push(d.current.session);
+                    renderNewSessionCard(d.current.session);
+                }
+            } else if (d.type === 'authpack:addDone') {
+                window.removeEventListener('message', onMessage);
+                fillEl.style.width = '100%';
+                Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
+                const failed = d.failed?.length || 0;
+                countEl.textContent = `${d.ok}/${d.total}`;
+                statusEl.textContent = failed === 0
+                    ? 'Todas as sessões foram adicionadas'
+                    : `${d.ok} adicionada(s) · ${failed} com falha`;
+                modal.dataset.result = failed === 0 ? 'success' : 'partial';
+                closeBtn.disabled = false;
+            }
+        }
+        window.addEventListener('message', onMessage);
+        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
+
+        // Dispara a captura na extensão
+        window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services }, location.origin);
+    }
+
+    confirmBtn.onclick = startCapture;
+    cancelBtn.onclick = () => utils.closeModals();
+
+    utils.showModal('addSession', packageId);
+    modal.addEventListener('transitionend', function focusOnce() {
+        modal.removeEventListener('transitionend', focusOnce);
+        searchEl.focus();
+    });
 }
 
 function setupEditPackageForm(e) {
