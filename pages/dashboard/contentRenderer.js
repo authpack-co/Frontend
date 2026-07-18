@@ -35,6 +35,28 @@ function sessionFallbackPalette(str) {
     return SESSION_FALLBACK_PALETTES[Math.abs(h) % SESSION_FALLBACK_PALETTES.length];
 }
 
+// Converte um hex (#rgb ou #rrggbb) em rgba() com alpha. Aceita também rgb()/rgba()
+// já prontos (retorna com o alpha aplicado quando possível) — robusto p/ dados variados.
+function hexA(color, alpha) {
+    if (typeof color !== 'string') return `rgba(96,165,250,${alpha})`;
+    let c = color.trim();
+    if (c.startsWith('#')) {
+        let h = c.slice(1);
+        if (h.length === 3) h = h.split('').map(x => x + x).join('');
+        const n = parseInt(h, 16);
+        if (!Number.isNaN(n) && h.length === 6) {
+            return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+        }
+    }
+    // rgb()/rgba() → força o alpha
+    const m = c.match(/rgba?\(([^)]+)\)/i);
+    if (m) {
+        const parts = m[1].split(',').map(s => s.trim());
+        return `rgba(${parts[0]},${parts[1]},${parts[2]},${alpha})`;
+    }
+    return `rgba(96,165,250,${alpha})`;
+}
+
 // Normaliza a cor gradiente do serviço a partir de session.darkPalette (API).
 // Aceita array [c1,c2], string única, ou objeto {from,to}/{start,end}/{primary,secondary};
 // cai no fallback determinístico pelo nome quando ausente. Retorna [c1, c2].
@@ -207,8 +229,9 @@ function buildSessionCardBase(session, pkg, isCollection) {
     card.style.setProperty('--card-accent', c1);
     card.style.setProperty('--card-accent-2', c2);
 
-    // Glow radial no canto superior esquerdo.
+    // Glow radial no canto superior esquerdo (rgba inline — não depende de color-mix).
     const glow = createElement('div', 'session-card-glow');
+    glow.style.background = `radial-gradient(120% 90% at 0% 0%, ${hexA(c1, 0.22)}, transparent 62%)`;
     card.appendChild(glow);
 
     const content = createElement('div', 'session-card-content');
@@ -253,6 +276,8 @@ function buildSessionCardBase(session, pkg, isCollection) {
     usageHead.appendChild(usageValue);
     const usageBar = createElement('div', 'session-card-usage-bar');
     const usageFill = createElement('div', 'session-card-usage-fill');
+    // Cor da barra = gradiente do serviço (inline, robusto).
+    usageFill.style.background = `linear-gradient(90deg, ${c1}, ${c2})`;
     // Largura inicial relativa ao tempo de uso das sessões do pacote. Para a
     // collection, loadPackageStats recalcula depois com os dados reais.
     const allMinutes = (pkg && Array.isArray(pkg.sessions) ? pkg.sessions : [session])
