@@ -8041,7 +8041,72 @@ textarea:focus-visible {
     margin-bottom: 4px;
 }
 
-.sidebar-admin-link { margin-top: 10px; }
+/* Itens de papel (admin etc.) ficam no topo, acima das seções. */
+.sidebar-role-nav:empty { display: none; }
+.sidebar-role-nav { margin-bottom: 6px; }
+.sidebar-admin-link { margin: 0; }
+
+/* Cabeçalho "Pacotes" com botão "+" (novo pacote) inline */
+.sidebar-packages-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 12px 8px;
+}
+
+.sidebar-packages-head .sidebar-packages-heading {
+    padding: 0;
+}
+
+.sidebar-add-pkg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: var(--ap-radius-sm);
+    border: 1px solid var(--ap-border);
+    background: transparent;
+    color: var(--ap-text-secondary);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.sidebar-add-pkg:hover {
+    background: var(--ap-accent-subtle);
+    color: var(--ap-accent-strong);
+    border-color: var(--ap-accent-muted);
+}
+
+/* ---- Limite de pessoas do plano (rodapé da sidebar) ---- */
+.sidebar-plan-people {
+    margin-bottom: 12px;
+}
+
+.sidebar-plan-people .people-counter {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: var(--ap-radius-md);
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+/* Tooltip abre para cima (o slot fica na base da tela). */
+.sidebar-plan-people .people-counter__info { margin-left: auto; }
+
+.sidebar-plan-people .people-counter__tip {
+    top: auto;
+    bottom: calc(100% + 8px);
+    transform: translateY(2px);
+}
+
+.sidebar-plan-people .people-counter__info:hover .people-counter__tip,
+.sidebar-plan-people .people-counter__info:focus-visible .people-counter__tip {
+    transform: translateY(0);
+}
 
 /* ---- Top bar (busca + contador de pessoas + ações da seção) ---- */
 .dashboard-topbar {
@@ -8092,12 +8157,30 @@ textarea:focus-visible {
     flex-wrap: wrap;
 }
 
-.topbar-new-pkg {
+.topbar-new-pkg,
+.topbar-share-btn {
     display: inline-flex;
     align-items: center;
     gap: 7px;
     white-space: nowrap;
 }
+
+/* Contador de pessoas do pacote selecionado (top bar) */
+.pkg-people-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    border: 1px solid var(--ap-border);
+    border-radius: 10px;
+    background: var(--ap-bg-input);
+    color: var(--ap-text-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.pkg-people-counter svg { color: var(--ap-text-muted); flex-shrink: 0; }
+.pkg-people-counter__text strong { color: var(--ap-text-primary); font-weight: 700; }
 
 .topbar-actions .activation-input { margin: 0; }
 

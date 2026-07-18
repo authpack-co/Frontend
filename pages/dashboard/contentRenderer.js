@@ -99,7 +99,7 @@ function createPackageElement(pkg, isAccess = false) {
 
     const iconStack = createElement('div', 'icon-stack sidebar-pkg-logos');
     const sessions = pkg.sessions || [];
-    sessions.slice(0, 4).forEach((session, i) => {
+    sessions.slice(0, 3).forEach((session, i) => {
         const stackIcon = createElement('div', 'stack-icon');
         stackIcon.style.zIndex = String(10 - i);
         const img = document.createElement('img');
@@ -669,6 +669,9 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Reinicia a busca de sessões ao trocar de pacote
     resetSessionSearch();
 
+    // Contador de pessoas do pacote (top bar da coleção, ao lado de "Compartilhar")
+    if (isCollection) updatePackagePeopleCounter(pkg);
+
     // Header da aba "Meus acessos": referencia a vitrine de origem (com
     // identidade, contatos e descrição) ou, no acesso direto/compartilhado,
     // uma estética neutra focada em quem compartilhou.
@@ -746,8 +749,9 @@ async function renderPackageDetails(pkg, isCollection = true) {
 
     // Renderiza estatísticas (apenas para collection)
     if (isCollection) {
+        // Os cards de métricas foram removidos do layout; o container pode não existir.
         const packageStatsContainer = activePreset.querySelector(".package-stats-container");
-        setElementState(packageStatsContainer, "loading");
+        if (packageStatsContainer) setElementState(packageStatsContainer, "loading");
 
         const packageUsageChart = activePreset.querySelector(".usage-chart-container .chart-wrapper");
         setElementState(packageUsageChart, "loading");
@@ -1061,9 +1065,12 @@ async function loadAccessOverview(pkg, activePreset) {
 async function loadPackageStats(pkg, period) {
     const contentPreset = document.querySelector('#package-details .preset-collection');
 
-    const usesStat = contentPreset.querySelector(".uses-stat");
-    const sessionsStat = contentPreset.querySelector(".sessions-stat");
-    const usersStat = contentPreset.querySelector(".users-stat");
+    // Escopo restrito ao container de métricas (já removido do layout). As
+    // classes .users-stat/.sessions-stat também existem nas telas de overview,
+    // por isso a busca é feita dentro de .package-stats para não colidir.
+    const usesStat = contentPreset.querySelector(".package-stats .uses-stat");
+    const sessionsStat = contentPreset.querySelector(".package-stats .sessions-stat");
+    const usersStat = contentPreset.querySelector(".package-stats .users-stat");
 
     if (!pkg.stats) {
         // Busca estatísticas e salva em cache
@@ -1156,28 +1163,37 @@ async function loadPackageStats(pkg, period) {
         percentageIncrease = "0";
     }
 
+    // Os cards de métricas (Usos/Usuários/Sessões/Online) foram removidos do
+    // layout. Atualiza apenas se ainda existirem (compatibilidade defensiva).
+
     // Uses stats (total de conexões no histórico do pacote)
-    const usesValue = usesStat.querySelector(".stat-metric-value");
-    const usesSub = usesStat.querySelector(".stat-metric-sublabel");
-    usesValue.textContent = String(pkg.stats ? pkg.stats.totalConnections : 0);
-    usesSub.textContent = "";
+    if (usesStat) {
+        const usesValue = usesStat.querySelector(".stat-metric-value");
+        const usesSub = usesStat.querySelector(".stat-metric-sublabel");
+        usesValue.textContent = String(pkg.stats ? pkg.stats.totalConnections : 0);
+        usesSub.textContent = "";
+    }
 
     // Sessions stats
-    const sessionsValue = sessionsStat.querySelector(".stat-metric-value");
-    const sessionsSub = sessionsStat.querySelector(".stat-metric-sublabel");
-    const totalSessions = pkg.stats ? pkg.stats.totalSessions : 0;
-    sessionsValue.textContent = String(totalSessions);
-    sessionsSub.textContent = "";
+    if (sessionsStat) {
+        const sessionsValue = sessionsStat.querySelector(".stat-metric-value");
+        const sessionsSub = sessionsStat.querySelector(".stat-metric-sublabel");
+        const totalSessions = pkg.stats ? pkg.stats.totalSessions : 0;
+        sessionsValue.textContent = String(totalSessions);
+        sessionsSub.textContent = "";
+    }
 
     // Users stats (+ crescimento no sublabel, em verde)
-    const usersValue = usersStat.querySelector(".stat-metric-value");
-    const usersSub = usersStat.querySelector(".stat-metric-sublabel");
-    usersValue.textContent = String(totalUsers);
-    const growthHtml = `<span class="stat-metric-growth">+${percentageIncrease}%</span>`;
-    usersSub.innerHTML = growthHtml;
+    if (usersStat) {
+        const usersValue = usersStat.querySelector(".stat-metric-value");
+        const usersSub = usersStat.querySelector(".stat-metric-sublabel");
+        usersValue.textContent = String(totalUsers);
+        const growthHtml = `<span class="stat-metric-growth">+${percentageIncrease}%</span>`;
+        usersSub.innerHTML = growthHtml;
+    }
 
     // Online users stat
-    const onlineStat = contentPreset.querySelector(".online-users-stat");
+    const onlineStat = contentPreset.querySelector(".package-stats .online-users-stat");
     if (onlineStat) {
         const onlineValue = onlineStat.querySelector(".stat-metric-value");
         const onlineSub = onlineStat.querySelector(".stat-metric-sublabel");
@@ -1192,7 +1208,7 @@ async function loadPackageStats(pkg, period) {
     }
 
     const packageStatsContainer = contentPreset.querySelector(".package-stats-container");
-    setElementState(packageStatsContainer, "content");
+    if (packageStatsContainer) setElementState(packageStatsContainer, "content");
 
     // Package Usage Chart
     const packageUsageChart = contentCard.querySelector(".preset-collection .usage-chart-container .chart-wrapper");
@@ -2593,8 +2609,8 @@ function updatePeopleCounter() {
     const limit = currentUserInfo?.peopleLimit; // null/undefined = ilimitado
     const unlimited = limit == null;
 
-    // Contador vive no slot da top bar do dashboard.
-    const slot = document.getElementById('people-counter-slot');
+    // Limite de pessoas do plano vigente vive no rodapé da sidebar.
+    const slot = document.getElementById('plan-people-slot');
     if (!slot) return;
 
     let counter = slot.querySelector('.people-counter');
@@ -2618,6 +2634,28 @@ function updatePeopleCounter() {
         counter.classList.toggle('over-limit', used > limit);
         counter.classList.toggle('at-limit', used === limit);
     }
+}
+
+// Contador de pessoas do PACOTE selecionado (top bar da coleção). Mostra quantas
+// pessoas têm acesso àquele pacote específico, ao lado do botão "Compartilhar".
+function updatePackagePeopleCounter(pkg) {
+    const slot = document.getElementById('people-counter-slot');
+    if (!slot) return;
+
+    const count = (pkg && pkg.users ? pkg.users.length : 0);
+
+    let counter = slot.querySelector('.pkg-people-counter');
+    if (!counter) {
+        counter = document.createElement('span');
+        counter.className = 'pkg-people-counter';
+        counter.innerHTML = `${PEOPLE_COUNTER_ICON}<span class="pkg-people-counter__text"></span>`;
+        slot.appendChild(counter);
+    }
+
+    const textEl = counter.querySelector('.pkg-people-counter__text');
+    textEl.innerHTML = count === 1
+        ? `<strong>1</strong> pessoa`
+        : `<strong>${count}</strong> pessoas`;
 }
 
 // ============================================================================
@@ -2894,6 +2932,15 @@ async function init() {
     const searchInput = document.getElementById('session-search');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => filterSessionCards(e.target.value));
+    }
+
+    // Botão "Compartilhar" da top bar: abre o modal para o pacote selecionado.
+    const topbarShareBtn = document.getElementById('topbar-share-btn');
+    if (topbarShareBtn) {
+        topbarShareBtn.addEventListener('click', () => {
+            const selectedId = document.querySelector('#package-details')?.dataset.packageId;
+            if (selectedId) openSharePackageModal(selectedId);
+        });
     }
 
     // Seleciona o primeiro pacote da coleção por padrão (se não veio do checkout)

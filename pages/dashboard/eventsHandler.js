@@ -514,7 +514,13 @@ function setupSharePackageForm(e) {
     });
 
     const packageEl = this.closest('.access-item');
-    const packageId = packageEl.dataset.packageId;
+    openSharePackageModal(packageEl.dataset.packageId);
+}
+
+// Abre o modal de compartilhamento para um pacote da coleção (por id). Usado
+// tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da top bar.
+function openSharePackageModal(packageId) {
+    if (!packageId) return;
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
     const inputName = sharePackageModal.querySelector(".share-pkg-name");
