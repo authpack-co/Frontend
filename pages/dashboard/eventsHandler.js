@@ -62,7 +62,7 @@ const utils = {
         if (isOpen) {
             toggle.classList.add('active');
             statusBadge.className = 'status-badge status-open';
-            statusText.textContent = 'Acesso público';
+            statusText.textContent = 'Acesso público ativo';
             linkDisplay.classList.remove('disabled');
         } else {
             toggle.classList.remove('active');
@@ -478,19 +478,49 @@ function handleUpdatePackage(e) {
 
 // Catálogo de serviços comuns em times internos. `url` = superfície onde o dono já está
 // naturalmente logado; a captura acontece nessa URL. O usuário também pode colar qualquer URL.
+// Categorias usadas nos chips de filtro do modal "Adicionar sessão".
+const ADD_SESSION_CATEGORIES = [
+    { id: 'all', label: 'Todos' },
+    { id: 'ia', label: 'IA' },
+    { id: 'stream', label: 'Streaming' },
+    { id: 'work', label: 'Trabalho' },
+    { id: 'social', label: 'Social' },
+];
+
+// Cada serviço tem uma categoria (`cat`) para o filtro. Os ícones são reais —
+// carregados via AuthPackFavicon a partir da URL — não são mockups.
 const ADD_SESSION_CATALOG = [
-    { name: 'Slack', url: 'https://app.slack.com/client' },
-    { name: 'GitHub', url: 'https://github.com' },
-    { name: 'Notion', url: 'https://www.notion.so' },
-    { name: 'Canva', url: 'https://www.canva.com' },
-    { name: 'Figma', url: 'https://www.figma.com/files' },
-    { name: 'Google', url: 'https://drive.google.com' },
-    { name: 'Trello', url: 'https://trello.com' },
-    { name: 'Linear', url: 'https://linear.app' },
-    { name: 'Jira', url: 'https://www.atlassian.com' },
-    { name: 'Asana', url: 'https://app.asana.com' },
-    { name: 'Miro', url: 'https://miro.com/app/dashboard' },
-    { name: 'ClickUp', url: 'https://app.clickup.com' },
+    // IA
+    { name: 'ChatGPT', url: 'https://chatgpt.com', cat: 'ia' },
+    { name: 'Claude', url: 'https://claude.ai', cat: 'ia' },
+    { name: 'Gemini', url: 'https://gemini.google.com', cat: 'ia' },
+    { name: 'Perplexity', url: 'https://www.perplexity.ai', cat: 'ia' },
+    { name: 'Midjourney', url: 'https://www.midjourney.com', cat: 'ia' },
+    // Streaming
+    { name: 'Netflix', url: 'https://www.netflix.com', cat: 'stream' },
+    { name: 'Spotify', url: 'https://open.spotify.com', cat: 'stream' },
+    { name: 'Disney+', url: 'https://www.disneyplus.com', cat: 'stream' },
+    { name: 'YouTube', url: 'https://www.youtube.com', cat: 'stream' },
+    { name: 'Prime Video', url: 'https://www.primevideo.com', cat: 'stream' },
+    // Trabalho
+    { name: 'Slack', url: 'https://app.slack.com/client', cat: 'work' },
+    { name: 'GitHub', url: 'https://github.com', cat: 'work' },
+    { name: 'Notion', url: 'https://www.notion.so', cat: 'work' },
+    { name: 'Canva', url: 'https://www.canva.com', cat: 'work' },
+    { name: 'Figma', url: 'https://www.figma.com/files', cat: 'work' },
+    { name: 'Google', url: 'https://drive.google.com', cat: 'work' },
+    { name: 'Trello', url: 'https://trello.com', cat: 'work' },
+    { name: 'Linear', url: 'https://linear.app', cat: 'work' },
+    { name: 'Jira', url: 'https://www.atlassian.com', cat: 'work' },
+    { name: 'Asana', url: 'https://app.asana.com', cat: 'work' },
+    { name: 'Miro', url: 'https://miro.com/app/dashboard', cat: 'work' },
+    { name: 'ClickUp', url: 'https://app.clickup.com', cat: 'work' },
+    { name: 'Adobe CC', url: 'https://account.adobe.com', cat: 'work' },
+    // Social
+    { name: 'LinkedIn', url: 'https://www.linkedin.com', cat: 'social' },
+    { name: 'X', url: 'https://x.com', cat: 'social' },
+    { name: 'Instagram', url: 'https://www.instagram.com', cat: 'social' },
+    { name: 'Facebook', url: 'https://www.facebook.com', cat: 'social' },
 ];
 
 // Normaliza uma entrada de URL/busca em { name, url } ou null se inválida.
@@ -528,11 +558,14 @@ function handleAddSession(e) {
 
     const modal = document.getElementById('addSessionModal');
     const pkgNameEl = modal.querySelector('.as-pkg-name');
+    const categoriesEl = modal.querySelector('.as-categories');
+    const sectionLabelEl = modal.querySelector('.as-section-label');
     const servicesEl = modal.querySelector('.as-services');
     const searchEl = modal.querySelector('.as-search');
     const emptySearchEl = modal.querySelector('.as-empty-search');
     const confirmBtn = modal.querySelector('.as-confirm');
     const confirmCountEl = modal.querySelector('.as-confirm-count');
+    const footerHintEl = modal.querySelector('.as-footer-hint');
     const cancelBtn = modal.querySelector('.as-cancel');
     const closeBtn = modal.querySelector('.as-close');
     const statusEl = modal.querySelector('.as-status');
@@ -544,6 +577,7 @@ function handleAddSession(e) {
     const selected = new Map();               // key(url) -> { name, url }
     const chipByKey = {};                     // key(url) -> chip element
     const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
+    let activeCategory = 'all';
     const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
 
     // Reset visual
@@ -564,6 +598,13 @@ function handleAddSession(e) {
         const n = selected.size;
         confirmBtn.disabled = n === 0;
         confirmCountEl.textContent = n ? `(${n})` : '';
+        // Dica no rodapé (fase de seleção). Na fase de progresso o texto é
+        // controlado pelo fluxo de captura.
+        if (modal.dataset.phase !== 'progress') {
+            footerHintEl.textContent = n === 0
+                ? 'Selecione ao menos um serviço'
+                : `${n} ${n === 1 ? 'serviço selecionado' : 'serviços selecionados'}`;
+        }
     }
 
     function makeChip(service) {
@@ -620,21 +661,51 @@ function handleAddSession(e) {
         servicesEl.innerHTML = '';
         catalog.forEach(s => servicesEl.appendChild(makeChip(s)));
     }
+
+    // Chips de categoria (filtro). Ao trocar, reaplica o filtro combinado.
+    function renderCategories() {
+        categoriesEl.innerHTML = '';
+        ADD_SESSION_CATEGORIES.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'as-category' + (cat.id === activeCategory ? ' is-active' : '');
+            btn.dataset.cat = cat.id;
+            btn.textContent = cat.label;
+            btn.addEventListener('click', () => {
+                if (activeCategory === cat.id) return;
+                activeCategory = cat.id;
+                categoriesEl.querySelectorAll('.as-category').forEach(b =>
+                    b.classList.toggle('is-active', b.dataset.cat === activeCategory));
+                applyFilter();
+            });
+            categoriesEl.appendChild(btn);
+        });
+    }
+
+    renderCategories();
     renderCatalog();
     syncConfirm();
 
-    // Busca / adicionar URL custom
+    // Busca / adicionar URL custom + filtro por categoria.
     function applyFilter() {
         const q = searchEl.value.trim().toLowerCase();
         let visible = 0;
         catalog.forEach(s => {
             const chip = chipByKey[keyOf(s.url)];
             if (!chip) return;
-            const match = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
+            // Serviços custom (sem `cat`) aparecem em qualquer categoria.
+            const matchCat = activeCategory === 'all' || !s.cat || s.cat === activeCategory;
+            const matchText = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
+            const match = matchCat && matchText;
             chip.classList.toggle('hidden', !match);
             if (match) visible++;
         });
         emptySearchEl.classList.toggle('hidden', visible > 0 || !q);
+
+        // Rótulo da seção acompanha a categoria ativa.
+        const catObj = ADD_SESSION_CATEGORIES.find(c => c.id === activeCategory);
+        sectionLabelEl.textContent = activeCategory === 'all'
+            ? 'Serviços comuns'
+            : (catObj ? catObj.label : 'Serviços');
     }
 
     function addCustomFromSearch() {
@@ -717,6 +788,7 @@ function handleAddSession(e) {
         modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
         closeBtn.disabled = true;
         statusEl.textContent = 'Capturando sessões…';
+        footerHintEl.textContent = 'Capturando…';
         countEl.textContent = `0/${total}`;
         fillEl.style.width = '0%';
 
@@ -745,6 +817,9 @@ function handleAddSession(e) {
                 countEl.textContent = `${d.ok}/${d.total}`;
                 statusEl.textContent = failed === 0
                     ? 'Todas as sessões foram adicionadas'
+                    : `${d.ok} adicionada(s) · ${failed} com falha`;
+                footerHintEl.textContent = failed === 0
+                    ? 'Sessões adicionadas com sucesso.'
                     : `${d.ok} adicionada(s) · ${failed} com falha`;
                 modal.dataset.result = failed === 0 ? 'success' : 'partial';
                 closeBtn.disabled = false;
@@ -815,13 +890,22 @@ function openSharePackageModal(packageId) {
     if (!packageId) return;
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
-    const inputName = sharePackageModal.querySelector(".share-pkg-name");
+    const nameEl = sharePackageModal.querySelector(".share-pkg-name");
+    const peopleCountEl = sharePackageModal.querySelector(".share-people-count");
     const generalLinkUrl = sharePackageModal.querySelector("#generalLinkUrl");
 
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     const isOpen = packageData.open !== 0;
 
-    inputName.value = packageData.name;
+    nameEl.textContent = packageData.name || '';
+    nameEl.title = packageData.name || '';
+
+    // Contagem de pessoas com acesso (membros do pacote).
+    const peopleCount = Array.isArray(packageData.users) ? packageData.users.length : 0;
+    peopleCountEl.textContent = peopleCount === 0
+        ? 'Nenhuma pessoa com acesso'
+        : `${peopleCount} ${peopleCount === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+
     generalLinkUrl.textContent = utils.buildInviteUrl(packageData.key);
     utils.setShareModalOpenState(isOpen);
 
