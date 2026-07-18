@@ -746,6 +746,8 @@ async function renderPackageDetails(pkg, isCollection = true) {
             const sessionElement = createSessionElement(session, isCollection, pkg);
             sessionsContainer.appendChild(sessionElement);
         });
+        // Recolhe a grade para uma linha; mostra o botão "Ver todas" se transbordar.
+        setupSessionsExpansion(sessionsContainer);
     }
 
     // Se inativo na access view: desabilita botões de conectar
@@ -2711,6 +2713,61 @@ function getActiveSessionsGrid() {
 }
 
 // Filtra os cards de sessão do pacote selecionado por nome/domínio.
+// Controla a "linha recolhível" de sessões: por padrão a grade mostra só a
+// primeira linha; se houver quebra (mais cards do que cabem), exibe um botão que
+// expande com altura máxima + rolagem. O botão é criado uma vez por painel.
+function setupSessionsExpansion(grid) {
+    if (!grid) return;
+    const panel = grid.closest('.sessions-panel');
+    if (!panel) return;
+
+    let toggle = panel.querySelector('.sessions-toggle');
+    if (!toggle) {
+        toggle = createElement('button', 'sessions-toggle');
+        toggle.type = 'button';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML = `
+            <span class="sessions-toggle-label">Ver todas</span>
+            <svg class="sessions-toggle-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6"></path>
+            </svg>`;
+        toggle.addEventListener('click', () => {
+            const expanded = !grid.classList.contains('is-expanded');
+            grid.classList.toggle('is-expanded', expanded);
+            grid.classList.toggle('is-collapsed', !expanded);
+            toggle.classList.toggle('is-expanded', expanded);
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
+        });
+        panel.appendChild(toggle);
+    }
+
+    // Reset ao (re)renderizar o pacote.
+    grid.classList.remove('is-collapsed', 'is-expanded');
+    grid.style.removeProperty('--sessions-row-h');
+    toggle.classList.remove('is-expanded');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.querySelector('.sessions-toggle-label').textContent = 'Ver todas';
+    toggle.hidden = true;
+
+    // Mede após o layout para saber se a grade quebra em mais de uma linha.
+    requestAnimationFrame(() => {
+        const cards = Array.from(grid.querySelectorAll('.session-card'))
+            .filter(c => c.style.display !== 'none');
+        if (cards.length === 0) { toggle.hidden = true; return; }
+
+        const firstTop = cards[0].offsetTop;
+        const firstRow = cards.filter(c => c.offsetTop === firstTop);
+        const overflows = cards.length > firstRow.length;
+        if (!overflows) { toggle.hidden = true; return; }
+
+        const rowH = Math.max(...firstRow.map(c => c.offsetHeight));
+        grid.style.setProperty('--sessions-row-h', rowH + 'px');
+        grid.classList.add('is-collapsed');
+        toggle.hidden = false;
+    });
+}
+
 function filterSessionCards(query) {
     const q = (query || '').trim().toLowerCase();
     const grid = getActiveSessionsGrid();
@@ -2737,6 +2794,17 @@ function filterSessionCards(query) {
         empty.style.display = '';
     } else if (empty) {
         empty.style.display = 'none';
+    }
+
+    // Durante a busca, remove o recolhimento para revelar todas as correspondências;
+    // ao limpar, recalcula (recolhe de novo se transbordar).
+    const panel = grid.closest('.sessions-panel');
+    const toggle = panel && panel.querySelector('.sessions-toggle');
+    if (q) {
+        grid.classList.remove('is-collapsed', 'is-expanded');
+        if (toggle) toggle.hidden = true;
+    } else {
+        setupSessionsExpansion(grid);
     }
 }
 

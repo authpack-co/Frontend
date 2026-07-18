@@ -1040,7 +1040,9 @@ span.coming-soon {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 3;
+    /* Acima das pilhas de logos (.stack-icon) dos cards vizinhos, que recebem
+       z-index inline de até 10 — senão elas sobrepõem este menu. */
+    z-index: 50;
     overflow: hidden;
     transform: translateY(0);
     transition: all 0.3s ease;
@@ -8658,9 +8660,17 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
     flex-shrink: 0;
 }
 
-/* Botão ⋯ de opções da sessão fica sobre o glow */
-.session-card .session-options-btn { z-index: 2; }
-.session-card .session-options { z-index: 3; }
+/* Botão ⋯ de opções da sessão: canto superior direito, sobre o glow. */
+.session-card > .session-options-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 4;
+}
+.session-card .session-options { z-index: 5; }
+/* Reserva espaço à direita do cabeçalho para o nome não passar sob o botão ⋯
+   (só nos cards que têm o botão — collection view). */
+.session-card:has(> .session-options-btn) .session-card-header-text { padding-right: 20px; }
 
 /* Estado vazio da busca de sessões */
 .sessions-search-empty {
@@ -8712,6 +8722,7 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
     padding: 0;
     background: transparent;
     min-width: 0;
+    position: relative;   /* âncora do botão "ver todas" */
 }
 
 #package-details .sessions-panel .panel-title {
@@ -8728,6 +8739,53 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
     overflow: visible;
     padding: 0;
 }
+
+/* ── Linha de sessões recolhível ──
+   Por padrão a grade mostra apenas uma linha (inline). Quando há mais sessões
+   do que cabem na linha, um botão revela as demais com altura máxima + rolagem. */
+#package-details .sessions-grid { transition: max-height 0.32s ease; }
+#package-details .sessions-grid.is-collapsed {
+    max-height: var(--sessions-row-h, 340px);
+    overflow: hidden;
+}
+#package-details .sessions-grid.is-expanded {
+    max-height: min(62vh, 720px);
+    overflow-y: auto;
+    padding-right: 4px;   /* respiro para a barra de rolagem */
+}
+
+/* Botão "Ver todas" no canto superior direito do painel */
+.sessions-toggle {
+    position: absolute;
+    top: -4px;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    font-family: var(--ap-font-body);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    z-index: 2;
+}
+.sessions-toggle:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+.sessions-toggle[hidden] { display: none; }
+.sessions-toggle-chevron {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.3s ease;
+}
+.sessions-toggle.is-expanded .sessions-toggle-chevron { transform: rotate(180deg); }
 
 .session-card { padding: 22px; border-radius: 18px; }
 .session-card-content { gap: 18px; }
