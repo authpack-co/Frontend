@@ -521,6 +521,9 @@ function handleAddSession(e) {
 
     const packageId = this.dataset.packageId;
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    // Grid exato onde mora o card clicado — evita pegar o .preset-collection errado
+    // (existem dois: a lista de pacotes e o detalhe).
+    const originGrid = this.closest('.sessions-grid');
     if (!packageData) return;
 
     const modal = document.getElementById('addSessionModal');
@@ -553,10 +556,8 @@ function handleAddSession(e) {
     countEl.textContent = '0/0';
     statusEl.textContent = 'Capturando sessões…';
     modal.removeAttribute('data-result');
-    confirmBtn.classList.remove('hidden');
+    // Visibilidade dos botões é 100% por fase (CSS) — não há .hidden global.
     confirmBtn.disabled = true;
-    cancelBtn.classList.remove('hidden');
-    closeBtn.classList.add('hidden');
     closeBtn.disabled = true;
 
     function syncConfirm() {
@@ -697,9 +698,9 @@ function handleAddSession(e) {
 
     // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
     function renderNewSessionCard(session) {
-        const preset = document.querySelector('.preset-collection');
-        const grid = preset && preset.querySelector('.sessions-panel .sessions-grid');
-        if (!grid) return;
+        const grid = originGrid || document.querySelector('.preset-collection .sessions-panel .sessions-grid');
+        console.log('[AddSession] renderNewSessionCard: grid?', !!grid, 'session=', session);
+        if (!grid) { console.warn('[AddSession] grid não encontrado — card não renderizado'); return; }
         const card = createSessionElement(session, true, packageData);
         card.classList.add('fadeInFromTop');
         const addCard = grid.querySelector('.add-session-card');
@@ -713,10 +714,7 @@ function handleAddSession(e) {
         const total = services.length;
         if (total === 0) return;
 
-        modal.dataset.phase = 'progress';
-        confirmBtn.classList.add('hidden');
-        cancelBtn.classList.add('hidden');
-        closeBtn.classList.remove('hidden');
+        modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
         closeBtn.disabled = true;
         statusEl.textContent = 'Capturando sessões…';
         countEl.textContent = `0/${total}`;

@@ -7414,11 +7414,18 @@ textarea:focus-visible {
 }
 
 /* === Modal "Adicionar sessão" === */
-#addSessionModal .modal { width: min(520px, 94vw); }
+#addSessionModal .modal { width: min(520px, 94vw); max-height: 88vh; }
+/* O .modal-body base é um flex column com max-height:300px; um filho scrollável
+   (a grade de serviços) colapsaria para ~0 aí. Removemos o cap do corpo e deixamos
+   o .modal inteiro rolar; a grade mantém o próprio scroll interno. */
+#addSessionModal .modal-body { max-height: none; gap: 14px; overflow: visible; }
 #addSessionModal[data-result="success"] .up-bar-fill { background: #16a34a; }
 #addSessionModal[data-phase="select"] .as-progress-body { display: none; }
 #addSessionModal[data-phase="progress"] .as-select-body { display: none; }
-#addSessionModal[data-phase="progress"] .as-cancel { display: none; }
+/* Visibilidade do rodapé por fase (não há .hidden global no projeto). */
+#addSessionModal[data-phase="select"] .as-close { display: none; }
+#addSessionModal[data-phase="progress"] .as-cancel,
+#addSessionModal[data-phase="progress"] .as-confirm { display: none; }
 
 .as-warn {
     display: flex; align-items: flex-start; gap: 9px;
@@ -7440,6 +7447,7 @@ textarea:focus-visible {
 .as-services {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 8px; max-height: 260px; overflow-y: auto; padding: 2px;
+    flex: 0 0 auto; min-height: 0;   /* não encolher dentro do flex column do modal-body */
 }
 .as-service {
     display: flex; align-items: center; gap: 9px;
