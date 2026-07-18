@@ -22,60 +22,56 @@ function createElement(tag, className = '', textContent = '') {
 // ============================================================================
 
 // Paletas determinísticas de fallback (espelham paletteFor de outras páginas)
-const SESSION_FALLBACK_PALETTES = [
-    ['#60a5fa', '#2563eb'], ['#34d399', '#059669'], ['#f59e0b', '#b45309'],
-    ['#a78bfa', '#7c3aed'], ['#f472b6', '#be185d'], ['#22d3ee', '#0e7490'],
-    ['#f87171', '#b91c1c'], ['#4ade80', '#15803d']
-];
+// Cor neutra (accent do tema) usada só quando a sessão não traz darkPalette.
+const SESSION_NEUTRAL_RGB = [96, 165, 250];
 
-function sessionFallbackPalette(str) {
-    let h = 0;
-    const key = String(str || '?');
-    for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
-    return SESSION_FALLBACK_PALETTES[Math.abs(h) % SESSION_FALLBACK_PALETTES.length];
-}
+function clamp255(v) { return Math.max(0, Math.min(255, Math.round(Number(v) || 0))); }
 
-// Converte um hex (#rgb ou #rrggbb) em rgba() com alpha. Aceita também rgb()/rgba()
-// já prontos (retorna com o alpha aplicado quando possível) — robusto p/ dados variados.
-function hexA(color, alpha) {
-    if (typeof color !== 'string') return `rgba(96,165,250,${alpha})`;
-    let c = color.trim();
-    if (c.startsWith('#')) {
-        let h = c.slice(1);
-        if (h.length === 3) h = h.split('').map(x => x + x).join('');
-        const n = parseInt(h, 16);
-        if (!Number.isNaN(n) && h.length === 6) {
-            return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+// Extrai o trio RGB do campo session.darkPalette. Formato da API: varchar
+// como "[12,116,44]" (r,g,b de 0–255). Também aceita, defensivamente, um array
+// [12,116,44] ou um hex "#0c742c". Retorna [r,g,b] ou null.
+function parseDarkPalette(dp) {
+    if (Array.isArray(dp)) {
+        const n = dp.map(Number).filter(Number.isFinite);
+        if (n.length >= 3) return [clamp255(n[0]), clamp255(n[1]), clamp255(n[2])];
+        return null;
+    }
+    if (typeof dp === 'string') {
+        const s = dp.trim();
+        if (!s) return null;
+        if (s[0] === '#') {
+            let h = s.slice(1);
+            if (h.length === 3) h = h.split('').map(x => x + x).join('');
+            const num = parseInt(h, 16);
+            if (h.length === 6 && !Number.isNaN(num)) return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+            return null;
         }
+        // "[12,116,44]" ou "12,116,44"
+        const nums = (s.match(/\d+/g) || []).map(Number);
+        if (nums.length >= 3) return [clamp255(nums[0]), clamp255(nums[1]), clamp255(nums[2])];
     }
-    // rgb()/rgba() → força o alpha
-    const m = c.match(/rgba?\(([^)]+)\)/i);
-    if (m) {
-        const parts = m[1].split(',').map(s => s.trim());
-        return `rgba(${parts[0]},${parts[1]},${parts[2]},${alpha})`;
-    }
-    return `rgba(96,165,250,${alpha})`;
+    return null;
 }
 
-// Normaliza a cor gradiente do serviço a partir de session.darkPalette (API).
-// Aceita array [c1,c2], string única, ou objeto {from,to}/{start,end}/{primary,secondary};
-// cai no fallback determinístico pelo nome quando ausente. Retorna [c1, c2].
+// rgba() a partir de um trio [r,g,b].
+function rgbaFrom(rgb, alpha) { return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`; }
+
+// Deriva um tom mais escuro da mesma cor (fim do gradiente da barra), já que a
+// API entrega uma única cor por sessão.
+function darkenRgb(rgb, factor) { return rgb.map(v => clamp255(v * factor)); }
+
+// Cor do serviço a partir de session.darkPalette (dado real da sessão, como
+// url/name). Retorna { rgb, c1, c2 } — c1 = cor da sessão, c2 = tom mais escuro
+// para o fim do gradiente da barra. Sem darkPalette, usa o accent neutro.
 function paletteFromSession(session) {
-    const dp = session && session.darkPalette;
-    let c1, c2;
-    if (Array.isArray(dp) && dp.length) {
-        c1 = dp[0]; c2 = dp[1] || dp[0];
-    } else if (dp && typeof dp === 'object') {
-        c1 = dp.from || dp.start || dp.primary || dp[0];
-        c2 = dp.to || dp.end || dp.secondary || dp[1] || c1;
-    } else if (typeof dp === 'string' && dp.trim()) {
-        c1 = c2 = dp.trim();
-    }
-    if (!c1) {
-        const f = sessionFallbackPalette(session && (session.name || session.url));
-        c1 = f[0]; c2 = f[1];
-    }
-    return [c1, c2 || c1];
+    const rgb = parseDarkPalette(session && session.darkPalette) || SESSION_NEUTRAL_RGB;
+    const rgb2 = darkenRgb(rgb, 0.55);
+    return {
+        rgb,
+        c1: `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`,
+        c2: `rgb(${rgb2[0]},${rgb2[1]},${rgb2[2]})`,
+        glow: (a) => rgbaFrom(rgb, a)
+    };
 }
 
 // Converte um rótulo de tempo ("1h 20m", "45m", "0s") em minutos (número).
@@ -224,14 +220,15 @@ function buildSessionCardBase(session, pkg, isCollection) {
     const card = createElement('div', 'session-card');
     card.dataset.sessionId = session.id;
 
-    // Cor gradiente do serviço (glow + barra) via darkPalette.
-    const [c1, c2] = paletteFromSession(session);
+    // Cor do serviço (glow + barra) a partir do darkPalette real da sessão.
+    const pal = paletteFromSession(session);
+    const c1 = pal.c1, c2 = pal.c2;
     card.style.setProperty('--card-accent', c1);
     card.style.setProperty('--card-accent-2', c2);
 
     // Glow radial no canto superior esquerdo (rgba inline — não depende de color-mix).
     const glow = createElement('div', 'session-card-glow');
-    glow.style.background = `radial-gradient(120% 90% at 0% 0%, ${hexA(c1, 0.22)}, transparent 62%)`;
+    glow.style.background = `radial-gradient(120% 90% at 0% 0%, ${pal.glow(0.22)}, transparent 62%)`;
     card.appendChild(glow);
 
     const content = createElement('div', 'session-card-content');
