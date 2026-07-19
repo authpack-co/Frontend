@@ -580,6 +580,12 @@ function handleAddSession(e) {
     let activeCategory = 'all';
     const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
 
+    // Estado da fase de captura (usado também pelo retry por linha)
+    let rows = {};                 // key(url) -> <li> da linha de progresso
+    const serviceByKey = {};       // key(url) -> { name, url } (para o retry)
+    let batchTotal = 0;            // total de sessões do lote atual
+    let batchDone = false;         // lote inicial concluído (libera os botões de retry)
+
     // Reset visual
     modal.dataset.phase = 'select';
     pkgNameEl.textContent = packageData.name || '';
@@ -757,10 +763,20 @@ function handleAddSession(e) {
             nameSpan.className = 'up-item-name';
             nameSpan.textContent = s.name;
 
+            // Botão "tentar de novo" — só aparece (via CSS) quando a linha falha e o
+            // lote já concluiu. Reexecuta a captura só daquele serviço, sem sair do modal.
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'up-item-retry';
+            retry.title = 'Tentar de novo';
+            retry.setAttribute('aria-label', 'Tentar de novo');
+            retry.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+            retry.addEventListener('click', () => retryRow(keyOf(s.url)));
+
             const status = document.createElement('span');
             status.className = 'up-item-status';
 
-            row.append(icon, nameSpan, status);
+            row.append(icon, nameSpan, retry, status);
             listEl.appendChild(row);
             rows[keyOf(s.url)] = row;
         });
@@ -780,19 +796,110 @@ function handleAddSession(e) {
         card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
     }
 
+    // Recalcula a barra/contadores/rodapé a partir do estado atual das linhas. Serve
+    // tanto para o lote inicial quanto para os retries (que mudam o placar depois).
+    function refreshSummary() {
+        const all = Object.values(rows);
+        const doneCount = all.filter(r => r.dataset.state !== 'pending').length;
+        const okCount = all.filter(r => r.dataset.state === 'ok').length;
+        const failedCount = all.filter(r => r.dataset.state === 'error').length;
+
+        fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
+
+        if (doneCount < batchTotal) {
+            countEl.textContent = `${doneCount}/${batchTotal}`;
+            return;
+        }
+        // Todas resolvidas (lote + eventuais retries)
+        countEl.textContent = `${okCount}/${batchTotal}`;
+        statusEl.textContent = failedCount === 0
+            ? 'Todas as sessões foram adicionadas'
+            : `${okCount} adicionada(s) · ${failedCount} com falha`;
+        footerHintEl.textContent = failedCount === 0
+            ? 'Sessões adicionadas com sucesso.'
+            : 'Toque em tentar de novo nas que falharam.';
+        modal.dataset.result = failedCount === 0 ? 'success' : 'partial';
+    }
+
+    // Aplica o resultado de uma captura (do lote ou de um retry) numa linha.
+    function applyResult(key, ok, session) {
+        const row = rows[key];
+        if (!row) return;
+        if (ok) {
+            row.dataset.state = 'ok';
+            // Sessão criada → adiciona ao estado local e à tela na hora (uma única vez)
+            if (session) {
+                packageData.sessions.push(session);
+                renderNewSessionCard(session);
+            }
+        } else {
+            row.dataset.state = 'error';
+        }
+        const retryBtn = row.querySelector('.up-item-retry');
+        if (retryBtn) retryBtn.disabled = !(batchDone && row.dataset.state === 'error');
+        refreshSummary();
+    }
+
+    // Dispara a captura de UM serviço e resolve quando a extensão responde por ele.
+    // A extensão sempre emite um authpack:addProgress por serviço (inclusive em falha),
+    // então casamos pela URL — sem depender do addDone (evita cruzar com outro lote).
+    function captureOne(service) {
+        return new Promise((resolve) => {
+            const key = keyOf(service.url);
+            let settled = false;
+            const finish = (ok, session) => {
+                if (settled) return;
+                settled = true;
+                window.removeEventListener('message', onMsg);
+                clearTimeout(timer);
+                resolve({ ok, session });
+            };
+            function onMsg(ev) {
+                if (ev.origin !== location.origin) return;
+                const d = ev.data;
+                if (d?.source !== 'authpack-extension') return;
+                if (d.type === 'authpack:addProgress' && keyOf(d.current?.url) === key) {
+                    const ok = d.current.status === 'ok';
+                    finish(ok, ok ? d.current.session : null);
+                }
+            }
+            // Rede de segurança caso nenhuma mensagem chegue (> timeout de captura da extensão).
+            const timer = setTimeout(() => finish(false, null), 75000);
+            window.addEventListener('message', onMsg);
+            window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services: [service] }, location.origin);
+        });
+    }
+
+    // Tenta de novo, no próprio modal, uma sessão que falhou.
+    async function retryRow(key) {
+        const row = rows[key];
+        const service = serviceByKey[key];
+        if (!row || !service || !batchDone) return;
+        if (row.dataset.state === 'pending') return;   // já em andamento
+        row.dataset.state = 'pending';                 // volta ao spinner (esconde o botão via CSS)
+        refreshSummary();
+        const { ok, session } = await captureOne(service);
+        applyResult(key, ok, session);
+    }
+
     function startCapture() {
         const services = Array.from(selected.values());
         const total = services.length;
         if (total === 0) return;
 
+        batchTotal = total;
+        batchDone = false;
+        services.forEach(s => { serviceByKey[keyOf(s.url)] = s; });
+
         modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
+        modal.removeAttribute('data-result');
         closeBtn.disabled = true;
         statusEl.textContent = 'Capturando sessões…';
         footerHintEl.textContent = 'Capturando…';
         countEl.textContent = `0/${total}`;
         fillEl.style.width = '0%';
 
-        const rows = buildProgressRows(services);
+        rows = buildProgressRows(services);
 
         function onMessage(ev) {
             if (ev.origin !== location.origin) return;
@@ -800,28 +907,17 @@ function handleAddSession(e) {
             if (d?.source !== 'authpack-extension') return;
 
             if (d.type === 'authpack:addProgress') {
-                const row = rows[keyOf(d.current?.url)];
-                if (row) row.dataset.state = d.current.status === 'ok' ? 'ok' : 'error';
-                countEl.textContent = `${d.done}/${d.total}`;
-                fillEl.style.width = `${Math.round((d.done / d.total) * 100)}%`;
-                // Sessão criada → adiciona ao estado local e à tela na hora
-                if (d.current?.status === 'ok' && d.current.session) {
-                    packageData.sessions.push(d.current.session);
-                    renderNewSessionCard(d.current.session);
-                }
+                applyResult(keyOf(d.current?.url), d.current?.status === 'ok', d.current?.session);
             } else if (d.type === 'authpack:addDone') {
                 window.removeEventListener('message', onMessage);
-                fillEl.style.width = '100%';
                 Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
-                const failed = d.failed?.length || 0;
-                countEl.textContent = `${d.ok}/${d.total}`;
-                statusEl.textContent = failed === 0
-                    ? 'Todas as sessões foram adicionadas'
-                    : `${d.ok} adicionada(s) · ${failed} com falha`;
-                footerHintEl.textContent = failed === 0
-                    ? 'Sessões adicionadas com sucesso.'
-                    : `${d.ok} adicionada(s) · ${failed} com falha`;
-                modal.dataset.result = failed === 0 ? 'success' : 'partial';
+                batchDone = true;
+                // Libera o retry das linhas que falharam.
+                Object.values(rows).forEach(r => {
+                    const b = r.querySelector('.up-item-retry');
+                    if (b) b.disabled = r.dataset.state !== 'error';
+                });
+                refreshSummary();
                 closeBtn.disabled = false;
             }
         }

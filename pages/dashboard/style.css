@@ -7523,6 +7523,22 @@ textarea:focus-visible {
 .up-item[data-state="error"] { border-color: var(--ap-danger-border); }
 .up-item[data-state="error"] .up-item-status::before { content: "\2715"; font-size: 12px; font-weight: 800; color: var(--ap-danger); }
 
+/* Botão "tentar de novo" por linha — só aparece com o lote concluído (modal
+   com data-result) e a linha em erro. Antes disso fica oculto. */
+.up-item-retry {
+    display: none; flex: none; align-items: center; justify-content: center;
+    width: 26px; height: 26px; padding: 0;
+    border: 1px solid var(--ap-border); border-radius: var(--ap-radius-sm);
+    background: var(--ap-bg-card); color: var(--ap-text-secondary);
+    cursor: pointer; transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+#addSessionModal[data-result] .up-item[data-state="error"] .up-item-retry { display: inline-flex; }
+.up-item-retry:hover:not(:disabled) {
+    color: var(--ap-text-primary); border-color: var(--ap-border-hover); background: var(--ap-bg-hover);
+}
+.up-item-retry:disabled { opacity: .5; cursor: default; }
+.up-item-retry svg { width: 14px; height: 14px; }
+
 .up-hint { margin: 14px 0 0; font-size: 12px; color: var(--ap-text-secondary); opacity: .85; }
 
 /* === Card "Adicionar sessão" (tile no grid de sessões) === */
