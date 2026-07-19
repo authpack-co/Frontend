@@ -2051,15 +2051,8 @@ const deleteSessionHandler = async (event) => {
         if (packageCard) {
             const iconStack = packageCard.querySelector(".icon-stack");
             if (iconStack) {
-                iconStack.innerHTML = "";
-                affectedPkg.sessions.slice(0, 3).forEach(session => {
-                    const stackIcon = createElement('div', 'stack-icon');
-                    const img = document.createElement('img');
-                    img.alt = session.name;
-                    AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
-                    stackIcon.appendChild(img);
-                    iconStack.appendChild(stackIcon);
-                });
+                // Um único ícone: a sessão mais antiga do pacote (sem pilha).
+                fillPackageStackIcon(iconStack, affectedPkg.sessions);
             }
         }
 

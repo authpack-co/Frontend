@@ -85,6 +85,29 @@ function usageLabelToMinutes(label) {
     return total;
 }
 
+// A sessão mais antiga (a primeira adicionada) do pacote. A ordem do array não é
+// garantida (JSON_ARRAYAGG no backend), então escolhemos pelo createdAt. É ela quem
+// representa o pacote — sempre um único ícone, nunca uma pilha.
+function getOldestSession(sessions) {
+    return (sessions || []).reduce((oldest, s) => {
+        if (!oldest) return s;
+        return new Date(s.createdAt) < new Date(oldest.createdAt) ? s : oldest;
+    }, null);
+}
+
+// Preenche um icon-stack com o ícone único da sessão mais antiga do pacote.
+function fillPackageStackIcon(iconStackEl, sessions) {
+    iconStackEl.innerHTML = '';
+    const oldest = getOldestSession(sessions);
+    if (!oldest) return;
+    const stackIcon = createElement('div', 'stack-icon');
+    const img = document.createElement('img');
+    img.alt = oldest.name;
+    AuthPackFavicon.apply(img, { icon: oldest.icon, url: oldest.url });
+    stackIcon.appendChild(img);
+    iconStackEl.appendChild(stackIcon);
+}
+
 // Gera o elemento DOM de um pacote
 function createPackageElement(pkg, isAccess = false) {
     const container = createElement('div', 'access-item sidebar-pkg-item');
@@ -98,19 +121,8 @@ function createPackageElement(pkg, isAccess = false) {
     title.textContent = pkg.name;
 
     const iconStack = createElement('div', 'icon-stack sidebar-pkg-logos');
-    const sessions = pkg.sessions || [];
-    sessions.slice(0, 3).forEach((session, i) => {
-        const stackIcon = createElement('div', 'stack-icon');
-        stackIcon.style.zIndex = String(10 - i);
-        const img = document.createElement('img');
-        img.alt = session.name;
-        // Cada logo subsequente perde opacidade, criando o efeito de "fade".
-        // Inline no <img> vence as regras :nth-child do .stack-icon.
-        img.style.opacity = Math.max(0.3, 1 - i * 0.24).toFixed(2);
-        AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
-        stackIcon.appendChild(img);
-        iconStack.appendChild(stackIcon);
-    });
+    // Apenas a sessão mais antiga representa o pacote — um único ícone.
+    fillPackageStackIcon(iconStack, pkg.sessions);
 
     main.appendChild(title);
     main.appendChild(iconStack);

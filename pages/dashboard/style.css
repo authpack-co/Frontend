@@ -8247,7 +8247,8 @@ textarea:focus-visible {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    overflow: visible;
+    max-height: 250px;
+    overflow-y: auto;
     padding: 0;
 }
 
