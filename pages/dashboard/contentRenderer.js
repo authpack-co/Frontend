@@ -287,37 +287,32 @@ function buildSessionCardBase(session, pkg, isCollection) {
     const usageFill = createElement('div', 'session-card-usage-fill');
     // Cor da barra = gradiente do serviço (inline, robusto).
     usageFill.style.background = `linear-gradient(90deg, ${c1}, ${c2})`;
-    // Largura inicial relativa ao tempo de uso das sessões do pacote. Para a
-    // collection, loadPackageStats recalcula depois com os dados reais.
+    // Largura inicial = fração do tempo desta sessão sobre o total usado no
+    // pacote no período (o quanto ela representa do todo). Se só ela foi usada,
+    // 100%; dividido com outras, cada uma fica com sua parte. Para a collection,
+    // loadPackageStats recalcula depois com os dados reais.
     const allMinutes = (pkg && Array.isArray(pkg.sessions) ? pkg.sessions : [session])
         .map(s => usageLabelToMinutes(s.usageTime));
-    const maxMinutes = Math.max(1, ...allMinutes);
+    const totalMinutes = allMinutes.reduce((sum, m) => sum + m, 0);
     const myMinutes = usageLabelToMinutes(session.usageTime);
-    usageFill.style.width = (myMinutes > 0 ? Math.max(4, Math.round(myMinutes / maxMinutes * 100)) : 0) + '%';
+    usageFill.style.width = (myMinutes > 0 && totalMinutes > 0
+        ? Math.max(4, Math.round(myMinutes / totalMinutes * 100))
+        : 0) + '%';
     usageBar.appendChild(usageFill);
     usage.appendChild(usageHead);
     usage.appendChild(usageBar);
 
-    // Rodapé: membros com acesso + contagem online.
+    // Rodapé: quem está usando a sessão agora (online) + contagem online.
     const footer = createElement('div', 'session-card-footer');
 
-    const members = createElement('div', 'session-card-members');
-    const users = (pkg && Array.isArray(pkg.users)) ? pkg.users : [];
-    if (users.length) {
-        const stack = createElement('div', 'session-card-avatars');
-        users.slice(0, 4).forEach(u => {
-            const av = document.createElement('img');
-            av.className = 'session-card-avatar';
-            av.alt = u.name || '';
-            if (u.picture) av.src = u.picture;
-            av.onerror = function () { this.style.visibility = 'hidden'; };
-            stack.appendChild(av);
-        });
-        const membersLabel = createElement('span', 'session-card-members-label',
-            `${users.length} com acesso`);
-        members.appendChild(stack);
-        members.appendChild(membersLabel);
-    }
+    // "Usando agora": avatares dos usuários online, preenchidos depois por
+    // loadPackageStats (collection) / loadAccessOverview (access). Início neutro:
+    // ninguém usando.
+    const members = createElement('div', 'session-card-members is-empty');
+    const stack = createElement('div', 'session-card-avatars');
+    const membersLabel = createElement('span', 'session-card-members-label', 'ninguém usando agora');
+    members.appendChild(stack);
+    members.appendChild(membersLabel);
 
     const onlineBadge = createElement('div', 'session-online-badge');
     const onlineDot = createElement('span', 'online-dot');
@@ -338,6 +333,35 @@ function buildSessionCardBase(session, pkg, isCollection) {
     card.appendChild(content);
 
     return { card, content, footer };
+}
+
+// Atualiza o rodapé "usando agora" de um card: avatares dos usuários online e
+// rótulo ("usando agora" / "ninguém usando agora"). `onlineUsers` traz os dados
+// de avatar quando disponíveis (collection); no access view passamos só o
+// `count` (sem avatares). A contagem numérica fica no badge de online ao lado.
+function updateSessionUsingNow(card, onlineUsers = [], count = null) {
+    const members = card.querySelector('.session-card-members');
+    if (!members) return;
+
+    const total = count != null ? count : onlineUsers.length;
+
+    const stack = members.querySelector('.session-card-avatars');
+    if (stack) {
+        stack.innerHTML = '';
+        onlineUsers.slice(0, 4).forEach(u => {
+            const av = document.createElement('img');
+            av.className = 'session-card-avatar';
+            av.alt = u.name || '';
+            if (u.picture) av.src = u.picture;
+            av.onerror = function () { this.style.visibility = 'hidden'; };
+            stack.appendChild(av);
+        });
+    }
+
+    const label = members.querySelector('.session-card-members-label');
+    if (label) label.textContent = total > 0 ? 'usando agora' : 'ninguém usando agora';
+
+    members.classList.toggle('is-empty', total <= 0);
 }
 
 // Gera o elemento DOM de uma sessão como card de grid (para collection view)
@@ -1099,7 +1123,9 @@ async function loadAccessOverview(pkg, activePreset) {
             onlineCountEl.textContent = `${totalOnline} online`;
         }
 
-        // Atualiza badges em cada session card
+        // Atualiza badges + rodapé "usando agora" em cada session card. O access
+        // view só recebe a contagem online (sem dados de avatar), então o rótulo
+        // é atualizado pelo count.
         if (sessionsOnline) {
             const sessionCards = activePreset.querySelectorAll('.session-card');
             sessionCards.forEach(card => {
@@ -1107,6 +1133,7 @@ async function loadAccessOverview(pkg, activePreset) {
                 const count = sessionsOnline[sessionId] || 0;
                 const badge = card.querySelector('.online-count-num');
                 if (badge) badge.textContent = count;
+                updateSessionUsingNow(card, [], count);
             });
         }
     } catch (err) {
@@ -1142,6 +1169,7 @@ async function loadPackageStats(pkg, period) {
                 totalUsers: pkg.users.length,
                 totalUsersOnline: 0,
                 sessionsOnline: {},
+                sessionsOnlineUsers: {},
                 sessionsHistoryUsage,
                 packageHistoryUsage,
                 dailyPackageUsage,
@@ -1186,9 +1214,11 @@ async function loadPackageStats(pkg, period) {
                     }
                 });
             });
-            // Converte Sets para contagem de usuários únicos
+            // Converte Sets para contagem + lista de usuários únicos por sessão
+            // (a lista alimenta os avatares de "usando agora" no rodapé do card).
             for (const sessionId in sessionsOnlineUsers) {
                 pkg.stats.sessionsOnline[sessionId] = sessionsOnlineUsers[sessionId].size;
+                pkg.stats.sessionsOnlineUsers[sessionId] = Array.from(sessionsOnlineUsers[sessionId]);
             }
         }
     }
@@ -1302,7 +1332,8 @@ async function loadPackageStats(pkg, period) {
     const sessionsHistoryUsageFiltered = filterByLastDays(pkg.stats.sessionsHistoryUsage, period);
 
     // Primeiro passo: calcula o tempo de cada sessão para dimensionar a barra
-    // de forma relativa à sessão mais usada do pacote.
+    // como fração do tempo total usado no pacote (o quanto cada sessão
+    // representa do todo no período).
     const sessionTimes = [];
     sessionCards.forEach(card => {
         const sessionId = card.getAttribute("data-session-id");
@@ -1312,7 +1343,7 @@ async function loadPackageStats(pkg, period) {
         });
         sessionTimes.push(sessionTime);
     });
-    const maxSessionTime = Math.max(1, ...sessionTimes);
+    const totalSessionTime = sessionTimes.reduce((sum, t) => sum + t, 0);
 
     sessionCards.forEach((card, i) => {
         const sessionId = card.getAttribute("data-session-id");
@@ -1325,19 +1356,29 @@ async function loadPackageStats(pkg, period) {
             usageTimeText.textContent = sessionTimeFormatted === "0s" ? "0m" : sessionTimeFormatted;
         }
 
-        // Barra de uso: largura proporcional à sessão mais usada
+        // Barra de uso: largura = fração desta sessão sobre o total do pacote.
         const usageFill = card.querySelector('.session-card-usage-fill');
         if (usageFill) {
-            const pct = Math.max(sessionTime > 0 ? 4 : 0, Math.round((sessionTime / maxSessionTime) * 100));
+            const pct = totalSessionTime > 0 && sessionTime > 0
+                ? Math.max(4, Math.round((sessionTime / totalSessionTime) * 100))
+                : 0;
             usageFill.style.width = pct + '%';
         }
 
         // Atualiza badge de online count
+        const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
         const onlineCountNum = card.querySelector('.online-count-num');
         if (onlineCountNum) {
-            const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
             onlineCountNum.textContent = onlineCount;
         }
+
+        // Rodapé "usando agora": avatares dos usuários online desta sessão.
+        const onlineUserIds = (pkg.stats.sessionsOnlineUsers &&
+            pkg.stats.sessionsOnlineUsers[sessionId]) || [];
+        const onlineUsers = onlineUserIds
+            .map(uid => pkg.users.find(u => u.id === uid))
+            .filter(Boolean);
+        updateSessionUsingNow(card, onlineUsers, onlineCount);
     });
 
     // Users panel — atualiza label de status (.item-details) para todos os usuários
@@ -1370,12 +1411,15 @@ function renderUserDetails(user, pkg, period) {
     );
 
     const headerTitle = userScreen.querySelector(".header-title");
+    const headerSubtitle = userScreen.querySelector(".header-subtitle");
     const profileCard = userScreen.querySelector(".profile-card");
     const profileCardIcon = profileCard.querySelector(".profile-avatar img");
     const profileTitle = profileCard.querySelector(".profile-title");
     const profileSubtitle = profileCard.querySelector(".profile-subtitle");
 
+    // Breadcrumb: Pacote › Usuário
     headerTitle.textContent = pkg.name;
+    if (headerSubtitle) headerSubtitle.textContent = user.name;
     profileCardIcon.src = user.picture;
     profileTitle.textContent = user.name;
     profileSubtitle.textContent = user.email;
@@ -1459,12 +1503,15 @@ function renderSessionDetails(session, pkg, period) {
     );
 
     const headerTitle = sessionScreen.querySelector(".header-title");
+    const headerSubtitle = sessionScreen.querySelector(".header-subtitle");
     const serviceCard = sessionScreen.querySelector(".service-card");
     const sessionLogo = serviceCard.querySelector(".service-card-icon");
     const sessionName = serviceCard.querySelector(".service-name");
     const sessionDomain = serviceCard.querySelector(".service-domain");
 
+    // Breadcrumb: Pacote › Sessão
     headerTitle.textContent = pkg.name;
+    if (headerSubtitle) headerSubtitle.textContent = session.name;
 
     AuthPackFavicon.apply(sessionLogo, { icon: session.icon, url: session.url });
     sessionName.textContent = session.name;
@@ -1479,7 +1526,6 @@ async function loadSessionStats(session, pkg, period) {
     const sessionHistoryUsage = getSessionHistoryUsage(session.id, accessHistoryFiltered);
     const sessionTotalUsage = getSessionTotalUsageTime(session.id, accessHistoryFiltered);
     const sessionDistinctUsers = getSessionDistinctUsers(session.id, accessHistoryFiltered);
-    const sessionHotUsers = getSessionHotUsers(session.id, accessHistoryFiltered);
     const sessionDailyUsage = getDailySessionUsage(session.id, accessHistoryFiltered);
 
     session.stats = {
@@ -1488,8 +1534,6 @@ async function loadSessionStats(session, pkg, period) {
         distinctUsers: sessionDistinctUsers,
         dailyUsage: sessionDailyUsage
     };
-
-    console.log(sessionHistoryUsage)
 
     const sessionScreen = document.querySelector(
         "#package-details .preset-collection .screen-section.secondary .preset-session-overview"
@@ -1502,21 +1546,35 @@ async function loadSessionStats(session, pkg, period) {
     sessionTimeUsage.textContent = formatHours(session.stats.totalUsage.hours);
     sessionUsers.textContent = session.stats.distinctUsers;
 
-    // Usuários ativos  
-    const hotUsersListContainer = sessionScreen.querySelector(".service-users-list");
-    hotUsersListContainer.innerHTML = "";
+    // "Usando agora": usuários online nesta sessão (mesma lógica dos session
+    // cards — heartbeat < 60s, calculado em loadPackageStats).
+    const onlineUserIds = (pkg.stats.sessionsOnlineUsers &&
+        pkg.stats.sessionsOnlineUsers[session.id]) || [];
 
-    sessionHotUsers.forEach(userId => {
+    const usersLabel = sessionScreen.querySelector(".service-users-label");
+    if (usersLabel) {
+        usersLabel.textContent = onlineUserIds.length > 0 ? "Usando agora" : "Ninguém usando agora";
+    }
+
+    const usingNowListContainer = sessionScreen.querySelector(".service-users-list");
+    usingNowListContainer.innerHTML = "";
+    usingNowListContainer.classList.toggle("is-empty", onlineUserIds.length === 0);
+
+    const MAX_AVATARS = 5;
+    onlineUserIds.slice(0, MAX_AVATARS).forEach(userId => {
         const user = pkg.users.find(u => u.id === userId);
         if (!user) return;
         const userAvatar = createElement("img", "service-user-avatar");
-        userAvatar.src = user.picture;
-        hotUsersListContainer.appendChild(userAvatar);
+        if (user.picture) userAvatar.src = user.picture;
+        userAvatar.alt = user.name || "";
+        userAvatar.onerror = function () { this.style.visibility = "hidden"; };
+        usingNowListContainer.appendChild(userAvatar);
     });
 
-    const plusUser = createElement("div", "service-add-user");
-    plusUser.textContent = sessionHotUsers.length === 0 ? "..." : "+";
-    hotUsersListContainer.appendChild(plusUser);
+    const extraUsers = onlineUserIds.length - MAX_AVATARS;
+    if (extraUsers > 0) {
+        usingNowListContainer.appendChild(createElement("div", "service-add-user", `+${extraUsers}`));
+    }
 
     // Gráfico de uso
     if (period === 0) {
@@ -2100,41 +2158,6 @@ function getSessionDistinctUsers(sessionId, packageAccessHistory) {
     });
 
     return users.size;
-}
-
-function getSessionHotUsers(sessionId, accessHistory) {
-    // Objeto para acumular o tempo total de uso por usuário
-    const userUsageMap = {};
-
-    // Iterar por todas as datas no histórico
-    for (const date in accessHistory) {
-        const accesses = accessHistory[date];
-
-        // Filtrar acessos da sessão específica e acumular tempo de uso
-        accesses.forEach(access => {
-            if (access.sessionId === sessionId) {
-                const { userId, usageTimeSeconds } = access;
-
-                if (!userUsageMap[userId]) {
-                    userUsageMap[userId] = 0;
-                }
-
-                userUsageMap[userId] += usageTimeSeconds;
-            }
-        });
-    }
-
-    // Converter o mapa em array de objetos [userId, totalUsageTime]
-    const userUsageArray = Object.entries(userUsageMap).map(([userId, totalUsage]) => ({
-        userId,
-        totalUsageTime: totalUsage
-    }));
-
-    // Ordenar por tempo total de uso (decrescente)
-    userUsageArray.sort((a, b) => b.totalUsageTime - a.totalUsageTime);
-
-    // Retornar no máximo os 3 primeiros usuários
-    return userUsageArray.slice(0, 3).map(user => user.userId);
 }
 
 function getDailySessionUsage(sessionId, packageAccessHistory, currentDate = new Date()) {
@@ -2750,6 +2773,9 @@ function setupSessionsExpansion(grid) {
             toggle.classList.toggle('is-expanded', expanded);
             toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
+            // Ao recolher ("Ver menos"), volta a rolagem da grade para o topo
+            // em vez de manter a posição em que o usuário estava.
+            if (!expanded) grid.scrollTop = 0;
         });
         panel.appendChild(toggle);
     }

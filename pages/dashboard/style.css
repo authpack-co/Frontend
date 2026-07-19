@@ -741,8 +741,35 @@ span.coming-soon {
     border-bottom: 1px solid var(--ap-border);
 }
 
-.preset-collection .screen-section.secondary .header-top .header-subtitle {
+/* Breadcrumb do overview (Pacote › Sessão / Usuário) */
+#package-details .preset-collection .screen-section.secondary .header-top h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.preset-collection .screen-section.secondary .header-top .header-title {
     color: var(--ap-text-muted);
+    font-weight: 600;
+}
+
+.preset-collection .screen-section.secondary .header-top .breadcrumb-sep {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ap-text-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.preset-collection .screen-section.secondary .header-top .header-subtitle {
+    color: var(--ap-text-primary);
+    font-weight: 700;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .content-card h2 {
@@ -817,6 +844,14 @@ span.coming-soon {
 .expanded .card-content {
     opacity: 1;
     padding: var(--ap-space-md) 0;
+}
+
+/* card-content tem overflow:hidden (animação de expandir). Dá respiro lateral
+   dentro do package-details para o botão "Ver todas" e as sombras de hover dos
+   cards não serem cortadas na borda. */
+#package-details .card-content {
+    padding-left: var(--ap-space-sm);
+    padding-right: var(--ap-space-sm);
 }
 
 .expanded .access-grid {
@@ -2804,6 +2839,11 @@ span.coming-soon {
    ============================================ */
 .usage-chart-container {
     width: 100%;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .chart-header {
@@ -3058,8 +3098,8 @@ span.coming-soon {
     height: 28px;
     margin-right: -1.1rem;
     border-radius: 50%;
-    background: #333;
-    border: 2px solid #1a1a1a;
+    background: var(--ap-bg-muted);
+    border: 2px solid var(--ap-bg-card);
     object-fit: cover;
 }
 
@@ -3076,18 +3116,19 @@ span.coming-soon {
 }
 
 .service-add-user {
-    width: 28px;
+    min-width: 28px;
     height: 28px;
-    opacity: 0.6;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    padding: 0 7px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 20px;
+    color: var(--ap-text-muted);
+    font-size: 13px;
+    font-weight: 600;
     cursor: default;
-    border: 2px solid transparent;
+    border: 2px solid var(--ap-bg-card);
     transition: all 0.2s;
 }
 
@@ -3102,6 +3143,8 @@ span.coming-soon {
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
     padding: 1.25rem;
+    background: var(--ap-bg-card);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .stat-card.full-width {
@@ -3152,9 +3195,11 @@ span.coming-soon {
 }
 
 .data-table {
-    background: var(--ap-bg-page);
+    background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
+    box-shadow: var(--ap-shadow-sm);
+    overflow: hidden;
 }
 
 .table-body {
@@ -8650,6 +8695,9 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
 
 .session-card-avatars { display: flex; align-items: center; }
 
+/* Sem ninguém usando: esconde o stack vazio para o rótulo não ganhar gap. */
+.session-card-members.is-empty .session-card-avatars { display: none; }
+
 .session-card-avatar {
     width: 26px;
     height: 26px;
@@ -8754,7 +8802,9 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
     gap: 18px;
     max-height: none;
     overflow: visible;
-    padding: 0;
+    /* respiro vertical p/ o lift (-2px) + sombra de hover não serem cortados
+       quando a grade recolhe/rola (overflow hidden/auto). */
+    padding: 8px 0;
 }
 
 /* ── Linha de sessões recolhível ──
@@ -8762,7 +8812,8 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
    do que cabem na linha, um botão revela as demais com altura máxima + rolagem. */
 #package-details .sessions-grid { transition: max-height 0.32s ease; }
 #package-details .sessions-grid.is-collapsed {
-    max-height: var(--sessions-row-h, 340px);
+    /* uma linha + os 8px de padding em cima/embaixo */
+    max-height: calc(var(--sessions-row-h, 340px) + 16px);
     overflow: hidden;
 }
 #package-details .sessions-grid.is-expanded {
@@ -8774,7 +8825,7 @@ body:not([data-dash-section="access"]) .header-access-only { display: none; }
 /* Botão "Ver todas" no canto superior direito do painel */
 .sessions-toggle {
     position: absolute;
-    top: -4px;
+    top: 0;
     right: 0;
     display: inline-flex;
     align-items: center;
