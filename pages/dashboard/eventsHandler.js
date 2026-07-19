@@ -62,7 +62,7 @@ const utils = {
         if (isOpen) {
             toggle.classList.add('active');
             statusBadge.className = 'status-badge status-open';
-            statusText.textContent = 'Acesso público';
+            statusText.textContent = 'Acesso público ativo';
             linkDisplay.classList.remove('disabled');
         } else {
             toggle.classList.remove('active');
@@ -154,6 +154,7 @@ const listenerMap = [
     { selector: '.remove-user-access-btn', event: 'click', handler: setupRemoveUserAccessForm },
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
     { selector: '.update-package-btn', event: 'click', handler: handleUpdatePackage },
+    { selector: '.add-session-btn', event: 'click', handler: handleAddSession },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
@@ -475,6 +476,468 @@ function handleUpdatePackage(e) {
     window.postMessage({ source: 'authpack-page', type: 'authpack:updatePackage', packageId, sessions }, location.origin);
 }
 
+// Catálogo de serviços comuns em times internos. `url` = superfície onde o dono já está
+// naturalmente logado; a captura acontece nessa URL. O usuário também pode colar qualquer URL.
+// Categorias usadas nos chips de filtro do modal "Adicionar sessão".
+const ADD_SESSION_CATEGORIES = [
+    { id: 'all', label: 'Todos' },
+    { id: 'ia', label: 'IA' },
+    { id: 'stream', label: 'Streaming' },
+    { id: 'work', label: 'Trabalho' },
+    { id: 'social', label: 'Social' },
+];
+
+// Cada serviço tem uma categoria (`cat`) para o filtro. Os ícones são reais —
+// carregados via AuthPackFavicon a partir da URL — não são mockups.
+const ADD_SESSION_CATALOG = [
+    // IA
+    { name: 'ChatGPT', url: 'https://chatgpt.com', cat: 'ia' },
+    { name: 'Claude', url: 'https://claude.ai', cat: 'ia' },
+    { name: 'Gemini', url: 'https://gemini.google.com', cat: 'ia' },
+    { name: 'Perplexity', url: 'https://www.perplexity.ai', cat: 'ia' },
+    { name: 'Midjourney', url: 'https://www.midjourney.com', cat: 'ia' },
+    // Streaming
+    { name: 'Netflix', url: 'https://www.netflix.com', cat: 'stream' },
+    { name: 'Spotify', url: 'https://open.spotify.com', cat: 'stream' },
+    { name: 'Disney+', url: 'https://www.disneyplus.com', cat: 'stream' },
+    { name: 'YouTube', url: 'https://www.youtube.com', cat: 'stream' },
+    { name: 'Prime Video', url: 'https://www.primevideo.com', cat: 'stream' },
+    // Trabalho
+    { name: 'Slack', url: 'https://app.slack.com/client', cat: 'work' },
+    { name: 'GitHub', url: 'https://github.com', cat: 'work' },
+    { name: 'Notion', url: 'https://www.notion.so', cat: 'work' },
+    { name: 'Canva', url: 'https://www.canva.com', cat: 'work' },
+    { name: 'Figma', url: 'https://www.figma.com/files', cat: 'work' },
+    { name: 'Google', url: 'https://drive.google.com', cat: 'work' },
+    { name: 'Trello', url: 'https://trello.com', cat: 'work' },
+    { name: 'Linear', url: 'https://linear.app', cat: 'work' },
+    { name: 'Jira', url: 'https://www.atlassian.com', cat: 'work' },
+    { name: 'Asana', url: 'https://app.asana.com', cat: 'work' },
+    { name: 'Miro', url: 'https://miro.com/app/dashboard', cat: 'work' },
+    { name: 'ClickUp', url: 'https://app.clickup.com', cat: 'work' },
+    { name: 'Adobe CC', url: 'https://account.adobe.com', cat: 'work' },
+    // Social
+    { name: 'LinkedIn', url: 'https://www.linkedin.com', cat: 'social' },
+    { name: 'X', url: 'https://x.com', cat: 'social' },
+    { name: 'Instagram', url: 'https://www.instagram.com', cat: 'social' },
+    { name: 'Facebook', url: 'https://www.facebook.com', cat: 'social' },
+];
+
+// Normaliza uma entrada de URL/busca em { name, url } ou null se inválida.
+function normalizeServiceInput(raw) {
+    const value = (raw || '').trim();
+    if (!value) return null;
+    let urlStr = value;
+    if (!/^https?:\/\//i.test(urlStr)) urlStr = 'https://' + urlStr;
+    try {
+        const u = new URL(urlStr);
+        if (!u.hostname.includes('.')) return null;
+        const host = u.hostname.replace(/^www\./, '');
+        const name = host.split('.')[0];
+        return { name: name.charAt(0).toUpperCase() + name.slice(1), url: u.href };
+    } catch {
+        return null;
+    }
+}
+
+function handleAddSession(e) {
+    e.stopPropagation();
+
+    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas).
+    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
+        utils.showModal('extensionRequired');
+        return;
+    }
+
+    const packageId = this.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    // Grid exato onde mora o card clicado — evita pegar o .preset-collection errado
+    // (existem dois: a lista de pacotes e o detalhe).
+    const originGrid = this.closest('.sessions-grid');
+    if (!packageData) return;
+
+    const modal = document.getElementById('addSessionModal');
+    const pkgNameEl = modal.querySelector('.as-pkg-name');
+    const categoriesEl = modal.querySelector('.as-categories');
+    const sectionLabelEl = modal.querySelector('.as-section-label');
+    const servicesEl = modal.querySelector('.as-services');
+    const searchEl = modal.querySelector('.as-search');
+    const emptySearchEl = modal.querySelector('.as-empty-search');
+    const confirmBtn = modal.querySelector('.as-confirm');
+    const confirmCountEl = modal.querySelector('.as-confirm-count');
+    const footerHintEl = modal.querySelector('.as-footer-hint');
+    const cancelBtn = modal.querySelector('.as-cancel');
+    const closeBtn = modal.querySelector('.as-close');
+    const statusEl = modal.querySelector('.as-status');
+    const countEl = modal.querySelector('.as-count');
+    const fillEl = modal.querySelector('.as-bar-fill');
+    const listEl = modal.querySelector('.as-list');
+
+    // Estado local do modal
+    const selected = new Map();               // key(url) -> { name, url }
+    const chipByKey = {};                     // key(url) -> chip element
+    const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
+    let activeCategory = 'all';
+    const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
+
+    // Estado da fase de captura (usado também pelo retry por linha)
+    let rows = {};                 // key(url) -> <li> da linha de progresso
+    const serviceByKey = {};       // key(url) -> { name, url } (para o retry)
+    let batchTotal = 0;            // total de sessões do lote atual
+    let batchDone = false;         // lote inicial concluído (libera os botões de retry)
+
+    // Reset visual
+    modal.dataset.phase = 'select';
+    pkgNameEl.textContent = packageData.name || '';
+    searchEl.value = '';
+    emptySearchEl.classList.add('hidden');
+    listEl.innerHTML = '';
+    fillEl.style.width = '0%';
+    countEl.textContent = '0/0';
+    statusEl.textContent = 'Capturando sessões…';
+    modal.removeAttribute('data-result');
+    // Visibilidade dos botões é 100% por fase (CSS) — não há .hidden global.
+    confirmBtn.disabled = true;
+    closeBtn.disabled = true;
+
+    function syncConfirm() {
+        const n = selected.size;
+        confirmBtn.disabled = n === 0;
+        confirmCountEl.textContent = n ? `(${n})` : '';
+        // Dica no rodapé (fase de seleção). Na fase de progresso o texto é
+        // controlado pelo fluxo de captura.
+        if (modal.dataset.phase !== 'progress') {
+            footerHintEl.textContent = n === 0
+                ? 'Selecione ao menos um serviço'
+                : `${n} ${n === 1 ? 'serviço selecionado' : 'serviços selecionados'}`;
+        }
+    }
+
+    function makeChip(service) {
+        const key = keyOf(service.url);
+        const chip = document.createElement('button');
+        chip.className = 'as-service';
+        chip.dataset.key = key;
+
+        const icon = document.createElement('img');
+        icon.className = 'as-service-icon';
+        icon.alt = '';
+        AuthPackFavicon.apply(icon, {
+            url: service.url,
+            onFinalError: () => {
+                const fb = document.createElement('span');
+                fb.className = 'as-service-icon as-service-icon--fb';
+                fb.textContent = (service.name || '?').trim().charAt(0).toUpperCase();
+                icon.replaceWith(fb);
+            }
+        });
+
+        const label = document.createElement('span');
+        label.className = 'as-service-name';
+        label.textContent = service.name;
+
+        const check = document.createElement('span');
+        check.className = 'as-service-check';
+        check.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5"></path>
+            </svg>`;
+
+        chip.append(icon, label, check);
+        chip.addEventListener('click', () => toggleService(service));
+        chipByKey[key] = chip;
+        return chip;
+    }
+
+    function toggleService(service) {
+        const key = keyOf(service.url);
+        const chip = chipByKey[key];
+        if (selected.has(key)) {
+            selected.delete(key);
+            chip && chip.classList.remove('is-selected');
+        } else {
+            selected.set(key, { name: service.name, url: service.url });
+            chip && chip.classList.add('is-selected');
+        }
+        syncConfirm();
+    }
+
+    function renderCatalog() {
+        servicesEl.innerHTML = '';
+        catalog.forEach(s => servicesEl.appendChild(makeChip(s)));
+    }
+
+    // Chips de categoria (filtro). Ao trocar, reaplica o filtro combinado.
+    function renderCategories() {
+        categoriesEl.innerHTML = '';
+        ADD_SESSION_CATEGORIES.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'as-category' + (cat.id === activeCategory ? ' is-active' : '');
+            btn.dataset.cat = cat.id;
+            btn.textContent = cat.label;
+            btn.addEventListener('click', () => {
+                if (activeCategory === cat.id) return;
+                activeCategory = cat.id;
+                categoriesEl.querySelectorAll('.as-category').forEach(b =>
+                    b.classList.toggle('is-active', b.dataset.cat === activeCategory));
+                applyFilter();
+            });
+            categoriesEl.appendChild(btn);
+        });
+    }
+
+    renderCategories();
+    renderCatalog();
+    syncConfirm();
+
+    // Busca / adicionar URL custom + filtro por categoria.
+    function applyFilter() {
+        const q = searchEl.value.trim().toLowerCase();
+        let visible = 0;
+        catalog.forEach(s => {
+            const chip = chipByKey[keyOf(s.url)];
+            if (!chip) return;
+            // Serviços custom (sem `cat`) aparecem em qualquer categoria.
+            const matchCat = activeCategory === 'all' || !s.cat || s.cat === activeCategory;
+            const matchText = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
+            const match = matchCat && matchText;
+            chip.classList.toggle('hidden', !match);
+            if (match) visible++;
+        });
+        emptySearchEl.classList.toggle('hidden', visible > 0 || !q);
+
+        // Rótulo da seção acompanha a categoria ativa.
+        const catObj = ADD_SESSION_CATEGORIES.find(c => c.id === activeCategory);
+        sectionLabelEl.textContent = activeCategory === 'all'
+            ? 'Serviços comuns'
+            : (catObj ? catObj.label : 'Serviços');
+    }
+
+    function addCustomFromSearch() {
+        const svc = normalizeServiceInput(searchEl.value);
+        if (!svc) return;
+        const key = keyOf(svc.url);
+        if (!chipByKey[key]) {
+            catalog.push(svc);
+            servicesEl.appendChild(makeChip(svc));
+        }
+        // Seleciona (se ainda não estiver) e limpa a busca
+        if (!selected.has(key)) toggleService(svc);
+        searchEl.value = '';
+        applyFilter();
+    }
+
+    searchEl.oninput = applyFilter;
+    searchEl.onkeydown = (ev) => {
+        if (ev.key === 'Enter') {
+            ev.preventDefault();
+            addCustomFromSearch();
+        }
+    };
+
+    // Progresso (fase 2) — cria uma linha por serviço
+    function buildProgressRows(services) {
+        listEl.innerHTML = '';
+        const rows = {};
+        services.forEach(s => {
+            const row = document.createElement('li');
+            row.className = 'up-item';
+            row.dataset.key = keyOf(s.url);
+            row.dataset.state = 'pending';
+
+            const icon = document.createElement('img');
+            icon.className = 'up-item-icon';
+            icon.alt = '';
+            AuthPackFavicon.apply(icon, {
+                url: s.url,
+                onFinalError: () => {
+                    const fb = document.createElement('span');
+                    fb.className = 'up-item-icon up-item-icon--fb';
+                    fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
+                    icon.replaceWith(fb);
+                }
+            });
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'up-item-name';
+            nameSpan.textContent = s.name;
+
+            // Botão "tentar de novo" — só aparece (via CSS) quando a linha falha e o
+            // lote já concluiu. Reexecuta a captura só daquele serviço, sem sair do modal.
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'up-item-retry';
+            retry.title = 'Tentar de novo';
+            retry.setAttribute('aria-label', 'Tentar de novo');
+            retry.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+            retry.addEventListener('click', () => retryRow(keyOf(s.url)));
+
+            const status = document.createElement('span');
+            status.className = 'up-item-status';
+
+            row.append(icon, nameSpan, retry, status);
+            listEl.appendChild(row);
+            rows[keyOf(s.url)] = row;
+        });
+        return rows;
+    }
+
+    // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
+    function renderNewSessionCard(session) {
+        const grid = originGrid || document.querySelector('.preset-collection .sessions-panel .sessions-grid');
+        console.log('[AddSession] renderNewSessionCard: grid?', !!grid, 'session=', session);
+        if (!grid) { console.warn('[AddSession] grid não encontrado — card não renderizado'); return; }
+        const card = createSessionElement(session, true, packageData);
+        card.classList.add('fadeInFromTop');
+        const addCard = grid.querySelector('.add-session-card');
+        if (addCard && addCard.nextSibling) grid.insertBefore(card, addCard.nextSibling);
+        else grid.appendChild(card);
+        card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
+    }
+
+    // Recalcula a barra/contadores/rodapé a partir do estado atual das linhas. Serve
+    // tanto para o lote inicial quanto para os retries (que mudam o placar depois).
+    function refreshSummary() {
+        const all = Object.values(rows);
+        const doneCount = all.filter(r => r.dataset.state !== 'pending').length;
+        const okCount = all.filter(r => r.dataset.state === 'ok').length;
+        const failedCount = all.filter(r => r.dataset.state === 'error').length;
+
+        fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
+
+        if (doneCount < batchTotal) {
+            countEl.textContent = `${doneCount}/${batchTotal}`;
+            return;
+        }
+        // Todas resolvidas (lote + eventuais retries)
+        countEl.textContent = `${okCount}/${batchTotal}`;
+        statusEl.textContent = failedCount === 0
+            ? 'Todas as sessões foram adicionadas'
+            : `${okCount} adicionada(s) · ${failedCount} com falha`;
+        footerHintEl.textContent = failedCount === 0
+            ? 'Sessões adicionadas com sucesso.'
+            : 'Toque em tentar de novo nas que falharam.';
+        modal.dataset.result = failedCount === 0 ? 'success' : 'partial';
+    }
+
+    // Aplica o resultado de uma captura (do lote ou de um retry) numa linha.
+    function applyResult(key, ok, session) {
+        const row = rows[key];
+        if (!row) return;
+        if (ok) {
+            row.dataset.state = 'ok';
+            // Sessão criada → adiciona ao estado local e à tela na hora (uma única vez)
+            if (session) {
+                packageData.sessions.push(session);
+                renderNewSessionCard(session);
+            }
+        } else {
+            row.dataset.state = 'error';
+        }
+        const retryBtn = row.querySelector('.up-item-retry');
+        if (retryBtn) retryBtn.disabled = !(batchDone && row.dataset.state === 'error');
+        refreshSummary();
+    }
+
+    // Dispara a captura de UM serviço e resolve quando a extensão responde por ele.
+    // A extensão sempre emite um authpack:addProgress por serviço (inclusive em falha),
+    // então casamos pela URL — sem depender do addDone (evita cruzar com outro lote).
+    function captureOne(service) {
+        return new Promise((resolve) => {
+            const key = keyOf(service.url);
+            let settled = false;
+            const finish = (ok, session) => {
+                if (settled) return;
+                settled = true;
+                window.removeEventListener('message', onMsg);
+                clearTimeout(timer);
+                resolve({ ok, session });
+            };
+            function onMsg(ev) {
+                if (ev.origin !== location.origin) return;
+                const d = ev.data;
+                if (d?.source !== 'authpack-extension') return;
+                if (d.type === 'authpack:addProgress' && keyOf(d.current?.url) === key) {
+                    const ok = d.current.status === 'ok';
+                    finish(ok, ok ? d.current.session : null);
+                }
+            }
+            // Rede de segurança caso nenhuma mensagem chegue (> timeout de captura da extensão).
+            const timer = setTimeout(() => finish(false, null), 75000);
+            window.addEventListener('message', onMsg);
+            window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services: [service] }, location.origin);
+        });
+    }
+
+    // Tenta de novo, no próprio modal, uma sessão que falhou.
+    async function retryRow(key) {
+        const row = rows[key];
+        const service = serviceByKey[key];
+        if (!row || !service || !batchDone) return;
+        if (row.dataset.state === 'pending') return;   // já em andamento
+        row.dataset.state = 'pending';                 // volta ao spinner (esconde o botão via CSS)
+        refreshSummary();
+        const { ok, session } = await captureOne(service);
+        applyResult(key, ok, session);
+    }
+
+    function startCapture() {
+        const services = Array.from(selected.values());
+        const total = services.length;
+        if (total === 0) return;
+
+        batchTotal = total;
+        batchDone = false;
+        services.forEach(s => { serviceByKey[keyOf(s.url)] = s; });
+
+        modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
+        modal.removeAttribute('data-result');
+        closeBtn.disabled = true;
+        statusEl.textContent = 'Capturando sessões…';
+        footerHintEl.textContent = 'Capturando…';
+        countEl.textContent = `0/${total}`;
+        fillEl.style.width = '0%';
+
+        rows = buildProgressRows(services);
+
+        function onMessage(ev) {
+            if (ev.origin !== location.origin) return;
+            const d = ev.data;
+            if (d?.source !== 'authpack-extension') return;
+
+            if (d.type === 'authpack:addProgress') {
+                applyResult(keyOf(d.current?.url), d.current?.status === 'ok', d.current?.session);
+            } else if (d.type === 'authpack:addDone') {
+                window.removeEventListener('message', onMessage);
+                Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
+                batchDone = true;
+                // Libera o retry das linhas que falharam.
+                Object.values(rows).forEach(r => {
+                    const b = r.querySelector('.up-item-retry');
+                    if (b) b.disabled = r.dataset.state !== 'error';
+                });
+                refreshSummary();
+                closeBtn.disabled = false;
+            }
+        }
+        window.addEventListener('message', onMessage);
+        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
+
+        // Dispara a captura na extensão
+        window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services }, location.origin);
+    }
+
+    confirmBtn.onclick = startCapture;
+    cancelBtn.onclick = () => utils.closeModals();
+
+    utils.showModal('addSession', packageId);
+    modal.addEventListener('transitionend', function focusOnce() {
+        modal.removeEventListener('transitionend', focusOnce);
+        searchEl.focus();
+    });
+}
+
 function setupEditPackageForm(e) {
     e.stopPropagation();
 
@@ -514,16 +977,31 @@ function setupSharePackageForm(e) {
     });
 
     const packageEl = this.closest('.access-item');
-    const packageId = packageEl.dataset.packageId;
+    openSharePackageModal(packageEl.dataset.packageId);
+}
+
+// Abre o modal de compartilhamento para um pacote da coleção (por id). Usado
+// tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da top bar.
+function openSharePackageModal(packageId) {
+    if (!packageId) return;
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
-    const inputName = sharePackageModal.querySelector(".share-pkg-name");
+    const nameEl = sharePackageModal.querySelector(".share-pkg-name");
+    const peopleCountEl = sharePackageModal.querySelector(".share-people-count");
     const generalLinkUrl = sharePackageModal.querySelector("#generalLinkUrl");
 
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     const isOpen = packageData.open !== 0;
 
-    inputName.value = packageData.name;
+    nameEl.textContent = packageData.name || '';
+    nameEl.title = packageData.name || '';
+
+    // Contagem de pessoas com acesso (membros do pacote).
+    const peopleCount = Array.isArray(packageData.users) ? packageData.users.length : 0;
+    peopleCountEl.textContent = peopleCount === 0
+        ? 'Nenhuma pessoa com acesso'
+        : `${peopleCount} ${peopleCount === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+
     generalLinkUrl.textContent = utils.buildInviteUrl(packageData.key);
     utils.setShareModalOpenState(isOpen);
 
@@ -1079,7 +1557,7 @@ const createPackageHandler = async (event) => {
     createdPackageEl.classList.add("fadeInFromRight");
 
     const packagesGrid = document.querySelector("#packages-list .preset-collection .access-grid");
-    packagesGrid.insertBefore(createdPackageEl, packagesGrid.lastChild);
+    packagesGrid.appendChild(createdPackageEl);
 
     // Seleciona package
     selectPackage(packageData.id)
@@ -1414,7 +1892,7 @@ const activatePackageHandler = async event => {
     packageEl.classList.add("fadeInFromRight");
 
     const packagesGrid = document.querySelector("#packages-list .preset-access .access-grid");
-    packagesGrid.insertBefore(packageEl, packagesGrid.lastChild);
+    packagesGrid.appendChild(packageEl);
 
     // Seleciona package
     selectPackage(packageData.id, false)
@@ -1669,15 +2147,8 @@ const deleteSessionHandler = async (event) => {
         if (packageCard) {
             const iconStack = packageCard.querySelector(".icon-stack");
             if (iconStack) {
-                iconStack.innerHTML = "";
-                affectedPkg.sessions.slice(0, 3).forEach(session => {
-                    const stackIcon = createElement('div', 'stack-icon');
-                    const img = document.createElement('img');
-                    img.alt = session.name;
-                    AuthPackFavicon.apply(img, { icon: session.icon, url: session.url });
-                    stackIcon.appendChild(img);
-                    iconStack.appendChild(stackIcon);
-                });
+                // Um único ícone: a sessão mais antiga do pacote (sem pilha).
+                fillPackageStackIcon(iconStack, affectedPkg.sessions);
             }
         }
 

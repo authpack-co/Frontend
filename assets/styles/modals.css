@@ -219,9 +219,9 @@
     opacity: 0.7;
 }
 
-/* Share modal */
+/* Share modal — corpo rola dentro da altura máxima do modal (layout de 2 colunas) */
 #sharePackageModal .modal-body {
-    max-height: fit-content;
+    max-height: none;
 }
 
 .renew-key-btn {

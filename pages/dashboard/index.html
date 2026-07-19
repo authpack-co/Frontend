@@ -185,8 +185,8 @@
         <div class="settings-overlay" id="manageVitrineModal">
             <div class="settings-modal mv-single">
                 <button class="settings-close-btn" id="mv-close-btn" title="Fechar">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2.2" stroke-linecap="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                        stroke-linecap="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -305,79 +305,116 @@
         <div class="modal-overlay" id="sharePackageModal">
             <div class="modal share-modal-v2">
                 <div class="modal-header">
-                    <h2 class="modal-title">Compartilhar pacote</h2>
+                    <div class="up-head">
+                        <span class="up-head-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                <polyline points="16 6 12 2 8 6" />
+                                <line x1="12" y1="2" x2="12" y2="15" />
+                            </svg>
+                        </span>
+                        <div class="up-head-text">
+                            <h2 class="modal-title">Compartilhar pacote</h2>
+                            <div class="share-head-meta">
+                                <span class="share-pkg-name"></span>
+                                <span class="share-head-dot"></span>
+                                <span class="share-head-people">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </svg>
+                                    <span class="share-people-count">Nenhuma pessoa com acesso</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                     <button class="close-btn">×</button>
                 </div>
                 <div class="modal-body customScrollbar">
-                    <input type="text" class="form-input readonly share-pkg-name" placeholder="Pacote" readonly
-                        value="">
-
-                    <!-- ─── Link público (geral) ─── -->
-                    <section class="share-section">
-                        <div class="share-section-head">
-                            <div class="share-section-titles">
-                                <span class="share-section-title">Link público</span>
-                                <span class="share-section-sub">Qualquer um com o link pode ativar o pacote.</span>
+                    <div class="share-grid">
+                        <!-- ─── Link público (geral) ─── -->
+                        <section class="share-card">
+                            <div class="share-section-head">
+                                <div class="share-section-titles">
+                                    <span class="share-section-title">Link público</span>
+                                    <span class="share-section-sub">Qualquer pessoa com o link pode ativar o
+                                        pacote.</span>
+                                </div>
+                                <div class="toggle-switch" id="generalToggle" title="Ativar/desativar link público">
+                                    <div class="toggle-slider"></div>
+                                </div>
                             </div>
-                            <div class="toggle-switch" id="generalToggle" title="Ativar/desativar link público">
-                                <div class="toggle-slider"></div>
+
+                            <div class="status-badge status-closed" id="statusBadge">
+                                <div class="status-dot"></div>
+                                <span>Acesso restrito</span>
                             </div>
-                        </div>
 
-                        <div class="status-badge status-closed" id="statusBadge">
-                            <div class="status-dot"></div>
-                            <span>Acesso restrito</span>
-                        </div>
+                            <div class="key-display share-link-display" id="generalLinkDisplay">
+                                <div class="key-header">
+                                    <span class="form-label">URL do convite</span>
+                                    <button class="renew-key-btn" id="renewGeneralKeyBtn"
+                                        title="Gerar nova URL (invalida a anterior)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                            <path d="M21 3v5h-5" />
+                                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                            <path d="M8 16H3v5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="key-value">
+                                    <span id="generalLinkUrl">—</span>
+                                    <button class="btn btn-primary btn-small copy-link-btn" id="copyGeneralLinkBtn"
+                                        data-target="generalLinkUrl" style="min-width: fit-content;">Copiar</button>
+                                </div>
+                            </div>
+                        </section>
 
-                        <div class="key-display share-link-display" id="generalLinkDisplay">
-                            <div class="key-header">
-                                <span class="form-label">URL do convite</span>
-                                <button class="renew-key-btn" id="renewGeneralKeyBtn"
-                                    title="Gerar nova URL (invalida a anterior)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        <!-- ─── Links únicos ─── -->
+                        <section class="share-card">
+                            <div class="share-section-head">
+                                <div class="share-section-titles">
+                                    <span class="share-section-title">Links únicos</span>
+                                    <span class="share-section-sub">Uso único, expiram em 24h. Funcionam mesmo com o
+                                        pacote restrito.</span>
+                                </div>
+                                <button class="btn btn-primary btn-small" id="generateUniqueKeyBtn"
+                                    style="min-width: fit-content;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
                                         stroke-linejoin="round">
-                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                        <path d="M21 3v5h-5" />
-                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                        <path d="M8 16H3v5" />
+                                        <path d="M12 5v14" />
+                                        <path d="M5 12h14" />
                                     </svg>
+                                    <span>Gerar</span>
                                 </button>
                             </div>
-                            <div class="key-value">
-                                <span id="generalLinkUrl">—</span>
-                                <button class="btn btn-primary btn-small copy-link-btn" id="copyGeneralLinkBtn"
-                                    data-target="generalLinkUrl" style="min-width: fit-content;">Copiar</button>
-                            </div>
-                        </div>
-                    </section>
 
-                    <div class="share-divider"></div>
-
-                    <!-- ─── Links únicos ─── -->
-                    <section class="share-section">
-                        <div class="share-section-head">
-                            <div class="share-section-titles">
-                                <span class="share-section-title">Links únicos</span>
-                                <span class="share-section-sub">Cada link só pode ser usado uma vez. Expiram em 24h.
-                                    Funcionam mesmo com o pacote restrito.</span>
-                            </div>
-                            <button class="btn btn-primary btn-small" id="generateUniqueKeyBtn"
-                                style="min-width: fit-content;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M12 5v14" />
-                                    <path d="M5 12h14" />
-                                </svg>
-                                <span>Gerar</span>
-                            </button>
-                        </div>
-
-                        <ul class="unique-keys-list" id="uniqueKeysList">
-                            <li class="unique-keys-empty">Nenhum link único ativo no momento.</li>
-                        </ul>
-                    </section>
+                            <ul class="unique-keys-list" id="uniqueKeysList">
+                                <li class="unique-keys-empty">Nenhum link único ativo no momento.</li>
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+                <div class="modal-footer share-footer">
+                    <div class="share-footer-note">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>Suas senhas nunca são compartilhadas — apenas o acesso.</span>
+                    </div>
+                    <button class="btn btn-primary cancel-btn share-done-btn">Concluído</button>
                 </div>
             </div>
         </div>
@@ -455,7 +492,9 @@
                 <div class="modal-header">
                     <div class="up-head">
                         <span class="up-head-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                                 <path d="M21 3v5h-5"></path>
                                 <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
@@ -474,13 +513,102 @@
                             <span class="up-status">Atualizando sessões…</span>
                             <span class="up-count">0/0</span>
                         </div>
-                        <div class="up-bar"><div class="up-bar-fill"></div></div>
+                        <div class="up-bar">
+                            <div class="up-bar-fill"></div>
+                        </div>
                     </div>
                     <ul class="up-list"></ul>
                     <p class="up-hint">Mantenha esta aba aberta — as abas dos serviços abrem e fecham sozinhas.</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary up-close" disabled>Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Session Modal -->
+        <div class="modal-overlay" id="addSessionModal" data-phase="select">
+            <div class="modal as-modal">
+                <div class="modal-header">
+                    <div class="up-head">
+                        <span class="up-head-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 12h14"></path>
+                                <path d="M12 5v14"></path>
+                            </svg>
+                        </span>
+                        <div class="up-head-text">
+                            <h2 class="modal-title">Adicionar sessão</h2>
+                            <p class="as-pkg-name"></p>
+                        </div>
+                    </div>
+                    <button class="close-btn">×</button>
+                </div>
+
+                <!-- Fase 1: seleção de serviços -->
+                <div class="modal-body as-select-body">
+                    <div class="as-warn">
+                        <span class="as-warn-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                <path d="M12 9v4"></path>
+                                <path d="M12 17h.01"></path>
+                            </svg>
+                        </span>
+                        <span>É recomendável que você esteja <strong>logado no serviço</strong> antes de adicioná-lo.</span>
+                    </div>
+
+                    <div class="as-search-row">
+                        <span class="as-search-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                        </span>
+                        <input type="text" class="form-input as-search"
+                            placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com)…" autocomplete="off">
+                    </div>
+
+                    <div class="as-categories">
+                        <!-- Chips de categoria renderizados via JS -->
+                    </div>
+
+                    <p class="as-section-label">Serviços comuns</p>
+                    <div class="as-services custom-scrollbar">
+                        <!-- Chips de serviço renderizados via JS -->
+                    </div>
+
+                    <p class="as-empty-search hidden">Nenhum serviço encontrado. Pressione Enter para adicionar a URL.</p>
+                </div>
+
+                <!-- Fase 2: progresso da captura -->
+                <div class="modal-body as-progress-body">
+                    <div class="up-progress">
+                        <div class="up-progress-top">
+                            <span class="up-status as-status">Capturando sessões…</span>
+                            <span class="up-count as-count">0/0</span>
+                        </div>
+                        <div class="up-bar">
+                            <div class="up-bar-fill as-bar-fill"></div>
+                        </div>
+                    </div>
+                    <ul class="up-list as-list"></ul>
+                    <p class="up-hint">Mantenha esta aba aberta — as abas dos serviços abrem e fecham sozinhas.</p>
+                </div>
+
+                <div class="modal-footer as-footer">
+                    <span class="as-footer-hint">Selecione ao menos um serviço</span>
+                    <div class="as-footer-actions">
+                        <button class="btn btn-secondary as-cancel">Cancelar</button>
+                        <button class="btn btn-primary as-confirm" disabled>Adicionar <span class="as-confirm-count"></span></button>
+                        <button class="btn btn-secondary as-close" disabled>Fechar</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -872,35 +1000,81 @@
 
         <!-- Nav -->
         <nav class="sidebar-nav">
-            <ul class="nav-menu">
-                <li class="nav-item active" data-view="inicio">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-                        <path
-                            d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    </svg>
-                    Início
-                </li>
-                <li class="nav-item" data-view="vitrine" id="nav-vitrine" style="display:none">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5" />
-                        <path
-                            d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244" />
-                        <path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05" />
-                    </svg>
-                    Minha vitrine
-                </li>
+            <!-- Itens específicos de papel (ex.: admin) ficam no topo de tudo,
+                 acima das seções. -->
+            <div class="sidebar-role-nav">
                 <!-- Admin only: link para o painel interno -->
-                <li class="nav-item" id="nav-admin" style="display:none">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                <button class="nav-item sidebar-admin-link" id="nav-admin" style="display:none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
                     Painel admin
-                </li>
-            </ul>
+                </button>
+            </div>
+
+            <!-- Alterna entre "Minha coleção" e "Meus acessos". A lista de PACOTES
+                 abaixo reflete a seção selecionada. -->
+            <div class="sidebar-sections">
+                <button class="sidebar-section-toggle collection-tab active" data-section="collection">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-folder-icon lucide-folder">
+                        <path
+                            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                    </svg>
+                    <span>Minha coleção</span>
+                </button>
+                <button class="sidebar-section-toggle access-tab" data-section="access">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-square-mouse-pointer-icon lucide-square-mouse-pointer">
+                        <path
+                            d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z" />
+                        <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
+                    </svg>
+                    <span>Meus acessos</span>
+                </button>
+            </div>
+
+            <div class="sidebar-packages-head">
+                <span class="sidebar-packages-heading">Pacotes</span>
+                <button class="sidebar-add-pkg create-package-btn header-collection-only" title="Novo pacote"
+                    aria-label="Novo pacote">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Lista de pacotes da seção selecionada (state machine preservada) -->
+            <div id="packages-list" class="collection-state">
+                <div class="preset-collection">
+                    <div class="access-grid sidebar-pkg-list custom-scrollbar">
+                        <!-- Pacotes da coleção renderizados aqui -->
+                    </div>
+                </div>
+                <div class="preset-access">
+                    <div class="access-grid sidebar-pkg-list custom-scrollbar">
+                        <!-- Pacotes de acesso renderizados aqui -->
+                    </div>
+                </div>
+                <div class="preset-loading">
+                    <div class="sidebar-pkg-list">
+                        <div class="skeleton sidebar-pkg-skeleton"></div>
+                        <div class="skeleton sidebar-pkg-skeleton"></div>
+                        <div class="skeleton sidebar-pkg-skeleton"></div>
+                    </div>
+                </div>
+                <div class="preset-empty-collection">
+                    <p class="sidebar-pkg-empty">Você ainda não tem pacotes.</p>
+                </div>
+                <div class="preset-empty-access">
+                    <p class="sidebar-pkg-empty">Nenhum acesso ainda.</p>
+                </div>
+            </div>
         </nav>
 
         <!-- Footer -->
@@ -912,28 +1086,8 @@
                 <button class="plus-subscribe-btn sidebar-upgrade-link">Fazer upgrade &rarr;</button>
             </div>
 
-            <!-- Theme Toggle -->
-            <button class="nav-item theme-toggle-btn" data-theme-toggle onclick="AuthPackTheme.toggle()">
-                <svg class="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2" />
-                    <path d="M12 20v2" />
-                    <path d="m4.93 4.93 1.41 1.41" />
-                    <path d="m17.66 17.66 1.41 1.41" />
-                    <path d="M2 12h2" />
-                    <path d="M20 12h2" />
-                    <path d="m6.34 17.66-1.41 1.41" />
-                    <path d="m19.07 4.93-1.41 1.41" />
-                </svg>
-                <svg class="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" style="display:none;">
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                </svg>
-                <span class="theme-toggle-label">Tema claro</span>
-            </button>
+            <!-- Limite de pessoas do plano vigente (contador único do plano) -->
+            <div class="sidebar-plan-people" id="plan-people-slot"></div>
 
             <!-- User Profile -->
             <div class="sidebar-profile-wrapper">
@@ -961,6 +1115,27 @@
                             <circle cx="12" cy="12" r="3" />
                         </svg>
                         Configurações
+                    </button>
+                    <button class="sidebar-profile-menu-item" data-theme-toggle onclick="AuthPackTheme.toggle()">
+                        <svg class="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" />
+                            <path d="M12 20v2" />
+                            <path d="m4.93 4.93 1.41 1.41" />
+                            <path d="m17.66 17.66 1.41 1.41" />
+                            <path d="M2 12h2" />
+                            <path d="M20 12h2" />
+                            <path d="m6.34 17.66-1.41 1.41" />
+                            <path d="m19.07 4.93-1.41 1.41" />
+                        </svg>
+                        <svg class="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" style="display:none;">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                        <span class="theme-toggle-label">Tema claro</span>
                     </button>
                     <div class="sidebar-profile-menu-divider"></div>
                     <button class="sidebar-profile-menu-item sidebar-profile-menu-item--danger" id="btn-logout">
@@ -1020,218 +1195,136 @@
                 </div>
             </section>
 
-            <!-- Packages section-->
-            <section class="content-card">
-                <div id="packages-list" class="card-header loading-state">
-                    <div class="preset-collection">
-                        <div class="header-top">
-                            <div class="card-tabs">
-                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
-                                <h2 class="card-tab access-tab">Meus acessos</h2>
-                            </div>
-                            <button class="btn btn-small create-package-btn">Novo pacote</button>
-                        </div>
-
-                        <div class="access-grid-container">
-                            <div class="access-grid custom-scrollbar">
-                                <button class="scroll-btn prev-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                </button>
-
-                                <!-- Packages rendered here -->
-
-                                <button class="scroll-btn next-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m9 18 6-6-6-6" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="preset-access">
-                        <div class="header-top">
-                            <div class="card-tabs">
-                                <h2 class="card-tab collection-tab">Minha coleção</h2>
-                                <h2 class="card-tab access-tab active">Meus acessos</h2>
-                            </div>
-                            <div class="activation-input">
-                                <div>
-                                    <input type="text" placeholder="Inserir chave" />
-                                    <div class="buttonContent content-state">
-                                        <div class="preset-content">
-                                            <button
-                                                class="btn btn-small activate-access-btn confirm-btn">Ativar</button>
-                                        </div>
-                                        <div class="preset-loading">
-                                            <button class="btn btn-small activate-access-btn">
-                                                <div class="spinner"></div>
-                                            </button>
-                                        </div>
-                                    </div>
+            <!-- Top bar: busca de sessões + contador de pessoas + ação da seção -->
+            <div class="dashboard-topbar">
+                <div class="topbar-search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <input type="text" id="session-search" placeholder="Buscar sessões do pacote..."
+                        autocomplete="off" />
+                </div>
+                <div class="topbar-actions">
+                    <div class="topbar-people header-collection-only" id="people-counter-slot"></div>
+                    <button class="btn btn-primary topbar-share-btn header-collection-only" id="topbar-share-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v13" />
+                            <path d="m16 6-4-4-4 4" />
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        </svg>
+                        Compartilhar
+                    </button>
+                    <div class="activation-input header-access-only">
+                        <div>
+                            <input type="text" placeholder="Inserir chave" />
+                            <div class="buttonContent content-state">
+                                <div class="preset-content">
+                                    <button class="btn btn-small activate-access-btn confirm-btn">Ativar</button>
                                 </div>
-
-                                <span class="error-message hidden"></span>
-                            </div>
-                        </div>
-
-                        <div class="access-grid-container">
-                            <div class="access-grid custom-scrollbar">
-                                <button class="scroll-btn prev-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                </button>
-
-                                <!-- Packages rendered here -->
-
-                                <button class="scroll-btn next-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m9 18 6-6-6-6" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="preset-loading">
-                        <div class="header-top">
-                            <div class="card-tabs">
-                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
-                                <h2 class="card-tab access-tab">Meus acessos</h2>
-                            </div>
-                            <button class="btn btn-small create-package-btn">Novo pacote</button>
-                        </div>
-                        <div class="spinner-container" style="height: 110px;">
-                            <div class="spinner large"></div>
-                        </div>
-                    </div>
-                    <div class="preset-empty-collection">
-                        <div class="header-top">
-                            <div class="card-tabs">
-                                <h2 class="card-tab collection-tab active">Minha coleção</h2>
-                                <h2 class="card-tab access-tab">Meus acessos</h2>
-                            </div>
-                            <button class="btn btn-small create-package-btn">Novo pacote</button>
-                        </div>
-
-                        <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
-                        <div class="ob-onboarding">
-
-                            <!-- Hero -->
-                            <div class="ob-hero">
-                                <h2 class="ob-title">Crie seu primeiro pacote</h2>
-                                <p class="ob-desc">Um pacote reúne suas sessões de login para você compartilhar o acesso — sem revelar a senha.</p>
-                                <div class="ob-actions">
-                                    <button class="btn btn-primary ob-cta create-package-btn">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        Criar pacote
+                                <div class="preset-loading">
+                                    <button class="btn btn-small activate-access-btn">
+                                        <div class="spinner"></div>
                                     </button>
-                                    <button type="button" class="ob-how-btn">Ver como funciona</button>
-                                </div>
-                            </div>
-
-                            <!-- Modelos prontos -->
-                            <div class="ob-templates">
-                                <div class="ob-templates-title">Ou comece por um modelo</div>
-                                <div class="ob-templates-grid">
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Assinaturas de IA</span>
-                                            <span class="ob-tpl-desc">ChatGPT, Claude…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 7 5 3-5 3z"/><rect width="20" height="15" x="2" y="4.5" rx="3"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Streaming</span>
-                                            <span class="ob-tpl-desc">Netflix, Spotify…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="4" y="8" width="16" height="12" rx="2"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Trabalho</span>
-                                            <span class="ob-tpl-desc">Figma, Notion…</span>
-                                        </span>
-                                    </button>
-
-                                    <button class="ob-tpl ob-tpl-blank create-package-btn">
-                                        <span class="ob-tpl-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                                        </span>
-                                        <span class="ob-tpl-info">
-                                            <span class="ob-tpl-name">Em branco</span>
-                                            <span class="ob-tpl-desc">Do meu jeito</span>
-                                        </span>
-                                    </button>
-
                                 </div>
                             </div>
                         </div>
+
+                        <span class="error-message hidden"></span>
                     </div>
-                    <div class="preset-empty-access">
-                        <div class="header-top">
-                            <div class="card-tabs">
-                                <h2 class="card-tab collection-tab">Minha coleção</h2>
-                                <h2 class="card-tab access-tab active">Meus acessos</h2>
-                            </div>
-                            <div class="activation-input">
-                                <div>
-                                    <input type="text" placeholder="Inserir chave" />
-                                    <div class="buttonContent content-state">
-                                        <div class="preset-content">
-                                            <button
-                                                class="btn btn-small activate-access-btn confirm-btn">Ativar</button>
-                                        </div>
-                                        <div class="preset-loading">
-                                            <button class="btn btn-small activate-access-btn">
-                                                <div class="spinner"></div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                </div>
+            </div>
 
-                                <span class="error-message hidden"></span>
-                            </div>
+            <!-- Onboarding do primeiro pacote (mostrado quando a coleção está vazia) -->
+            <div id="main-onboarding" class="main-onboarding" style="display:none;">
+                <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
+                <div class="ob-onboarding">
+
+                    <!-- Hero -->
+                    <div class="ob-hero">
+                        <h2 class="ob-title">Crie seu primeiro pacote</h2>
+                        <p class="ob-desc">Um pacote reúne suas sessões de login para você compartilhar o acesso — sem
+                            revelar a senha.</p>
+                        <div class="ob-actions">
+                            <button class="btn btn-primary ob-cta create-package-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14" />
+                                    <path d="M5 12h14" />
+                                </svg>
+                                Criar pacote
+                            </button>
+                            <button type="button" class="ob-how-btn">Ver como funciona</button>
                         </div>
+                    </div>
 
-                        <div class="collection-empty">
-                            <div class="empty-placeholder"><svg xmlns="http://www.w3.org/2000/svg" width="28"
-                                    height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
-                                    <path d="M12 22V12" />
-                                    <polyline points="3.29 7 12 12 20.71 7" />
-                                    <path d="m7.5 4.27 9 5.15" />
-                                </svg></div>
-                            <div class="empty-text">
-                                <h3>Nenhum pacote adquirido</h3>
-                                <p>Ative um pacote para conectar a novas sessões</p>
-                            </div>
+                    <!-- Modelos prontos -->
+                    <div class="ob-templates">
+                        <div class="ob-templates-title">Ou comece por um modelo</div>
+                        <div class="ob-templates-grid">
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Assinaturas de IA</span>
+                                    <span class="ob-tpl-desc">ChatGPT, Claude…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m10 7 5 3-5 3z" />
+                                        <rect width="20" height="15" x="2" y="4.5" rx="3" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Streaming</span>
+                                    <span class="ob-tpl-desc">Netflix, Spotify…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Trabalho</span>
+                                    <span class="ob-tpl-desc">Figma, Notion…</span>
+                                </span>
+                            </button>
+
+                            <button class="ob-tpl ob-tpl-blank create-package-btn">
+                                <span class="ob-tpl-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 5v14" />
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                </span>
+                                <span class="ob-tpl-info">
+                                    <span class="ob-tpl-name">Em branco</span>
+                                    <span class="ob-tpl-desc">Do meu jeito</span>
+                                </span>
+                            </button>
+
                         </div>
                     </div>
                 </div>
-            </section>
+            </div><!-- /#main-onboarding -->
 
             <!-- Package Details -->
             <section id="package-details" class="content-card empty-state expanded">
@@ -1242,6 +1335,7 @@
                                 <div class="card-header">
                                     <div class="header-top">
                                         <h2>Package Details</h2>
+                                        <span class="pkg-sessions-count"></span>
                                         <p class="created-date">
                                             <span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -1256,148 +1350,6 @@
                                             </span>
                                             <span class="created-at-label">Criado em 5 de abril de 2024</span>
                                         </p>
-                                    </div>
-                                    <div class="package-stats-container content-state">
-                                        <div class="preset-content">
-                                            <div class="package-stats">
-                                                <div class="stat-metric uses-stat">
-                                                    <div class="stat-metric-icon green">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usos</span>
-                                                        <div class="stat-metric-value">0</div>
-                                                        <div class="stat-metric-sublabel"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric users-stat">
-                                                    <div class="stat-metric-icon blue">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                            <path d="M16 3.128a4 4 0 0 1 0 7.744" />
-                                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                                            <circle cx="9" cy="7" r="4" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usuários</span>
-                                                        <div class="stat-metric-value">0</div>
-                                                        <div class="stat-metric-sublabel"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric sessions-stat">
-                                                    <div class="stat-metric-icon blue">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                                                            <path
-                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Sessões</span>
-                                                        <div class="stat-metric-value">0</div>
-                                                        <div class="stat-metric-sublabel"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric online-users-stat">
-                                                    <div class="stat-metric-icon green">
-                                                        <span class="online-pulse-dot"></span>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usuários Online</span>
-                                                        <div class="stat-metric-value">0</div>
-                                                        <div class="stat-metric-sublabel"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="preset-loading">
-                                            <div class="package-stats">
-                                                <div class="stat-metric uses-stat">
-                                                    <div class="stat-metric-icon green">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usos</span>
-                                                        <div class="stat-metric-value skeleton"
-                                                            style="width: 60%; height: 22px; border-radius: 4px;"></div>
-                                                        <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric users-stat">
-                                                    <div class="stat-metric-icon blue">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                            <path d="M16 3.128a4 4 0 0 1 0 7.744" />
-                                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                                            <circle cx="9" cy="7" r="4" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usuários</span>
-                                                        <div class="stat-metric-value skeleton"
-                                                            style="width: 60%; height: 22px; border-radius: 4px;"></div>
-                                                        <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric sessions-stat">
-                                                    <div class="stat-metric-icon blue">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2.5" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                                                            <path
-                                                                d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Sessões</span>
-                                                        <div class="stat-metric-value skeleton"
-                                                            style="width: 60%; height: 22px; border-radius: 4px;"></div>
-                                                        <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="stat-metric online-users-stat">
-                                                    <div class="stat-metric-icon green">
-                                                        <span class="online-pulse-dot"></span>
-                                                    </div>
-                                                    <div class="stat-metric-info">
-                                                        <span class="stat-metric-label">Usuários Online</span>
-                                                        <div class="stat-metric-value skeleton"
-                                                            style="width: 60%; height: 22px; border-radius: 4px;"></div>
-                                                        <div class="stat-metric-sublabel skeleton"
-                                                            style="width: 40%; height: 12px; border-radius: 4px; margin-top: 2px;">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="card-content custom-scrollbar">
@@ -1450,7 +1402,7 @@
                                                 <div class="users-panel-container content-state">
                                                     <div class="preset-content">
                                                         <div class="users-panel">
-                                                            <p class="panel-title">Usuários do pacote</p>
+                                                            <p class="panel-title">Pessoas com acesso</p>
                                                             <div class="scrollable-list custom-scrollbar">
                                                                 <!-- Users rendered here -->
                                                             </div>
@@ -1458,7 +1410,7 @@
                                                     </div>
                                                     <div class="preset-empty">
                                                         <div class="users-panel">
-                                                            <p class="panel-title">Usuários do pacote</p>
+                                                            <p class="panel-title">Pessoas com acesso</p>
                                                             <div class="nothing-here-container"
                                                                 style="height: 100%;max-height: 100%;">
                                                                 <div class="nothing-here-content">
@@ -1511,7 +1463,14 @@
                                     <div class="header-top">
                                         <h2>
                                             <span class="header-title">EJECT Pack</span>
-                                            <span class="header-subtitle">> Usuários</span>
+                                            <span class="breadcrumb-sep" aria-hidden="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </span>
+                                            <span class="header-subtitle">Usuário</span>
                                         </h2>
                                         <button class="btn btn-small back-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -1634,7 +1593,14 @@
                                     <div class="header-top">
                                         <h2>
                                             <span class="header-title">EJECT Pack</span>
-                                            <span class="header-subtitle">> Sessões</span>
+                                            <span class="breadcrumb-sep" aria-hidden="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </span>
+                                            <span class="header-subtitle">Sessão</span>
                                         </h2>
                                         <button class="btn btn-small back-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -1660,14 +1626,8 @@
                                                 </div>
 
                                                 <div class="service-users-section">
-                                                    <div class="service-users-label">Active users</div>
-                                                    <div class="service-users-list">
-                                                        <img class="service-user-avatar"
-                                                            src="https://i.pravatar.cc/150?img=1" alt="User 1">
-                                                        <img class="service-user-avatar"
-                                                            src="https://i.pravatar.cc/150?img=2" alt="User 2">
-                                                        <div class="service-add-user">+</div>
-                                                    </div>
+                                                    <div class="service-users-label">Usando agora</div>
+                                                    <div class="service-users-list"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1913,10 +1873,16 @@
                         <div class="so-creating">
                             <div class="spinner large"></div>
                             <h3 class="so-creating-title">Criando seu perfil de vendedor…</h3>
-                            <p class="so-creating-sub">Estamos registrando seus dados com nosso processador de pagamentos. Isso leva alguns segundos.</p>
+                            <p class="so-creating-sub">Estamos registrando seus dados com nosso processador de
+                                pagamentos. Isso leva alguns segundos.</p>
                             <div class="so-creating-slow hidden" id="so-creating-slow">
-                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span>Está demorando mais que o normal. Pode fechar esta página — avisaremos por e-mail assim que estiver tudo pronto.</span>
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                <span>Está demorando mais que o normal. Pode fechar esta página — avisaremos por e-mail
+                                    assim que estiver tudo pronto.</span>
                             </div>
                         </div>
                     </div>
