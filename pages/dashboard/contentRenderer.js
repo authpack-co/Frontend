@@ -2774,8 +2774,8 @@ function setupSessionsExpansion(grid) {
             toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
             // Ao recolher ("Ver menos"), volta a rolagem da grade para o topo
-            // em vez de manter a posição em que o usuário estava.
-            if (!expanded) grid.scrollTop = 0;
+            // com scroll suave em vez de snap instantâneo.
+            if (!expanded) grid.scrollTo({ top: 0, behavior: 'smooth' });
         });
         panel.appendChild(toggle);
     }
