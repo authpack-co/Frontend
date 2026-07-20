@@ -1068,7 +1068,12 @@ function exitVitrineView() {
     const vitrineSection = document.getElementById('vitrine-section');
     if (!vitrineSection || vitrineSection.style.display === 'none') return;
     vitrineSection.style.display = 'none';
-    document.getElementById('nav-vitrine')?.classList.remove('active');
+    const navVitrine = document.getElementById('nav-vitrine');
+    navVitrine?.classList.remove('active');
+    navVitrine?.setAttribute('aria-expanded', 'false');
+    // Volta para a Home: restaura a top bar e as seções de pacotes na sidebar,
+    // fechando o dropdown da vitrine.
+    delete document.body.dataset.view;
     // Restaura a visibilidade de #package-details / #main-onboarding conforme o estado.
     syncPackageDetailsVisibility();
 }
