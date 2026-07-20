@@ -62,6 +62,19 @@ let createProductState = {
                 if (packageDetails) packageDetails.style.display = 'none';
                 const setupAlert = document.getElementById('setup-alert');
                 if (setupAlert) setupAlert.style.display = 'none';
+                // Empty state da Home (ex.: "Meus acessos" sem acessos) — sem isto
+                // ele persiste por cima da vitrine. Restaurado em exitVitrineView
+                // via syncPackageDetailsVisibility().
+                const mainOnboarding = document.getElementById('main-onboarding');
+                if (mainOnboarding) mainOnboarding.style.display = 'none';
+
+                // Entra na view da vitrine: a top bar some, a seção de pacotes
+                // some e o dropdown da vitrine abre (tudo via CSS). Nenhuma seção
+                // de pacotes fica selecionada.
+                document.body.dataset.view = 'vitrine';
+                item.setAttribute('aria-expanded', 'true');
+                document.querySelectorAll('.collection-tab, .access-tab')
+                    .forEach(t => t.classList.remove('active'));
 
                 // Show vitrine
                 if (vitrineSection) vitrineSection.style.display = '';
@@ -70,6 +83,9 @@ let createProductState = {
                 // Show the dashboard financial widgets
                 _setVitrineDashboardVisible(true);
 
+                // Sub-view padrão ao entrar: painel de vendedor.
+                setVitrineSubView('painel');
+
                 // Load vitrine data if not yet loaded
                 if (!vitrineLoaded) {
                     loadVitrineTab();
@@ -77,7 +93,31 @@ let createProductState = {
             }
         });
     });
+
+    // Sub-navegação da vitrine: alterna entre "Painel de vendedor" e "Meus
+    // produtos" sem sair da view da vitrine (controlado por CSS via
+    // body[data-vitrine-view]).
+    document.querySelectorAll('.vitrine-subnav-item[data-vitrine-view]').forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.classList.contains('active')) return;
+            setVitrineSubView(item.dataset.vitrineView);
+        });
+    });
 })();
+
+// Alterna a sub-view da vitrine (painel de vendedor / meus produtos). Atualiza o
+// estado ativo dos itens da sidebar e o atributo do body que dirige o CSS.
+function setVitrineSubView(sub) {
+    const view = sub === 'produtos' ? 'produtos' : 'painel';
+    document.body.dataset.vitrineView = view;
+    document.querySelectorAll('.vitrine-subnav-item[data-vitrine-view]').forEach(item => {
+        item.classList.toggle('active', item.dataset.vitrineView === view);
+    });
+    // "Meus produtos" tem o storefront panel como header — renderiza on demand.
+    if (view === 'produtos' && typeof renderVitrineStorefrontPanel === 'function') {
+        renderVitrineStorefrontPanel();
+    }
+}
 
 // Helper: show/hide the main vitrine dashboard widgets (hero, KPIs, chart row, seller panel, info bar)
 function _setVitrineDashboardVisible(visible) {
@@ -92,6 +132,21 @@ function _setVitrineDashboardVisible(visible) {
     if (infoBar) infoBar.style.display = d;
     const vitrinHdr = document.querySelector('.vitrine-header');
     if (vitrinHdr) vitrinHdr.style.display = d;
+}
+
+// Sincroniza o pill de status "Recebedor ..." do header do painel com o estado
+// do recebedor (mesma semântica de #fin-seller-status).
+function _setPainelStatusPill(state) {
+    const pill = document.getElementById('vt-painel-status');
+    if (!pill) return;
+    const map = {
+        active: ['', 'ativo'],
+        pending: ['pending', 'pendente'],
+        inactive: ['inactive', 'inativo'],
+    };
+    const [cls, label] = map[state] || map.active;
+    pill.className = 'vt-painel-status' + (cls ? ' ' + cls : '');
+    pill.innerHTML = `<span class="vt-painel-status-dot"></span><span>Recebedor <strong>${label}</strong></span>`;
 }
 
 // ============================================================================
@@ -154,6 +209,7 @@ async function loadVitrineTab() {
                 statusEl.className = 'fin-seller-mini-status pending';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Pendente';
             }
+            _setPainelStatusPill('pending');
 
             // Load products (render empty state if none)
             const productsRes = await fetchManager.getSellerProducts();
@@ -545,6 +601,7 @@ async function loadSellerDashboardData() {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
+            _setPainelStatusPill('active');
 
             const finSellerBank = document.getElementById('fin-seller-bank');
             if (finSellerBank) finSellerBank.textContent = data.bank_name || '—';
@@ -4461,6 +4518,166 @@ async function ensureVitrineLoaded(force = false) {
     return currentVitrine;
 }
 
+// ============================================================================
+// STOREFRONT PANEL (preview da vitrine pública — header de "Meus produtos")
+// Espelha o seller panel de /pages/vitrine. Renderizado ao abrir a sub-view e
+// re-renderizado ao salvar o editor da vitrine.
+// ============================================================================
+
+const _SF_ICONS = {
+    whatsapp: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.12.82.83-3.04-.2-.32a8.21 8.21 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.24-8.23 4.54 0 8.24 3.69 8.24 8.23s-3.71 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01s-.43.06-.66.31c-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.28z"/></svg>`,
+    telegram: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+    instagram: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>`,
+    site: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+};
+
+const _SF_PALETTES = [
+    ['#ef4444', '#b91c1c'], ['#f97316', '#c2410c'], ['#f59e0b', '#b45309'],
+    ['#10b981', '#047857'], ['#06b6d4', '#0e7490'], ['#3b82f6', '#1d4ed8'],
+    ['#6366f1', '#4338ca'], ['#8b5cf6', '#6d28d9'], ['#ec4899', '#be185d'],
+    ['#14b8a6', '#0f766e'], ['#84cc16', '#4d7c0f'], ['#0ea5e9', '#0369a1'],
+];
+
+function _sfEsc(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function _sfInitial(str) { return String(str || '?').charAt(0).toUpperCase(); }
+function _sfPalette(str) {
+    let h = 0;
+    for (let i = 0; i < String(str).length; i++) h = (h * 31 + String(str).charCodeAt(i)) | 0;
+    return _SF_PALETTES[Math.abs(h) % _SF_PALETTES.length];
+}
+
+// Normaliza a vitrine do vendedor (campos "flat" de getSellerVitrine) para a
+// mesma forma que a vitrine pública usa (contacts como objeto).
+function _sfMapSellerVitrine(v) {
+    const stripAt = s => (s || '').replace(/^@/, '');
+    const wa = (v.whatsapp || '').replace(/\D/g, '');
+    return {
+        id: v.id,
+        display_name: v.display_name || 'Minha vitrine',
+        bio: v.bio || '',
+        avatar_url: v.avatar_url || currentUserInfo?.picture || '',
+        verified: !!v.verified,
+        contacts: {
+            whatsapp: wa,
+            telegram: stripAt(v.telegram),
+            instagram: stripAt(v.instagram),
+            website: v.website || '',
+        },
+    };
+}
+
+// Renderiza (ou atualiza) o storefront panel. Busca a vitrine pública para obter
+// stats reais; se indisponível (ex.: ainda não publicada), cai para os dados do
+// próprio vendedor sem stats.
+async function renderVitrineStorefrontPanel() {
+    const panel = document.getElementById('vt-storefront-panel');
+    if (!panel) return;
+
+    const own = await ensureVitrineLoaded();
+    if (!own) return;
+
+    let vitrine = null;
+    let stats = null;
+    try {
+        const res = await fetchManager.getVitrine(own.id);
+        if (res.ok && res.result?.vitrine) {
+            vitrine = res.result.vitrine;
+            stats = res.result.stats || null;
+        }
+    } catch (e) { /* fallback below */ }
+
+    if (!vitrine) vitrine = _sfMapSellerVitrine(own);
+    _fillStorefrontPanel(vitrine, stats);
+}
+
+function _fillStorefrontPanel(v, stats) {
+    // Avatar: imagem → inicial com gradiente
+    const avatarEl = document.getElementById('vt-sf-avatar');
+    if (avatarEl) {
+        if (v.avatar_url) {
+            avatarEl.style.background = '';
+            avatarEl.innerHTML = `<img src="${_sfEsc(v.avatar_url)}" alt="">`;
+            avatarEl.querySelector('img').onerror = function () {
+                this.remove();
+                const [c1, c2] = _sfPalette(v.display_name);
+                avatarEl.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
+                avatarEl.textContent = _sfInitial(v.display_name);
+            };
+        } else {
+            const [c1, c2] = _sfPalette(v.display_name);
+            avatarEl.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
+            avatarEl.textContent = _sfInitial(v.display_name);
+        }
+    }
+
+    const nameEl = document.getElementById('vt-sf-name');
+    if (nameEl) nameEl.textContent = v.display_name || '—';
+
+    const verifiedEl = document.getElementById('vt-sf-verified');
+    if (verifiedEl) verifiedEl.style.display = v.verified ? '' : 'none';
+
+    const bioEl = document.getElementById('vt-sf-bio');
+    if (bioEl) {
+        if (v.bio) { bioEl.textContent = v.bio; bioEl.style.display = ''; }
+        else { bioEl.textContent = ''; bioEl.style.display = 'none'; }
+    }
+
+    // Contatos
+    const linksEl = document.getElementById('vt-sf-links');
+    if (linksEl) {
+        const c = v.contacts || {};
+        const link = (href, icon, label) =>
+            `<a class="vt-sf-link" href="${_sfEsc(href)}" target="_blank" rel="noopener noreferrer nofollow">${icon}${label}</a>`;
+        const items = [];
+        if (c.whatsapp) items.push(link(`https://wa.me/${_sfEsc(c.whatsapp)}`, _SF_ICONS.whatsapp, 'WhatsApp'));
+        if (c.telegram) items.push(link(`https://t.me/${_sfEsc(c.telegram)}`, _SF_ICONS.telegram, 'Telegram'));
+        if (c.instagram) items.push(link(`https://instagram.com/${_sfEsc(c.instagram)}`, _SF_ICONS.instagram, 'Instagram'));
+        if (c.website) {
+            const href = /^https?:\/\//.test(c.website) ? c.website : `https://${c.website}`;
+            items.push(link(href, _SF_ICONS.site, 'Site'));
+        }
+        linksEl.innerHTML = items.join('');
+    }
+
+    // Link "Ver vitrine"
+    const viewLink = document.getElementById('vt-sf-view-link');
+    if (viewLink && v.id) {
+        viewLink.href = vitrinePublicUrl(v.id);
+        viewLink.style.display = '';
+    }
+
+    // Stats: só quando disponíveis (vitrine pública). Produtos usa a lista local
+    // como fallback quando não há stats.
+    const statsEl = document.getElementById('vt-sf-stats');
+    const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const fmt = n => Number(n || 0).toLocaleString('pt-BR');
+    if (stats) {
+        if (statsEl) statsEl.style.display = '';
+        setStat('vt-sf-stat-clients', fmt(stats.active_clients));
+        setStat('vt-sf-stat-products', fmt(stats.products_count));
+        setStat('vt-sf-stat-sales', fmt(stats.total_sales));
+        const sinceWrap = document.getElementById('vt-sf-stat-since-wrap');
+        if (stats.since_year) {
+            setStat('vt-sf-stat-since', `desde ${stats.since_year}`);
+            if (sinceWrap) sinceWrap.style.display = '';
+        } else if (sinceWrap) {
+            sinceWrap.style.display = 'none';
+        }
+    } else if (statsEl) {
+        // Sem stats públicas: mostra ao menos a contagem de produtos local.
+        statsEl.style.display = '';
+        setStat('vt-sf-stat-clients', '—');
+        setStat('vt-sf-stat-products', fmt((vitrineProducts || []).length));
+        setStat('vt-sf-stat-sales', '—');
+        const sinceWrap = document.getElementById('vt-sf-stat-since-wrap');
+        if (sinceWrap) sinceWrap.style.display = 'none';
+    }
+}
+
 function populateVitrineModal(v) {
     if (!v) return;
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
@@ -4607,6 +4824,8 @@ document.getElementById('vt-edit-save')?.addEventListener('click', async () => {
         setElementState(buttonContent, 'content');
         if (res.ok && res.result?.vitrine) {
             currentVitrine = res.result.vitrine;
+            // Reflete as alterações (nome, bio, contatos) no storefront panel.
+            renderVitrineStorefrontPanel();
             closeManageVitrineModal();
         } else {
             utils.setModalError(modal, res.result?.error || 'Não foi possível salvar. Tente novamente.');

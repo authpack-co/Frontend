@@ -1046,16 +1046,36 @@ function setElementState(element, newState) {
     if (element.id === "packages-list") syncPackageDetailsVisibility();
 }
 
-// Esconde o #package-details quando a coleção está vazia (estado de onboarding).
+// Esconde o #package-details quando a seção ativa está vazia (coleção sem
+// pacotes ou acessos sem pacotes) e mostra o empty state correspondente.
 function syncPackageDetailsVisibility() {
     const packagesEl = document.querySelector("#packages-list");
     const detailsEl = document.querySelector("#package-details");
     const onboardingEl = document.querySelector("#main-onboarding");
     if (!packagesEl || !detailsEl) return;
-    const isEmptyCollection = packagesEl.classList.contains("empty-collection-state");
-    detailsEl.style.display = isEmptyCollection ? "none" : "";
-    // O onboarding (hero de primeiro pacote) só aparece quando a coleção está vazia.
-    if (onboardingEl) onboardingEl.style.display = isEmptyCollection ? "" : "none";
+    const isEmpty = packagesEl.classList.contains("empty-collection-state")
+        || packagesEl.classList.contains("empty-access-state");
+    detailsEl.style.display = isEmpty ? "none" : "";
+    // O empty state (#main-onboarding) só aparece quando a seção ativa não tem pacotes.
+    // A variante visível (coleção/acessos) é escolhida por CSS via body[data-dash-section].
+    if (onboardingEl) onboardingEl.style.display = isEmpty ? "" : "none";
+}
+
+// Sai da view "Minha vitrine" e volta para a Home (coleção/acessos). No-op se a
+// vitrine já estiver fechada. Usado pelos toggles de seção da sidebar, já que a
+// navegação da vitrine (initVitrineNav) só cobre o caminho de ida.
+function exitVitrineView() {
+    const vitrineSection = document.getElementById('vitrine-section');
+    if (!vitrineSection || vitrineSection.style.display === 'none') return;
+    vitrineSection.style.display = 'none';
+    const navVitrine = document.getElementById('nav-vitrine');
+    navVitrine?.classList.remove('active');
+    navVitrine?.setAttribute('aria-expanded', 'false');
+    // Volta para a Home: restaura a top bar e as seções de pacotes na sidebar,
+    // fechando o dropdown da vitrine.
+    delete document.body.dataset.view;
+    // Restaura a visibilidade de #package-details / #main-onboarding conforme o estado.
+    syncPackageDetailsVisibility();
 }
 
 // Função para recarregar select de pacotes (se necessário)
@@ -3036,6 +3056,8 @@ async function init() {
         if (packageItem && packageItem.dataset.packageId) {
             const isCollection = packageItem.closest('.preset-collection') !== null;
 
+            // Selecionar um pacote pela sidebar também volta da vitrine para a Home.
+            exitVitrineView();
             selectPackage(packageItem.dataset.packageId, isCollection);
         }
     });
@@ -3046,6 +3068,7 @@ async function init() {
 
     collectionTabs.forEach(tab => {
         tab.addEventListener('click', function () {
+            exitVitrineView();
             setDashSection('collection');
             // Se não houver pacotes na coleção, troca para empty state
             if (packagesList.userCollection.length === 0) {
@@ -3060,6 +3083,7 @@ async function init() {
 
     accessTabs.forEach(tab => {
         tab.addEventListener('click', function () {
+            exitVitrineView();
             setDashSection('access');
             // Se não houver pacotes de acesso, troca para empty state
             if (packagesList.userAccess.length === 0) {
