@@ -1237,91 +1237,99 @@
                 </div>
             </div>
 
-            <!-- Onboarding do primeiro pacote (mostrado quando a coleção está vazia) -->
+            <!-- Empty states do conteúdo principal: coleção sem pacotes / acessos sem pacotes.
+                 Mostrado quando #packages-list está em empty-collection-state ou empty-access-state
+                 (controlado por syncPackageDetailsVisibility). A variante visível depende da seção
+                 ativa via body[data-dash-section]. -->
             <div id="main-onboarding" class="main-onboarding" style="display:none;">
-                <!-- Onboarding do primeiro acesso (substitui o estado vazio "Nenhum pacote criado") -->
-                <div class="ob-onboarding">
 
-                    <!-- Hero -->
-                    <div class="ob-hero">
-                        <h2 class="ob-title">Crie seu primeiro pacote</h2>
-                        <p class="ob-desc">Um pacote reúne suas sessões de login para você compartilhar o acesso — sem
-                            revelar a senha.</p>
-                        <div class="ob-actions">
-                            <button class="btn btn-primary ob-cta create-package-btn">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 5v14" />
-                                    <path d="M5 12h14" />
-                                </svg>
-                                Criar pacote
-                            </button>
-                            <button type="button" class="ob-how-btn">Ver como funciona</button>
+                <!-- ===== Coleção vazia: nenhum pacote criado ===== -->
+                <div class="empty-screen" data-empty="collection">
+                    <div class="empty-screen-visual">
+                        <div class="empty-screen-mock" aria-hidden="true">
+                            <div class="empty-screen-mock-head">
+                                <span class="empty-screen-mock-logo"></span>
+                                <div class="empty-screen-mock-lines">
+                                    <span class="empty-screen-mock-line" style="width:60%;"></span>
+                                    <span class="empty-screen-mock-line is-faint" style="width:38%;"></span>
+                                </div>
+                            </div>
+                            <div class="empty-screen-mock-rows">
+                                <span class="empty-screen-mock-row"></span>
+                                <span class="empty-screen-mock-row"></span>
+                                <span class="empty-screen-mock-row is-faint"></span>
+                            </div>
                         </div>
+                        <span class="empty-screen-badge" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </span>
                     </div>
 
-                    <!-- Modelos prontos -->
-                    <div class="ob-templates">
-                        <div class="ob-templates-title">Ou comece por um modelo</div>
-                        <div class="ob-templates-grid">
+                    <h2 class="empty-screen-title">Seus pacotes aparecem aqui</h2>
+                    <p class="empty-screen-desc">Crie um pacote para reunir suas sessões de login e compartilhar o
+                        acesso com segurança — sem nunca revelar a senha.</p>
 
-                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Assinaturas de IA">
-                                <span class="ob-tpl-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                                    </svg>
-                                </span>
-                                <span class="ob-tpl-info">
-                                    <span class="ob-tpl-name">Assinaturas de IA</span>
-                                    <span class="ob-tpl-desc">ChatGPT, Claude…</span>
-                                </span>
-                            </button>
+                    <button class="btn btn-primary empty-screen-cta create-package-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Criar meu primeiro pacote
+                    </button>
+                </div>
 
-                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Streaming">
-                                <span class="ob-tpl-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="m10 7 5 3-5 3z" />
-                                        <rect width="20" height="15" x="2" y="4.5" rx="3" />
-                                    </svg>
-                                </span>
-                                <span class="ob-tpl-info">
-                                    <span class="ob-tpl-name">Streaming</span>
-                                    <span class="ob-tpl-desc">Netflix, Spotify…</span>
-                                </span>
-                            </button>
-
-                            <button class="ob-tpl ob-tpl-preset" data-tpl-name="Trabalho">
-                                <span class="ob-tpl-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                                        <rect x="4" y="8" width="16" height="12" rx="2" />
-                                    </svg>
-                                </span>
-                                <span class="ob-tpl-info">
-                                    <span class="ob-tpl-name">Trabalho</span>
-                                    <span class="ob-tpl-desc">Figma, Notion…</span>
-                                </span>
-                            </button>
-
-                            <button class="ob-tpl ob-tpl-blank create-package-btn">
-                                <span class="ob-tpl-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 5v14" />
-                                        <path d="M5 12h14" />
-                                    </svg>
-                                </span>
-                                <span class="ob-tpl-info">
-                                    <span class="ob-tpl-name">Em branco</span>
-                                    <span class="ob-tpl-desc">Do meu jeito</span>
-                                </span>
-                            </button>
-
+                <!-- ===== Acessos vazios: nenhum acesso recebido ===== -->
+                <div class="empty-screen" data-empty="access">
+                    <div class="empty-screen-visual">
+                        <div class="empty-screen-mock" aria-hidden="true">
+                            <div class="empty-screen-mock-head">
+                                <span class="empty-screen-mock-logo"></span>
+                                <div class="empty-screen-mock-lines">
+                                    <span class="empty-screen-mock-line" style="width:55%;"></span>
+                                    <span class="empty-screen-mock-line is-faint" style="width:34%;"></span>
+                                </div>
+                            </div>
+                            <div class="empty-screen-mock-rows">
+                                <span class="empty-screen-mock-row"></span>
+                                <span class="empty-screen-mock-row"></span>
+                                <span class="empty-screen-mock-row is-faint"></span>
+                            </div>
                         </div>
+                        <span class="empty-screen-badge empty-screen-badge--key" aria-hidden="true">
+                            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="7.5" cy="15.5" r="5.5" />
+                                <path d="m21 2-9.6 9.6" />
+                                <path d="m15.5 7.5 3 3L22 7l-3-3" />
+                            </svg>
+                        </span>
+                    </div>
+
+                    <h2 class="empty-screen-title">Seus acessos aparecem aqui</h2>
+                    <p class="empty-screen-desc">Recebeu uma chave de acesso? Ative-a para desbloquear as sessões que
+                        compartilharam com você.</p>
+
+                    <div class="activation-input empty-screen-activate">
+                        <div>
+                            <input type="text" placeholder="Cole sua chave de acesso" />
+                            <div class="buttonContent content-state">
+                                <div class="preset-content">
+                                    <button class="btn btn-primary activate-access-btn confirm-btn">Ativar
+                                        acesso</button>
+                                </div>
+                                <div class="preset-loading">
+                                    <button class="btn btn-primary activate-access-btn">
+                                        <div class="spinner"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="error-message hidden"></span>
                     </div>
                 </div>
             </div><!-- /#main-onboarding -->

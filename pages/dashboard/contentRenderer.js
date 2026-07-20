@@ -1046,16 +1046,19 @@ function setElementState(element, newState) {
     if (element.id === "packages-list") syncPackageDetailsVisibility();
 }
 
-// Esconde o #package-details quando a coleção está vazia (estado de onboarding).
+// Esconde o #package-details quando a seção ativa está vazia (coleção sem
+// pacotes ou acessos sem pacotes) e mostra o empty state correspondente.
 function syncPackageDetailsVisibility() {
     const packagesEl = document.querySelector("#packages-list");
     const detailsEl = document.querySelector("#package-details");
     const onboardingEl = document.querySelector("#main-onboarding");
     if (!packagesEl || !detailsEl) return;
-    const isEmptyCollection = packagesEl.classList.contains("empty-collection-state");
-    detailsEl.style.display = isEmptyCollection ? "none" : "";
-    // O onboarding (hero de primeiro pacote) só aparece quando a coleção está vazia.
-    if (onboardingEl) onboardingEl.style.display = isEmptyCollection ? "" : "none";
+    const isEmpty = packagesEl.classList.contains("empty-collection-state")
+        || packagesEl.classList.contains("empty-access-state");
+    detailsEl.style.display = isEmpty ? "none" : "";
+    // O empty state (#main-onboarding) só aparece quando a seção ativa não tem pacotes.
+    // A variante visível (coleção/acessos) é escolhida por CSS via body[data-dash-section].
+    if (onboardingEl) onboardingEl.style.display = isEmpty ? "" : "none";
 }
 
 // Função para recarregar select de pacotes (se necessário)

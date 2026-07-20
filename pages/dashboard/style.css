@@ -8564,12 +8564,201 @@ body[data-dash-section="access"] .header-collection-only { display: none; }
 body:not([data-dash-section="access"]) .header-access-only { display: none; }
 
 /* ---- Onboarding (coleção vazia) relocado para a área principal ---- */
+/* ============================================
+   Empty states do conteúdo principal
+   (coleção sem pacotes / acessos sem pacotes)
+   ============================================ */
 .main-onboarding {
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-xl);
     background: var(--ap-bg-card);
-    padding: var(--ap-space-lg);
     margin-bottom: var(--ap-space-md);
+}
+
+/* Variante visível conforme a seção ativa. Coleção é o padrão
+   (também cobre o estado inicial antes de data-dash-section ser definido). */
+.main-onboarding .empty-screen { display: none; }
+
+body:not([data-dash-section="access"]) .main-onboarding .empty-screen[data-empty="collection"],
+body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="access"] {
+    display: flex;
+}
+
+.empty-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 56px 24px;
+    min-height: 560px;
+    animation: emptyScreenFadeIn 0.35s ease both;
+}
+
+@keyframes emptyScreenFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ── Ilustração: cartão de pacote "fantasma" + badge de ação ── */
+.empty-screen-visual {
+    position: relative;
+    width: 340px;
+    max-width: 100%;
+    margin-bottom: 6px;
+}
+
+.empty-screen-mock {
+    border: 2px dashed var(--ap-border-hover);
+    border-radius: 14px;
+    background: var(--ap-bg-card-alt);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    opacity: 0.85;
+}
+
+.empty-screen-mock-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.empty-screen-mock-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: var(--ap-bg-muted);
+    flex-shrink: 0;
+}
+
+.empty-screen-mock-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.empty-screen-mock-line {
+    height: 9px;
+    border-radius: 5px;
+    background: var(--ap-bg-muted);
+}
+
+.empty-screen-mock-line.is-faint {
+    height: 8px;
+    background: var(--ap-bg-hover);
+}
+
+.empty-screen-mock-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.empty-screen-mock-row {
+    height: 34px;
+    border-radius: 8px;
+    background: var(--ap-bg-hover);
+}
+
+.empty-screen-mock-row.is-faint {
+    background: var(--ap-bg-input);
+}
+
+.empty-screen-badge {
+    position: absolute;
+    right: -12px;
+    bottom: -12px;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--ap-accent) 45%, transparent);
+    border: 3px solid var(--ap-bg-card);
+}
+
+/* ── Texto ── */
+.empty-screen-title {
+    font-family: var(--ap-font-heading);
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ap-text-primary);
+    margin: 30px 0 0;
+}
+
+.empty-screen-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ap-text-muted);
+    max-width: 450px;
+    margin: 12px 0 0;
+}
+
+/* ── Ações ── */
+.empty-screen-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 28px 0 0;
+    padding: 13px 24px;
+    font-size: 15px;
+}
+
+.empty-screen-link {
+    background: none;
+    border: none;
+    margin: 14px 0 0;
+    color: var(--ap-text-secondary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--ap-radius-md);
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.empty-screen-link:hover {
+    color: var(--ap-accent-strong);
+    background: var(--ap-bg-hover);
+}
+
+/* Ativação de acesso reaproveita .activation-input, mas centralizada e maior */
+.empty-screen-activate {
+    margin: 28px 0 0;
+    align-items: center;
+}
+
+.empty-screen-activate > div {
+    gap: 8px;
+}
+
+.empty-screen-activate input {
+    width: 260px;
+    max-width: 100%;
+    padding: 13px 16px;
+    border-radius: var(--ap-radius-md);
+    border: 1px solid var(--ap-border-muted);
+    background: var(--ap-bg-input);
+    font-size: 15px;
+}
+
+.empty-screen-activate .activate-access-btn {
+    padding: 13px 22px;
+    font-size: 15px;
+}
+
+@media (max-width: 640px) {
+    .empty-screen-visual { width: 280px; }
+    .empty-screen-title { font-size: 22px; }
+    .empty-screen-activate > div { flex-direction: column; width: 100%; }
+    .empty-screen-activate input { width: 100%; }
 }
 
 /* ---- #package-details: reordenação (sessões em cima, gráfico + pessoas, métricas embaixo) ---- */
