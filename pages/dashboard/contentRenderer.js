@@ -1061,6 +1061,18 @@ function syncPackageDetailsVisibility() {
     if (onboardingEl) onboardingEl.style.display = isEmpty ? "" : "none";
 }
 
+// Sai da view "Minha vitrine" e volta para a Home (coleção/acessos). No-op se a
+// vitrine já estiver fechada. Usado pelos toggles de seção da sidebar, já que a
+// navegação da vitrine (initVitrineNav) só cobre o caminho de ida.
+function exitVitrineView() {
+    const vitrineSection = document.getElementById('vitrine-section');
+    if (!vitrineSection || vitrineSection.style.display === 'none') return;
+    vitrineSection.style.display = 'none';
+    document.getElementById('nav-vitrine')?.classList.remove('active');
+    // Restaura a visibilidade de #package-details / #main-onboarding conforme o estado.
+    syncPackageDetailsVisibility();
+}
+
 // Função para recarregar select de pacotes (se necessário)
 function reloadPackagesSelect(isAccess = false) {
     if (isAccess) {
@@ -3039,6 +3051,8 @@ async function init() {
         if (packageItem && packageItem.dataset.packageId) {
             const isCollection = packageItem.closest('.preset-collection') !== null;
 
+            // Selecionar um pacote pela sidebar também volta da vitrine para a Home.
+            exitVitrineView();
             selectPackage(packageItem.dataset.packageId, isCollection);
         }
     });
@@ -3049,6 +3063,7 @@ async function init() {
 
     collectionTabs.forEach(tab => {
         tab.addEventListener('click', function () {
+            exitVitrineView();
             setDashSection('collection');
             // Se não houver pacotes na coleção, troca para empty state
             if (packagesList.userCollection.length === 0) {
@@ -3063,6 +3078,7 @@ async function init() {
 
     accessTabs.forEach(tab => {
         tab.addEventListener('click', function () {
+            exitVitrineView();
             setDashSection('access');
             // Se não houver pacotes de acesso, troca para empty state
             if (packagesList.userAccess.length === 0) {

@@ -1730,20 +1730,24 @@ const deletePackageHandler = async (event) => {
 
     // Remove package da tela
     const packageToDelete = document.querySelector(`#packages-list .preset-collection .access-grid .access-item[data-package-id="${packageId}"]`);
+    const wasSelected = packageToDelete.classList.contains("selected");
     packageToDelete.classList.add("fadeOut");
 
     packageToDelete.addEventListener("animationend", () => {
         packageToDelete.remove();
 
-        // Se não houver mais packages, seta estado para empty
+        // Sem mais pacotes: mostra o empty state da coleção.
         if (packagesList.userCollection.length === 0) {
             setElementState(document.querySelector("#packages-list"), "empty-collection");
+            return;
         }
 
-        // Se não houver nenhum package selecionado, deseleciona detalhes
-        const selectedPackageEl = document.querySelector(`#packages-list .preset-collection .access-grid .access-item.selected`);
-        if (!selectedPackageEl) {
-            setElementState(document.querySelector("#package-details"), "empty");
+        // Sempre mantém um pacote selecionado: se o removido estava selecionado,
+        // seleciona o vizinho — o anterior da lista (ou o novo primeiro, se era o topo).
+        if (wasSelected) {
+            const neighborIdx = packageIdx > 0 ? packageIdx - 1 : 0;
+            const neighborPkg = packagesList.userCollection[neighborIdx];
+            if (neighborPkg) selectPackage(neighborPkg.id, true);
         }
     }, { once: true });
 }
@@ -1797,20 +1801,24 @@ const abortPackageAccessHandler = async (event) => {
 
     // Remove package da tela
     const packageToDelete = document.querySelector(`#packages-list .preset-access .access-grid .access-item[data-package-id="${packageId}"]`);
+    const wasSelected = packageToDelete.classList.contains("selected");
     packageToDelete.classList.add("fadeOut");
 
     packageToDelete.addEventListener("animationend", () => {
         packageToDelete.remove();
 
-        // Se não houver mais packages, seta estado para empty
+        // Sem mais acessos: mostra o empty state de acessos.
         if (packagesList.userAccess.length === 0) {
             setElementState(document.querySelector("#packages-list"), "empty-access");
+            return;
         }
 
-        // Se não houver nenhum package selecionado, deseleciona detalhes
-        const selectedPackageEl = document.querySelector(`#packages-list .preset-access .access-grid .access-item.selected`);
-        if (!selectedPackageEl) {
-            setElementState(document.querySelector("#package-details"), "empty");
+        // Sempre mantém um pacote selecionado: se o removido estava selecionado,
+        // seleciona o vizinho — o anterior da lista (ou o novo primeiro, se era o topo).
+        if (wasSelected) {
+            const neighborIdx = packageIdx > 0 ? packageIdx - 1 : 0;
+            const neighborPkg = packagesList.userAccess[neighborIdx];
+            if (neighborPkg) selectPackage(neighborPkg.id, false);
         }
     }, { once: true });
 };
