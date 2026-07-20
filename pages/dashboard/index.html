@@ -70,6 +70,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <!-- Fontes do design system (Sora nos títulos, Fira Code nos números). Os
+         tokens --ap-font-heading / --ap-font-data já as referenciam; aqui elas
+         são finalmente carregadas. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=Fira+Code:wght@500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
     <link rel="stylesheet" href="/pages/dashboard/style.css">
     <link rel="stylesheet" href="/pages/dashboard/presets.css">
@@ -78,6 +86,9 @@
     <link rel="stylesheet" href="/pages/dashboard/onboarding.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
     <link rel="stylesheet" href="/assets/styles/animations.css">
+    <!-- Redesign das telas Painel de vendedor & Meus produtos (carregado por
+         último para vencer em especificidade). -->
+    <link rel="stylesheet" href="/pages/dashboard/vitrineRedesign.css">
 
     <!-- Theme: FOUC prevention + manager -->
     <script>
@@ -1959,6 +1970,10 @@
                                     <h2>Painel de vendedor</h2>
                                     <p class="vitrine-subtitle">Acompanhe seu saldo, vendas e movimentações.</p>
                                 </div>
+                                <span class="vt-painel-status" id="vt-painel-status">
+                                    <span class="vt-painel-status-dot"></span>
+                                    <span>Recebedor <strong>ativo</strong></span>
+                                </span>
                             </div>
                         </div>
 
@@ -1966,6 +1981,13 @@
                         <div class="fin-hero" id="fin-hero">
                             <div class="fin-hero-left">
                                 <div class="fin-hero-label-row">
+                                    <span class="fin-hero-icon">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                        </svg>
+                                    </span>
                                     <span class="fin-hero-label">Saldo disponível para saque</span>
                                     <button class="fin-hero-tooltip-btn" id="fin-hero-tooltip-btn"
                                         title="O que é este valor?" aria-label="O que é este valor?">
@@ -2069,10 +2091,7 @@
                             </div>
                         </div>
 
-                        <!-- ── Movimentações (Cash Flow) ── -->
-                        <div class="fin-section-header" style="margin-bottom:12px;">
-                            <h3 class="fin-section-title">Movimentações do mês</h3>
-                        </div>
+                        <!-- ── Movimentações (Cash Flow) — sem título, como no comp ── -->
                         <div class="fin-cashflow-row" id="fin-cashflow-row">
                             <div class="fin-cashflow-card fin-cashflow-entries" id="btn-cashflow-entries">
                                 <div class="fin-cashflow-header">
@@ -2139,7 +2158,7 @@
                         </div>
 
                         <!-- ── Performance de Vendas: 4 KPI Cards ── -->
-                        <div class="fin-section-header" style="margin:20px 0 12px;">
+                        <div class="fin-section-header" style="margin:4px 0 0;">
                             <h3 class="fin-section-title">Performance de vendas</h3>
                             <span class="fin-section-sub" id="fin-perf-sub">Somente novas vendas do mês</span>
                         </div>

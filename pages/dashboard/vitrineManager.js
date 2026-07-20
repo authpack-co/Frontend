@@ -134,6 +134,21 @@ function _setVitrineDashboardVisible(visible) {
     if (vitrinHdr) vitrinHdr.style.display = d;
 }
 
+// Sincroniza o pill de status "Recebedor ..." do header do painel com o estado
+// do recebedor (mesma semântica de #fin-seller-status).
+function _setPainelStatusPill(state) {
+    const pill = document.getElementById('vt-painel-status');
+    if (!pill) return;
+    const map = {
+        active: ['', 'ativo'],
+        pending: ['pending', 'pendente'],
+        inactive: ['inactive', 'inativo'],
+    };
+    const [cls, label] = map[state] || map.active;
+    pill.className = 'vt-painel-status' + (cls ? ' ' + cls : '');
+    pill.innerHTML = `<span class="vt-painel-status-dot"></span><span>Recebedor <strong>${label}</strong></span>`;
+}
+
 // ============================================================================
 // VITRINE TAB LOADING
 // ============================================================================
@@ -194,6 +209,7 @@ async function loadVitrineTab() {
                 statusEl.className = 'fin-seller-mini-status pending';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Pendente';
             }
+            _setPainelStatusPill('pending');
 
             // Load products (render empty state if none)
             const productsRes = await fetchManager.getSellerProducts();
@@ -585,6 +601,7 @@ async function loadSellerDashboardData() {
                 statusEl.className = 'fin-seller-mini-status active';
                 statusEl.innerHTML = '<span class="fin-seller-mini-dot"></span> Ativo';
             }
+            _setPainelStatusPill('active');
 
             const finSellerBank = document.getElementById('fin-seller-bank');
             if (finSellerBank) finSellerBank.textContent = data.bank_name || '—';
