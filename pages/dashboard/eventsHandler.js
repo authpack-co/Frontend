@@ -586,6 +586,19 @@ function handleAddSession(e) {
     let batchTotal = 0;            // total de sessões do lote atual
     let batchDone = false;         // lote inicial concluído (libera os botões de retry)
 
+    // Progresso de carregamento de cada captura em andamento [0..100]. A barra do modal segue a
+    // MESMA progressão do overlay da extensão em 4 faixas iguais de 25%:
+    //   loading    →  0% .. 25%   (creep gradual enquanto readyState é "loading")
+    //   interactive→ 25% .. 50%   (DOMContentLoaded: boom p/ 25% + creep)
+    //   complete   → 50% .. 75%   (load event: boom p/ 50% + creep)
+    //   settle     → 75% .. 100%  (3s pós-complete: ~1s cada ⅓)
+    const progressByKey = {};      // key(url) -> % de carregamento [0..100]
+    const creepTimers = {};        // key(url) -> timer do "enchimento aos poucos"
+    const settleTimers = {};       // key(url) -> timer do settle (75→100%)
+    // Marcos de progresso — DEVEM casar com a extensão (content/connectHold.js).
+    const CAP_PCT = { loading: 0, interactive: 25, complete: 50, settle: 75, done: 100 };
+    const SETTLE_MS = 3000;        // deve casar com CAPTURE_SETTLE_MS do captureManager
+
     // Reset visual
     modal.dataset.phase = 'select';
     pkgNameEl.textContent = packageData.name || '';
@@ -759,9 +772,22 @@ function handleAddSession(e) {
                 }
             });
 
+            // Wrapper de conteúdo: nome + mini progress bar empilhados
+            const content = document.createElement('div');
+            content.className = 'up-item-content';
+
             const nameSpan = document.createElement('span');
             nameSpan.className = 'up-item-name';
             nameSpan.textContent = s.name;
+
+            // Mini progress bar por item (segue os estágios de carregamento da aba)
+            const miniTrack = document.createElement('div');
+            miniTrack.className = 'up-item-bar';
+            const miniFill = document.createElement('div');
+            miniFill.className = 'up-item-bar-fill';
+            miniTrack.appendChild(miniFill);
+
+            content.append(nameSpan, miniTrack);
 
             // Botão "tentar de novo" — só aparece (via CSS) quando a linha falha e o
             // lote já concluiu. Reexecuta a captura só daquele serviço, sem sair do modal.
@@ -776,7 +802,7 @@ function handleAddSession(e) {
             const status = document.createElement('span');
             status.className = 'up-item-status';
 
-            row.append(icon, nameSpan, retry, status);
+            row.append(icon, content, retry, status);
             listEl.appendChild(row);
             rows[keyOf(s.url)] = row;
         });
@@ -796,15 +822,78 @@ function handleAddSession(e) {
         card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
     }
 
-    // Recalcula a barra/contadores/rodapé a partir do estado atual das linhas. Serve
-    // tanto para o lote inicial quanto para os retries (que mudam o placar depois).
+    // Para o "enchimento aos poucos" de uma linha.
+    function stopCreep(key) {
+        if (creepTimers[key]) { clearInterval(creepTimers[key]); delete creepTimers[key]; }
+    }
+    function stopSettle(key) {
+        if (settleTimers[key]) { clearInterval(settleTimers[key]); delete settleTimers[key]; }
+    }
+    function stopAllCreeps() {
+        Object.keys(creepTimers).forEach(stopCreep);
+        Object.keys(settleTimers).forEach(stopSettle);
+    }
+
+    // Atualiza a mini bar de progresso de uma linha (monotônico: só sobe).
+    function setRowBar(key, pct) {
+        progressByKey[key] = Math.max(progressByKey[key] || 0, pct);
+        const row = rows[key];
+        if (!row) return;
+        const fill = row.querySelector('.up-item-bar-fill');
+        if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
+    }
+
+    // Creep: preenche gradualmente a mini bar até `ceiling` (desacelerando).
+    function startCreep(key, ceiling) {
+        stopCreep(key);
+        creepTimers[key] = setInterval(() => {
+            if (!rows[key] || rows[key].dataset.state !== 'pending') { stopCreep(key); return; }
+            const cur = progressByKey[key] || 0;
+            if (cur >= ceiling - 0.5) { stopCreep(key); return; }
+            progressByKey[key] = cur + (ceiling - cur) * 0.06;
+            const fill = rows[key]?.querySelector('.up-item-bar-fill');
+            if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
+        }, 250);
+    }
+
+    // Settle: preenche mini bar 75% → 100% em 3 passos de ~1s cada.
+    function startSettle(key) {
+        stopCreep(key);
+        stopSettle(key);
+        setRowBar(key, CAP_PCT.settle);             // ancora em 75%
+        const STEPS = 3;
+        const stepMs = SETTLE_MS / STEPS;
+        const stepPct = (CAP_PCT.done - CAP_PCT.settle) / STEPS;
+        let step = 0;
+        settleTimers[key] = setInterval(() => {
+            step++;
+            setRowBar(key, Math.min(CAP_PCT.settle + stepPct * step, CAP_PCT.done));
+            if (step >= STEPS) stopSettle(key);
+        }, stepMs);
+    }
+
+    // Mapeia um estágio de carregamento (vindo do overlay da extensão) para a mini bar da linha.
+    function handleStage(key, stage) {
+        if (!rows[key]) return;
+        if (stage === 'start') { setRowBar(key, CAP_PCT.loading); startCreep(key, CAP_PCT.interactive); }
+        else if (stage === 'dcl') { setRowBar(key, CAP_PCT.interactive); startCreep(key, CAP_PCT.complete); }
+        else if (stage === 'complete') { setRowBar(key, CAP_PCT.complete); startCreep(key, CAP_PCT.settle); }
+        else if (stage === 'settle') { startSettle(key); }
+    }
+
+    // Recalcula a barra PRINCIPAL / contadores / rodapé a partir do estado atual das linhas.
+    // A barra principal avança SOMENTE quando uma sessão é coletada (ok ou erro) —
+    // o progresso de carregamento por estágio fica nas mini bars de cada item.
     function refreshSummary() {
         const all = Object.values(rows);
         const doneCount = all.filter(r => r.dataset.state !== 'pending').length;
         const okCount = all.filter(r => r.dataset.state === 'ok').length;
         const failedCount = all.filter(r => r.dataset.state === 'error').length;
 
-        fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
+        // Barra principal = sessões coletadas / total (independente dos estágios de loading)
+        if (batchTotal > 0) {
+            fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
+        }
 
         if (doneCount < batchTotal) {
             countEl.textContent = `${doneCount}/${batchTotal}`;
@@ -825,6 +914,8 @@ function handleAddSession(e) {
     function applyResult(key, ok, session) {
         const row = rows[key];
         if (!row) return;
+        stopCreep(key);
+        stopSettle(key);
         if (ok) {
             row.dataset.state = 'ok';
             // Sessão criada → adiciona ao estado local e à tela na hora (uma única vez)
@@ -858,6 +949,10 @@ function handleAddSession(e) {
                 if (ev.origin !== location.origin) return;
                 const d = ev.data;
                 if (d?.source !== 'authpack-extension') return;
+                if (d.type === 'authpack:addStage' && keyOf(d.current?.url) === key) {
+                    handleStage(key, d.current?.stage);
+                    return;
+                }
                 if (d.type === 'authpack:addProgress' && keyOf(d.current?.url) === key) {
                     const ok = d.current.status === 'ok';
                     finish(ok, ok ? d.current.session : null);
@@ -877,7 +972,11 @@ function handleAddSession(e) {
         if (!row || !service || !batchDone) return;
         if (row.dataset.state === 'pending') return;   // já em andamento
         row.dataset.state = 'pending';                 // volta ao spinner (esconde o botão via CSS)
-        refreshSummary();
+        stopCreep(key);
+        stopSettle(key);
+        progressByKey[key] = 0;                         // zera o progresso da mini bar
+        setRowBar(key, CAP_PCT.loading);                // arranca já (creep por tempo + estágios reais)
+        startCreep(key, CAP_PCT.interactive);
         const { ok, session } = await captureOne(service);
         applyResult(key, ok, session);
     }
@@ -890,6 +989,8 @@ function handleAddSession(e) {
         batchTotal = total;
         batchDone = false;
         services.forEach(s => { serviceByKey[keyOf(s.url)] = s; });
+        Object.keys(progressByKey).forEach(k => delete progressByKey[k]);
+        stopAllCreeps();
 
         modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
         modal.removeAttribute('data-result');
@@ -901,15 +1002,23 @@ function handleAddSession(e) {
 
         rows = buildProgressRows(services);
 
+        // Arranca mini bars: cada item começa a andar no t=0 (creep) e é ANCORADO pelos estágios
+        // reais quando chegam (dcl → 25%, complete → 50%, settle → 75→100%). A barra principal
+        // só avança quando uma sessão termina (ok/erro).
+        services.forEach(s => { const k = keyOf(s.url); setRowBar(k, CAP_PCT.loading); startCreep(k, CAP_PCT.interactive); });
+
         function onMessage(ev) {
             if (ev.origin !== location.origin) return;
             const d = ev.data;
             if (d?.source !== 'authpack-extension') return;
 
-            if (d.type === 'authpack:addProgress') {
+            if (d.type === 'authpack:addStage') {
+                handleStage(keyOf(d.current?.url), d.current?.stage);
+            } else if (d.type === 'authpack:addProgress') {
                 applyResult(keyOf(d.current?.url), d.current?.status === 'ok', d.current?.session);
             } else if (d.type === 'authpack:addDone') {
                 window.removeEventListener('message', onMessage);
+                stopAllCreeps();
                 Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
                 batchDone = true;
                 // Libera o retry das linhas que falharam.
@@ -922,7 +1031,7 @@ function handleAddSession(e) {
             }
         }
         window.addEventListener('message', onMessage);
-        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
+        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); stopAllCreeps(); utils.closeModals(); };
 
         // Dispara a captura na extensão
         window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services }, location.origin);
