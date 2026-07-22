@@ -341,11 +341,11 @@
         </div>
         <div class="featured-aside">
             <div class="featured-price-row"><span class="price-cur">R$</span><span class="featured-price-amt">${formatBRL(p.price_cents)}</span>${period}</div>
-            <div class="featured-billing">${billing === 'subscription' ? 'Assinatura mensal' : 'Pagamento único'}<span class="dot"></span>Acesso imediato</div>
+            <div class="featured-billing">${billing === 'subscription' ? 'Assinatura mensal' : 'Pagamento único'}<span class="dot"></span>Ativação imediata</div>
             <a class="featured-cta" href="${productUrl(p)}">Ver produto ${ARROW}</a>
             <div class="featured-note">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                Garantia de 7 dias · ${discreetCount(salesOf(p))} vendas
+                ${discreetCount(salesOf(p))} vendas realizadas
             </div>
         </div>`;
     }
