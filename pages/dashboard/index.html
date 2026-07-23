@@ -542,17 +542,12 @@
             <div class="modal as-modal">
                 <div class="modal-header">
                     <div class="up-head">
-                        <span class="up-head-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M5 12h14"></path>
-                                <path d="M12 5v14"></path>
-                            </svg>
+                        <span class="up-head-icon as-pkg-icon">
+                            <!-- O JS vai injetar o ícone ou texto (AuthPackFavicon / initial) aqui -->
                         </span>
                         <div class="up-head-text">
-                            <h2 class="modal-title">Adicionar sessão</h2>
-                            <p class="as-pkg-name"></p>
+                            <h2 class="modal-title as-pkg-name"></h2>
+                            <p class="as-head-subtitle">Adicione serviços para compartilhar</p>
                         </div>
                     </div>
                     <button class="close-btn">×</button>
@@ -560,42 +555,54 @@
 
                 <!-- Fase 1: seleção de serviços -->
                 <div class="modal-body as-select-body">
-                    <div class="as-warn">
-                        <span class="as-warn-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                                <path d="M12 9v4"></path>
-                                <path d="M12 17h.01"></path>
+                    <div class="as-hero-texts">
+                        <h3>Qual serviço você quer adicionar?</h3>
+                        <p>Busque pelo nome do serviço ou cole a URL para começar.</p>
+                    </div>
+
+                    <div class="as-search-container">
+                        <div class="as-search-row">
+                            <span class="as-search-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </span>
+                            <input type="text" class="form-input as-search"
+                                placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com)…" autocomplete="off">
+                        </div>
+                        <div class="as-search-dropdown hidden">
+                            <ul class="as-dropdown-list"></ul>
+                        </div>
+                        <p class="as-search-hint">
+                            <svg class="as-search-hint-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>
                             </svg>
-                        </span>
-                        <span>É recomendável que você esteja <strong>logado no serviço</strong> antes de adicioná-lo.</span>
+                            Esteja logado no serviço para funcionar corretamente.
+                        </p>
                     </div>
 
-                    <div class="as-search-row">
-                        <span class="as-search-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.3-4.3"></path>
-                            </svg>
-                        </span>
-                        <input type="text" class="form-input as-search"
-                            placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com)…" autocomplete="off">
+                    <div class="as-selected-section hidden">
+                        <!-- Chips das sessões adicionadas irão aqui -->
                     </div>
 
-                    <div class="as-categories">
-                        <!-- Chips de categoria renderizados via JS -->
+                    <div class="as-view-popular">
+                        <div class="as-divider"><span>Serviços populares</span></div>
+                        
+                        <div class="as-popular-grid">
+                            <!-- Cards populares injetados via JS -->
+                        </div>
+
+                        <div class="as-view-all-wrapper">
+                            <button class="btn btn-outline as-view-all-btn">Ver todos os serviços &rarr;</button>
+                        </div>
                     </div>
 
-                    <p class="as-section-label">Serviços comuns</p>
-                    <div class="as-services custom-scrollbar">
-                        <!-- Chips de serviço renderizados via JS -->
+                    <div class="as-view-all-sections hidden">
+                        <!-- Categorias e grids completos renderizados via JS -->
                     </div>
-
-                    <p class="as-empty-search hidden">Nenhum serviço encontrado. Pressione Enter para adicionar a URL.</p>
                 </div>
 
                 <!-- Fase 2: progresso da captura -->
@@ -614,10 +621,15 @@
                 </div>
 
                 <div class="modal-footer as-footer">
-                    <span class="as-footer-hint">Selecione ao menos um serviço</span>
+                    <div class="as-footer-status-wrapper">
+                        <span class="as-footer-status-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader"><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>
+                        </span>
+                        <span class="as-footer-status-text">Nenhum serviço adicionado</span>
+                    </div>
                     <div class="as-footer-actions">
                         <button class="btn btn-secondary as-cancel">Cancelar</button>
-                        <button class="btn btn-primary as-confirm" disabled>Adicionar <span class="as-confirm-count"></span></button>
+                        <button class="btn btn-primary as-confirm" disabled>Adicionar</button>
                         <button class="btn btn-secondary as-close" disabled>Fechar</button>
                     </div>
                 </div>
