@@ -558,26 +558,28 @@ function handleAddSession(e) {
 
     const modal = document.getElementById('addSessionModal');
     const pkgNameEl = modal.querySelector('.as-pkg-name');
-    const categoriesEl = modal.querySelector('.as-categories');
-    const sectionLabelEl = modal.querySelector('.as-section-label');
-    const servicesEl = modal.querySelector('.as-services');
     const searchEl = modal.querySelector('.as-search');
-    const emptySearchEl = modal.querySelector('.as-empty-search');
+    const searchDropdown = modal.querySelector('.as-search-dropdown');
+    const dropdownList = modal.querySelector('.as-dropdown-list');
+    const selectedSection = modal.querySelector('.as-selected-section');
+    const viewPopular = modal.querySelector('.as-view-popular');
+    const popularGrid = modal.querySelector('.as-popular-grid');
+    const viewAllBtn = modal.querySelector('.as-view-all-btn');
+    const viewAllSections = modal.querySelector('.as-view-all-sections');
     const confirmBtn = modal.querySelector('.as-confirm');
-    const confirmCountEl = modal.querySelector('.as-confirm-count');
-    const footerHintEl = modal.querySelector('.as-footer-hint');
     const cancelBtn = modal.querySelector('.as-cancel');
     const closeBtn = modal.querySelector('.as-close');
     const statusEl = modal.querySelector('.as-status');
     const countEl = modal.querySelector('.as-count');
     const fillEl = modal.querySelector('.as-bar-fill');
     const listEl = modal.querySelector('.as-list');
+    const footerStatusIcon = modal.querySelector('.as-footer-status-icon');
+    const footerStatusText = modal.querySelector('.as-footer-status-text');
+    const footerStatusWrapper = modal.querySelector('.as-footer-status-wrapper');
 
     // Estado local do modal
     const selected = new Map();               // key(url) -> { name, url }
-    const chipByKey = {};                     // key(url) -> chip element
     const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
-    let activeCategory = 'all';
     const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
 
     // Estado da fase de captura (usado também pelo retry por linha)
@@ -601,153 +603,271 @@ function handleAddSession(e) {
 
     // Reset visual
     modal.dataset.phase = 'select';
-    pkgNameEl.textContent = packageData.name || '';
+    if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
+    
+    const pkgIconEl = modal.querySelector('.as-pkg-icon');
+    if (pkgIconEl) {
+        pkgIconEl.innerHTML = '';
+        if (packageData.icon) {
+            pkgIconEl.textContent = packageData.icon; // Pode ser emoji
+        } else {
+            pkgIconEl.innerHTML = `<span class="as-pkg-icon--fb">${(packageData.name || '?').charAt(0).toUpperCase()}</span>`;
+        }
+    }
+
     searchEl.value = '';
-    emptySearchEl.classList.add('hidden');
+    searchDropdown.classList.add('hidden');
+    dropdownList.innerHTML = '';
+    selectedSection.innerHTML = '';
+    selectedSection.classList.add('hidden');
+    viewPopular.classList.remove('hidden');
+    viewAllSections.classList.add('hidden');
     listEl.innerHTML = '';
     fillEl.style.width = '0%';
     countEl.textContent = '0/0';
     statusEl.textContent = 'Capturando sessões…';
     modal.removeAttribute('data-result');
-    // Visibilidade dos botões é 100% por fase (CSS) — não há .hidden global.
     confirmBtn.disabled = true;
     closeBtn.disabled = true;
 
-    function syncConfirm() {
+    function syncFooter() {
         const n = selected.size;
         confirmBtn.disabled = n === 0;
-        confirmCountEl.textContent = n ? `(${n})` : '';
-        // Dica no rodapé (fase de seleção). Na fase de progresso o texto é
-        // controlado pelo fluxo de captura.
+        
         if (modal.dataset.phase !== 'progress') {
-            footerHintEl.textContent = n === 0
-                ? 'Selecione ao menos um serviço'
-                : `${n} ${n === 1 ? 'serviço selecionado' : 'serviços selecionados'}`;
-        }
-    }
-
-    function makeChip(service) {
-        const key = keyOf(service.url);
-        const chip = document.createElement('button');
-        chip.className = 'as-service';
-        chip.dataset.key = key;
-
-        const icon = document.createElement('img');
-        icon.className = 'as-service-icon';
-        icon.alt = '';
-        AuthPackFavicon.apply(icon, {
-            url: service.url,
-            onFinalError: () => {
-                const fb = document.createElement('span');
-                fb.className = 'as-service-icon as-service-icon--fb';
-                fb.textContent = (service.name || '?').trim().charAt(0).toUpperCase();
-                icon.replaceWith(fb);
+            if (n === 0) {
+                footerStatusWrapper.classList.remove('is-active');
+                footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader"><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>`;
+                footerStatusText.textContent = 'Nenhum serviço adicionado';
+            } else {
+                footerStatusWrapper.classList.add('is-active');
+                footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+                footerStatusText.textContent = `${n} ${n === 1 ? 'serviço adicionado' : 'serviços adicionados'}`;
             }
-        });
-
-        const label = document.createElement('span');
-        label.className = 'as-service-name';
-        label.textContent = service.name;
-
-        const check = document.createElement('span');
-        check.className = 'as-service-check';
-        check.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 6 9 17l-5-5"></path>
-            </svg>`;
-
-        chip.append(icon, label, check);
-        chip.addEventListener('click', () => toggleService(service));
-        chipByKey[key] = chip;
-        return chip;
+        }
     }
 
     function toggleService(service) {
         const key = keyOf(service.url);
-        const chip = chipByKey[key];
-        if (selected.has(key)) {
-            selected.delete(key);
-            chip && chip.classList.remove('is-selected');
-        } else {
+        if (!selected.has(key)) {
             selected.set(key, { name: service.name, url: service.url });
-            chip && chip.classList.add('is-selected');
         }
-        syncConfirm();
+        renderSelectedSection();
+        syncFooter();
+        const cards = modal.querySelectorAll(`.as-service[data-key="${key}"], .as-popular-card[data-key="${key}"]`);
+        cards.forEach(c => c.classList.add('is-selected'));
+        if (!searchDropdown.classList.contains('hidden')) {
+            renderSearchDropdown();
+        }
     }
 
-    function renderCatalog() {
-        servicesEl.innerHTML = '';
-        catalog.forEach(s => servicesEl.appendChild(makeChip(s)));
+    function removeService(key) {
+        selected.delete(key);
+        renderSelectedSection();
+        syncFooter();
+        const cards = modal.querySelectorAll(`.as-service[data-key="${key}"], .as-popular-card[data-key="${key}"]`);
+        cards.forEach(c => c.classList.remove('is-selected'));
+        if (!searchDropdown.classList.contains('hidden')) {
+            renderSearchDropdown();
+        }
     }
 
-    // Chips de categoria (filtro). Ao trocar, reaplica o filtro combinado.
-    function renderCategories() {
-        categoriesEl.innerHTML = '';
-        ADD_SESSION_CATEGORIES.forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = 'as-category' + (cat.id === activeCategory ? ' is-active' : '');
-            btn.dataset.cat = cat.id;
-            btn.textContent = cat.label;
-            btn.addEventListener('click', () => {
-                if (activeCategory === cat.id) return;
-                activeCategory = cat.id;
-                categoriesEl.querySelectorAll('.as-category').forEach(b =>
-                    b.classList.toggle('is-active', b.dataset.cat === activeCategory));
-                applyFilter();
+    function renderSelectedSection() {
+        if (selected.size === 0) {
+            selectedSection.classList.add('hidden');
+            selectedSection.innerHTML = '';
+            return;
+        }
+        selectedSection.classList.remove('hidden');
+        selectedSection.innerHTML = '<div class="as-selected-grid"></div>';
+        const grid = selectedSection.querySelector('.as-selected-grid');
+        
+        selected.forEach((service, key) => {
+            const chip = document.createElement('div');
+            chip.className = 'as-selected-chip';
+            
+            const icon = document.createElement('img');
+            icon.className = 'as-selected-chip-icon';
+            icon.alt = '';
+            AuthPackFavicon.apply(icon, {
+                url: service.url,
+                onFinalError: () => {
+                    const fb = document.createElement('span');
+                    fb.className = 'as-selected-chip-icon as-selected-chip-icon--fb';
+                    fb.textContent = (service.name || '?').trim().charAt(0).toUpperCase();
+                    icon.replaceWith(fb);
+                }
             });
-            categoriesEl.appendChild(btn);
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'as-selected-chip-name';
+            nameEl.textContent = service.name;
+
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'as-selected-chip-remove';
+            removeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+            removeBtn.onclick = () => removeService(key);
+
+            chip.append(icon, nameEl, removeBtn);
+            grid.appendChild(chip);
         });
     }
 
-    renderCategories();
-    renderCatalog();
-    syncConfirm();
+    const popularNames = ['ChatGPT', 'Notion', 'Slack', 'Canva'];
+    function renderPopularGrid() {
+        popularGrid.innerHTML = '';
+        popularNames.forEach(name => {
+            const service = catalog.find(s => s.name === name);
+            if (!service) return;
+            const key = keyOf(service.url);
+            
+            const card = document.createElement('div');
+            card.className = 'as-popular-card' + (selected.has(key) ? ' is-selected' : '');
+            card.dataset.key = key;
 
-    // Busca / adicionar URL custom + filtro por categoria.
-    function applyFilter() {
-        const q = searchEl.value.trim().toLowerCase();
-        let visible = 0;
-        catalog.forEach(s => {
-            const chip = chipByKey[keyOf(s.url)];
-            if (!chip) return;
-            // Serviços custom (sem `cat`) aparecem em qualquer categoria.
-            const matchCat = activeCategory === 'all' || !s.cat || s.cat === activeCategory;
-            const matchText = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
-            const match = matchCat && matchText;
-            chip.classList.toggle('hidden', !match);
-            if (match) visible++;
+            const icon = document.createElement('img');
+            icon.className = 'as-service-icon';
+            AuthPackFavicon.apply(icon, { url: service.url });
+
+            const label = document.createElement('span');
+            label.className = 'as-service-name';
+            label.textContent = service.name;
+
+            card.append(icon, label);
+            card.onclick = () => {
+                if (selected.has(key)) removeService(key);
+                else toggleService(service);
+            };
+            popularGrid.appendChild(card);
         });
-        emptySearchEl.classList.toggle('hidden', visible > 0 || !q);
-
-        // Rótulo da seção acompanha a categoria ativa.
-        const catObj = ADD_SESSION_CATEGORIES.find(c => c.id === activeCategory);
-        sectionLabelEl.textContent = activeCategory === 'all'
-            ? 'Serviços comuns'
-            : (catObj ? catObj.label : 'Serviços');
     }
 
-    function addCustomFromSearch() {
-        const svc = normalizeServiceInput(searchEl.value);
-        if (!svc) return;
-        const key = keyOf(svc.url);
-        if (!chipByKey[key]) {
-            catalog.push(svc);
-            servicesEl.appendChild(makeChip(svc));
-        }
-        // Seleciona (se ainda não estiver) e limpa a busca
-        if (!selected.has(key)) toggleService(svc);
-        searchEl.value = '';
-        applyFilter();
+    function renderAllSections() {
+        viewAllSections.innerHTML = '';
+        ADD_SESSION_CATEGORIES.forEach(cat => {
+            if (cat.id === 'all') return;
+            const catServices = catalog.filter(s => s.cat === cat.id);
+            if (catServices.length === 0) return;
+
+            const label = document.createElement('p');
+            label.className = 'as-section-label';
+            label.textContent = cat.label;
+            
+            const grid = document.createElement('div');
+            grid.className = 'as-services custom-scrollbar';
+            
+            catServices.forEach(service => {
+                const key = keyOf(service.url);
+                const chip = document.createElement('button');
+                chip.className = 'as-service' + (selected.has(key) ? ' is-selected' : '');
+                chip.dataset.key = key;
+                
+                const icon = document.createElement('img');
+                icon.className = 'as-service-icon';
+                AuthPackFavicon.apply(icon, { url: service.url });
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'as-service-name';
+                nameSpan.textContent = service.name;
+
+                const check = document.createElement('span');
+                check.className = 'as-service-check';
+                check.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
+
+                chip.append(icon, nameSpan, check);
+                chip.onclick = () => {
+                    if (selected.has(key)) removeService(key);
+                    else toggleService(service);
+                };
+                grid.appendChild(chip);
+            });
+
+            viewAllSections.append(label, grid);
+        });
     }
 
-    searchEl.oninput = applyFilter;
-    searchEl.onkeydown = (ev) => {
-        if (ev.key === 'Enter') {
-            ev.preventDefault();
-            addCustomFromSearch();
-        }
+    viewAllBtn.onclick = () => {
+        viewPopular.classList.add('hidden');
+        viewAllSections.classList.remove('hidden');
+        renderAllSections();
     };
+
+    function renderSearchDropdown() {
+        const q = searchEl.value.trim().toLowerCase();
+        if (!q) {
+            searchDropdown.classList.add('hidden');
+            return;
+        }
+
+        dropdownList.innerHTML = '';
+        const svc = normalizeServiceInput(searchEl.value);
+        let items = [];
+
+        if (svc && !catalog.find(c => keyOf(c.url) === keyOf(svc.url))) {
+            items.push(svc);
+        } else {
+            items = catalog.filter(s => s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
+        }
+
+        if (items.length === 0) {
+            dropdownList.innerHTML = '<li style="padding:12px;text-align:center;color:var(--ap-text-secondary);font-size:13px;">Nenhum serviço encontrado.</li>';
+        } else {
+            items.forEach(service => {
+                const key = keyOf(service.url);
+                const isSelected = selected.has(key);
+                
+                const li = document.createElement('li');
+                li.className = 'as-dropdown-item' + (isSelected ? ' is-selected' : '');
+
+                const icon = document.createElement('img');
+                icon.className = 'as-dropdown-icon';
+                AuthPackFavicon.apply(icon, {
+                    url: service.url,
+                    onFinalError: () => {
+                        const fb = document.createElement('span');
+                        fb.className = 'as-dropdown-icon as-dropdown-icon--fb';
+                        fb.textContent = (service.name || '?').trim().charAt(0).toUpperCase();
+                        icon.replaceWith(fb);
+                    }
+                });
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'as-dropdown-name';
+                nameEl.textContent = service.name;
+
+                const btn = document.createElement('button');
+                btn.className = 'as-dropdown-btn';
+                btn.type = 'button';
+                btn.textContent = isSelected ? 'Adicionado' : 'Adicionar';
+                
+                li.append(icon, nameEl, btn);
+                li.onclick = (e) => {
+                    e.preventDefault();
+                    if (!isSelected) {
+                        toggleService(service);
+                        searchEl.value = '';
+                        searchDropdown.classList.add('hidden');
+                        searchEl.focus();
+                    }
+                };
+                dropdownList.appendChild(li);
+            });
+        }
+        searchDropdown.classList.remove('hidden');
+    }
+
+    searchEl.oninput = renderSearchDropdown;
+    document.addEventListener('click', (e) => {
+        if (!searchDropdown.contains(e.target) && e.target !== searchEl) {
+            searchDropdown.classList.add('hidden');
+        }
+    });
+    searchEl.onfocus = () => {
+        if (searchEl.value.trim()) renderSearchDropdown();
+    };
+
+    renderPopularGrid();
+    syncFooter();
 
     // Progresso (fase 2) — cria uma linha por serviço
     function buildProgressRows(services) {
@@ -779,6 +899,7 @@ function handleAddSession(e) {
             const nameSpan = document.createElement('span');
             nameSpan.className = 'up-item-name';
             nameSpan.textContent = s.name;
+            nameSpan.title = s.name || '';
 
             // Mini progress bar por item (segue os estágios de carregamento da aba)
             const miniTrack = document.createElement('div');
@@ -904,9 +1025,16 @@ function handleAddSession(e) {
         statusEl.textContent = failedCount === 0
             ? 'Todas as sessões foram adicionadas'
             : `${okCount} adicionada(s) · ${failedCount} com falha`;
-        footerHintEl.textContent = failedCount === 0
+        footerStatusText.textContent = failedCount === 0
             ? 'Sessões adicionadas com sucesso.'
             : 'Toque em tentar de novo nas que falharam.';
+        if (failedCount === 0) {
+            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+            footerStatusWrapper.classList.add('is-active');
+        } else {
+            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
+            footerStatusWrapper.classList.remove('is-active');
+        }
         modal.dataset.result = failedCount === 0 ? 'success' : 'partial';
     }
 
@@ -996,7 +1124,9 @@ function handleAddSession(e) {
         modal.removeAttribute('data-result');
         closeBtn.disabled = true;
         statusEl.textContent = 'Capturando sessões…';
-        footerHintEl.textContent = 'Capturando…';
+        footerStatusText.textContent = 'Capturando…';
+        footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader spin"><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>`;
+        footerStatusWrapper.classList.remove('is-active');
         countEl.textContent = `0/${total}`;
         fillEl.style.width = '0%';
 

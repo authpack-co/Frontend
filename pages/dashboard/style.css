@@ -7542,9 +7542,12 @@ textarea:focus-visible {
 .up-list.as-list {
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 8px;
 }
 .up-list.as-list .up-item {
-    flex: 0 1 auto;
+    width: 220px;
+    max-width: 100%;
+    flex: 0 0 220px;
 }
 .up-item {
     display: flex; align-items: center; gap: 11px;
@@ -7647,11 +7650,11 @@ textarea:focus-visible {
 }
 #addSessionModal .modal-header { flex: none; }
 #addSessionModal .modal-footer { flex: none; }
-/* Corpo de seleção: coluna flexível que não rola; a rolagem vive na grade. */
+/* Corpo de seleção: coluna flexível que rola inteira no novo layout. */
 #addSessionModal .as-select-body {
     flex: 1 1 auto; min-height: 0;
     display: flex; flex-direction: column;
-    max-height: none; gap: 0; overflow: hidden;
+    max-height: none; gap: 0; overflow-y: auto;
 }
 /* Corpo de progresso: rola internamente se a lista ficar longa. */
 #addSessionModal .as-progress-body {
@@ -7666,27 +7669,119 @@ textarea:focus-visible {
 #addSessionModal[data-phase="progress"] .as-cancel,
 #addSessionModal[data-phase="progress"] .as-confirm { display: none; }
 
-.as-warn {
-    display: flex; align-items: flex-start; gap: 9px;
-    padding: 10px 12px; border-radius: var(--ap-radius-md);
-    background: var(--ap-warning-muted, rgba(234, 179, 8, .12));
-    border: 1px solid var(--ap-warning-border, rgba(234, 179, 8, .35));
-    font-size: 12.5px; color: var(--ap-text-secondary); line-height: 1.4;
-    margin-bottom: 14px;
+.as-pkg-icon {
+    width: 36px; height: 36px; border-radius: 8px; object-fit: contain;
+    background: var(--ap-bg-muted); display: grid; place-items: center; padding: 2px;
 }
-.as-warn-icon { flex: none; color: #d97706; margin-top: 1px; }
-.as-warn strong { color: var(--ap-text-primary); }
+.as-pkg-icon--fb { font-size: 16px; font-weight: 700; color: var(--ap-text-secondary); }
+.as-head-subtitle { font-size: 12.5px; color: var(--ap-text-secondary); margin: 2px 0 0; }
 
-.as-search-row { position: relative; margin-bottom: 14px; }
+.as-search-hint {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: var(--ap-text-muted);
+    margin: 8px 0 0 6px; text-align: left;
+}
+.as-search-hint-icon { flex: none; opacity: 0.8; }
+
+.as-hero-texts { text-align: center; margin: 16px 0 24px; }
+.as-hero-texts h3 { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--ap-text-primary); }
+.as-hero-texts p { margin: 0; font-size: 13.5px; color: var(--ap-text-secondary); }
+
+.as-search-container { position: relative; margin-bottom: 24px; }
+.as-search-row { position: relative; }
 .as-search-icon {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
     display: grid; place-items: center; color: var(--ap-text-placeholder);
     pointer-events: none;
 }
-/* padding-left maior que o ícone (esq:14px + ~17px). Especificidade de 2 classes
-   para vencer o `padding` shorthand do `.form-input` base (modals.css, carrega
-   depois), que senão resetaria para 16px e o texto ficaria sob a lupa. */
-.as-search-row .as-search { width: 100%; height: 46px; padding: 12px 16px 12px 42px; }
+.as-search-row .as-search { 
+    width: 100%; height: 52px; padding: 12px 16px 12px 46px;
+    border-radius: 8px; font-size: 14.5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.as-search-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; width: 100%;
+    background: var(--ap-bg-card); border: 1px solid var(--ap-border);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    max-height: 280px; overflow-y: auto; z-index: 100;
+}
+.as-search-dropdown.hidden { display: none; }
+.as-dropdown-list { list-style: none; margin: 0; padding: 6px; }
+.as-dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px; cursor: pointer;
+    transition: background 0.15s ease;
+}
+.as-dropdown-item:hover { background: var(--ap-bg-hover); }
+.as-dropdown-icon {
+    flex: none; width: 28px; height: 28px; border-radius: 6px;
+    object-fit: contain; background: var(--ap-bg-muted);
+}
+.as-dropdown-icon--fb { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--ap-text-secondary); }
+.as-dropdown-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ap-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-dropdown-btn {
+    flex: none; padding: 6px 12px; font-size: 12.5px; font-weight: 600;
+    border-radius: 6px; background: var(--ap-accent-muted); color: var(--ap-accent);
+    border: none; cursor: pointer; transition: all 0.15s ease;
+}
+.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
+.as-dropdown-item.is-selected .as-dropdown-btn { background: transparent; color: var(--ap-text-muted); padding: 6px; cursor: default; }
+
+.as-selected-section { margin-bottom: 24px; }
+.as-selected-section.hidden { display: none; }
+.as-selected-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.as-selected-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 8px 4px 4px; background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border); border-radius: 20px;
+}
+.as-selected-chip-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: contain; background: #fff; }
+.as-selected-chip-icon--fb { display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--ap-text-secondary); }
+.as-selected-chip-name { font-size: 12.5px; font-weight: 500; color: var(--ap-text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-selected-chip-remove {
+    display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
+    color: var(--ap-text-muted); cursor: pointer; transition: color 0.15s, background 0.15s;
+}
+.as-selected-chip-remove:hover { color: var(--ap-danger); background: var(--ap-danger-muted); }
+
+.as-divider {
+    display: flex; align-items: center; text-align: center; color: var(--ap-text-muted);
+    font-size: 12.5px; font-weight: 600; margin: 0 0 16px;
+}
+.as-divider::before, .as-divider::after {
+    content: ''; flex: 1; border-bottom: 1px solid var(--ap-border);
+}
+.as-divider::before { margin-right: 12px; }
+.as-divider::after { margin-left: 12px; }
+
+.as-popular-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.as-popular-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; padding: 12px 10px; background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border); border-radius: 12px; cursor: pointer;
+    transition: all 0.2s ease;
+}
+.as-popular-card:hover { border-color: var(--ap-border-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.as-popular-card.is-selected { border-color: var(--ap-accent); background: var(--ap-accent-muted); }
+.as-popular-card .as-service-icon { width: 32px; height: 32px; border-radius: 6px; }
+.as-popular-card .as-service-name { font-size: 13.5px; font-weight: 600; color: var(--ap-text-primary); text-align: center; flex: none; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.as-view-all-wrapper { display: flex; justify-content: center; margin-bottom: 8px; }
+.as-view-all-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border-radius: 20px; font-size: 13px; font-weight: 600;
+    color: var(--ap-accent); border: 1px solid var(--ap-accent-muted);
+    background: transparent; transition: all 0.15s ease; cursor: pointer;
+}
+.as-view-all-btn:hover { background: var(--ap-accent-muted); border-color: var(--ap-accent); }
+.as-view-popular.hidden { display: none; }
+.as-view-all-sections.hidden { display: none; }
+
+.as-footer-status-wrapper { display: flex; align-items: center; gap: 8px; color: var(--ap-text-secondary); font-size: 13.5px; font-weight: 500; }
+.as-footer-status-icon { display: grid; place-items: center; width: 20px; height: 20px; color: var(--ap-text-muted); }
+.as-footer-status-wrapper.is-active .as-footer-status-icon { color: var(--ap-accent); }
+.as-footer-status-icon svg.spin { animation: ap-spin 2s linear infinite; }
 
 /* Chips de categoria */
 .as-categories {
@@ -7712,9 +7807,7 @@ textarea:focus-visible {
 .as-services {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
     gap: 10px; padding: 2px;
-    /* Ocupa o espaço restante do corpo e rola aqui (única área rolável do modal). */
-    flex: 1 1 auto; min-height: 80px; overflow-y: auto;
-    align-content: start;
+    margin-bottom: 24px;
 }
 .as-service {
     display: flex; align-items: center; gap: 9px;
