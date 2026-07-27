@@ -144,18 +144,25 @@
     function scRenderDevices(devices) {
         const list  = scEl('sc-devices-list');
         const empty = scEl('sc-devices-empty');
+        const label = document.querySelector('.sc-devices-label');
+        const count = scEl('sc-devices-count');
         if (!list) return;
 
         list.innerHTML = '';
 
         if (!devices || devices.length === 0) {
             scHide(list);
+            scHide(label);
             scShow(empty);
             return;
         }
 
         scShow(list);
+        scShow(label);
         scHide(empty);
+        if (count) {
+            count.textContent = devices.length === 1 ? '1 dispositivo' : `${devices.length} dispositivos`;
+        }
 
         devices.forEach((device) => {
             const date = scFormatDate(device.createdAt);
@@ -170,7 +177,7 @@
                         <div class="device-row-name"></div>
                         <div class="device-row-meta"></div>
                     </div>
-                    ${device.isCurrentDevice
+                    ${device.id === scCurrentDeviceId()
                         ? `<span class="device-row-badge device-row-badge--current">Este dispositivo</span>`
                         : `<span class="device-row-badge device-row-badge--other">v${device.version}</span>`
                     }
@@ -209,6 +216,118 @@
         });
     }
 
+    // ─── Sincronização deste navegador ────────────────────────────────────────────
+
+    // A rota /api/auth/ é autenticada por cookie e não sabe de qual dispositivo veio
+    // a requisição; quem sabe é a extensão (deviceId no JWT) ou a própria ativação.
+    function scCurrentDeviceId() {
+        return (typeof extensionState !== 'undefined' && extensionState.getCurrentDeviceId()) || null;
+    }
+
+    function scSyncAlert(message) {
+        const box  = scEl('sc-sync-alert');
+        const text = scEl('sc-sync-alert-text');
+        if (!box || !text) return;
+
+        if (!message) {
+            box.hidden = true;
+            return;
+        }
+
+        text.textContent = message;
+        box.hidden = false;
+    }
+
+    function scRenderSyncRow(result) {
+        const row    = scEl('sc-sync');
+        const title  = scEl('sc-sync-title');
+        const status = scEl('sc-sync-status');
+        const btn    = scEl('sc-btn-sync-device');
+        if (!row || !title || !status) return;
+
+        const state = !result ? 'checking'
+            : result.status === extensionState.STATUS.READY   ? 'synced'
+            : result.status === extensionState.STATUS.MISSING ? 'missing'
+            : 'unsynced';
+
+        row.dataset.state = state;
+
+        if (btn) {
+            btn.querySelector('.sc-sync-btn-label').textContent =
+                state === 'synced' ? 'Ressincronizar' : 'Sincronizar este navegador';
+        }
+
+        switch (state) {
+            case 'synced':
+                title.textContent  = 'Extensão sincronizada';
+                status.textContent = 'Este navegador pode abrir as sessões desta conta.';
+                break;
+            case 'unsynced':
+                title.textContent  = result.hasAuth
+                    ? 'Extensão conectada a outra conta'
+                    : 'Extensão sem conta conectada';
+                status.textContent = result.hasAuth
+                    ? 'Enquanto isso, as sessões desta conta não abrem neste navegador.'
+                    : 'Sincronize para vincular este navegador à sua conta.';
+                break;
+            case 'missing':
+                title.textContent  = 'Extensão não instalada';
+                status.textContent = 'Instale a extensão do AuthPack para conectar às suas sessões.';
+                break;
+            default:
+                title.textContent  = 'Verificando extensão…';
+                status.textContent = 'Conferindo se este navegador está vinculado à sua conta.';
+        }
+    }
+
+    async function scHandleSyncDevice() {
+        const btn = scEl('sc-btn-sync-device');
+        if (!btn || btn.disabled) return;
+
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+        scSyncAlert(null);
+
+        try {
+            const res = await extensionState.syncCurrentDevice();
+
+            if (res.ok) {
+                // O activate devolve o deviceId, então a lista já sabe marcar qual
+                // linha é este navegador.
+                await scReloadDevices();
+                scRenderSyncRow(extensionState.getLastResult());
+                return;
+            }
+
+            if (res.code === 'device_limit_reached') {
+                // Não barramos antes de tentar: o navegador atual pode ser um dos que
+                // já estão registrados, e nesse caso a ativação nem consome vaga.
+                // Só quando o backend recusa é que pedimos para liberar espaço.
+                scSyncAlert(`Limite de ${res.limit || 2} dispositivos atingido. Remova um dos dispositivos abaixo para sincronizar este navegador.`);
+            } else {
+                scSyncAlert(res.message);
+            }
+        } catch (err) {
+            console.error('[Settings] sync device error:', err);
+            scSyncAlert('Não foi possível sincronizar este dispositivo. Tente novamente.');
+        } finally {
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+        }
+    }
+
+    async function scReloadDevices() {
+        try {
+            const res = await fetchManager.getAuthenticatedUser();
+            if (!res.ok) return;
+
+            scUserData = res.result.data;
+            scRenderDevices(scUserData.devices);
+        } catch (err) {
+            console.error('[Settings] scReloadDevices error:', err);
+        }
+    }
+
     // ─── Carregamento de dados ────────────────────────────────────────────────────
 
     async function scLoadData() {
@@ -228,6 +347,10 @@
             scRenderAccountInfo(scUserData);
             scRenderPlanCard(scUserData);
             scRenderDevices(scUserData.devices);
+
+            // Memoizado: se o dashboard já fez o handshake, isto não custa nada.
+            scRenderSyncRow(extensionState.getLastResult());
+            extensionState.check().then(scRenderSyncRow);
 
             if (loadingEl) scHide(loadingEl);
             if (viewEl)    viewEl.classList.add('active');
@@ -290,12 +413,26 @@
             });
             setTimeout(() => {
                 rowEl.remove();
-                const list = scEl('sc-devices-list');
-                if (list && list.children.length === 0) {
+                const list  = scEl('sc-devices-list');
+                const count = scEl('sc-devices-count');
+                const total = list ? list.children.length : 0;
+
+                if (count) {
+                    count.textContent = total === 1 ? '1 dispositivo' : `${total} dispositivos`;
+                }
+                if (list && total === 0) {
                     scHide(list);
+                    scHide(document.querySelector('.sc-devices-label'));
                     scShow(scEl('sc-devices-empty'));
                 }
             }, 320);
+
+            // Mantém o estado local em dia e limpa o aviso de limite: a vaga que
+            // acabou de ser liberada pode ser justamente a que faltava.
+            if (scUserData) {
+                scUserData.devices = scUserData.devices.filter(d => d.id !== deviceId);
+            }
+            scSyncAlert(null);
 
         } catch (err) {
             console.error('[Settings] removeDevice error:', err);
@@ -584,6 +721,49 @@
         }
     }
 
+    function scGoToView(view) {
+        document.querySelectorAll('.settings-nav-item').forEach((item) => {
+            item.classList.toggle('active', item.dataset.view === view);
+        });
+        document.querySelectorAll('.settings-view').forEach((v) => v.classList.remove('active'));
+        const target = scEl(`settings-view-${view}`);
+        if (target) target.classList.add('active');
+        if (view === 'cobranca') scLoadBilling();
+    }
+
+    /**
+     * Abre as configurações já na seção pedida. `options.highlight === 'device-sync'`
+     * rola até a linha de sincronização e pisca — quem chega aqui vindo do card
+     * "extensão não sincronizada" precisa saber exatamente onde clicar.
+     */
+    function scOpenAt(view, options) {
+        scOpenModal();
+        scGoToView(view || 'conta');
+
+        if (!options || options.highlight !== 'device-sync') return;
+
+        const apply = () => {
+            const row = scEl('sc-sync');
+            if (!row) return;
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.remove('sc-sync--highlight');
+            void row.offsetWidth; // reinicia a animação se já tinha rodado
+            row.classList.add('sc-sync--highlight');
+        };
+
+        // A view fica escondida enquanto os dados carregam; espera terminar.
+        if (scDataLoaded) {
+            setTimeout(apply, 60);
+        } else {
+            const wait = setInterval(() => {
+                if (!scDataLoaded) return;
+                clearInterval(wait);
+                setTimeout(apply, 60);
+            }, 80);
+            setTimeout(() => clearInterval(wait), 8000);
+        }
+    }
+
     function scCloseModal() {
         const overlay = scEl('settingsModal');
         if (!overlay) return;
@@ -633,17 +813,7 @@
 
     function initSettingsNav() {
         document.querySelectorAll('.settings-nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-
-                const view = item.dataset.view;
-                document.querySelectorAll('.settings-view').forEach(v => v.classList.remove('active'));
-                const target = scEl(`settings-view-${view}`);
-                if (target) target.classList.add('active');
-
-                if (view === 'cobranca') scLoadBilling();
-            });
+            item.addEventListener('click', () => scGoToView(item.dataset.view));
         });
     }
 
@@ -676,6 +846,20 @@
         if (disconnectBtn)  disconnectBtn.addEventListener('click',  scHandleDisconnect);
         if (cancelPlanBtn)  cancelPlanBtn.addEventListener('click',  scHandleCancelPlan);
         if (assinarPlusBtn) assinarPlusBtn.addEventListener('click', scHandleAssinarPlus);
+
+        const syncBtn = scEl('sc-btn-sync-device');
+        if (syncBtn) syncBtn.addEventListener('click', scHandleSyncDevice);
+
+        // O handshake com a extensão termina de forma assíncrona (e pode ser refeito
+        // depois de sincronizar): a linha de status e o badge "Este dispositivo"
+        // seguem o resultado mais recente.
+        extensionState.onChange((result) => {
+            scRenderSyncRow(result);
+            if (scUserData) scRenderDevices(scUserData.devices);
+        });
     });
+
+    // Exposto para o card "extensão não sincronizada" (extensionState.js).
+    window.settingsModal = { openAt: scOpenAt };
 
 })();

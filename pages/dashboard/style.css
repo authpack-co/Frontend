@@ -503,216 +503,349 @@ span.coming-soon {
 }
 
 /* ============================================
-   Setup Alert Card
+   Extension Cards
+   Dois estados com a mesma casca: "Extensão necessária" (não instalada) e
+   "Extensão não sincronizada" (instalada, mas em outra conta / sem conta).
    ============================================ */
-.setup-alert-card {
-    padding: 0;
-    overflow: hidden;
-}
-
-.setup-alert-body {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 24px 28px;
-}
-
-.setup-alert-icon {
-    width: 56px;
-    height: 56px;
-    min-width: 56px;
+.ext-card {
+    max-width: 460px;
+    background: var(--ap-bg-modal);
+    border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
-    background: rgba(245, 158, 11, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #f59e0b;
-}
-
-.setup-alert-text {
-    flex: 1;
-}
-
-.setup-alert-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ap-text-primary);
-    margin: 0 0 4px 0;
-}
-
-.setup-alert-desc {
-    font-size: 14px;
-    color: var(--ap-text-muted);
-    line-height: 1.5;
-    margin: 0;
-}
-
-.setup-alert-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: var(--ap-accent);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--ap-radius-md);
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.setup-alert-btn:hover {
-    background: var(--ap-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
-}
-
-@media (max-width: 640px) {
-    .setup-alert-body {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-        padding: 20px;
-    }
-
-    .setup-alert-icon {
-        display: none;
-    }
-
-    .setup-alert-title {
-        font-size: 15px;
-    }
-
-    .setup-alert-desc {
-        font-size: 13px;
-    }
-
-    .setup-alert-btn {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 20px;
-    }
-}
-
-.setup-alert-footer {
-    padding: 12px 28px;
-    border-top: 1px solid var(--ap-border);
-    font-size: 13px;
-    color: var(--ap-text-muted);
-    text-align: center;
-}
-
-.setup-alert-footer a {
-    color: var(--ap-accent);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.setup-alert-footer a:hover {
-    text-decoration: underline;
-}
-
-/* ── Extension Required Modal ── */
-.ext-modal {
-    max-width: 380px;
-    border-radius: 16px;
+    box-shadow: var(--ap-shadow-xl);
     padding: 0;
-    position: relative;
     overflow: hidden;
+    position: relative;
 }
 
-.ext-modal-close {
+.ext-card-close {
     position: absolute;
     top: 14px;
     right: 14px;
-    background: var(--ap-bg-hover);
-    border: none;
-    color: var(--ap-text-muted);
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--ap-radius-sm);
+    color: var(--ap-text-placeholder);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     z-index: 1;
 }
 
-.ext-modal-close:hover {
-    background: var(--ap-bg-muted);
+.ext-card-close:hover {
+    background: var(--ap-bg-hover);
     color: var(--ap-text-primary);
 }
 
-.ext-modal-body {
+/* ── Cabeçalho ── */
+.ext-card-head {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 40px 32px 32px;
-    gap: 0;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 24px 24px 18px;
 }
 
-.ext-modal-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(96, 165, 250, 0.1);
+.ext-card-badge {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--ap-radius-md);
+    border: 1px solid transparent;
+}
+
+.ext-card-badge--accent {
+    background: var(--ap-accent-subtle);
+    border-color: var(--ap-accent-muted);
     color: var(--ap-accent);
-    margin-bottom: 20px;
 }
 
-.ext-modal-title {
-    font-size: 18px;
-    font-weight: 700;
+.ext-card-badge--warning {
+    background: var(--ap-warning-light);
+    border-color: var(--ap-warning-border);
+    color: var(--ap-warning-text);
+}
+
+.ext-card-heading {
+    min-width: 0;
+    padding-right: 20px;
+}
+
+.ext-card-title {
+    font-family: var(--ap-font-heading);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     color: var(--ap-text-primary);
-    margin: 0 0 8px;
+    margin: 0 0 6px;
 }
 
-.ext-modal-desc {
-    font-size: 14px;
+.ext-card-subtitle {
+    font-size: 13px;
+    line-height: 1.55;
     color: var(--ap-text-muted);
-    line-height: 1.5;
-    margin: 0 0 24px;
-    max-width: 280px;
+    margin: 0;
 }
 
-.ext-modal-cta {
+/* ── Passos (card de instalação) ── */
+.ext-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0 24px;
+}
+
+.ext-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 0;
+}
+
+.ext-step+.ext-step {
+    border-top: 1px solid var(--ap-border);
+}
+
+.ext-step-num {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-input);
+    color: var(--ap-text-secondary);
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.ext-step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ext-step-text strong {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.ext-step-text span {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ap-text-muted);
+}
+
+/* ── Comparação de contas (card de sincronização) ── */
+.ext-accounts {
+    padding: 0 24px 2px;
+}
+
+.ext-account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-bg-card);
+}
+
+.ext-account-side {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.ext-account-avatar {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-input);
+    color: var(--ap-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ext-account-avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.ext-account-avatar--ext {
+    border-radius: var(--ap-radius-sm);
+}
+
+.ext-account-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.ext-account-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ap-text-placeholder);
+}
+
+.ext-account-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ext-account-state {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border: 1px solid transparent;
+    border-radius: var(--ap-radius-full);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.ext-account-state--ok {
+    background: var(--ap-success-light);
+    border-color: var(--ap-success-border);
+    color: var(--ap-success-text);
+}
+
+.ext-account-state--warn {
+    background: var(--ap-warning-light);
+    border-color: var(--ap-warning-border);
+    color: var(--ap-warning-text);
+}
+
+/* Conector vertical alinhado ao centro dos avatares (24 + 14 + 16 = 54px). */
+.ext-accounts-link {
+    height: 14px;
+    margin-left: 29px;
+    border-left: 2px dotted var(--ap-border-muted);
+}
+
+/* ── Rodapé ── */
+.ext-card-foot {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--ap-border);
+    background: var(--ap-bg-card-alt);
+}
+
+.ext-btn {
+    flex: 1;
+    height: 40px;
+    padding: 0 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    width: 100%;
-    padding: 13px 24px;
-    background: var(--ap-accent);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: var(--ap-radius-md);
+    font-family: inherit;
+    font-size: 13.5px;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(96, 165, 250, 0.3);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.ext-modal-cta:hover {
+.ext-btn--primary {
+    background: var(--ap-accent);
+    color: #ffffff;
+}
+
+.ext-btn--primary:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
-    transform: translateY(-1px);
 }
 
-.ext-modal-hint {
-    font-size: 12px;
-    color: var(--ap-text-muted);
-    margin: 16px 0 0;
+.ext-btn--ghost {
+    background: transparent;
+    border-color: var(--ap-border);
+    color: var(--ap-text-secondary);
+}
+
+.ext-btn--ghost:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+}
+
+.ext-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.ext-btn-spinner {
+    display: none;
+}
+
+.ext-btn.is-loading .ext-btn-label {
+    display: none;
+}
+
+.ext-btn.is-loading .ext-btn-spinner {
+    display: inline-flex;
+}
+
+.ext-card-note {
+    margin: 0;
+    padding: 0 24px 16px;
+    background: var(--ap-bg-card-alt);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ap-warning-text);
+}
+
+.ext-card-note[hidden] {
+    display: none;
+}
+
+@media (max-width: 520px) {
+    .ext-card-head {
+        padding: 20px 20px 16px;
+    }
+
+    .ext-steps,
+    .ext-accounts {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .ext-card-foot {
+        flex-direction: column-reverse;
+        padding: 16px 20px;
+    }
+
+    .ext-card-note {
+        padding: 0 20px 16px;
+    }
 }
 
 .screens-container {

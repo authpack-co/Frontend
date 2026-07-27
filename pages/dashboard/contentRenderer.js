@@ -2558,6 +2558,11 @@ function renderUserInfo(userInfo) {
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
+    // Libera o handshake com a extensão (precisa do id para comparar contas) e já
+    // dispara a checagem em segundo plano, para o primeiro clique não esperar.
+    extensionState.setUser(userInfo);
+    extensionState.check();
+
     // Roles com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
     // Vendedor NÃO entra mais: é usuário normal e pode assinar planos.
     const PLUS_BENEFIT_ROLES = ['admin'];

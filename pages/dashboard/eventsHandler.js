@@ -324,11 +324,8 @@ async function handleConnectSession(e) {
     // Ignora clique se o botão estiver desabilitado (pacote inativo)
     if (this.disabled) return;
 
-    // Verifica se a extensão está instalada
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal("extensionRequired");
-        return;
-    }
+    // Exige extensão instalada E apontando para esta conta (ver extensionState.js).
+    if (!await extensionState.ensure()) return;
 
     // Obtém detalhes do pacote e da sessão
     const packageEl = this.closest('#package-details');
@@ -362,17 +359,14 @@ async function handleConnectSession(e) {
     }, location.origin);
 }
 
-function handleUpdatePackage(e) {
+async function handleUpdatePackage(e) {
     e.stopPropagation();
 
     // Fecha o menu de opções
     document.querySelectorAll('.package-options:not(.hidden)').forEach(o => o.classList.add('hidden'));
 
-    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas)
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal("extensionRequired");
-        return;
-    }
+    // Exige a extensão instalada e sincronizada (ela é quem abre/captura/fecha as abas)
+    if (!await extensionState.ensure()) return;
 
     const packageEl = this.closest('.access-item');
     const packageId = packageEl.dataset.packageId;
@@ -540,14 +534,11 @@ function normalizeServiceInput(raw) {
     }
 }
 
-function handleAddSession(e) {
+async function handleAddSession(e) {
     e.stopPropagation();
 
-    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas).
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal('extensionRequired');
-        return;
-    }
+    // Exige a extensão instalada e sincronizada (ela é quem abre/captura/fecha as abas).
+    if (!await extensionState.ensure()) return;
 
     const packageId = this.dataset.packageId;
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);

@@ -60,8 +60,6 @@ let createProductState = {
                 // Hide inicio sections
                 if (packagesSection) packagesSection.style.display = 'none';
                 if (packageDetails) packageDetails.style.display = 'none';
-                const setupAlert = document.getElementById('setup-alert');
-                if (setupAlert) setupAlert.style.display = 'none';
                 // Empty state da Home (ex.: "Meus acessos" sem acessos) — sem isto
                 // ele persiste por cima da vitrine. Restaurado em exitVitrineView
                 // via syncPackageDetailsVisibility().
