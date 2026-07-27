@@ -155,6 +155,7 @@ const listenerMap = [
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
     { selector: '.update-package-btn', event: 'click', handler: handleUpdatePackage },
     { selector: '.add-session-btn', event: 'click', handler: handleAddSession },
+    { selector: '.update-session-btn', event: 'click', handler: handleUpdateSession },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
@@ -359,6 +360,68 @@ async function handleConnectSession(e) {
     }, location.origin);
 }
 
+// Prepara o modal compartilhado (mesma casca do "Adicionar sessão") para o modo
+// atualizar e devolve os elementos que os dois fluxos usam.
+function setupUpdateModal(packageData) {
+    const modal = document.getElementById('addSessionModal');
+
+    modal.dataset.mode = 'update';
+    modal.removeAttribute('data-result');
+
+    const pkgNameEl = modal.querySelector('.as-pkg-name');
+    const subtitleEl = modal.querySelector('.as-head-subtitle');
+    const pkgIconEl = modal.querySelector('.as-pkg-icon');
+
+    if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
+    if (subtitleEl) subtitleEl.textContent = 'Recapture as sessões deste pacote';
+
+    if (pkgIconEl) {
+        pkgIconEl.innerHTML = '';
+        if (packageData.icon) {
+            pkgIconEl.textContent = packageData.icon;
+        } else {
+            pkgIconEl.innerHTML = `<span class="as-pkg-icon--fb">${(packageData.name || '?').charAt(0).toUpperCase()}</span>`;
+        }
+    }
+
+    // Reset do progresso (o captureFlow reescreve, mas o modal pode reabrir sujo).
+    modal.querySelector('.as-list').innerHTML = '';
+    modal.querySelector('.as-bar-fill').style.width = '0%';
+    modal.querySelector('.as-close').disabled = true;
+
+    return modal;
+}
+
+// Nome legível de uma sessão (cai no host quando não tem nome).
+function sessionLabel(session) {
+    if (session.name) return session.name;
+    try { return new URL(session.url).hostname.replace(/^www\./, ''); } catch { return session.url; }
+}
+
+// O ref casa progresso com linha. Para sessões é o id — nunca a URL: duas contas do
+// mesmo serviço no mesmo pacote compartilham a URL e se cruzariam.
+function sessionTarget(session) {
+    return {
+        ref: String(session.id),
+        id: session.id,
+        name: sessionLabel(session),
+        url: session.url,
+        icon: session.icon,
+    };
+}
+
+// Atualiza o card da sessão na tela depois de uma recaptura bem-sucedida.
+function refreshSessionCard(sessionId) {
+    const card = document.querySelector(
+        `.session-card[data-session-id="${sessionId}"], .list-item.session[data-session-id="${sessionId}"]`
+    );
+    if (!card) return;
+    card.classList.add('fadeInFromTop');
+    card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
+}
+
+// "Atualizar" no menu ⋯ do PACOTE: abre a mesma casca do adicionar, mas listando as
+// sessões do próprio pacote, todas marcadas.
 async function handleUpdatePackage(e) {
     e.stopPropagation();
 
@@ -373,101 +436,149 @@ async function handleUpdatePackage(e) {
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     if (!packageData) return;
 
-    const sessions = (packageData.sessions || []).map(s => ({ id: s.id, url: s.url, icon: s.icon, name: s.name }));
+    const sessions = (packageData.sessions || []).filter(s => s && s.id && s.url);
 
-    const modal = document.getElementById('updatePackageModal');
-    const nameEl = modal.querySelector('.up-pkg-name');
-    const statusEl = modal.querySelector('.up-status');
-    const countEl = modal.querySelector('.up-count');
-    const fillEl = modal.querySelector('.up-bar-fill');
-    const listEl = modal.querySelector('.up-list');
-    const closeBtn = modal.querySelector('.up-close');
-    const total = sessions.length;
+    const modal = setupUpdateModal(packageData);
+    const listEl = modal.querySelector('.us-list');
+    const countEl = modal.querySelector('.us-count');
+    const toggleAllBtn = modal.querySelector('.us-toggle-all');
+    const confirmBtn = modal.querySelector('.as-confirm');
+    const cancelBtn = modal.querySelector('.as-cancel');
+    const footerStatusText = modal.querySelector('.as-footer-status-text');
+    const footerStatusWrapper = modal.querySelector('.as-footer-status-wrapper');
 
-    // Reset
-    nameEl.textContent = packageData.name || '';
-    fillEl.style.width = '0%';
-    countEl.textContent = `0/${total}`;
-    closeBtn.disabled = true;
-    listEl.innerHTML = '';
-    modal.removeAttribute('data-result');
+    modal.dataset.phase = 'select';
+    confirmBtn.textContent = 'Atualizar';
 
-    // Render uma linha por sessão (cada uma resolve de forma independente)
-    const rowById = {};
-    sessions.forEach(s => {
-        const row = document.createElement('li');
-        row.className = 'up-item';
-        row.dataset.sessionId = s.id;
-        row.dataset.state = 'pending';
+    // Todas selecionadas por padrão — atualizar o pacote inteiro é o caso comum.
+    const selected = new Set(sessions.map(s => String(s.id)));
 
-        const icon = document.createElement('img');
-        icon.className = 'up-item-icon';
-        icon.alt = '';
-        AuthPackFavicon.apply(icon, {
-            icon: s.icon, url: s.url,
-            onFinalError: () => {
-                const fb = document.createElement('span');
-                fb.className = 'up-item-icon up-item-icon--fb';
-                fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
-                icon.replaceWith(fb);
-            }
+    function syncFooter() {
+        const n = selected.size;
+        confirmBtn.disabled = n === 0;
+        countEl.textContent = `${n} de ${sessions.length} selecionada${sessions.length === 1 ? '' : 's'}`;
+        toggleAllBtn.textContent = n === sessions.length ? 'Desmarcar todas' : 'Selecionar todas';
+        footerStatusWrapper.classList.toggle('is-active', n > 0);
+        footerStatusText.textContent = n === 0
+            ? 'Nenhuma sessão selecionada'
+            : `${n} ${n === 1 ? 'sessão será atualizada' : 'sessões serão atualizadas'}`;
+    }
+
+    function renderList() {
+        listEl.innerHTML = '';
+
+        sessions.forEach(session => {
+            const ref = String(session.id);
+            const item = document.createElement('li');
+            item.className = 'us-item' + (selected.has(ref) ? ' is-selected' : '');
+            item.dataset.ref = ref;
+
+            const icon = document.createElement('img');
+            icon.className = 'us-item-icon';
+            icon.alt = '';
+            AuthPackFavicon.apply(icon, {
+                icon: session.icon, url: session.url,
+                onFinalError: () => {
+                    const fb = document.createElement('span');
+                    fb.className = 'us-item-icon us-item-icon--fb';
+                    fb.textContent = sessionLabel(session).trim().charAt(0).toUpperCase();
+                    icon.replaceWith(fb);
+                }
+            });
+
+            const info = document.createElement('div');
+            info.className = 'us-item-info';
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'us-item-name';
+            nameEl.textContent = sessionLabel(session);
+
+            const hostEl = document.createElement('span');
+            hostEl.className = 'us-item-host';
+            try { hostEl.textContent = new URL(session.url).hostname.replace(/^www\./, ''); }
+            catch { hostEl.textContent = session.url; }
+
+            info.append(nameEl, hostEl);
+
+            const check = document.createElement('span');
+            check.className = 'us-item-check';
+            check.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+            item.append(icon, info, check);
+            item.onclick = () => {
+                if (selected.has(ref)) selected.delete(ref);
+                else selected.add(ref);
+                item.classList.toggle('is-selected', selected.has(ref));
+                syncFooter();
+            };
+
+            listEl.appendChild(item);
         });
+    }
 
-        let label = s.name;
-        if (!label) { try { label = new URL(s.url).hostname.replace(/^www\./, ''); } catch { label = s.url; } }
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'up-item-name';
-        nameSpan.textContent = label;
+    renderList();
+    syncFooter();
 
-        const status = document.createElement('span');
-        status.className = 'up-item-status';
+    toggleAllBtn.onclick = () => {
+        if (selected.size === sessions.length) selected.clear();
+        else sessions.forEach(s => selected.add(String(s.id)));
+        renderList();
+        syncFooter();
+    };
 
-        row.append(icon, nameSpan, status);
-        listEl.appendChild(row);
-        rowById[s.id] = row;
+    confirmBtn.onclick = () => {
+        const targets = sessions
+            .filter(s => selected.has(String(s.id)))
+            .map(sessionTarget);
+        if (targets.length === 0) return;
+
+        captureFlow.run({
+            modal,
+            packageId,
+            mode: 'update',
+            targets,
+            onItemOk: (target) => refreshSessionCard(target.id),
+        });
+    };
+
+    cancelBtn.onclick = () => utils.closeModals();
+
+    utils.showModal('addSession', packageId);
+}
+
+// "Atualizar" no menu ⋯ de UMA sessão: sem etapa de seleção — abre direto no progresso.
+async function handleUpdateSession(e) {
+    e.stopPropagation();
+
+    // Fecha o menu de opções
+    document.querySelectorAll('.session-options:not(.hidden)').forEach(o => o.classList.add('hidden'));
+
+    if (!await extensionState.ensure()) return;
+
+    const packageEl = this.closest('#package-details');
+    const packageId = packageEl?.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    if (!packageData) return;
+
+    const sessionEl = this.closest('.session-card') || this.closest('.list-item.session');
+    const sessionId = sessionEl?.dataset.sessionId;
+    const sessionData = (packageData.sessions || []).find(s => s.id == sessionId);
+    if (!sessionData) return;
+
+    const modal = setupUpdateModal(packageData);
+    modal.querySelector('.as-head-subtitle').textContent = 'Recapturando uma sessão';
+    // Sem etapa de seleção: já entra no progresso (evita piscar o corpo de seleção).
+    modal.dataset.phase = 'progress';
+
+    utils.showModal('addSession', packageId);
+
+    captureFlow.run({
+        modal,
+        packageId,
+        mode: 'update',
+        targets: [sessionTarget(sessionData)],
+        onItemOk: (target) => refreshSessionCard(target.id),
     });
-
-    if (total === 0) {
-        statusEl.textContent = 'Sem sessões para atualizar';
-        closeBtn.disabled = false;
-        utils.showModal('updatePackage', packageId);
-        closeBtn.onclick = () => utils.closeModals();
-        return;
-    }
-
-    statusEl.textContent = 'Atualizando sessões…';
-    utils.showModal('updatePackage', packageId);
-
-    // Escuta o progresso transmitido pela extensão (via content/bridge.js)
-    function onMessage(ev) {
-        if (ev.origin !== location.origin) return;
-        const d = ev.data;
-        if (d?.source !== 'authpack-extension') return;
-
-        if (d.type === 'authpack:updateProgress') {
-            const row = rowById[d.current?.id];
-            if (row) row.dataset.state = d.current.status === 'ok' ? 'ok' : 'error';
-            countEl.textContent = `${d.done}/${d.total}`;
-            fillEl.style.width = `${Math.round((d.done / d.total) * 100)}%`;
-        } else if (d.type === 'authpack:updateDone') {
-            window.removeEventListener('message', onMessage);
-            fillEl.style.width = '100%';
-            // Garante que nenhuma linha fique presa em "pendente"
-            Object.values(rowById).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
-            const failed = d.failed?.length || 0;
-            countEl.textContent = `${d.ok}/${d.total}`;
-            statusEl.textContent = failed === 0
-                ? 'Todas as sessões foram atualizadas'
-                : `${d.ok} atualizada(s) · ${failed} com falha`;
-            modal.dataset.result = failed === 0 ? 'success' : 'partial';
-            closeBtn.disabled = false;
-        }
-    }
-    window.addEventListener('message', onMessage);
-    closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
-
-    // Dispara o refresh na extensão
-    window.postMessage({ source: 'authpack-page', type: 'authpack:updatePackage', packageId, sessions }, location.origin);
 }
 
 // Catálogo de serviços comuns em times internos. `url` = superfície onde o dono já está
@@ -573,27 +684,13 @@ async function handleAddSession(e) {
     const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
     const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
 
-    // Estado da fase de captura (usado também pelo retry por linha)
-    let rows = {};                 // key(url) -> <li> da linha de progresso
-    const serviceByKey = {};       // key(url) -> { name, url } (para o retry)
-    let batchTotal = 0;            // total de sessões do lote atual
-    let batchDone = false;         // lote inicial concluído (libera os botões de retry)
-
-    // Progresso de carregamento de cada captura em andamento [0..100]. A barra do modal segue a
-    // MESMA progressão do overlay da extensão em 4 faixas iguais de 25%:
-    //   loading    →  0% .. 25%   (creep gradual enquanto readyState é "loading")
-    //   interactive→ 25% .. 50%   (DOMContentLoaded: boom p/ 25% + creep)
-    //   complete   → 50% .. 75%   (load event: boom p/ 50% + creep)
-    //   settle     → 75% .. 100%  (3s pós-complete: ~1s cada ⅓)
-    const progressByKey = {};      // key(url) -> % de carregamento [0..100]
-    const creepTimers = {};        // key(url) -> timer do "enchimento aos poucos"
-    const settleTimers = {};       // key(url) -> timer do settle (75→100%)
-    // Marcos de progresso — DEVEM casar com a extensão (content/connectHold.js).
-    const CAP_PCT = { loading: 0, interactive: 25, complete: 50, settle: 75, done: 100 };
-    const SETTLE_MS = 3000;        // deve casar com CAPTURE_SETTLE_MS do captureManager
-
-    // Reset visual
+    // Reset visual (o modal é compartilhado com o fluxo de atualizar)
+    modal.dataset.mode = 'create';
     modal.dataset.phase = 'select';
+    confirmBtn.textContent = 'Adicionar';
+    if (modal.querySelector('.as-head-subtitle')) {
+        modal.querySelector('.as-head-subtitle').textContent = 'Adicione serviços para compartilhar';
+    }
     if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
     
     const pkgIconEl = modal.querySelector('.as-pkg-icon');
@@ -860,72 +957,10 @@ async function handleAddSession(e) {
     renderPopularGrid();
     syncFooter();
 
-    // Progresso (fase 2) — cria uma linha por serviço
-    function buildProgressRows(services) {
-        listEl.innerHTML = '';
-        const rows = {};
-        services.forEach(s => {
-            const row = document.createElement('li');
-            row.className = 'up-item';
-            row.dataset.key = keyOf(s.url);
-            row.dataset.state = 'pending';
-
-            const icon = document.createElement('img');
-            icon.className = 'up-item-icon';
-            icon.alt = '';
-            AuthPackFavicon.apply(icon, {
-                url: s.url,
-                onFinalError: () => {
-                    const fb = document.createElement('span');
-                    fb.className = 'up-item-icon up-item-icon--fb';
-                    fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
-                    icon.replaceWith(fb);
-                }
-            });
-
-            // Wrapper de conteúdo: nome + mini progress bar empilhados
-            const content = document.createElement('div');
-            content.className = 'up-item-content';
-
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'up-item-name';
-            nameSpan.textContent = s.name;
-            nameSpan.title = s.name || '';
-
-            // Mini progress bar por item (segue os estágios de carregamento da aba)
-            const miniTrack = document.createElement('div');
-            miniTrack.className = 'up-item-bar';
-            const miniFill = document.createElement('div');
-            miniFill.className = 'up-item-bar-fill';
-            miniTrack.appendChild(miniFill);
-
-            content.append(nameSpan, miniTrack);
-
-            // Botão "tentar de novo" — só aparece (via CSS) quando a linha falha e o
-            // lote já concluiu. Reexecuta a captura só daquele serviço, sem sair do modal.
-            const retry = document.createElement('button');
-            retry.type = 'button';
-            retry.className = 'up-item-retry';
-            retry.title = 'Tentar de novo';
-            retry.setAttribute('aria-label', 'Tentar de novo');
-            retry.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
-            retry.addEventListener('click', () => retryRow(keyOf(s.url)));
-
-            const status = document.createElement('span');
-            status.className = 'up-item-status';
-
-            row.append(icon, content, retry, status);
-            listEl.appendChild(row);
-            rows[keyOf(s.url)] = row;
-        });
-        return rows;
-    }
-
     // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
     function renderNewSessionCard(session) {
         const grid = originGrid || document.querySelector('.preset-collection .sessions-panel .sessions-grid');
-        console.log('[AddSession] renderNewSessionCard: grid?', !!grid, 'session=', session);
-        if (!grid) { console.warn('[AddSession] grid não encontrado — card não renderizado'); return; }
+        if (!grid) return;
         const card = createSessionElement(session, true, packageData);
         card.classList.add('fadeInFromTop');
         const addCard = grid.querySelector('.add-session-card');
@@ -934,228 +969,27 @@ async function handleAddSession(e) {
         card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
     }
 
-    // Para o "enchimento aos poucos" de uma linha.
-    function stopCreep(key) {
-        if (creepTimers[key]) { clearInterval(creepTimers[key]); delete creepTimers[key]; }
-    }
-    function stopSettle(key) {
-        if (settleTimers[key]) { clearInterval(settleTimers[key]); delete settleTimers[key]; }
-    }
-    function stopAllCreeps() {
-        Object.keys(creepTimers).forEach(stopCreep);
-        Object.keys(settleTimers).forEach(stopSettle);
-    }
+    // A partir daqui é o motor compartilhado com "Atualizar" (captureFlow.js): mesma
+    // lista, mesmas mini bars, mesmo retry. Só o modo muda.
+    function startCapture() {
+        const targets = Array.from(selected.values()).map(s => ({
+            ref: keyOf(s.url),
+            name: s.name,
+            url: s.url,
+        }));
+        if (targets.length === 0) return;
 
-    // Atualiza a mini bar de progresso de uma linha (monotônico: só sobe).
-    function setRowBar(key, pct) {
-        progressByKey[key] = Math.max(progressByKey[key] || 0, pct);
-        const row = rows[key];
-        if (!row) return;
-        const fill = row.querySelector('.up-item-bar-fill');
-        if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
-    }
-
-    // Creep: preenche gradualmente a mini bar até `ceiling` (desacelerando).
-    function startCreep(key, ceiling) {
-        stopCreep(key);
-        creepTimers[key] = setInterval(() => {
-            if (!rows[key] || rows[key].dataset.state !== 'pending') { stopCreep(key); return; }
-            const cur = progressByKey[key] || 0;
-            if (cur >= ceiling - 0.5) { stopCreep(key); return; }
-            progressByKey[key] = cur + (ceiling - cur) * 0.06;
-            const fill = rows[key]?.querySelector('.up-item-bar-fill');
-            if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
-        }, 250);
-    }
-
-    // Settle: preenche mini bar 75% → 100% em 3 passos de ~1s cada.
-    function startSettle(key) {
-        stopCreep(key);
-        stopSettle(key);
-        setRowBar(key, CAP_PCT.settle);             // ancora em 75%
-        const STEPS = 3;
-        const stepMs = SETTLE_MS / STEPS;
-        const stepPct = (CAP_PCT.done - CAP_PCT.settle) / STEPS;
-        let step = 0;
-        settleTimers[key] = setInterval(() => {
-            step++;
-            setRowBar(key, Math.min(CAP_PCT.settle + stepPct * step, CAP_PCT.done));
-            if (step >= STEPS) stopSettle(key);
-        }, stepMs);
-    }
-
-    // Mapeia um estágio de carregamento (vindo do overlay da extensão) para a mini bar da linha.
-    function handleStage(key, stage) {
-        if (!rows[key]) return;
-        if (stage === 'start') { setRowBar(key, CAP_PCT.loading); startCreep(key, CAP_PCT.interactive); }
-        else if (stage === 'dcl') { setRowBar(key, CAP_PCT.interactive); startCreep(key, CAP_PCT.complete); }
-        else if (stage === 'complete') { setRowBar(key, CAP_PCT.complete); startCreep(key, CAP_PCT.settle); }
-        else if (stage === 'settle') { startSettle(key); }
-    }
-
-    // Recalcula a barra PRINCIPAL / contadores / rodapé a partir do estado atual das linhas.
-    // A barra principal avança SOMENTE quando uma sessão é coletada (ok ou erro) —
-    // o progresso de carregamento por estágio fica nas mini bars de cada item.
-    function refreshSummary() {
-        const all = Object.values(rows);
-        const doneCount = all.filter(r => r.dataset.state !== 'pending').length;
-        const okCount = all.filter(r => r.dataset.state === 'ok').length;
-        const failedCount = all.filter(r => r.dataset.state === 'error').length;
-
-        // Barra principal = sessões coletadas / total (independente dos estágios de loading)
-        if (batchTotal > 0) {
-            fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
-        }
-
-        if (doneCount < batchTotal) {
-            countEl.textContent = `${doneCount}/${batchTotal}`;
-            return;
-        }
-        // Todas resolvidas (lote + eventuais retries)
-        countEl.textContent = `${okCount}/${batchTotal}`;
-        statusEl.textContent = failedCount === 0
-            ? 'Todas as sessões foram adicionadas'
-            : `${okCount} adicionada(s) · ${failedCount} com falha`;
-        footerStatusText.textContent = failedCount === 0
-            ? 'Sessões adicionadas com sucesso.'
-            : 'Toque em tentar de novo nas que falharam.';
-        if (failedCount === 0) {
-            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
-            footerStatusWrapper.classList.add('is-active');
-        } else {
-            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
-            footerStatusWrapper.classList.remove('is-active');
-        }
-        modal.dataset.result = failedCount === 0 ? 'success' : 'partial';
-    }
-
-    // Aplica o resultado de uma captura (do lote ou de um retry) numa linha.
-    function applyResult(key, ok, session) {
-        const row = rows[key];
-        if (!row) return;
-        stopCreep(key);
-        stopSettle(key);
-        if (ok) {
-            row.dataset.state = 'ok';
-            // Sessão criada → adiciona ao estado local e à tela na hora (uma única vez)
-            if (session) {
+        captureFlow.run({
+            modal,
+            packageId,
+            mode: 'create',
+            targets,
+            onItemOk: (target, session) => {
+                if (!session) return;
                 packageData.sessions.push(session);
                 renderNewSessionCard(session);
-            }
-        } else {
-            row.dataset.state = 'error';
-        }
-        const retryBtn = row.querySelector('.up-item-retry');
-        if (retryBtn) retryBtn.disabled = !(batchDone && row.dataset.state === 'error');
-        refreshSummary();
-    }
-
-    // Dispara a captura de UM serviço e resolve quando a extensão responde por ele.
-    // A extensão sempre emite um authpack:addProgress por serviço (inclusive em falha),
-    // então casamos pela URL — sem depender do addDone (evita cruzar com outro lote).
-    function captureOne(service) {
-        return new Promise((resolve) => {
-            const key = keyOf(service.url);
-            let settled = false;
-            const finish = (ok, session) => {
-                if (settled) return;
-                settled = true;
-                window.removeEventListener('message', onMsg);
-                clearTimeout(timer);
-                resolve({ ok, session });
-            };
-            function onMsg(ev) {
-                if (ev.origin !== location.origin) return;
-                const d = ev.data;
-                if (d?.source !== 'authpack-extension') return;
-                if (d.type === 'authpack:addStage' && keyOf(d.current?.url) === key) {
-                    handleStage(key, d.current?.stage);
-                    return;
-                }
-                if (d.type === 'authpack:addProgress' && keyOf(d.current?.url) === key) {
-                    const ok = d.current.status === 'ok';
-                    finish(ok, ok ? d.current.session : null);
-                }
-            }
-            // Rede de segurança caso nenhuma mensagem chegue (> timeout de captura da extensão).
-            const timer = setTimeout(() => finish(false, null), 75000);
-            window.addEventListener('message', onMsg);
-            window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services: [service] }, location.origin);
+            },
         });
-    }
-
-    // Tenta de novo, no próprio modal, uma sessão que falhou.
-    async function retryRow(key) {
-        const row = rows[key];
-        const service = serviceByKey[key];
-        if (!row || !service || !batchDone) return;
-        if (row.dataset.state === 'pending') return;   // já em andamento
-        row.dataset.state = 'pending';                 // volta ao spinner (esconde o botão via CSS)
-        stopCreep(key);
-        stopSettle(key);
-        progressByKey[key] = 0;                         // zera o progresso da mini bar
-        setRowBar(key, CAP_PCT.loading);                // arranca já (creep por tempo + estágios reais)
-        startCreep(key, CAP_PCT.interactive);
-        const { ok, session } = await captureOne(service);
-        applyResult(key, ok, session);
-    }
-
-    function startCapture() {
-        const services = Array.from(selected.values());
-        const total = services.length;
-        if (total === 0) return;
-
-        batchTotal = total;
-        batchDone = false;
-        services.forEach(s => { serviceByKey[keyOf(s.url)] = s; });
-        Object.keys(progressByKey).forEach(k => delete progressByKey[k]);
-        stopAllCreeps();
-
-        modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
-        modal.removeAttribute('data-result');
-        closeBtn.disabled = true;
-        statusEl.textContent = 'Capturando sessões…';
-        footerStatusText.textContent = 'Capturando…';
-        footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader spin"><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>`;
-        footerStatusWrapper.classList.remove('is-active');
-        countEl.textContent = `0/${total}`;
-        fillEl.style.width = '0%';
-
-        rows = buildProgressRows(services);
-
-        // Arranca mini bars: cada item começa a andar no t=0 (creep) e é ANCORADO pelos estágios
-        // reais quando chegam (dcl → 25%, complete → 50%, settle → 75→100%). A barra principal
-        // só avança quando uma sessão termina (ok/erro).
-        services.forEach(s => { const k = keyOf(s.url); setRowBar(k, CAP_PCT.loading); startCreep(k, CAP_PCT.interactive); });
-
-        function onMessage(ev) {
-            if (ev.origin !== location.origin) return;
-            const d = ev.data;
-            if (d?.source !== 'authpack-extension') return;
-
-            if (d.type === 'authpack:addStage') {
-                handleStage(keyOf(d.current?.url), d.current?.stage);
-            } else if (d.type === 'authpack:addProgress') {
-                applyResult(keyOf(d.current?.url), d.current?.status === 'ok', d.current?.session);
-            } else if (d.type === 'authpack:addDone') {
-                window.removeEventListener('message', onMessage);
-                stopAllCreeps();
-                Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
-                batchDone = true;
-                // Libera o retry das linhas que falharam.
-                Object.values(rows).forEach(r => {
-                    const b = r.querySelector('.up-item-retry');
-                    if (b) b.disabled = r.dataset.state !== 'error';
-                });
-                refreshSummary();
-                closeBtn.disabled = false;
-            }
-        }
-        window.addEventListener('message', onMessage);
-        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); stopAllCreeps(); utils.closeModals(); };
-
-        // Dispara a captura na extensão
-        window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services }, location.origin);
     }
 
     confirmBtn.onclick = startCapture;
