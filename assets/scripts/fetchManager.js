@@ -144,8 +144,10 @@ const fetchManager = {
         return response;
     },
 
-    async getActiveUniqueKeys(packageId) {
-        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys`);
+    // status: "active" (padrão do backend) ou "all" — "all" traz também os links
+    // encerrados (usados, expirados e revogados) que alimentam o histórico.
+    async getUniqueKeys(packageId, status = "all") {
+        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys?status=${encodeURIComponent(status)}`);
         return response;
     },
 

@@ -55,23 +55,25 @@ const utils = {
         }
     },
 
+    // Link e código continuam copiáveis com o pacote restrito — só não ativam
+    // ninguém. O aviso deixa isso explícito em vez de desabilitar os campos.
     setShareModalOpenState(isOpen) {
         const toggle = document.querySelector('#sharePackageModal #generalToggle');
         const statusBadge = document.querySelector('#sharePackageModal #statusBadge');
-        const linkDisplay = document.querySelector('#sharePackageModal #generalLinkDisplay');
-        if (!toggle || !statusBadge || !linkDisplay) return;
+        const restrictedNote = document.querySelector('#sharePackageModal #shareRestrictedNote');
+        if (!toggle || !statusBadge || !restrictedNote) return;
         const statusText = statusBadge.querySelector('span');
 
         if (isOpen) {
             toggle.classList.add('active');
             statusBadge.className = 'status-badge status-open';
             statusText.textContent = 'Acesso público ativo';
-            linkDisplay.classList.remove('disabled');
+            restrictedNote.classList.add('hidden');
         } else {
             toggle.classList.remove('active');
             statusBadge.className = 'status-badge status-closed';
             statusText.textContent = 'Acesso restrito';
-            linkDisplay.classList.add('disabled');
+            restrictedNote.classList.remove('hidden');
         }
     },
 
@@ -91,6 +93,58 @@ const utils = {
         if (hours > 0 && mins > 0) return `expira em ${hours}h ${mins}min`;
         if (hours > 0) return `expira em ${hours}h`;
         return `expira em ${mins}min`;
+    },
+
+    // "criado há 20min" · "criado ontem" · "criado 24 jul" — usado nos links ativos.
+    formatCreated(createdAt) {
+        const target = new Date(createdAt).getTime();
+        if (!createdAt || Number.isNaN(target)) return 'criado recentemente';
+
+        const diffMs = Date.now() - target;
+        const totalMin = Math.max(0, Math.floor(diffMs / 60000));
+        if (totalMin < 1) return 'criado agora';
+        if (totalMin < 60) return `criado há ${totalMin}min`;
+
+        const days = this.daysApart(new Date(target));
+        if (days === 0) return `criado há ${Math.floor(totalMin / 60)}h`;
+        if (days === 1) return 'criado ontem';
+        return `criado ${this.formatDayLabel(new Date(target))}`;
+    },
+
+    // Momento de um evento, encaixável no fim de uma frase ("usado por X ___"):
+    // "às 14:07" no mesmo dia da criação, "ontem às 09:12", "em 24 jul, 18:40".
+    formatEventMoment(reference, dateValue) {
+        const date = new Date(dateValue);
+        const from = new Date(reference);
+        if (!dateValue || Number.isNaN(date.getTime())) return 'em data desconhecida';
+
+        const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const sameDayAsCreation = reference && !Number.isNaN(from.getTime())
+            && this.daysApart(date) === this.daysApart(from);
+
+        if (sameDayAsCreation) return `às ${time}`;
+
+        const days = this.daysApart(date);
+        if (days === 0) return `hoje às ${time}`;
+        if (days === 1) return `ontem às ${time}`;
+        return `em ${this.formatDayLabel(date)}, ${time}`;
+    },
+
+    // Diferença em dias de calendário entre a data e hoje (0 = hoje, 1 = ontem).
+    daysApart(date) {
+        const startOf = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        return Math.round((startOf(new Date()) - startOf(date)) / 86400000);
+    },
+
+    // "24 jul" no mesmo ano; "24 jul 2025" quando o ano é outro.
+    formatDayLabel(date) {
+        const sameYear = date.getFullYear() === new Date().getFullYear();
+        // pt-BR devolve "25 de jul." / "25 de jul. de 2025" — enxugamos para "25 jul".
+        return date.toLocaleDateString('pt-BR', sameYear
+            ? { day: 'numeric', month: 'short' }
+            : { day: 'numeric', month: 'short', year: 'numeric' })
+            .replace(/\./g, '')
+            .replace(/ de /g, ' ');
     },
 
     validateField(value, config = {}) {
@@ -1051,6 +1105,10 @@ function setupSharePackageForm(e) {
     openSharePackageModal(packageEl.dataset.packageId);
 }
 
+// Estado do modal de compartilhamento: todos os links únicos do pacote (ativos e
+// encerrados) + o filtro selecionado na lista.
+const shareKeysState = { items: [], filter: 'all' };
+
 // Abre o modal de compartilhamento para um pacote da coleção (por id). Usado
 // tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da top bar.
 function openSharePackageModal(packageId) {
@@ -1058,8 +1116,7 @@ function openSharePackageModal(packageId) {
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
     const nameEl = sharePackageModal.querySelector(".share-pkg-name");
-    const peopleCountEl = sharePackageModal.querySelector(".share-people-count");
-    const generalLinkUrl = sharePackageModal.querySelector("#generalLinkUrl");
+    const sessionsEl = sharePackageModal.querySelector(".share-pkg-sessions");
 
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     const isOpen = packageData.open !== 0;
@@ -1067,96 +1124,205 @@ function openSharePackageModal(packageId) {
     nameEl.textContent = packageData.name || '';
     nameEl.title = packageData.name || '';
 
-    // Contagem de pessoas com acesso (membros do pacote).
-    const peopleCount = Array.isArray(packageData.users) ? packageData.users.length : 0;
-    peopleCountEl.textContent = peopleCount === 0
-        ? 'Nenhuma pessoa com acesso'
-        : `${peopleCount} ${peopleCount === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+    const sessionsCount = Array.isArray(packageData.sessions) ? packageData.sessions.length : 0;
+    sessionsEl.textContent = sessionsCount === 0
+        ? 'Nenhuma sessão'
+        : `${sessionsCount} ${sessionsCount === 1 ? 'sessão' : 'sessões'}`;
 
-    generalLinkUrl.textContent = utils.buildInviteUrl(packageData.key);
+    renderSharePeopleRow(packageData.users || []);
+    setShareInviteValues(packageData.key);
     utils.setShareModalOpenState(isOpen);
 
-    // Reset unique-keys list to empty placeholder; will be populated by loader.
-    const list = sharePackageModal.querySelector("#uniqueKeysList");
-    list.innerHTML = '<li class="unique-keys-empty">Carregando…</li>';
+    // Zera o estado da lista; o loader preenche em seguida.
+    shareKeysState.items = [];
+    shareKeysState.filter = 'all';
+    setShareFilterUI();
+    setShareListMessage('Carregando…');
 
     utils.showModal("sharePackage", packageId);
 
-    // Fetch active unique keys for this package.
-    loadActiveUniqueKeys(packageId);
+    loadUniqueKeys(packageId);
 }
 
-async function loadActiveUniqueKeys(packageId) {
-    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
-    const res = await fetchManager.getActiveUniqueKeys(packageId);
+// Preenche link de convite e código do pacote (a mesma key, em dois formatos).
+function setShareInviteValues(key) {
+    const linkEl = document.querySelector("#sharePackageModal #generalLinkUrl");
+    const codeEl = document.querySelector("#sharePackageModal #generalKeyCode");
+    const url = utils.buildInviteUrl(key);
+
+    linkEl.textContent = url || '—';
+    linkEl.title = url || '';
+    codeEl.textContent = key || '—';
+    codeEl.title = key || '';
+}
+
+// Linha de pessoas com acesso: pilha de até 3 avatares (+N) e atalho para o
+// painel de membros do pacote.
+function renderSharePeopleRow(users) {
+    const row = document.querySelector("#sharePackageModal #sharePeopleRow");
+    const avatars = row.querySelector('.share-people-avatars');
+    const countEl = row.querySelector('.share-people-count');
+
+    avatars.innerHTML = '';
+    users.slice(0, 3).forEach(user => avatars.appendChild(buildSharePersonAvatar(user)));
+    if (users.length > 3) {
+        avatars.appendChild(createElement('span', 'share-people-avatar overflow', `+${users.length - 3}`));
+    }
+
+    countEl.textContent = users.length === 0
+        ? 'Ninguém com acesso'
+        : `${users.length} ${users.length === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+    row.title = users.length === 0
+        ? 'Ninguém ativou este pacote ainda'
+        : users.map(u => u.name || 'Usuário').join(', ');
+}
+
+function buildSharePersonAvatar(user) {
+    const [c1, c2] = accessPalette(user.name);
+    const avatar = createElement('span', 'share-people-avatar', shareInitials(user.name));
+    avatar.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
+
+    if (user.picture) {
+        const img = document.createElement('img');
+        img.src = user.picture;
+        img.alt = user.name || '';
+        img.onerror = function () { this.remove(); };
+        avatar.appendChild(img);
+    }
+
+    return avatar;
+}
+
+function shareInitials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+async function loadUniqueKeys(packageId) {
+    const res = await fetchManager.getUniqueKeys(packageId, 'all');
 
     if (!res.ok) {
-        list.innerHTML = '<li class="unique-keys-empty">Não foi possível carregar os links únicos.</li>';
+        setShareListMessage('Não foi possível carregar os links únicos.');
         return;
     }
 
-    renderUniqueKeysList(res.result.data || []);
+    // O modal pode ter sido fechado (ou trocado de pacote) durante a requisição.
+    if (sharePackageModal.dataset.itemId != packageId) return;
+
+    shareKeysState.items = (res.result.data || []).map(normalizeUniqueKey);
+    renderUniqueKeys();
 }
 
-function renderUniqueKeysList(keys) {
+// O backend pode mandar `status` pronto; se não mandar, deduzimos pelos campos.
+function normalizeUniqueKey(key) {
+    return Object.assign({}, key, { status: key.status || deriveUniqueKeyStatus(key) });
+}
+
+function deriveUniqueKeyStatus(key) {
+    if (key.usedAt) return 'used';
+    if (key.revokedAt) return 'revoked';
+    if (key.expiresAt && new Date(key.expiresAt).getTime() <= Date.now()) return 'expired';
+    return 'active';
+}
+
+// Momento em que o link foi encerrado — ordena a lista do mais recente ao mais antigo.
+function uniqueKeyEndedAt(key) {
+    return new Date(key.usedAt || key.revokedAt || key.expiresAt || key.createdAt || 0).getTime();
+}
+
+function matchesShareFilter(key, filter) {
+    if (filter === 'active') return key.status === 'active';
+    if (filter === 'ended') return key.status !== 'active';
+    return true;
+}
+
+// Ativos primeiro (mais novos no topo), depois os encerrados por data do evento.
+function sortUniqueKeys(a, b) {
+    if (a.status === 'active' && b.status !== 'active') return -1;
+    if (b.status === 'active' && a.status !== 'active') return 1;
+    if (a.status === 'active') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    return uniqueKeyEndedAt(b) - uniqueKeyEndedAt(a);
+}
+
+function renderUniqueKeys() {
     const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    const keys = shareKeysState.items
+        .filter(k => matchesShareFilter(k, shareKeysState.filter))
+        .sort(sortUniqueKeys);
+
+    setShareFilterUI();
     list.innerHTML = '';
 
     if (!keys.length) {
-        const empty = document.createElement('li');
-        empty.className = 'unique-keys-empty';
-        empty.textContent = 'Nenhum link único ativo no momento.';
-        list.appendChild(empty);
+        list.appendChild(buildShareEmptyItem(shareKeysState.items.length
+            ? 'Nenhum link neste filtro.'
+            : 'Nenhum link único gerado ainda.'));
         return;
     }
 
     keys.forEach(k => list.appendChild(buildUniqueKeyItem(k)));
 }
 
+function buildShareEmptyItem(message) {
+    return createElement('li', 'unique-keys-empty', message);
+}
+
+function setShareListMessage(message) {
+    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    list.innerHTML = '';
+    list.appendChild(buildShareEmptyItem(message));
+}
+
+// Rótulo de cada filtro leva a contagem: "Todos · 8", "Ativos · 2"…
+const SHARE_FILTER_LABELS = { all: 'Todos', active: 'Ativos', ended: 'Encerrados' };
+
+function setShareFilterUI() {
+    document.querySelectorAll('#sharePackageModal .share-filter').forEach(btn => {
+        const filter = btn.dataset.filter;
+        const count = shareKeysState.items.filter(k => matchesShareFilter(k, filter)).length;
+        btn.textContent = count ? `${SHARE_FILTER_LABELS[filter]} · ${count}` : SHARE_FILTER_LABELS[filter];
+        btn.classList.toggle('active', filter === shareKeysState.filter);
+    });
+}
+
+// Um item por link: ponto de status + URL + o que aconteceu. Ativos ganham as
+// ações (copiar/revogar); encerrados ganham o selo do desfecho.
 function buildUniqueKeyItem(k) {
     const url = utils.buildInviteUrl(k.key);
+    const isActive = k.status === 'active';
+    const msToExpiry = new Date(k.expiresAt).getTime() - Date.now();
+    const expiringSoon = isActive && msToExpiry > 0 && msToExpiry <= 3600000;
 
     const li = document.createElement('li');
-    li.className = 'unique-key-item';
+    li.className = `unique-key-item ${isActive ? 'active' : `ended ${k.status}`}${expiringSoon ? ' expiring-soon' : ''}`;
 
-    const info = document.createElement('div');
-    info.className = 'unique-key-info';
+    li.appendChild(createElement('span', 'unique-key-dot'));
 
-    const urlEl = document.createElement('span');
-    urlEl.className = 'unique-key-url';
-    urlEl.textContent = url;
+    const info = createElement('div', 'unique-key-info');
+    const urlEl = createElement('span', 'unique-key-url', url);
     urlEl.title = url;
 
-    const expiryEl = document.createElement('span');
-    expiryEl.className = 'unique-key-expiry';
-    expiryEl.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
-        </svg>
-        <span>${utils.formatExpiry(k.expiresAt)}</span>
-    `;
+    const detail = describeUniqueKey(k);
+    const metaEl = createElement('span', 'unique-key-meta', detail.meta);
+    metaEl.title = detail.metaTitle || detail.meta;
 
     info.appendChild(urlEl);
-    info.appendChild(expiryEl);
+    info.appendChild(metaEl);
+    li.appendChild(info);
 
-    const actions = document.createElement('div');
-    actions.className = 'unique-key-actions';
+    if (!isActive) {
+        li.appendChild(createElement('span', `unique-key-pill ${k.status}`, detail.pill));
+        return li;
+    }
 
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'unique-key-copy';
-    copyBtn.textContent = 'Copiar';
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(url).then(() => {
-            copyBtn.textContent = 'Copiado';
-            copyBtn.classList.add('copied');
-            setTimeout(() => {
-                copyBtn.textContent = 'Copiar';
-                copyBtn.classList.remove('copied');
-            }, 1200);
-        }).catch(() => notify('error', 'Não foi possível copiar o link.'));
-    });
+    const copyBtn = createElement('button', 'unique-key-copy', 'Copiar');
+    copyBtn.type = 'button';
+    copyBtn.addEventListener('click', () => copyShareValue(url, copyBtn, 'Não foi possível copiar o link.'));
 
     const revokeBtn = document.createElement('button');
+    revokeBtn.type = 'button';
     revokeBtn.className = 'unique-key-revoke';
     revokeBtn.title = 'Revogar link';
     revokeBtn.innerHTML = `
@@ -1180,28 +1346,84 @@ function buildUniqueKeyItem(k) {
             return;
         }
 
-        // Remove item da lista com fade-out; mostra empty state se ficar vazia.
+        // Deixa de ser ativo e continua na lista, agora como revogado.
+        const item = shareKeysState.items.find(entry => entry.id === k.id);
+        if (item) {
+            item.status = 'revoked';
+            item.revokedAt = new Date().toISOString();
+        }
+
         li.classList.add('removing');
-        setTimeout(() => {
-            const list = li.parentElement;
-            li.remove();
-            if (list && !list.querySelector('.unique-key-item')) {
-                const empty = document.createElement('li');
-                empty.className = 'unique-keys-empty';
-                empty.textContent = 'Nenhum link único ativo no momento.';
-                list.appendChild(empty);
-            }
-        }, 200);
+        setTimeout(renderUniqueKeys, 200);
 
         notify('success', 'Link único revogado.');
     });
 
+    const actions = createElement('div', 'unique-key-actions');
     actions.appendChild(copyBtn);
     actions.appendChild(revokeBtn);
-
-    li.appendChild(info);
     li.appendChild(actions);
     return li;
+}
+
+// Linha de contexto do link: quando foi criado e o que aconteceu com ele.
+function describeUniqueKey(k) {
+    const created = utils.formatCreated(k.createdAt);
+
+    if (k.status === 'used') {
+        const user = resolveKeyUser(k);
+        const name = user.name || 'Usuário removido';
+        return {
+            meta: `${created} · usado por ${name} ${utils.formatEventMoment(k.createdAt, k.usedAt)}`,
+            metaTitle: user.email ? `${name} · ${user.email}` : name,
+            pill: 'Usado',
+        };
+    }
+
+    if (k.status === 'revoked') {
+        return {
+            meta: `${created} · revogado por você ${utils.formatEventMoment(k.createdAt, k.revokedAt)}`,
+            pill: 'Revogado',
+        };
+    }
+
+    if (k.status === 'expired') {
+        return {
+            meta: `${created} · expirou sem uso ${utils.formatEventMoment(k.createdAt, k.expiresAt)}`,
+            pill: 'Expirado',
+        };
+    }
+
+    return { meta: `${created} · ${utils.formatExpiry(k.expiresAt)}` };
+}
+
+// O backend pode devolver o objeto do usuário ou só o id — nesse caso buscamos
+// entre os membros do pacote (quem saiu do pacote perde nome e avatar).
+function resolveKeyUser(k) {
+    if (k.usedBy && typeof k.usedBy === 'object') return k.usedBy;
+
+    const userId = k.usedByUserId || k.usedBy;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == sharePackageModal.dataset.itemId);
+    return (packageData && packageData.users || []).find(u => u.id === userId)
+        || { name: 'Usuário removido', email: '', picture: '' };
+}
+
+// Copia um valor e dá feedback no próprio botão. Botões com ícone trocam só o
+// texto do <span>, para o SVG não ser apagado junto.
+function copyShareValue(value, button, errorMessage) {
+    if (!value || value === '—') return;
+
+    const label = button.querySelector('span') || button;
+
+    navigator.clipboard.writeText(value).then(() => {
+        const original = label.textContent;
+        label.textContent = 'Copiado';
+        button.classList.add('copied');
+        setTimeout(() => {
+            label.textContent = original;
+            button.classList.remove('copied');
+        }, 1200);
+    }).catch(() => notify('error', errorMessage));
 }
 
 function setupDeletePackageForm(e) {
@@ -2068,14 +2290,18 @@ activationInputs.forEach(input => {
     });
 });
 
-// Share Package (v2: link público + links únicos)
+// Share Package (v2: acesso do pacote + links únicos com histórico)
 const sharePackageModal = document.querySelector('#sharePackageModal');
 const generalToggle = sharePackageModal.querySelector('#generalToggle');
 const copyGeneralLinkBtn = sharePackageModal.querySelector('#copyGeneralLinkBtn');
+const copyGeneralKeyBtn = sharePackageModal.querySelector('#copyGeneralKeyBtn');
 const renewGeneralKeyBtn = sharePackageModal.querySelector('#renewGeneralKeyBtn');
 const generateUniqueKeyBtn = sharePackageModal.querySelector('#generateUniqueKeyBtn');
+const uniqueKeysFilters = sharePackageModal.querySelector('#uniqueKeysFilters');
+const sharePeopleRow = sharePackageModal.querySelector('#sharePeopleRow');
 
-// Toggle público (open/closed) — apenas o link geral é afetado; links únicos seguem válidos.
+// Toggle público (open/closed) — apenas o acesso pelo link/código do pacote é
+// afetado; links únicos seguem válidos.
 generalToggle.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
     const fetchToggleAccess = await fetchManager.togglePackageState({ id: packageId });
@@ -2093,24 +2319,22 @@ generalToggle.addEventListener('click', async () => {
     utils.setShareModalOpenState(!wasOpen);
 });
 
-// Copia o link público.
+// Copia o link de convite e o código do pacote (a mesma key em dois formatos).
 copyGeneralLinkBtn.addEventListener('click', () => {
-    const url = sharePackageModal.querySelector("#generalLinkUrl").textContent;
-    if (!url || url === '—') return;
-    navigator.clipboard.writeText(url).then(() => {
-        copyGeneralLinkBtn.textContent = "Copiado";
-        setTimeout(() => {
-            copyGeneralLinkBtn.textContent = "Copiar";
-        }, 1000);
-    }).catch(() => {
-        notify("error", "Não foi possível copiar o link.");
-    });
+    copyShareValue(sharePackageModal.querySelector("#generalLinkUrl").textContent, copyGeneralLinkBtn, "Não foi possível copiar o link.");
 });
 
-// Renova a key geral — invalida o link público anterior.
+copyGeneralKeyBtn.addEventListener('click', () => {
+    copyShareValue(sharePackageModal.querySelector("#generalKeyCode").textContent, copyGeneralKeyBtn, "Não foi possível copiar o código.");
+});
+
+// Rotaciona a key do pacote — invalida o link e o código anteriores.
 renewGeneralKeyBtn.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
+
+    renewGeneralKeyBtn.disabled = true;
     const fetchRenewKey = await fetchManager.renewPackageKey({ id: packageId });
+    renewGeneralKeyBtn.disabled = false;
 
     if (!fetchRenewKey.ok) {
         notify("error", "Não foi possível renovar a chave.");
@@ -2119,14 +2343,31 @@ renewGeneralKeyBtn.addEventListener('click', async () => {
 
     const newKey = fetchRenewKey.result.data.key;
 
-    // Atualiza chave no array local + URL na tela.
+    // Atualiza chave no array local + link e código na tela.
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
     packagesList.userCollection[packageIdx].key = newKey;
+    setShareInviteValues(newKey);
 
-    const urlEl = sharePackageModal.querySelector("#generalLinkUrl");
-    urlEl.textContent = utils.buildInviteUrl(newKey);
+    notify("success", "Key do pacote rotacionada.");
+});
 
-    notify("success", "Link público renovado.");
+// Filtros da lista (todos · ativos · encerrados).
+uniqueKeysFilters.addEventListener('click', event => {
+    const button = event.target.closest('.share-filter');
+    if (!button || button.dataset.filter === shareKeysState.filter) return;
+
+    shareKeysState.filter = button.dataset.filter;
+    renderUniqueKeys();
+});
+
+// Atalho para o painel "Pessoas com acesso" do pacote.
+sharePeopleRow.addEventListener('click', () => {
+    const packageId = sharePackageModal.dataset.itemId;
+    utils.closeModals();
+    selectPackage(packageId);
+
+    const panel = document.querySelector('#package-details .collection-users-col .users-panel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // Gera um novo link único (válido por 24h, uso único).
@@ -2148,11 +2389,11 @@ generateUniqueKeyBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Append to current list (prepend so newest shows first).
-    const list = sharePackageModal.querySelector("#uniqueKeysList");
-    const emptyState = list.querySelector('.unique-keys-empty');
-    if (emptyState) emptyState.remove();
-    list.insertBefore(buildUniqueKeyItem(res.result.data), list.firstChild);
+    // Entra no estado e a lista se redesenha com ele no topo.
+    const created = Object.assign({ createdAt: new Date().toISOString() }, res.result.data);
+    shareKeysState.items.unshift(normalizeUniqueKey(created));
+    if (shareKeysState.filter === 'ended') shareKeysState.filter = 'all';
+    renderUniqueKeys();
 
     notify("success", "Link único gerado.");
 });
