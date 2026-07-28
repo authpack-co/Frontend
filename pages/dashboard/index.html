@@ -854,6 +854,47 @@
             </div>
         </div>
 
+        <!-- Using Now Modal — quem está usando uma sessão neste momento -->
+        <div class="modal-overlay" id="usingNowModal">
+            <div class="modal un-modal" data-state="content">
+                <div class="modal-header un-header">
+                    <div class="un-service">
+                        <img class="un-service-icon" src="" alt="">
+                        <div class="un-service-text">
+                            <h2 class="modal-title un-service-name"></h2>
+                            <p class="un-service-meta"></p>
+                        </div>
+                    </div>
+                    <button class="close-btn">×</button>
+                </div>
+
+                <div class="modal-body un-body">
+                    <div class="data-table un-table">
+                        <div class="table-header">
+                            <div class="table-col">Usuário</div>
+                            <div class="table-col">Ativo há</div>
+                            <div class="table-col">Hoje</div>
+                        </div>
+                        <div class="table-body un-list custom-scrollbar"></div>
+                    </div>
+
+                    <div class="un-empty">
+                        <h3 class="un-empty-title">Ninguém está usando agora</h3>
+                        <p class="un-empty-text">Quem estava conectado saiu nos últimos instantes.</p>
+                    </div>
+
+                    <div class="un-past is-hidden">
+                        <div class="un-past-title">Usaram hoje e já saíram</div>
+                        <div class="un-past-list"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer un-footer">
+                    <span class="un-total-label">Hoje nesta sessão · <strong class="un-total">0s</strong></span>
+                </div>
+            </div>
+        </div>
+
         <!-- Plus Subscribe Modal -->
         <div class="modal-overlay" id="plusSubscribeModal">
             <div class="modal plans-modal">

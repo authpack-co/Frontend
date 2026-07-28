@@ -9677,3 +9677,311 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 
 /* Fallback do glow (caso o inline não aplique) sem depender de color-mix */
 .session-card-glow { background: radial-gradient(120% 90% at 0% 0%, rgba(96,165,250,.18), transparent 62%); }
+
+/* ============================================
+   Card "Usando agora"
+   ============================================
+   Quem está na sessão neste momento, há quanto tempo e quanto já usou hoje.
+   Abre pelo rodapé do session card e pelo cabeçalho da tela da sessão. */
+
+/* ── Gatilhos ──
+   Só viram botão quando há alguém online (classe posta pelo JS). */
+.session-card-members.is-clickable { cursor: pointer; }
+
+.session-card-members.is-clickable .session-card-members-label {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.session-card-members.is-clickable:hover .session-card-members-label,
+.session-card-members.is-clickable:focus-visible .session-card-members-label {
+    color: var(--ap-text-secondary);
+    text-decoration-color: currentColor;
+}
+
+.service-users-section.is-clickable { cursor: pointer; }
+
+.service-users-section.is-clickable:hover .service-users-label,
+.service-users-section.is-clickable:focus-visible .service-users-label {
+    color: var(--ap-text-secondary);
+}
+
+/* ── Modal ──
+   `.modal.un-modal` porque modals.css carrega depois deste arquivo: sem os dois
+   nomes, o max-width de 400px do .modal base ganharia por ordem. */
+.modal.un-modal {
+    max-width: 540px;
+    width: 100%;
+    max-height: 84vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--ap-bg-card);
+    overflow: hidden;
+}
+
+.un-modal .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 52px 18px 20px;
+    flex-shrink: 0;
+}
+
+.un-service {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.un-service-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--ap-bg-muted);
+    border: 1px solid var(--ap-border);
+}
+
+.un-service-text { min-width: 0; }
+
+.un-modal .un-service-name {
+    font-size: 16px;
+    padding-right: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.un-service-meta {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.un-modal .modal-body {
+    flex: 1;
+    min-height: 0;
+    gap: 18px;
+    padding: 18px 20px;
+    max-height: none;
+    overflow-y: auto;
+}
+
+/* ── Tabela ── */
+.un-table { background: var(--ap-bg-card-alt); }
+
+.un-table .table-header,
+.un-table .un-row {
+    grid-template-columns: minmax(0, 1fr) 92px 84px;
+    align-items: center;
+    padding: 11px 14px;
+}
+
+.un-table .table-header {
+    background: transparent;
+}
+
+.un-table .table-header .table-col {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.un-table .table-header .table-col:nth-child(n + 2),
+.un-table .un-row .table-col:nth-child(n + 2) {
+    justify-content: flex-end;
+}
+
+.un-list { max-height: 300px; }
+
+.un-user {
+    gap: 10px;
+    min-width: 0;
+}
+
+.un-avatar {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ap-bg-muted);
+    border: 1px solid var(--ap-border);
+}
+
+.un-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.un-avatar-sm { width: 22px; height: 22px; }
+
+.un-avatar-fallback {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+    text-transform: uppercase;
+}
+
+.un-avatar-sm .un-avatar-fallback { font-size: 10px; }
+
+.un-user-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.un-user-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.un-user-email {
+    font-size: 11.5px;
+    color: var(--ap-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mesma pessoa em dois dispositivos: uma linha só, com a contagem ao lado. */
+.un-devices {
+    flex-shrink: 0;
+    padding: 2px 7px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-secondary);
+    font-family: var(--ap-font-data);
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+.un-active,
+.un-today {
+    font-family: var(--ap-font-data);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* Verde pelos tokens: no tema claro o #4ade80 dos cards não teria contraste
+   suficiente para texto pequeno. */
+.un-active { color: var(--ap-success-text); }
+.un-today { color: var(--ap-text-secondary); }
+
+/* ── Estado vazio (todo mundo saiu enquanto o card estava aberto) ── */
+.un-empty {
+    display: none;
+    padding: 34px 20px;
+    text-align: center;
+}
+
+.un-empty-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.un-empty-text {
+    margin: 5px 0 0;
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+}
+
+.un-modal[data-state="empty"] .un-table { display: none; }
+.un-modal[data-state="empty"] .un-empty { display: block; }
+
+/* ── Quem usou hoje e já saiu ── */
+.un-past {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.un-past.is-hidden { display: none; }
+
+.un-past-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ap-text-muted);
+}
+
+.un-past-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.un-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 4px 4px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-card-alt);
+}
+
+.un-chip-name {
+    font-size: 12.5px;
+    color: var(--ap-text-secondary);
+}
+
+.un-chip-time {
+    font-family: var(--ap-font-data);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+}
+
+/* ── Rodapé ── */
+.un-modal .modal-footer {
+    flex-shrink: 0;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--ap-border);
+    background: var(--ap-bg-card-alt);
+}
+
+.un-total-label {
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.un-total-label strong {
+    color: var(--ap-text-secondary);
+    font-family: var(--ap-font-data);
+    font-weight: 600;
+}
+
+@media (max-width: 560px) {
+    .modal.un-modal { max-width: 94vw; }
+    .un-table .table-header,
+    .un-table .un-row { grid-template-columns: minmax(0, 1fr) 76px 72px; }
+    .un-user-email { display: none; }
+}

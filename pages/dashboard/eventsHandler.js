@@ -14,6 +14,9 @@ const utils = {
             item.classList.remove("show");
             this.resetModal(item);
         });
+
+        // Para o refresh do card "usando agora".
+        stopUsingNowTimers();
     },
 
     resetModal(modal) {
@@ -160,7 +163,11 @@ const listenerMap = [
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
-    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen }
+    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen },
+    { selector: '.preset-collection .session-card-members', event: 'click', handler: handleUsingNowClick },
+    { selector: '.preset-collection .session-card-members', event: 'keydown', handler: handleUsingNowKeydown },
+    { selector: '.preset-session-overview .service-users-section', event: 'click', handler: handleUsingNowClick },
+    { selector: '.preset-session-overview .service-users-section', event: 'keydown', handler: handleUsingNowKeydown }
 ];
 
 const listenerSelectors = listenerMap.map(l => l.selector).join(',');
@@ -1409,6 +1416,70 @@ function showSessionScreen(event) {
     const period = periodSelected === "today" ? 0 : (periodSelected === "7days" ? 7 : 30);
 
     renderSessionDetails(session, package, period);
+}
+
+// Card "usando agora" ==========
+// Abre a lista de quem está na sessão neste momento. Enquanto está aberto, o
+// overview é rebuscado a cada 30s — sem isso o card mostraria a foto do momento
+// em que a página carregou (o dashboard não tem polling).
+
+let usingNowRefreshTimer = null;
+
+function handleUsingNowClick(event) {
+    event.stopPropagation();
+
+    const packageEl = this.closest('#package-details');
+    const packageId = packageEl?.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id === packageId);
+    if (!packageData || !packageData.stats) return;
+
+    // O gatilho existe no rodapé do card do grid e no cabeçalho da tela da sessão.
+    const sessionId = this.closest('.session-card')?.dataset.sessionId
+        || this.closest('.preset-session-overview')?.dataset.sessionId;
+    const sessionData = (packageData.sessions || []).find(s => s.id === sessionId);
+    if (!sessionData) return;
+
+    // Sem ninguém online o bloco não é botão — nada a abrir.
+    if (!((packageData.stats.sessionsOnline || {})[sessionId] || 0)) return;
+
+    openUsingNowModal(sessionData, packageData);
+}
+
+function handleUsingNowKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleUsingNowClick.call(this, event);
+}
+
+function openUsingNowModal(session, pkg) {
+    // Abre já preenchido com o que está em cache e só depois busca o dado fresco
+    // — abrir num spinner seria pior do que abrir com 30s de atraso.
+    renderUsingNowModal(session, pkg);
+    utils.showModal('usingNow', session.id);
+
+    stopUsingNowTimers();
+    usingNowRefreshTimer = setInterval(() => refreshUsingNowModal(session, pkg), USING_NOW_REFRESH_MS);
+
+    refreshUsingNowModal(session, pkg);
+}
+
+async function refreshUsingNowModal(session, pkg) {
+    const modal = document.getElementById('usingNowModal');
+    if (!modal.classList.contains('show')) return stopUsingNowTimers();
+
+    // Falhou: mantém na tela o que já estava, em vez de esvaziar o card.
+    const updated = await fetchPackageStats(pkg);
+    if (!updated || !modal.classList.contains('show')) return;
+
+    renderUsingNowModal(session, pkg);
+
+    // Os cards atrás do modal não podem continuar mostrando a contagem antiga.
+    refreshSessionCardsOnline(pkg);
+}
+
+function stopUsingNowTimers() {
+    clearInterval(usingNowRefreshTimer);
+    usingNowRefreshTimer = null;
 }
 
 // Fixed Event Listeners ==========
