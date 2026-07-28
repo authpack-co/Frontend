@@ -230,10 +230,11 @@ function loadUsageChart(renderTarget, dataObject, isDaily = false) {
         return label; // Mantém o formato original se não for data
     });
 
-    const hoursData = labels.map(label => dataObject[label].hours);
+    // "Sem registro" chega como -1 em dados antigos; no gráfico isso é 0 (o
+    // ponto tem que ficar na linha de base, não abaixo dela).
+    const hoursData = labels.map(label => Math.max(0, dataObject[label].hours || 0));
 
-    const validHours = hoursData.filter(h => h >= 0);
-    const maxValue = validHours.length > 0 ? Math.max(...validHours) : 0;
+    const maxValue = hoursData.length > 0 ? Math.max(...hoursData) : 0;
     const yAxisMax = maxValue === 0 ? 1 : maxValue * 1.2;
 
     const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';

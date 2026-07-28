@@ -9401,18 +9401,79 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     font-weight: 600;
 }
 
+/* Lado direito do cabeçalho: proporção vs. média + tempo absoluto. */
+.session-card-usage-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Badge de proporção: "↓ 62% do costume" ou, acima, "↑ 1,8× o costume" —
+   é ele que carrega o excedente que a barra (cheia em 100%) não mostra. */
+.session-card-usage-ratio {
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: var(--ap-radius-full);
+    white-space: nowrap;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-input);
+}
+
+.session-card-usage-ratio.is-hidden { display: none; }
+
+.session-card-usage-ratio.is-above-average {
+    color: var(--card-accent);
+    background: color-mix(in srgb, var(--card-accent) 16%, transparent);
+}
+
+/* Sem base de comparação / sem uso hoje: é informação, não alerta. */
+.session-card-usage-ratio.is-muted {
+    font-weight: 500;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .session-card-usage-bar {
+    position: relative;
     height: 6px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-bg-input);
     overflow: hidden;
 }
 
+/* Traço do costume: aparece só quando hoje passou dele, marcando em que ponto
+   da barra os 100% ficaram. O que vem depois do traço é o excedente. */
+.session-card-usage-mark {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-1px);
+    background: var(--ap-bg-card);
+    opacity: 0;
+    pointer-events: none;
+    transition: left .4s ease, opacity .2s ease;
+}
+
+.session-card-usage-bar.is-above-average .session-card-usage-mark { opacity: 1; }
+
 .session-card-usage-fill {
+    position: relative;
     height: 100%;
     border-radius: var(--ap-radius-full);
     background: linear-gradient(90deg, var(--card-accent), var(--card-accent-2));
     transition: width .4s ease;
+}
+
+/* Acima do costume: brilho na cor do serviço, para destacar de longe. O quanto
+   passou é o trecho entre o traço e o fim da barra. */
+.session-card-usage-bar.is-above-average {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-accent) 35%, transparent),
+                0 0 10px color-mix(in srgb, var(--card-accent) 30%, transparent);
 }
 
 .session-card-members {

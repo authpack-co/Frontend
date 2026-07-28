@@ -74,15 +74,174 @@ function paletteFromSession(session) {
     };
 }
 
-// Converte um rótulo de tempo ("1h 20m", "45m", "0s") em minutos (número).
-// Usado só para dimensionar a barra de "uso no período" de forma relativa.
-function usageLabelToMinutes(label) {
-    if (typeof label !== 'string') return 0;
-    let total = 0;
-    const h = label.match(/(\d+)\s*h/); if (h) total += Number(h[1]) * 60;
-    const m = label.match(/(\d+)\s*m/); if (m) total += Number(m[1]);
-    const s = label.match(/(\d+)\s*s/); if (s) total += Number(s[1]) / 60;
-    return total;
+// ============================================================================
+// BARRA DE USO DOS SESSION CARDS
+// ============================================================================
+// Mesma conta nas duas views — "hoje vs. o costume dos últimos 30 dias" —
+// mudando só de quem é o histórico:
+//   coleção  — o total da equipe: "essa ferramenta rodou o tanto de sempre?"
+//   acessos  — só o seu uso: "hoje eu usei mais ou menos que de costume?"
+//
+// Na coleção é o TOTAL do dia (a soma de todo mundo), não a média por pessoa:
+// se cinco pessoas costumam usar o Canva e hoje só uma entrou pelo tempo de
+// sempre, a média por pessoa marcaria 100% enquanto a ferramenta ficou parada.
+// Quem paga o assento precisa ver que ficou parada.
+//
+// Até 100% a barra é a fração do costume. Passando disso ela se reescala: o
+// total de hoje passa a ser a barra inteira e um traço marca onde o costume
+// ficou — a distância do traço até o fim é o excedente.
+
+// O costume olha sempre os últimos 30 dias disponíveis (é o quanto o histórico
+// guarda). O seletor de período mexe só no gráfico do pacote.
+const USAGE_BASELINE_DAYS = 30;
+// Faixa em que hoje conta como "no costume" — evita o badge piscando 96%/104%.
+const USAGE_ON_PAR_TOLERANCE = 0.10;
+
+const USAGE_COPY = {
+    collection: {
+        label: 'Hoje vs. costume',
+        idle: 'sem uso hoje',
+        firstDay: 'sem costume ainda',
+        onPar: 'no costume',
+        above: ratio => `↑ ${formatMultiplier(ratio)} o costume`,
+        below: ratio => `↓ ${Math.round(ratio * 100)}% do costume`,
+        titleUnused: 'Ainda sem uso registrado nesta sessão',
+        titleIdle: 'Ninguém usou hoje',
+        titleBaseline: 'Costume'
+    },
+    access: {
+        label: 'Hoje vs. seu costume',
+        idle: 'você não usou hoje',
+        firstDay: 'sem costume ainda',
+        onPar: 'no seu costume',
+        above: ratio => `↑ ${formatMultiplier(ratio)} o seu costume`,
+        below: ratio => `↓ ${Math.round(ratio * 100)}% do seu costume`,
+        titleUnused: 'Você ainda não usou esta sessão',
+        titleIdle: 'Você não usou hoje',
+        titleBaseline: 'Seu costume'
+    }
+};
+
+function formatMultiplier(ratio) {
+    return ratio >= 10 ? `${Math.round(ratio)}×` : `${ratio.toFixed(1).replace('.', ',')}×`;
+}
+
+function meanOf(values) {
+    return values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+}
+
+// Traduz as duas grandezas no estado que o card mostra.
+//
+// Sem costume há dois casos bem diferentes: a sessão nunca foi usada ('unused',
+// barra vazia) ou hoje é o primeiro dia dela ('first-day', barra cheia). Barra
+// vazia só pode significar "não usaram" — nunca "ainda não sei comparar".
+function buildUsageComparison({ value, baseline }) {
+    const base = { value, baseline, ratio: 0 };
+
+    if (baseline <= 0) {
+        return value > 0
+            ? { ...base, state: 'first-day', ratio: 1 }
+            : { ...base, state: 'unused' };
+    }
+    if (value <= 0) return { ...base, state: 'idle' };
+
+    const ratio = value / baseline;
+    const state = Math.abs(ratio - 1) <= USAGE_ON_PAR_TOLERANCE
+        ? 'on-par'
+        : (ratio > 1 ? 'above' : 'below');
+
+    return { ...base, ratio, state };
+}
+
+// Total de uso da sessão por dia, no formato "DD/MM/AAAA" do accessHistory —
+// que já divide na meia-noite o acesso que atravessa o dia, então o total
+// diário do card bate com o do gráfico.
+function getSessionDailyTotals(sessionId, accessHistory) {
+    const totals = {};
+
+    Object.entries(accessHistory || {}).forEach(([dateKey, accesses]) => {
+        accesses.forEach(access => {
+            if (access.sessionId !== sessionId) return;
+            totals[dateKey] = (totals[dateKey] || 0) + (access.usageTimeSeconds || 0);
+        });
+    });
+
+    return totals;
+}
+
+// Total de hoje contra o total de um dia normal. O costume é a média dos dias
+// em que a sessão foi usada — dias parados (fim de semana, feriado) entrariam
+// como zero e rebaixariam o costume, fazendo todo dia útil parecer acima da
+// média. Serve às duas views: muda só o accessHistory que entra (o do pacote
+// inteiro na coleção, o do próprio membro nos acessos).
+function getSessionUsageComparison(sessionId, accessHistory, now = new Date()) {
+    const dailyTotals = filterByLastDays(getSessionDailyTotals(sessionId, accessHistory), USAGE_BASELINE_DAYS);
+    const todayKey = formatDate(now);
+
+    const previousDays = Object.entries(dailyTotals)
+        .filter(([dateKey, seconds]) => dateKey !== todayKey && seconds > 0)
+        .map(([, seconds]) => seconds);
+
+    return buildUsageComparison({
+        value: dailyTotals[todayKey] || 0,
+        baseline: meanOf(previousDays)
+    });
+}
+
+function usageComparisonTitle(comparison, view) {
+    const { state, value, baseline } = comparison;
+    const copy = USAGE_COPY[view];
+
+    if (state === 'unused') return copy.titleUnused;
+    if (state === 'first-day') {
+        return `Hoje: ${formatDuration(value)} · Ainda sem outro dia de uso para comparar`;
+    }
+
+    const costume = `${copy.titleBaseline}: ${formatDuration(baseline)} por dia (últimos ${USAGE_BASELINE_DAYS} dias)`;
+    if (state === 'idle') return `${copy.titleIdle} · ${costume}`;
+    return `Hoje: ${formatDuration(value)} · ${costume}`;
+}
+
+// Escreve a comparação no card: largura da barra, badge e tempo do cabeçalho.
+// O número do cabeçalho é sempre o mesmo que a barra mede — se um mostrasse o
+// total e o outro a média, voltaríamos a ter dois tempos discordando.
+function applySessionUsageBar(card, comparison, view = 'collection') {
+    const usage = card.querySelector('.session-card-usage');
+    const fill = card.querySelector('.session-card-usage-fill');
+    const bar = card.querySelector('.session-card-usage-bar');
+    const badge = card.querySelector('.session-card-usage-ratio');
+    const timeText = card.querySelector('.usage-time-text');
+    if (!fill) return;
+
+    const copy = USAGE_COPY[view];
+    const { state, ratio } = comparison;
+    const isEmpty = state === 'unused' || state === 'idle';
+    const isAbove = state === 'above';
+
+    fill.style.width = (isEmpty ? 0 : Math.max(4, Math.min(100, Math.round(ratio * 100)))) + '%';
+
+    if (bar) bar.classList.toggle('is-above-average', isAbove);
+
+    // Acima do costume a barra vira o total de hoje e o traço mostra onde o
+    // costume caiu — o pedaço depois dele é o que passou.
+    const mark = card.querySelector('.session-card-usage-mark');
+    if (mark) mark.style.left = (isAbove ? 100 / ratio : 100) + '%';
+
+    if (badge) {
+        // Nunca usada: nada a dizer, só a barra vazia.
+        badge.textContent = state === 'unused' ? ''
+            : state === 'idle' ? copy.idle
+                : state === 'first-day' ? copy.firstDay
+                    : state === 'on-par' ? copy.onPar
+                        : state === 'above' ? copy.above(ratio) : copy.below(ratio);
+
+        badge.classList.toggle('is-above-average', state === 'above');
+        badge.classList.toggle('is-muted', state === 'idle' || state === 'first-day');
+        badge.classList.toggle('is-hidden', state === 'unused');
+    }
+
+    if (timeText) timeText.textContent = formatDuration(comparison.value);
+    if (usage) usage.title = usageComparisonTitle(comparison, view);
 }
 
 // A sessão mais antiga (a primeira adicionada) do pacote. A ordem do array não é
@@ -275,30 +434,30 @@ function buildSessionCardBase(session, pkg, isCollection) {
     status.appendChild(statusDot);
     status.appendChild(statusText);
 
-    // Barra de "uso no período" (largura definida em loadPackageStats).
+    // Barra de uso. A largura, o badge e o tempo são preenchidos depois por
+    // applySessionUsageBar — loadPackageStats na coleção (hoje vs. costume),
+    // loadAccessOverview nos acessos (meu uso vs. média). Nasce vazio.
     const usage = createElement('div', 'session-card-usage');
     const usageHead = createElement('div', 'session-card-usage-head');
-    const usageLabel = createElement('span', 'session-card-usage-label', 'Uso no período');
+    const usageLabel = createElement('span', 'session-card-usage-label',
+        USAGE_COPY[isCollection ? 'collection' : 'access'].label);
+    const usageValueGroup = createElement('div', 'session-card-usage-value');
+    const usageRatio = createElement('span', 'session-card-usage-ratio is-hidden');
     const usageValue = createElement('span', 'usage-time-text');
-    usageValue.textContent = session.usageTime || '0m';
+    usageValue.textContent = '0s';
+    usageValueGroup.appendChild(usageRatio);
+    usageValueGroup.appendChild(usageValue);
     usageHead.appendChild(usageLabel);
-    usageHead.appendChild(usageValue);
+    usageHead.appendChild(usageValueGroup);
     const usageBar = createElement('div', 'session-card-usage-bar');
     const usageFill = createElement('div', 'session-card-usage-fill');
     // Cor da barra = gradiente do serviço (inline, robusto).
     usageFill.style.background = `linear-gradient(90deg, ${c1}, ${c2})`;
-    // Largura inicial = fração do tempo desta sessão sobre o total usado no
-    // pacote no período (o quanto ela representa do todo). Se só ela foi usada,
-    // 100%; dividido com outras, cada uma fica com sua parte. Para a collection,
-    // loadPackageStats recalcula depois com os dados reais.
-    const allMinutes = (pkg && Array.isArray(pkg.sessions) ? pkg.sessions : [session])
-        .map(s => usageLabelToMinutes(s.usageTime));
-    const totalMinutes = allMinutes.reduce((sum, m) => sum + m, 0);
-    const myMinutes = usageLabelToMinutes(session.usageTime);
-    usageFill.style.width = (myMinutes > 0 && totalMinutes > 0
-        ? Math.max(4, Math.round(myMinutes / totalMinutes * 100))
-        : 0) + '%';
+    usageFill.style.width = '0%';
+    // Traço do costume — só visível quando hoje passa dele.
+    const usageMark = createElement('span', 'session-card-usage-mark');
     usageBar.appendChild(usageFill);
+    usageBar.appendChild(usageMark);
     usage.appendChild(usageHead);
     usage.appendChild(usageBar);
 
@@ -1119,7 +1278,7 @@ async function loadAccessOverview(pkg, activePreset) {
 
         if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline, joinedAt, renewsAt, billingType } = fetchOverview.result.data;
+        const { totalOnline, sessionsOnline, myAccessHistory, joinedAt, renewsAt, billingType } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
@@ -1157,19 +1316,26 @@ async function loadAccessOverview(pkg, activePreset) {
             onlineCountEl.textContent = `${totalOnline} online`;
         }
 
-        // Atualiza badges + rodapé "usando agora" em cada session card. O access
-        // view só recebe a contagem online (sem dados de avatar), então o rótulo
-        // é atualizado pelo count.
-        if (sessionsOnline) {
-            const sessionCards = activePreset.querySelectorAll('.session-card');
-            sessionCards.forEach(card => {
-                const sessionId = card.dataset.sessionId;
+        // Atualiza badges + rodapé "usando agora" + barra de uso em cada session
+        // card. O access view só recebe a contagem online (sem dados de avatar),
+        // então o rótulo é atualizado pelo count.
+        // O histórico é só o do próprio membro, então a barra compara o uso de
+        // hoje com o costume dele — não com o dos outros.
+        const myHistory = processRawAccessHistory(myAccessHistory || []);
+
+        const sessionCards = activePreset.querySelectorAll('.session-card');
+        sessionCards.forEach(card => {
+            const sessionId = card.dataset.sessionId;
+
+            if (sessionsOnline) {
                 const count = sessionsOnline[sessionId] || 0;
                 const badge = card.querySelector('.online-count-num');
                 if (badge) badge.textContent = count;
                 updateSessionUsingNow(card, [], count);
-            });
-        }
+            }
+
+            applySessionUsageBar(card, getSessionUsageComparison(sessionId, myHistory), 'access');
+        });
     } catch (err) {
         console.error('Error loading access overview:', err);
     }
@@ -1193,7 +1359,6 @@ async function loadPackageStats(pkg, period) {
             const { usersLastUsage, newUsersByDate, rawPackageAccessHistory } = fetchPackageOverviewStats.result.data;
 
             const accessHistory = processRawAccessHistory(rawPackageAccessHistory);
-            const sessionsHistoryUsage = getSessionsUsageTime(accessHistory);
             const packageHistoryUsage = getPackageHistoryUsage(accessHistory);
             const dailyPackageUsage = getDailyPackageUsage(accessHistory);
 
@@ -1204,7 +1369,6 @@ async function loadPackageStats(pkg, period) {
                 totalUsersOnline: 0,
                 sessionsOnline: {},
                 sessionsOnlineUsers: {},
-                sessionsHistoryUsage,
                 packageHistoryUsage,
                 dailyPackageUsage,
                 newUsersByDate,
@@ -1332,72 +1496,28 @@ async function loadPackageStats(pkg, period) {
 
     if (period === 0) {
         // Visualização diária (por hora)
-        if (Object.entries(pkg.stats.dailyPackageUsage).length === 0) {
-            loadUsageChart("package", {
-                "00:00": {
-                    "hours": -1,
-                    "users": 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("package", pkg.stats.dailyPackageUsage, true);
-        }
+        renderUsageChart("package", pkg.stats.dailyPackageUsage, true);
     } else {
         // Visualização por período (dias)
-        if (Object.entries(pkg.stats.packageHistoryUsage).length === 0) {
-            loadUsageChart("package", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    "hours": -1,
-                    "users": 0,
-                    "peak": {
-                        "hour": "00:00",
-                        "count": 0
-                    }
-                }
-            });
-        } else {
-            const packageHistoryUsageFiltered = filterByLastDays(pkg.stats.packageHistoryUsage, period);
-            loadUsageChart("package", packageHistoryUsageFiltered);
-        }
+        renderUsageChart("package", filterByLastDays(pkg.stats.packageHistoryUsage, period));
     }
 
-    // Sessions panel: atualiza usage time, barra de uso relativa e online badges
+    // Sessions panel: atualiza barra de uso e online badges. A barra não segue o
+    // seletor de período — ela é sempre "hoje vs. o costume dos últimos 30
+    // dias"; o período escolhido vale só para o gráfico acima.
     const sessionCards = document.querySelectorAll("#package-details .preset-collection .sessions-panel .session-card");
-    const sessionsHistoryUsageFiltered = filterByLastDays(pkg.stats.sessionsHistoryUsage, period);
 
-    // Primeiro passo: calcula o tempo de cada sessão para dimensionar a barra
-    // como fração do tempo total usado no pacote (o quanto cada sessão
-    // representa do todo no período).
-    const sessionTimes = [];
     sessionCards.forEach(card => {
         const sessionId = card.getAttribute("data-session-id");
-        let sessionTime = 0;
-        Object.values(sessionsHistoryUsageFiltered).forEach(daySessions => {
-            if (daySessions[sessionId]) sessionTime += daySessions[sessionId];
-        });
-        sessionTimes.push(sessionTime);
-    });
-    const totalSessionTime = sessionTimes.reduce((sum, t) => sum + t, 0);
 
-    sessionCards.forEach((card, i) => {
-        const sessionId = card.getAttribute("data-session-id");
-        const sessionTime = sessionTimes[i];
-        const sessionTimeFormatted = formatDuration(sessionTime);
-
-        // Atualiza o texto de usage time
-        const usageTimeText = card.querySelector('.usage-time-text');
-        if (usageTimeText) {
-            usageTimeText.textContent = sessionTimeFormatted === "0s" ? "0m" : sessionTimeFormatted;
-        }
-
-        // Barra de uso: largura = fração desta sessão sobre o total do pacote.
-        const usageFill = card.querySelector('.session-card-usage-fill');
-        if (usageFill) {
-            const pct = totalSessionTime > 0 && sessionTime > 0
-                ? Math.max(4, Math.round((sessionTime / totalSessionTime) * 100))
-                : 0;
-            usageFill.style.width = pct + '%';
-        }
+        // Uso de hoje comparado ao costume da própria sessão: cada serviço tem
+        // um ritmo natural (uma ferramenta de trabalho x um streaming), então
+        // comparar sessões entre si não diria nada.
+        applySessionUsageBar(
+            card,
+            getSessionUsageComparison(sessionId, pkg.stats.accessHistory),
+            'collection'
+        );
 
         // Atualiza badge de online count
         const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
@@ -1487,36 +1607,14 @@ async function loadUserStats(user, pkg, period) {
     const userLastUsageFormatted = user.lastUsage ? timeAgo(user.lastUsage) : "—";
 
     lastUsageEl.textContent = userLastUsageFormatted;
-    totalUsageEl.textContent = formatHours(user.stats.totalUsage.hours);
+    // Mesma formatação exata (em segundos) usada nos cards e no gráfico.
+    totalUsageEl.textContent = formatDuration(user.stats.totalUsage.seconds);
 
     // Gráfico de uso
     if (period === 0) {
-        if (Object.entries(user.stats.dailyUsage).length === 0) {
-            loadUsageChart("user", {
-                "00:00": {
-                    hours: -1,
-                    users: 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("user", user.stats.dailyUsage, true);
-        }
+        renderUsageChart("user", user.stats.dailyUsage, true);
     } else {
-        if (Object.entries(user.stats.historyUsage).length === 0) {
-            loadUsageChart("user", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    hours: -1,
-                    users: 0,
-                    peak: {
-                        hour: "00:00",
-                        count: 0
-                    }
-                }
-            });
-        } else {
-            const userHistoryUsageFiltered = filterByLastDays(user.stats.historyUsage, period);
-            loadUsageChart("user", userHistoryUsageFiltered);
-        }
+        renderUsageChart("user", filterByLastDays(user.stats.historyUsage, period));
     }
 
     // Tabela de acesso
@@ -1577,7 +1675,8 @@ async function loadSessionStats(session, pkg, period) {
     const sessionTimeUsage = sessionScreen.querySelector(".session-usage-stat span");
     const sessionUsers = sessionScreen.querySelector(".users-stat span");
 
-    sessionTimeUsage.textContent = formatHours(session.stats.totalUsage.hours);
+    // Mesma formatação exata (em segundos) usada no card da sessão.
+    sessionTimeUsage.textContent = formatDuration(session.stats.totalUsage.seconds);
     sessionUsers.textContent = session.stats.distinctUsers;
 
     // "Usando agora": usuários online nesta sessão (mesma lógica dos session
@@ -1612,32 +1711,9 @@ async function loadSessionStats(session, pkg, period) {
 
     // Gráfico de uso
     if (period === 0) {
-        if (Object.entries(session.stats.dailyUsage).length === 0) {
-            loadUsageChart("session", {
-                "00:00": {
-                    hours: -1,
-                    users: 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("session", session.stats.dailyUsage, true);
-        }
+        renderUsageChart("session", session.stats.dailyUsage, true);
     } else {
-        if (Object.entries(session.stats.historyUsage).length === 0) {
-            loadUsageChart("session", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    hours: -1,
-                    users: 0,
-                    peak: {
-                        hour: "00:00",
-                        count: 0
-                    }
-                }
-            });
-        } else {
-            const sessionHistoryUsageFiltered = filterByLastDays(session.stats.historyUsage, period);
-            loadUsageChart("session", sessionHistoryUsageFiltered);
-        }
+        renderUsageChart("session", filterByLastDays(session.stats.historyUsage, period));
     }
 
     // Tabela de acesso
@@ -1756,23 +1832,31 @@ function formatLocalDateTime(d) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-// Função para formatar horas
+// Formata horas reutilizando formatDuration — é o mesmo tempo mostrado nos
+// cards, nas tabelas e no gráfico, então tem que sair com o mesmo texto.
+// hours === -1 é o marcador de "sem registro" e vale 0.
 function formatHours(hours) {
-    if (hours === -1) {
-        return '0h';
-    } else if (hours >= 1) {
-        return `${hours.toFixed(1)}h`;
-    } else if (hours > 0) {
-        const minutes = Math.round(hours * 60);
-        if (minutes >= 1) {
-            return `~${minutes}min`;
-        } else {
-            const seconds = Math.round(hours * 3600);
-            return `~${seconds}s`;
-        }
-    } else {
-        return '~30s';
+    if (!Number.isFinite(hours) || hours <= 0) return '0s';
+    return formatDuration(Math.round(hours * 3600));
+}
+
+// Ponto neutro do gráfico: um único registro zerado (hora atual na visão
+// diária, dia atual na visão por período) para o gráfico nunca ficar sem ponto.
+function emptyUsageChartData(isDaily) {
+    if (isDaily) {
+        const hourKey = `${String(new Date().getHours()).padStart(2, '0')}:00`;
+        return { [hourKey]: { hours: 0, users: 0 } };
     }
+    const dayKey = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    return { [dayKey]: { hours: 0, users: 0, peak: { hour: '00:00', count: 0 } } };
+}
+
+// Envia os dados ao gráfico caindo no ponto zerado quando não sobrou nada — o
+// pacote pode ter histórico e ainda assim ficar vazio depois do filtro de
+// período, caso em que o gráfico ficava sem nenhum ponto.
+function renderUsageChart(renderTarget, dataObject, isDaily = false) {
+    const hasData = dataObject && Object.keys(dataObject).length > 0;
+    loadUsageChart(renderTarget, hasData ? dataObject : emptyUsageChartData(isDaily), isDaily);
 }
 
 
@@ -1848,72 +1932,6 @@ function getSessionAccessHistory(sessionId, accessHistory) {
     });
 
     return filteredHistory;
-}
-
-function getSessionsUsageTime(packageAccessHistory) {
-    const sessionsHistoryUsage = {};
-
-    Object.entries(packageAccessHistory).forEach(([date, accesses]) => {
-        accesses.forEach(access => {
-            const { sessionId, usageTimeSeconds, localDateTime: accessDate } = access;
-
-            if (usageTimeSeconds === 0) {
-                // Se não há tempo de uso, apenas registra no dia original
-                if (!sessionsHistoryUsage[date]) {
-                    sessionsHistoryUsage[date] = {};
-                }
-                if (!sessionsHistoryUsage[date][sessionId]) {
-                    sessionsHistoryUsage[date][sessionId] = 0;
-                }
-                return;
-            }
-
-            // Calcular distribuição de tempo entre dias
-            const startTime = new Date(accessDate);
-            const endTime = new Date(startTime.getTime() + usageTimeSeconds * 1000);
-
-            const startDay = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
-            const endDay = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate());
-
-            // Se termina no mesmo dia
-            if (startDay.getTime() === endDay.getTime()) {
-                const dateKey = formatDate(startTime);
-                if (!sessionsHistoryUsage[dateKey]) {
-                    sessionsHistoryUsage[dateKey] = {};
-                }
-                if (!sessionsHistoryUsage[dateKey][sessionId]) {
-                    sessionsHistoryUsage[dateKey][sessionId] = 0;
-                }
-                sessionsHistoryUsage[dateKey][sessionId] += usageTimeSeconds;
-            } else {
-                // Sessão atravessa dias - distribuir proporcionalmente
-                let currentTime = new Date(startTime);
-                let remainingTime = usageTimeSeconds;
-
-                while (remainingTime > 0 && currentTime < endTime) {
-                    const currentDayEnd = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), 23, 59, 59, 999);
-                    const timeUntilMidnight = Math.min(
-                        (currentDayEnd.getTime() - currentTime.getTime()) / 1000,
-                        remainingTime
-                    );
-
-                    const dateKey = formatDate(currentTime);
-                    if (!sessionsHistoryUsage[dateKey]) {
-                        sessionsHistoryUsage[dateKey] = {};
-                    }
-                    if (!sessionsHistoryUsage[dateKey][sessionId]) {
-                        sessionsHistoryUsage[dateKey][sessionId] = 0;
-                    }
-                    sessionsHistoryUsage[dateKey][sessionId] += Math.ceil(timeUntilMidnight);
-
-                    remainingTime -= timeUntilMidnight;
-                    currentTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 0, 0, 0);
-                }
-            }
-        });
-    });
-
-    return sessionsHistoryUsage;
 }
 
 function getPackageHistoryUsage(packageAccessHistory) {
@@ -2315,9 +2333,9 @@ function processSessionAccessHistory(accessHistory, pkg) {
                 dateLabel = `${day}/${month}/${year} às ${timeString}`;
             }
 
-            // Converte segundos para horas e formata
-            const usageTimeHours = parseFloat((access.usageTimeSeconds / 3600).toFixed(4));
-            const usageTime = formatHours(usageTimeHours);
+            // Formata direto dos segundos do registro (sem passar por horas,
+            // que arredondava e gerava um tempo diferente do card/gráfico).
+            const usageTime = formatDuration(access.usageTimeSeconds);
 
             // Adiciona ao resultado COM o timestamp original
             result.push({
@@ -2527,9 +2545,9 @@ function processUserAccessHistory(accessHistory, pkg) {
                 dateLabel = `${day}/${month}/${year} às ${timeString}`;
             }
 
-            // Converte segundos para horas e formata
-            const usageTimeHours = parseFloat((access.usageTimeSeconds / 3600).toFixed(4));
-            const usageTime = formatHours(usageTimeHours);
+            // Formata direto dos segundos do registro (sem passar por horas,
+            // que arredondava e gerava um tempo diferente do card/gráfico).
+            const usageTime = formatDuration(access.usageTimeSeconds);
 
             // Adiciona ao resultado COM o timestamp original
             result.push({
