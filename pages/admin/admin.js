@@ -1,7 +1,7 @@
 /* ============================================================================
    AuthPack Admin — core
    Shared helpers (API, formatting, nav, drawer, toast) exposed on window.AP.
-   Section files (financial/users/sellers/admins) register a view via
+   Section files (financial/users/admins) register a view via
    AP.registerView(name, { onShow }) and are lazily initialized on first open.
    ============================================================================ */
 window.AP = (function () {
@@ -61,7 +61,7 @@ window.AP = (function () {
 
     // ── Badges ───────────────────────────────────────────
     function roleBadge(role) {
-        const map = { user: ['badge-user', 'Usuário'], pending_seller: ['badge-user', 'Pré-vendedor'], seller: ['badge-seller', 'Vendedor'], admin: ['badge-admin', 'Admin'] };
+        const map = { user: ['badge-user', 'Usuário'], admin: ['badge-admin', 'Admin'] };
         const [cls, label] = map[role] || map.user;
         return `<span class="admin-badge ${cls}">${label}</span>`;
     }
@@ -155,7 +155,7 @@ window.AP = (function () {
         });
 
         const initial = (location.hash || '').replace('#', '');
-        const valid = ['financeiro', 'usuarios', 'vendedores', 'administradores'];
+        const valid = ['financeiro', 'usuarios', 'administradores'];
         showView(valid.includes(initial) ? initial : 'financeiro');
     }
 

@@ -1153,9 +1153,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Contador de pessoas do pacote (top bar da coleção, ao lado de "Compartilhar")
     if (isCollection) updatePackagePeopleCounter(pkg);
 
-    // Header da aba "Meus acessos": referencia a vitrine de origem (com
-    // identidade, contatos e descrição) ou, no acesso direto/compartilhado,
-    // uma estética neutra focada em quem compartilhou.
+    // Header da aba "Meus acessos": estética neutra focada em quem compartilhou.
     if (!isCollection) {
         renderAccessHeader(pkg, activePreset);
     }
@@ -1207,7 +1205,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
         });
     }
 
-    // Busca overview do pacote (para access view: joinedAt, renewsAt, online counts)
+    // Busca overview do pacote (para access view: joinedAt, online counts)
     if (!isCollection) {
         loadAccessOverview(pkg, activePreset);
     }
@@ -1305,106 +1303,43 @@ function accessAvatar(name, url, className) {
     return `<span class="${className} ph-avatar" style="background:linear-gradient(150deg, ${c1}, ${c2})"><span class="ph-avatar-initial">${escapeHtml(initial)}</span>${img}</span>`;
 }
 
-function accessContactPill(href, icon, label) {
-    return `<a class="ph-pill" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer nofollow">${icon}${label}</a>`;
-}
-
-// Linha de canais de suporte da vitrine. Retorna '' quando não há contatos.
-function renderAccessContacts(contacts) {
-    if (!contacts) return '';
-    const items = [];
-    if (contacts.whatsapp) items.push(accessContactPill(`https://wa.me/${encodeURIComponent(contacts.whatsapp)}`, ACCESS_ICONS.whatsapp, 'WhatsApp'));
-    if (contacts.telegram) items.push(accessContactPill(`https://t.me/${encodeURIComponent(contacts.telegram)}`, ACCESS_ICONS.telegram, 'Telegram'));
-    if (contacts.instagram) items.push(accessContactPill(`https://instagram.com/${encodeURIComponent(contacts.instagram)}`, ACCESS_ICONS.instagram, 'Instagram'));
-    if (contacts.website) items.push(accessContactPill(contacts.website, ACCESS_ICONS.site, 'Site'));
-    if (!items.length) return '';
-    return `<div class="ph-contacts"><span class="ph-contacts-label">Suporte:</span>${items.join('')}</div>`;
-}
-
 // Monta o header de um pacote na aba "Meus acessos". Os valores assíncronos
-// (online / entrou em / renova em) são preenchidos depois por loadAccessOverview.
+// (online / entrou em) são preenchidos depois por loadAccessOverview.
 function renderAccessHeader(pkg, activePreset) {
     const header = activePreset.querySelector('.package-info-header');
     if (!header) return;
 
-    const fromVitrine = pkg.accessOrigin === 'product' && pkg.vitrine;
-    header.className = 'package-info-header ' + (fromVitrine ? 'is-vitrine' : 'is-direct');
+    header.className = 'package-info-header is-direct';
 
     const name = escapeHtml(pkg.name || '');
-    const desc = pkg.description
-        ? `<p class="ph-desc">${escapeHtml(pkg.description)}</p>`
-        : '';
     const onlineTag = `<span class="ph-online"><span class="ph-online-dot"></span><span class="online-count-value">0 online</span></span>`;
     const joinedItem = `<span class="ph-meta-item">${ACCESS_ICONS.calendar} Entrou em <strong class="joined-at-value">—</strong></span>`;
 
-    if (fromVitrine) {
-        const v = pkg.vitrine;
-        const verified = v.verified
-            ? `<span class="ph-verified">${ACCESS_ICONS.verified} Verificada</span>`
-            : '';
-        const link = v.is_published
-            ? `<a class="ph-vitrine-link" href="/pages/vitrine/?loja=${encodeURIComponent(v.id)}">Ver vitrine ${ACCESS_ICONS.arrowUpRight}</a>`
-            : '';
-        const renewsItem = `<span class="ph-meta-item">${ACCESS_ICONS.refresh} <span class="renews-at-label">Renova em</span> <strong class="renews-at-value">—</strong></span>`;
+    const owner = pkg.owner || {};
+    const sharedBy = `
+        <span class="ph-meta-item ph-shared-by">Compartilhado por
+            <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
+        </span>`;
 
-        header.innerHTML = `
-            <div class="ph-vitrine-band">
-                <div class="ph-vitrine-id">
-                    ${accessAvatar(v.display_name, v.avatar_url, 'ph-vitrine-avatar')}
-                    <div class="ph-vitrine-meta">
-                        <span class="ph-eyebrow">Adquirido na vitrine</span>
-                        <div class="ph-vitrine-name-row">
-                            <span class="ph-vitrine-name">${escapeHtml(v.display_name || '')}</span>
-                            ${verified}
-                        </div>
-                    </div>
+    header.innerHTML = `
+        <div class="ph-direct-band">
+            ${ACCESS_ICONS.link}
+            <span>Acesso compartilhado diretamente com você.</span>
+        </div>
+        <div class="ph-hero">
+            <div class="ph-hero-top">
+                <div class="ph-hero-title">
+                    <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
+                    <h2>${name}</h2>
                 </div>
-                ${link}
+                ${onlineTag}
             </div>
-            ${renderAccessContacts(v.contacts)}
-            <div class="ph-hero">
-                <div class="ph-hero-top">
-                    <div class="ph-hero-title">
-                        <span class="ph-pkg-icon">${ACCESS_ICONS.package}</span>
-                        <h2>${name}</h2>
-                    </div>
-                    ${onlineTag}
-                </div>
-                ${desc}
-                <div class="ph-meta">
-                    ${joinedItem}
-                    ${renewsItem}
-                </div>
+            <div class="ph-meta">
+                ${sharedBy}
+                ${joinedItem}
             </div>
-        `;
-    } else {
-        const owner = pkg.owner || {};
-        const sharedBy = `
-            <span class="ph-meta-item ph-shared-by">Compartilhado por
-                <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
-            </span>`;
-
-        header.innerHTML = `
-            <div class="ph-direct-band">
-                ${ACCESS_ICONS.link}
-                <span>Acesso compartilhado diretamente com você — fora de uma vitrine.</span>
-            </div>
-            <div class="ph-hero">
-                <div class="ph-hero-top">
-                    <div class="ph-hero-title">
-                        <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
-                        <h2>${name}</h2>
-                    </div>
-                    ${onlineTag}
-                </div>
-                ${desc}
-                <div class="ph-meta">
-                    ${sharedBy}
-                    ${joinedItem}
-                </div>
-            </div>
-        `;
-    }
+        </div>
+    `;
 }
 
 // Seleciona um pacote
@@ -1474,23 +1409,6 @@ function syncPackageDetailsVisibility() {
     if (onboardingEl) onboardingEl.style.display = isEmpty ? "" : "none";
 }
 
-// Sai da view "Minha vitrine" e volta para a Home (coleção/acessos). No-op se a
-// vitrine já estiver fechada. Usado pelos toggles de seção da sidebar, já que a
-// navegação da vitrine (initVitrineNav) só cobre o caminho de ida.
-function exitVitrineView() {
-    const vitrineSection = document.getElementById('vitrine-section');
-    if (!vitrineSection || vitrineSection.style.display === 'none') return;
-    vitrineSection.style.display = 'none';
-    const navVitrine = document.getElementById('nav-vitrine');
-    navVitrine?.classList.remove('active');
-    navVitrine?.setAttribute('aria-expanded', 'false');
-    // Volta para a Home: restaura a top bar e as seções de pacotes na sidebar,
-    // fechando o dropdown da vitrine.
-    delete document.body.dataset.view;
-    // Restaura a visibilidade de #package-details / #main-onboarding conforme o estado.
-    syncPackageDetailsVisibility();
-}
-
 // Função para recarregar select de pacotes (se necessário)
 function reloadPackagesSelect(isAccess = false) {
     if (isAccess) {
@@ -1518,7 +1436,7 @@ async function loadAccessOverview(pkg, activePreset) {
 
         if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline, myAccessHistory, joinedAt, renewsAt, billingType } = fetchOverview.result.data;
+        const { totalOnline, sessionsOnline, myAccessHistory, joinedAt } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
@@ -1533,21 +1451,6 @@ async function loadAccessOverview(pkg, activePreset) {
             joinedAtEl.textContent = joinDate.toLocaleDateString('pt-BR', dateFormatOptions);
         } else if (joinedAtEl) {
             joinedAtEl.textContent = '—';
-        }
-
-        // Atualiza "Renova em" / "Expira em" (só existe no header de vitrine)
-        const renewsAtEl = activePreset.querySelector('.package-info-header .renews-at-value');
-        const renewsLabelEl = activePreset.querySelector('.package-info-header .renews-at-label');
-
-        if (renewsLabelEl) {
-            renewsLabelEl.textContent = billingType === 'one_time' ? 'Expira em' : 'Renova em';
-        }
-
-        if (renewsAtEl && renewsAt) {
-            const renewDate = new Date(renewsAt);
-            renewsAtEl.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
-        } else if (renewsAtEl) {
-            renewsAtEl.textContent = '—';
         }
 
         // Atualiza contagem online no header
@@ -2861,57 +2764,9 @@ function renderUserInfo(userInfo) {
     extensionState.check();
 
     // Roles com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
-    // Vendedor NÃO entra mais: é usuário normal e pode assinar planos.
     const PLUS_BENEFIT_ROLES = ['admin'];
     // Qualquer plano pago (plus/business/enterprise) ou papel com benefício.
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || (plan && plan !== 'free');
-
-    // "Minha vitrine" aparece para vendedores e para quem já manifestou intenção
-    // de vender (pending_seller — ainda sem recebedor). Admin usa o painel admin.
-    const navVitrine = document.getElementById('nav-vitrine');
-    if (navVitrine) {
-        const canSeeVitrine = role === 'seller' || role === 'pending_seller';
-        navVitrine.style.display = canSeeVitrine ? '' : 'none';
-
-        // Badge "Novo": destaca o recurso recém-desbloqueado para o aspirante a
-        // vendedor, some após o primeiro clique (persistido em localStorage).
-        const NOVO_SEEN_KEY = 'ap-vitrine-novo-seen';
-        let novoSeen = false;
-        try { novoSeen = localStorage.getItem(NOVO_SEEN_KEY) === '1'; } catch (e) {}
-
-        const existingBadge = navVitrine.querySelector('.nav-novo-badge');
-        if (role === 'pending_seller' && !novoSeen) {
-            if (!existingBadge) {
-                const badge = document.createElement('span');
-                badge.className = 'nav-novo-badge';
-                badge.textContent = 'Novo';
-                navVitrine.appendChild(badge);
-            }
-            navVitrine.addEventListener('click', function dismissNovo(e) {
-                // Só descarta em clique real do usuário — o auto-open (?vitrine=novo)
-                // dispara um clique programático que NÃO deve sumir com o badge.
-                if (e && !e.isTrusted) return;
-                try { localStorage.setItem(NOVO_SEEN_KEY, '1'); } catch (err) {}
-                navVitrine.querySelector('.nav-novo-badge')?.remove();
-                navVitrine.removeEventListener('click', dismissNovo);
-            });
-        } else if (existingBadge) {
-            existingBadge.remove();
-        }
-
-        // Vindo de /pages/parceiros (?vitrine=novo): abre a aba automaticamente. Adiado
-        // para o fim da fila para rodar DEPOIS do init() terminar de montar a
-        // Home — senão a renderização da Home sobrescreve a troca de aba.
-        try {
-            const params = new URLSearchParams(window.location.search);
-            if (canSeeVitrine && params.get('vitrine') === 'novo') {
-                params.delete('vitrine');
-                const qs = params.toString();
-                history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
-                setTimeout(() => navVitrine.click(), 0);
-            }
-        } catch (e) {}
-    }
 
     // Admin: atalho para o painel interno.
     const navAdmin = document.getElementById('nav-admin');
@@ -2920,15 +2775,14 @@ function renderUserInfo(userInfo) {
         navAdmin.onclick = () => { window.location.href = '/pages/admin/'; };
     }
 
-    // Badge do perfil: papel (Vendedor/Admin) tem prioridade sobre Plus; senão
-    // Plus para assinantes; usuário comum não recebe badge.
+    // Badge do perfil: Admin tem prioridade; senão o plano pago do assinante;
+    // usuário comum não recebe badge.
     let badgeLabel = null;
     if (role === 'admin') badgeLabel = 'Admin';
-    else if (role === 'seller') badgeLabel = 'Vendedor';
     else if (plan && plan !== 'free') badgeLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
 
     if (hasPlusBenefits) {
-        // Esconde toda a UI de upgrade — seller/admin/plus não assinam.
+        // Esconde toda a UI de upgrade — admin/assinante não assinam de novo.
         document.querySelectorAll('.plus-subscribe-btn').forEach(btn => { btn.style.display = 'none'; });
         const sidebarPlusCard = document.getElementById('sidebar-plus-card');
         if (sidebarPlusCard) sidebarPlusCard.style.display = 'none';
@@ -2964,10 +2818,9 @@ const PEOPLE_COUNTER_ICON = `<svg class="people-counter__icon" xmlns="http://www
 const INFO_COUNTER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
 
 /**
- * Conjunto de memberships suspensas ("packageId:userId") — as diretas externas
- * além do limite do plano, por ordem de chegada (granted_at). Espelha o cálculo
- * do backend (rank vs. getUserPeopleLimit). Vazio quando o plano é ilimitado.
- * Compras no marketplace (accessOrigin != 'direct') não entram no ranking.
+ * Conjunto de memberships suspensas ("packageId:userId") — as externas além do
+ * limite do plano, por ordem de chegada (granted_at). Espelha o cálculo do
+ * backend (rank vs. getUserPeopleLimit). Vazio quando o plano é ilimitado.
  */
 function getSuspendedMembershipKeys() {
     const keys = new Set();
@@ -2978,7 +2831,6 @@ function getSuspendedMembershipKeys() {
     (packagesList.userCollection || []).forEach(pkg => {
         (pkg.users || []).forEach(u => {
             if (u.isCreator) return;
-            if (u.accessOrigin && u.accessOrigin !== 'direct') return;
             memberships.push({ pkgId: pkg.id, userId: u.id, at: new Date(u.connectedAt || 0).getTime() });
         });
     });
@@ -3320,31 +3172,8 @@ async function init() {
     // Contador de pessoas (limitador único do plano)
     updatePeopleCounter();
 
-    // Verifica se há parâmetro de novo produto (vindo do checkout)
-    const urlParams = new URLSearchParams(window.location.search);
-    const newProductId = urlParams.get('newProduct');
-
     // Define estado inicial do packages list
-    if (newProductId && packagesList.userAccess.length > 0) {
-        setElementState(document.querySelector("#packages-list"), 'access');
-
-        const newPkg = packagesList.userAccess.find(p => p.id === newProductId);
-        if (newPkg) {
-            selectPackage(newPkg.id, false);
-
-            const pkgElement = document.querySelector(`.preset-access [data-package-id="${newProductId}"]`);
-            if (pkgElement) {
-                const newBadge = createElement('div', 'new-badge');
-                newBadge.textContent = 'Novo';
-                pkgElement.appendChild(newBadge);
-            }
-        } else {
-            selectPackage(packagesList.userAccess[0].id, false);
-        }
-
-        window.history.replaceState({}, '', window.location.pathname);
-        setDashSection('access');
-    } else if (packagesList.userCollection.length === 0) {
+    if (packagesList.userCollection.length === 0) {
         setElementState(document.querySelector("#packages-list"), 'empty-collection');
         setDashSection('collection');
     } else {
@@ -3358,8 +3187,6 @@ async function init() {
         if (packageItem && packageItem.dataset.packageId) {
             const isCollection = packageItem.closest('.preset-collection') !== null;
 
-            // Selecionar um pacote pela sidebar também volta da vitrine para a Home.
-            exitVitrineView();
             selectPackage(packageItem.dataset.packageId, isCollection);
         }
     });
@@ -3370,7 +3197,6 @@ async function init() {
 
     collectionTabs.forEach(tab => {
         tab.addEventListener('click', function () {
-            exitVitrineView();
             setDashSection('collection');
             // Se não houver pacotes na coleção, troca para empty state
             if (packagesList.userCollection.length === 0) {
@@ -3385,7 +3211,6 @@ async function init() {
 
     accessTabs.forEach(tab => {
         tab.addEventListener('click', function () {
-            exitVitrineView();
             setDashSection('access');
             // Se não houver pacotes de acesso, troca para empty state
             if (packagesList.userAccess.length === 0) {

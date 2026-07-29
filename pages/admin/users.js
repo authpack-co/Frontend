@@ -51,7 +51,7 @@
         AP.openDrawer(AP.loadingHTML);
         const r = await AP.get('/users/' + id);
         if (!r.ok) { AP.setDrawer(AP.errorHTML(r.errorMessage)); return; }
-        const { user, recipient, stats } = r.data;
+        const { user, subscription, stats } = r.data;
         const isAdmin = user.role === 'admin';
 
         AP.setDrawer(`
@@ -64,24 +64,23 @@
             </div>
             <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
                 ${AP.roleBadge(user.role)} ${AP.statusBadge(user.status)}
-                ${user.plan === 'plus' ? '<span class="admin-badge badge-plan-plus">Plus</span>' : ''}
+                ${user.plan && user.plan !== 'free' ? `<span class="admin-badge badge-plan-plus">${AP.escapeHtml(user.plan.charAt(0).toUpperCase() + user.plan.slice(1))}</span>` : ''}
             </div>
             ${user.status === 'suspended' && user.suspended_reason ? `<div class="admin-card-sub" style="margin-top:8px">Motivo: ${AP.escapeHtml(user.suspended_reason)}</div>` : ''}
 
             <div class="admin-detail-grid">
                 <div class="admin-detail-item"><div class="k">Pacotes</div><div class="v">${stats.packages_count}</div></div>
-                <div class="admin-detail-item"><div class="k">Compras</div><div class="v">${stats.purchases_count}</div></div>
-                <div class="admin-detail-item"><div class="k">Produtos</div><div class="v">${stats.products_count}</div></div>
-                <div class="admin-detail-item"><div class="k">Vendas</div><div class="v">${stats.sales_count}</div></div>
+                <div class="admin-detail-item"><div class="k">Pessoas</div><div class="v">${stats.shared_people_count}</div></div>
+                <div class="admin-detail-item"><div class="k">Faturas pagas</div><div class="v">${stats.invoices_count}</div></div>
+                <div class="admin-detail-item"><div class="k">Total pago</div><div class="v">${AP.fmtBRL(stats.paid_total_cents)}</div></div>
             </div>
-            ${recipient ? `<div class="admin-card-sub">Conta recebedora: <strong>${AP.escapeHtml(recipient.status)}</strong>${recipient.bank_name ? ' · ' + AP.escapeHtml(recipient.bank_name) : ''}</div>` : '<div class="admin-card-sub">Sem conta recebedora.</div>'}
+            ${subscription
+                ? `<div class="admin-card-sub">Assinatura: <strong>${AP.escapeHtml(subscription.status)}</strong>${subscription.current_period_end ? ' · válida até ' + AP.fmtDateTime(subscription.current_period_end) : ''}${subscription.cancel_at_period_end ? ' · cancelamento agendado' : ''}</div>`
+                : '<div class="admin-card-sub">Sem assinatura.</div>'}
 
             <div class="admin-drawer-section-title">Ações</div>
             <div class="admin-drawer-actions">
                 ${isAdmin ? '<div class="admin-card-sub">Este usuário é administrador. Gerencie em “Administradores”.</div>' : `
-                    ${user.role === 'seller'
-                        ? '<button class="admin-btn" data-act="remove-seller">Remover vendedor</button>'
-                        : '<button class="admin-btn admin-btn-primary" data-act="make-seller">Tornar vendedor</button>'}
                     ${user.status === 'suspended'
                         ? '<button class="admin-btn" data-act="unsuspend">Reativar conta</button>'
                         : '<button class="admin-btn admin-btn-danger" data-act="suspend">Suspender conta</button>'}
@@ -91,23 +90,6 @@
 
         const act = (sel, fn) => { const b = document.querySelector(`[data-act="${sel}"]`); if (b) b.addEventListener('click', fn); };
 
-        act('make-seller', () => {
-            // No plain role flip — becoming a seller always goes through the
-            // recipient onboarding form, pre-targeted at this user.
-            if (typeof AP.openSellerOnboarding !== 'function') {
-                AP.toast('Formulário de cadastro indisponível.', 'error');
-                return;
-            }
-            AP.closeDrawer();
-            AP.openSellerOnboarding(() => loadList(), {
-                id: user.id, name: user.name, email: user.email,
-                picture: user.picture, role: user.role, has_recipient: !!recipient,
-            });
-        });
-        act('remove-seller', async () => {
-            const r2 = await AP.send('/users/' + id + '/role', 'PATCH', { role: 'user' });
-            after(r2, 'Vendedor removido.', id);
-        });
         act('unsuspend', async () => {
             const r2 = await AP.send('/users/' + id + '/unsuspend', 'PATCH');
             after(r2, 'Conta reativada.', id);

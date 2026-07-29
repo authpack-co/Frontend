@@ -109,8 +109,7 @@
         scHide(elCanceled);
         scHide(elRole);
 
-        // Apenas papéis com benefício ilimitado (admin) não assinam. Vendedor
-        // agora é usuário normal e assina planos como qualquer um.
+        // Apenas papéis com benefício ilimitado (admin) não assinam.
         const PLUS_BENEFIT_ROLES = ['admin'];
         if (PLUS_BENEFIT_ROLES.includes(role)) {
             scShow(elRole);
@@ -470,6 +469,35 @@
         }
     }
 
+    // ─── Action: Portal de cobrança da Stripe ────────────────────────────────────
+    // Trocar cartão, baixar faturas e cancelar acontecem no portal hospedado —
+    // nenhum dado de pagamento passa por aqui.
+
+    async function scHandleBillingPortal() {
+        const btn = scEl('bl-btn-portal');
+        if (!btn) return;
+
+        btn.disabled    = true;
+        const original  = btn.textContent;
+        btn.textContent = 'Abrindo...';
+
+        try {
+            const res = await fetchManager.createBillingPortal();
+            const url = res.ok && res.result?.url;
+            if (!url) {
+                alert('Não foi possível abrir o portal de cobrança. Tente novamente.');
+                btn.disabled    = false;
+                btn.textContent = original;
+                return;
+            }
+            window.location.href = url;
+        } catch (err) {
+            console.error('[Settings] billingPortal error:', err);
+            btn.disabled    = false;
+            btn.textContent = original;
+        }
+    }
+
     // ─── Action: Assinar Plus (fecha settings, abre Plus modal) ──────────────────
 
     function scHandleAssinarPlus() {
@@ -506,9 +534,11 @@
         const priceEl = scEl('bl-plan-price');
         const renewEl = scEl('bl-plan-renew');
         const noteEl  = scEl('bl-plan-note');
+        const portalEl = scEl('bl-btn-portal');
 
-        // Admin: benefícios inclusos pelo papel — sem cobrança. Vendedor NÃO entra
-        // mais aqui: é usuário normal e assina planos como qualquer um.
+        if (portalEl) scHide(portalEl);
+
+        // Admin: benefícios inclusos pelo papel — sem cobrança.
         const role = scUserData && scUserData.role;
         if (role === 'admin') {
             if (nameEl)  nameEl.textContent = 'Benefícios inclusos';
@@ -535,6 +565,10 @@
 
         if (renewEl) renewEl.textContent = '';
         if (noteEl)  scHide(noteEl);
+
+        // O portal só existe para quem tem um customer na Stripe — cortesia e
+        // Free não têm nada para gerenciar lá.
+        if (portalEl && sub && sub.has_billing_account) scShow(portalEl);
 
         if (isPaid) {
             if (nameEl) nameEl.textContent = planLabel;
@@ -842,10 +876,12 @@
         const disconnectBtn    = scEl('sc-btn-disconnect');
         const cancelPlanBtn    = scEl('sc-btn-cancel-plan');
         const assinarPlusBtn   = scEl('sc-btn-assinar-plus');
+        const billingPortalBtn = scEl('bl-btn-portal');
 
-        if (disconnectBtn)  disconnectBtn.addEventListener('click',  scHandleDisconnect);
-        if (cancelPlanBtn)  cancelPlanBtn.addEventListener('click',  scHandleCancelPlan);
-        if (assinarPlusBtn) assinarPlusBtn.addEventListener('click', scHandleAssinarPlus);
+        if (disconnectBtn)     disconnectBtn.addEventListener('click',     scHandleDisconnect);
+        if (cancelPlanBtn)     cancelPlanBtn.addEventListener('click',     scHandleCancelPlan);
+        if (assinarPlusBtn)    assinarPlusBtn.addEventListener('click',    scHandleAssinarPlus);
+        if (billingPortalBtn)  billingPortalBtn.addEventListener('click',  scHandleBillingPortal);
 
         const syncBtn = scEl('sc-btn-sync-device');
         if (syncBtn) syncBtn.addEventListener('click', scHandleSyncDevice);

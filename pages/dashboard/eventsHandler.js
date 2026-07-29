@@ -1721,8 +1721,9 @@ plusSubscribeBtns.forEach(btn => {
     });
 });
 
-// Plan CTA (redirect to checkout page). Um botão por plano assinável
-// (data-plan="plus" | "business"). Enterprise é um link de contato (sem data-plan).
+// Plan CTA — redireciona para o Checkout hospedado da Stripe. Um botão por
+// plano assinável (data-plan="plus" | "business"). Enterprise é um link de
+// contato (sem data-plan).
 const planChooseBtns = document.querySelectorAll('.plan-choose-btn[data-plan]');
 planChooseBtns.forEach(planBtn => {
     planBtn.addEventListener('click', async () => {
@@ -1733,33 +1734,34 @@ planChooseBtns.forEach(planBtn => {
         const originalText = planBtn.textContent;
         planBtn.textContent = 'Redirecionando...';
 
-        try {
-            const res = await fetchManager.createCheckoutOrder({ origin: 'platform', plan });
-
-            if (!res.ok) {
-                const errMsg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                    ? 'Você já está neste plano.'
-                    : res.result?.error || 'Erro ao iniciar checkout.';
-                alert(errMsg);
-                planBtn.disabled = false;
-                planBtn.textContent = originalText;
-                return;
-            }
-
-            const orderId = res.result?.id;
-            if (!orderId) {
-                alert('Erro ao criar pedido. Tente novamente.');
-                planBtn.disabled = false;
-                planBtn.textContent = originalText;
-                return;
-            }
-
-            window.location.href = `/pages/checkout/?orderId=${orderId}`;
-        } catch (err) {
-            console.error('Plan checkout redirect error:', err);
-            alert('Erro inesperado. Tente novamente.');
+        const restore = () => {
             planBtn.disabled = false;
             planBtn.textContent = originalText;
+        };
+
+        try {
+            const res = await fetchManager.createSubscriptionCheckout(plan);
+
+            if (!res.ok) {
+                alert(res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
+                    ? 'Você já está neste plano.'
+                    : res.result?.error || 'Erro ao iniciar checkout.');
+                restore();
+                return;
+            }
+
+            const url = res.result?.url;
+            if (!url) {
+                alert('Erro ao iniciar checkout. Tente novamente.');
+                restore();
+                return;
+            }
+
+            window.location.href = url;
+        } catch (err) {
+            console.error('Stripe checkout redirect error:', err);
+            alert('Erro inesperado. Tente novamente.');
+            restore();
         }
     });
 });
@@ -1768,6 +1770,28 @@ const cancelBtns = document.querySelectorAll(".cancel-btn");
 cancelBtns.forEach(item => item.addEventListener("click", event => {
     utils.closeModals();
 }));
+
+// Retorno do Checkout hospedado da Stripe (?assinatura=sucesso|cancelado).
+// O pagamento é confirmado pelo webhook invoice.paid, que pode chegar alguns
+// segundos depois do redirect — por isso a mensagem fala em "liberando" e a
+// página recarrega uma vez para pegar o plano já atualizado.
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get("assinatura");
+    if (!outcome) return;
+
+    params.delete("assinatura");
+    const query = params.toString();
+    const cleanUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+    window.history.replaceState({}, "", cleanUrl);
+
+    if (outcome === "sucesso") {
+        notify("success", "Pagamento recebido! Liberando seu plano...");
+        setTimeout(() => window.location.reload(), 4000);
+    } else if (outcome === "cancelado") {
+        notify("error", "Checkout cancelado. Nenhuma cobrança foi feita.");
+    }
+})();
 
 // Abre o modal Plus automaticamente quando vindo do upsell (ex.: extensão -> ?upgrade=plus)
 (() => {
@@ -1798,14 +1822,6 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.session-options-btn') && !e.target.closest('.session-options')) {
         const activeSessionOptions = document.querySelectorAll('.session-options:not(.hidden)');
         activeSessionOptions.forEach(opt => {
-            opt.classList.add('hidden');
-        });
-    }
-
-    // Close product options if click outside
-    if (!e.target.closest('.product-options-btn') && !e.target.closest('.product-options')) {
-        const activeProductOptions = document.querySelectorAll('.product-options:not(.hidden)');
-        activeProductOptions.forEach(opt => {
             opt.classList.add('hidden');
         });
     }

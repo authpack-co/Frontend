@@ -100,7 +100,7 @@
             ]
         },
         {
-            title: 'Pacotes na vitrine',
+            title: 'Pacotes compartilhados',
             rows: [
                 { name: 'Top IAs', count: 12, pct: 90 },
                 { name: 'Pack Design', count: 9, pct: 68 },
