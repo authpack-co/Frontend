@@ -728,6 +728,214 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────── */
+/* ============================================
+   Barra de status da extensão (card Dispositivos)
+
+   Deliberadamente NÃO parece uma linha da lista de dispositivos: ocupa a largura
+   inteira do card, tem fundo tingido pelo estado, trilho colorido à esquerda e
+   um glifo de status no lugar do ícone de aparelho. É o estado da integração,
+   não mais um item registrado.
+   ============================================ */
+.sc-sync {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 18px 13px 16px;
+    border-bottom: 1px solid var(--ap-border);
+    border-left: 3px solid var(--ap-border-muted);
+    background: var(--ap-bg-card-alt);
+}
+
+.sc-sync[data-state="synced"] {
+    border-left-color: var(--ap-success);
+    background: var(--ap-success-light);
+}
+
+.sc-sync[data-state="unsynced"],
+.sc-sync[data-state="missing"] {
+    border-left-color: var(--ap-warning);
+    background: var(--ap-warning-light);
+}
+
+.sc-sync-glyph {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: var(--ap-text-placeholder);
+}
+
+.sc-sync[data-state="synced"] .sc-sync-glyph {
+    color: var(--ap-success-text);
+}
+
+.sc-sync[data-state="unsynced"] .sc-sync-glyph,
+.sc-sync[data-state="missing"] .sc-sync-glyph {
+    color: var(--ap-warning-text);
+}
+
+.sc-glyph {
+    display: none;
+}
+
+.sc-sync[data-state="synced"] .sc-glyph--ok,
+.sc-sync[data-state="unsynced"] .sc-glyph--warn,
+.sc-sync[data-state="missing"] .sc-glyph--warn,
+.sc-sync[data-state="checking"] .sc-glyph--checking {
+    display: flex;
+}
+
+.sc-sync-glyph .spinner {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+}
+
+.sc-sync-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-sync-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.sc-sync[data-state="synced"] .sc-sync-title {
+    color: var(--ap-success-text);
+}
+
+.sc-sync[data-state="unsynced"] .sc-sync-title,
+.sc-sync[data-state="missing"] .sc-sync-title {
+    color: var(--ap-warning-text);
+}
+
+.sc-sync-status {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ap-text-muted);
+}
+
+.sc-sync-btn {
+    flex-shrink: 0;
+    height: 30px;
+    padding: 0 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid var(--ap-accent);
+    border-radius: var(--ap-radius-sm);
+    background: var(--ap-accent);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sc-sync-btn:hover:not(:disabled) {
+    background: var(--ap-accent-hover);
+    border-color: var(--ap-accent-hover);
+}
+
+.sc-sync-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* Já sincronizado: a ação continua disponível, mas sem competir com o resto. */
+.sc-sync[data-state="synced"] .sc-sync-btn {
+    background: transparent;
+    border-color: var(--ap-success-border);
+    color: var(--ap-success-text);
+}
+
+.sc-sync[data-state="synced"] .sc-sync-btn:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+}
+
+.sc-sync[data-state="checking"] .sc-sync-btn,
+.sc-sync[data-state="missing"] .sc-sync-btn {
+    display: none;
+}
+
+.sc-sync-btn-spinner {
+    display: none;
+}
+
+.sc-sync-btn.is-loading .sc-sync-btn-label {
+    display: none;
+}
+
+.sc-sync-btn.is-loading .sc-sync-btn-spinner {
+    display: inline-flex;
+}
+
+.sc-sync-btn .spinner {
+    width: 13px;
+    height: 13px;
+    border-width: 2px;
+}
+
+/* Chamada de atenção quando o usuário chega vindo do card "não sincronizada". */
+@keyframes sc-sync-highlight {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 0 0 transparent;
+    }
+
+    35% {
+        box-shadow: inset 0 0 0 2px var(--ap-accent);
+    }
+}
+
+.sc-sync--highlight {
+    animation: sc-sync-highlight 1.1s ease-in-out 2;
+}
+
+/* ── Separador da lista de dispositivos ── */
+.sc-devices-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ap-text-placeholder);
+}
+
+.sc-sync-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--ap-warning-border);
+    border-radius: var(--ap-radius-sm);
+    background: var(--ap-warning-light);
+    color: var(--ap-warning-text);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.sc-sync-alert[hidden] {
+    display: none;
+}
+
+.sc-sync-alert svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
 @media (max-width: 700px) {
     .settings-overlay {
         padding: 0;

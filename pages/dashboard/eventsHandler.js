@@ -14,6 +14,9 @@ const utils = {
             item.classList.remove("show");
             this.resetModal(item);
         });
+
+        // Para o refresh do card "usando agora".
+        stopUsingNowTimers();
     },
 
     resetModal(modal) {
@@ -52,23 +55,25 @@ const utils = {
         }
     },
 
+    // Link e código continuam copiáveis com o pacote restrito — só não ativam
+    // ninguém. O aviso deixa isso explícito em vez de desabilitar os campos.
     setShareModalOpenState(isOpen) {
         const toggle = document.querySelector('#sharePackageModal #generalToggle');
         const statusBadge = document.querySelector('#sharePackageModal #statusBadge');
-        const linkDisplay = document.querySelector('#sharePackageModal #generalLinkDisplay');
-        if (!toggle || !statusBadge || !linkDisplay) return;
+        const restrictedNote = document.querySelector('#sharePackageModal #shareRestrictedNote');
+        if (!toggle || !statusBadge || !restrictedNote) return;
         const statusText = statusBadge.querySelector('span');
 
         if (isOpen) {
             toggle.classList.add('active');
             statusBadge.className = 'status-badge status-open';
             statusText.textContent = 'Acesso público ativo';
-            linkDisplay.classList.remove('disabled');
+            restrictedNote.classList.add('hidden');
         } else {
             toggle.classList.remove('active');
             statusBadge.className = 'status-badge status-closed';
             statusText.textContent = 'Acesso restrito';
-            linkDisplay.classList.add('disabled');
+            restrictedNote.classList.remove('hidden');
         }
     },
 
@@ -88,6 +93,58 @@ const utils = {
         if (hours > 0 && mins > 0) return `expira em ${hours}h ${mins}min`;
         if (hours > 0) return `expira em ${hours}h`;
         return `expira em ${mins}min`;
+    },
+
+    // "criado há 20min" · "criado ontem" · "criado 24 jul" — usado nos links ativos.
+    formatCreated(createdAt) {
+        const target = new Date(createdAt).getTime();
+        if (!createdAt || Number.isNaN(target)) return 'criado recentemente';
+
+        const diffMs = Date.now() - target;
+        const totalMin = Math.max(0, Math.floor(diffMs / 60000));
+        if (totalMin < 1) return 'criado agora';
+        if (totalMin < 60) return `criado há ${totalMin}min`;
+
+        const days = this.daysApart(new Date(target));
+        if (days === 0) return `criado há ${Math.floor(totalMin / 60)}h`;
+        if (days === 1) return 'criado ontem';
+        return `criado ${this.formatDayLabel(new Date(target))}`;
+    },
+
+    // Momento de um evento, encaixável no fim de uma frase ("usado por X ___"):
+    // "às 14:07" no mesmo dia da criação, "ontem às 09:12", "em 24 jul, 18:40".
+    formatEventMoment(reference, dateValue) {
+        const date = new Date(dateValue);
+        const from = new Date(reference);
+        if (!dateValue || Number.isNaN(date.getTime())) return 'em data desconhecida';
+
+        const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const sameDayAsCreation = reference && !Number.isNaN(from.getTime())
+            && this.daysApart(date) === this.daysApart(from);
+
+        if (sameDayAsCreation) return `às ${time}`;
+
+        const days = this.daysApart(date);
+        if (days === 0) return `hoje às ${time}`;
+        if (days === 1) return `ontem às ${time}`;
+        return `em ${this.formatDayLabel(date)}, ${time}`;
+    },
+
+    // Diferença em dias de calendário entre a data e hoje (0 = hoje, 1 = ontem).
+    daysApart(date) {
+        const startOf = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        return Math.round((startOf(new Date()) - startOf(date)) / 86400000);
+    },
+
+    // "24 jul" no mesmo ano; "24 jul 2025" quando o ano é outro.
+    formatDayLabel(date) {
+        const sameYear = date.getFullYear() === new Date().getFullYear();
+        // pt-BR devolve "25 de jul." / "25 de jul. de 2025" — enxugamos para "25 jul".
+        return date.toLocaleDateString('pt-BR', sameYear
+            ? { day: 'numeric', month: 'short' }
+            : { day: 'numeric', month: 'short', year: 'numeric' })
+            .replace(/\./g, '')
+            .replace(/ de /g, ' ');
     },
 
     validateField(value, config = {}) {
@@ -155,11 +212,16 @@ const listenerMap = [
     { selector: '.share-package-btn', event: 'click', handler: setupSharePackageForm },
     { selector: '.update-package-btn', event: 'click', handler: handleUpdatePackage },
     { selector: '.add-session-btn', event: 'click', handler: handleAddSession },
+    { selector: '.update-session-btn', event: 'click', handler: handleUpdateSession },
     { selector: '.edit-session-btn', event: 'click', handler: setupEditSessionForm },
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
-    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen }
+    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen },
+    { selector: '.preset-collection .session-card-members', event: 'click', handler: handleUsingNowClick },
+    { selector: '.preset-collection .session-card-members', event: 'keydown', handler: handleUsingNowKeydown },
+    { selector: '.preset-session-overview .service-users-section', event: 'click', handler: handleUsingNowClick },
+    { selector: '.preset-session-overview .service-users-section', event: 'keydown', handler: handleUsingNowKeydown }
 ];
 
 const listenerSelectors = listenerMap.map(l => l.selector).join(',');
@@ -324,11 +386,8 @@ async function handleConnectSession(e) {
     // Ignora clique se o botão estiver desabilitado (pacote inativo)
     if (this.disabled) return;
 
-    // Verifica se a extensão está instalada
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal("extensionRequired");
-        return;
-    }
+    // Exige extensão instalada E apontando para esta conta (ver extensionState.js).
+    if (!await extensionState.ensure()) return;
 
     // Obtém detalhes do pacote e da sessão
     const packageEl = this.closest('#package-details');
@@ -362,118 +421,225 @@ async function handleConnectSession(e) {
     }, location.origin);
 }
 
-function handleUpdatePackage(e) {
+// Prepara o modal compartilhado (mesma casca do "Adicionar sessão") para o modo
+// atualizar e devolve os elementos que os dois fluxos usam.
+function setupUpdateModal(packageData) {
+    const modal = document.getElementById('addSessionModal');
+
+    modal.dataset.mode = 'update';
+    modal.removeAttribute('data-result');
+
+    const pkgNameEl = modal.querySelector('.as-pkg-name');
+    const subtitleEl = modal.querySelector('.as-head-subtitle');
+    const pkgIconEl = modal.querySelector('.as-pkg-icon');
+
+    if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
+    if (subtitleEl) subtitleEl.textContent = 'Recapture as sessões deste pacote';
+
+    if (pkgIconEl) {
+        pkgIconEl.innerHTML = '';
+        if (packageData.icon) {
+            pkgIconEl.textContent = packageData.icon;
+        } else {
+            pkgIconEl.innerHTML = `<span class="as-pkg-icon--fb">${(packageData.name || '?').charAt(0).toUpperCase()}</span>`;
+        }
+    }
+
+    // Reset do progresso (o captureFlow reescreve, mas o modal pode reabrir sujo).
+    modal.querySelector('.as-list').innerHTML = '';
+    modal.querySelector('.as-bar-fill').style.width = '0%';
+    modal.querySelector('.as-close').disabled = true;
+
+    return modal;
+}
+
+// Nome legível de uma sessão (cai no host quando não tem nome).
+function sessionLabel(session) {
+    if (session.name) return session.name;
+    try { return new URL(session.url).hostname.replace(/^www\./, ''); } catch { return session.url; }
+}
+
+// O ref casa progresso com linha. Para sessões é o id — nunca a URL: duas contas do
+// mesmo serviço no mesmo pacote compartilham a URL e se cruzariam.
+function sessionTarget(session) {
+    return {
+        ref: String(session.id),
+        id: session.id,
+        name: sessionLabel(session),
+        url: session.url,
+        icon: session.icon,
+    };
+}
+
+// Atualiza o card da sessão na tela depois de uma recaptura bem-sucedida.
+function refreshSessionCard(sessionId) {
+    const card = document.querySelector(
+        `.session-card[data-session-id="${sessionId}"], .list-item.session[data-session-id="${sessionId}"]`
+    );
+    if (!card) return;
+    card.classList.add('fadeInFromTop');
+    card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
+}
+
+// "Atualizar" no menu ⋯ do PACOTE: abre a mesma casca do adicionar, mas listando as
+// sessões do próprio pacote, todas marcadas.
+async function handleUpdatePackage(e) {
     e.stopPropagation();
 
     // Fecha o menu de opções
     document.querySelectorAll('.package-options:not(.hidden)').forEach(o => o.classList.add('hidden'));
 
-    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas)
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal("extensionRequired");
-        return;
-    }
+    // Exige a extensão instalada e sincronizada (ela é quem abre/captura/fecha as abas)
+    if (!await extensionState.ensure()) return;
 
     const packageEl = this.closest('.access-item');
     const packageId = packageEl.dataset.packageId;
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     if (!packageData) return;
 
-    const sessions = (packageData.sessions || []).map(s => ({ id: s.id, url: s.url, icon: s.icon, name: s.name }));
+    const sessions = (packageData.sessions || []).filter(s => s && s.id && s.url);
 
-    const modal = document.getElementById('updatePackageModal');
-    const nameEl = modal.querySelector('.up-pkg-name');
-    const statusEl = modal.querySelector('.up-status');
-    const countEl = modal.querySelector('.up-count');
-    const fillEl = modal.querySelector('.up-bar-fill');
-    const listEl = modal.querySelector('.up-list');
-    const closeBtn = modal.querySelector('.up-close');
-    const total = sessions.length;
+    const modal = setupUpdateModal(packageData);
+    const listEl = modal.querySelector('.us-list');
+    const countEl = modal.querySelector('.us-count');
+    const toggleAllBtn = modal.querySelector('.us-toggle-all');
+    const confirmBtn = modal.querySelector('.as-confirm');
+    const cancelBtn = modal.querySelector('.as-cancel');
+    const footerStatusText = modal.querySelector('.as-footer-status-text');
+    const footerStatusWrapper = modal.querySelector('.as-footer-status-wrapper');
 
-    // Reset
-    nameEl.textContent = packageData.name || '';
-    fillEl.style.width = '0%';
-    countEl.textContent = `0/${total}`;
-    closeBtn.disabled = true;
-    listEl.innerHTML = '';
-    modal.removeAttribute('data-result');
+    modal.dataset.phase = 'select';
+    confirmBtn.textContent = 'Atualizar';
 
-    // Render uma linha por sessão (cada uma resolve de forma independente)
-    const rowById = {};
-    sessions.forEach(s => {
-        const row = document.createElement('li');
-        row.className = 'up-item';
-        row.dataset.sessionId = s.id;
-        row.dataset.state = 'pending';
+    // Todas selecionadas por padrão — atualizar o pacote inteiro é o caso comum.
+    const selected = new Set(sessions.map(s => String(s.id)));
 
-        const icon = document.createElement('img');
-        icon.className = 'up-item-icon';
-        icon.alt = '';
-        AuthPackFavicon.apply(icon, {
-            icon: s.icon, url: s.url,
-            onFinalError: () => {
-                const fb = document.createElement('span');
-                fb.className = 'up-item-icon up-item-icon--fb';
-                fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
-                icon.replaceWith(fb);
-            }
+    function syncFooter() {
+        const n = selected.size;
+        confirmBtn.disabled = n === 0;
+        countEl.textContent = `${n} de ${sessions.length} selecionada${sessions.length === 1 ? '' : 's'}`;
+        toggleAllBtn.textContent = n === sessions.length ? 'Desmarcar todas' : 'Selecionar todas';
+        footerStatusWrapper.classList.toggle('is-active', n > 0);
+        footerStatusText.textContent = n === 0
+            ? 'Nenhuma sessão selecionada'
+            : `${n} ${n === 1 ? 'sessão será atualizada' : 'sessões serão atualizadas'}`;
+    }
+
+    function renderList() {
+        listEl.innerHTML = '';
+
+        sessions.forEach(session => {
+            const ref = String(session.id);
+            const item = document.createElement('li');
+            item.className = 'us-item' + (selected.has(ref) ? ' is-selected' : '');
+            item.dataset.ref = ref;
+
+            const icon = document.createElement('img');
+            icon.className = 'us-item-icon';
+            icon.alt = '';
+            AuthPackFavicon.apply(icon, {
+                icon: session.icon, url: session.url,
+                onFinalError: () => {
+                    const fb = document.createElement('span');
+                    fb.className = 'us-item-icon us-item-icon--fb';
+                    fb.textContent = sessionLabel(session).trim().charAt(0).toUpperCase();
+                    icon.replaceWith(fb);
+                }
+            });
+
+            const info = document.createElement('div');
+            info.className = 'us-item-info';
+
+            const nameEl = document.createElement('span');
+            nameEl.className = 'us-item-name';
+            nameEl.textContent = sessionLabel(session);
+
+            const hostEl = document.createElement('span');
+            hostEl.className = 'us-item-host';
+            try { hostEl.textContent = new URL(session.url).hostname.replace(/^www\./, ''); }
+            catch { hostEl.textContent = session.url; }
+
+            info.append(nameEl, hostEl);
+
+            const check = document.createElement('span');
+            check.className = 'us-item-check';
+            check.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+            item.append(icon, info, check);
+            item.onclick = () => {
+                if (selected.has(ref)) selected.delete(ref);
+                else selected.add(ref);
+                item.classList.toggle('is-selected', selected.has(ref));
+                syncFooter();
+            };
+
+            listEl.appendChild(item);
         });
+    }
 
-        let label = s.name;
-        if (!label) { try { label = new URL(s.url).hostname.replace(/^www\./, ''); } catch { label = s.url; } }
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'up-item-name';
-        nameSpan.textContent = label;
+    renderList();
+    syncFooter();
 
-        const status = document.createElement('span');
-        status.className = 'up-item-status';
+    toggleAllBtn.onclick = () => {
+        if (selected.size === sessions.length) selected.clear();
+        else sessions.forEach(s => selected.add(String(s.id)));
+        renderList();
+        syncFooter();
+    };
 
-        row.append(icon, nameSpan, status);
-        listEl.appendChild(row);
-        rowById[s.id] = row;
+    confirmBtn.onclick = () => {
+        const targets = sessions
+            .filter(s => selected.has(String(s.id)))
+            .map(sessionTarget);
+        if (targets.length === 0) return;
+
+        captureFlow.run({
+            modal,
+            packageId,
+            mode: 'update',
+            targets,
+            onItemOk: (target) => refreshSessionCard(target.id),
+        });
+    };
+
+    cancelBtn.onclick = () => utils.closeModals();
+
+    utils.showModal('addSession', packageId);
+}
+
+// "Atualizar" no menu ⋯ de UMA sessão: sem etapa de seleção — abre direto no progresso.
+async function handleUpdateSession(e) {
+    e.stopPropagation();
+
+    // Fecha o menu de opções
+    document.querySelectorAll('.session-options:not(.hidden)').forEach(o => o.classList.add('hidden'));
+
+    if (!await extensionState.ensure()) return;
+
+    const packageEl = this.closest('#package-details');
+    const packageId = packageEl?.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
+    if (!packageData) return;
+
+    const sessionEl = this.closest('.session-card') || this.closest('.list-item.session');
+    const sessionId = sessionEl?.dataset.sessionId;
+    const sessionData = (packageData.sessions || []).find(s => s.id == sessionId);
+    if (!sessionData) return;
+
+    const modal = setupUpdateModal(packageData);
+    modal.querySelector('.as-head-subtitle').textContent = 'Recapturando uma sessão';
+    // Sem etapa de seleção: já entra no progresso (evita piscar o corpo de seleção).
+    modal.dataset.phase = 'progress';
+
+    utils.showModal('addSession', packageId);
+
+    captureFlow.run({
+        modal,
+        packageId,
+        mode: 'update',
+        targets: [sessionTarget(sessionData)],
+        onItemOk: (target) => refreshSessionCard(target.id),
     });
-
-    if (total === 0) {
-        statusEl.textContent = 'Sem sessões para atualizar';
-        closeBtn.disabled = false;
-        utils.showModal('updatePackage', packageId);
-        closeBtn.onclick = () => utils.closeModals();
-        return;
-    }
-
-    statusEl.textContent = 'Atualizando sessões…';
-    utils.showModal('updatePackage', packageId);
-
-    // Escuta o progresso transmitido pela extensão (via content/bridge.js)
-    function onMessage(ev) {
-        if (ev.origin !== location.origin) return;
-        const d = ev.data;
-        if (d?.source !== 'authpack-extension') return;
-
-        if (d.type === 'authpack:updateProgress') {
-            const row = rowById[d.current?.id];
-            if (row) row.dataset.state = d.current.status === 'ok' ? 'ok' : 'error';
-            countEl.textContent = `${d.done}/${d.total}`;
-            fillEl.style.width = `${Math.round((d.done / d.total) * 100)}%`;
-        } else if (d.type === 'authpack:updateDone') {
-            window.removeEventListener('message', onMessage);
-            fillEl.style.width = '100%';
-            // Garante que nenhuma linha fique presa em "pendente"
-            Object.values(rowById).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
-            const failed = d.failed?.length || 0;
-            countEl.textContent = `${d.ok}/${d.total}`;
-            statusEl.textContent = failed === 0
-                ? 'Todas as sessões foram atualizadas'
-                : `${d.ok} atualizada(s) · ${failed} com falha`;
-            modal.dataset.result = failed === 0 ? 'success' : 'partial';
-            closeBtn.disabled = false;
-        }
-    }
-    window.addEventListener('message', onMessage);
-    closeBtn.onclick = () => { window.removeEventListener('message', onMessage); utils.closeModals(); };
-
-    // Dispara o refresh na extensão
-    window.postMessage({ source: 'authpack-page', type: 'authpack:updatePackage', packageId, sessions }, location.origin);
 }
 
 // Catálogo de serviços comuns em times internos. `url` = superfície onde o dono já está
@@ -540,14 +706,11 @@ function normalizeServiceInput(raw) {
     }
 }
 
-function handleAddSession(e) {
+async function handleAddSession(e) {
     e.stopPropagation();
 
-    // Exige a extensão instalada (ela é quem abre/captura/fecha as abas).
-    if (document.documentElement.getAttribute('data-authpack-active') !== '1') {
-        utils.showModal('extensionRequired');
-        return;
-    }
+    // Exige a extensão instalada e sincronizada (ela é quem abre/captura/fecha as abas).
+    if (!await extensionState.ensure()) return;
 
     const packageId = this.dataset.packageId;
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
@@ -582,27 +745,13 @@ function handleAddSession(e) {
     const catalog = ADD_SESSION_CATALOG.map(s => ({ ...s }));
     const keyOf = (url) => { try { return new URL(url).href; } catch { return url; } };
 
-    // Estado da fase de captura (usado também pelo retry por linha)
-    let rows = {};                 // key(url) -> <li> da linha de progresso
-    const serviceByKey = {};       // key(url) -> { name, url } (para o retry)
-    let batchTotal = 0;            // total de sessões do lote atual
-    let batchDone = false;         // lote inicial concluído (libera os botões de retry)
-
-    // Progresso de carregamento de cada captura em andamento [0..100]. A barra do modal segue a
-    // MESMA progressão do overlay da extensão em 4 faixas iguais de 25%:
-    //   loading    →  0% .. 25%   (creep gradual enquanto readyState é "loading")
-    //   interactive→ 25% .. 50%   (DOMContentLoaded: boom p/ 25% + creep)
-    //   complete   → 50% .. 75%   (load event: boom p/ 50% + creep)
-    //   settle     → 75% .. 100%  (3s pós-complete: ~1s cada ⅓)
-    const progressByKey = {};      // key(url) -> % de carregamento [0..100]
-    const creepTimers = {};        // key(url) -> timer do "enchimento aos poucos"
-    const settleTimers = {};       // key(url) -> timer do settle (75→100%)
-    // Marcos de progresso — DEVEM casar com a extensão (content/connectHold.js).
-    const CAP_PCT = { loading: 0, interactive: 25, complete: 50, settle: 75, done: 100 };
-    const SETTLE_MS = 3000;        // deve casar com CAPTURE_SETTLE_MS do captureManager
-
-    // Reset visual
+    // Reset visual (o modal é compartilhado com o fluxo de atualizar)
+    modal.dataset.mode = 'create';
     modal.dataset.phase = 'select';
+    confirmBtn.textContent = 'Adicionar';
+    if (modal.querySelector('.as-head-subtitle')) {
+        modal.querySelector('.as-head-subtitle').textContent = 'Adicione serviços para compartilhar';
+    }
     if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
     
     const pkgIconEl = modal.querySelector('.as-pkg-icon');
@@ -869,72 +1018,10 @@ function handleAddSession(e) {
     renderPopularGrid();
     syncFooter();
 
-    // Progresso (fase 2) — cria uma linha por serviço
-    function buildProgressRows(services) {
-        listEl.innerHTML = '';
-        const rows = {};
-        services.forEach(s => {
-            const row = document.createElement('li');
-            row.className = 'up-item';
-            row.dataset.key = keyOf(s.url);
-            row.dataset.state = 'pending';
-
-            const icon = document.createElement('img');
-            icon.className = 'up-item-icon';
-            icon.alt = '';
-            AuthPackFavicon.apply(icon, {
-                url: s.url,
-                onFinalError: () => {
-                    const fb = document.createElement('span');
-                    fb.className = 'up-item-icon up-item-icon--fb';
-                    fb.textContent = (s.name || '?').trim().charAt(0).toUpperCase();
-                    icon.replaceWith(fb);
-                }
-            });
-
-            // Wrapper de conteúdo: nome + mini progress bar empilhados
-            const content = document.createElement('div');
-            content.className = 'up-item-content';
-
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'up-item-name';
-            nameSpan.textContent = s.name;
-            nameSpan.title = s.name || '';
-
-            // Mini progress bar por item (segue os estágios de carregamento da aba)
-            const miniTrack = document.createElement('div');
-            miniTrack.className = 'up-item-bar';
-            const miniFill = document.createElement('div');
-            miniFill.className = 'up-item-bar-fill';
-            miniTrack.appendChild(miniFill);
-
-            content.append(nameSpan, miniTrack);
-
-            // Botão "tentar de novo" — só aparece (via CSS) quando a linha falha e o
-            // lote já concluiu. Reexecuta a captura só daquele serviço, sem sair do modal.
-            const retry = document.createElement('button');
-            retry.type = 'button';
-            retry.className = 'up-item-retry';
-            retry.title = 'Tentar de novo';
-            retry.setAttribute('aria-label', 'Tentar de novo');
-            retry.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
-            retry.addEventListener('click', () => retryRow(keyOf(s.url)));
-
-            const status = document.createElement('span');
-            status.className = 'up-item-status';
-
-            row.append(icon, content, retry, status);
-            listEl.appendChild(row);
-            rows[keyOf(s.url)] = row;
-        });
-        return rows;
-    }
-
     // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
     function renderNewSessionCard(session) {
         const grid = originGrid || document.querySelector('.preset-collection .sessions-panel .sessions-grid');
-        console.log('[AddSession] renderNewSessionCard: grid?', !!grid, 'session=', session);
-        if (!grid) { console.warn('[AddSession] grid não encontrado — card não renderizado'); return; }
+        if (!grid) return;
         const card = createSessionElement(session, true, packageData);
         card.classList.add('fadeInFromTop');
         const addCard = grid.querySelector('.add-session-card');
@@ -943,228 +1030,27 @@ function handleAddSession(e) {
         card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
     }
 
-    // Para o "enchimento aos poucos" de uma linha.
-    function stopCreep(key) {
-        if (creepTimers[key]) { clearInterval(creepTimers[key]); delete creepTimers[key]; }
-    }
-    function stopSettle(key) {
-        if (settleTimers[key]) { clearInterval(settleTimers[key]); delete settleTimers[key]; }
-    }
-    function stopAllCreeps() {
-        Object.keys(creepTimers).forEach(stopCreep);
-        Object.keys(settleTimers).forEach(stopSettle);
-    }
+    // A partir daqui é o motor compartilhado com "Atualizar" (captureFlow.js): mesma
+    // lista, mesmas mini bars, mesmo retry. Só o modo muda.
+    function startCapture() {
+        const targets = Array.from(selected.values()).map(s => ({
+            ref: keyOf(s.url),
+            name: s.name,
+            url: s.url,
+        }));
+        if (targets.length === 0) return;
 
-    // Atualiza a mini bar de progresso de uma linha (monotônico: só sobe).
-    function setRowBar(key, pct) {
-        progressByKey[key] = Math.max(progressByKey[key] || 0, pct);
-        const row = rows[key];
-        if (!row) return;
-        const fill = row.querySelector('.up-item-bar-fill');
-        if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
-    }
-
-    // Creep: preenche gradualmente a mini bar até `ceiling` (desacelerando).
-    function startCreep(key, ceiling) {
-        stopCreep(key);
-        creepTimers[key] = setInterval(() => {
-            if (!rows[key] || rows[key].dataset.state !== 'pending') { stopCreep(key); return; }
-            const cur = progressByKey[key] || 0;
-            if (cur >= ceiling - 0.5) { stopCreep(key); return; }
-            progressByKey[key] = cur + (ceiling - cur) * 0.06;
-            const fill = rows[key]?.querySelector('.up-item-bar-fill');
-            if (fill) fill.style.width = `${Math.round(progressByKey[key])}%`;
-        }, 250);
-    }
-
-    // Settle: preenche mini bar 75% → 100% em 3 passos de ~1s cada.
-    function startSettle(key) {
-        stopCreep(key);
-        stopSettle(key);
-        setRowBar(key, CAP_PCT.settle);             // ancora em 75%
-        const STEPS = 3;
-        const stepMs = SETTLE_MS / STEPS;
-        const stepPct = (CAP_PCT.done - CAP_PCT.settle) / STEPS;
-        let step = 0;
-        settleTimers[key] = setInterval(() => {
-            step++;
-            setRowBar(key, Math.min(CAP_PCT.settle + stepPct * step, CAP_PCT.done));
-            if (step >= STEPS) stopSettle(key);
-        }, stepMs);
-    }
-
-    // Mapeia um estágio de carregamento (vindo do overlay da extensão) para a mini bar da linha.
-    function handleStage(key, stage) {
-        if (!rows[key]) return;
-        if (stage === 'start') { setRowBar(key, CAP_PCT.loading); startCreep(key, CAP_PCT.interactive); }
-        else if (stage === 'dcl') { setRowBar(key, CAP_PCT.interactive); startCreep(key, CAP_PCT.complete); }
-        else if (stage === 'complete') { setRowBar(key, CAP_PCT.complete); startCreep(key, CAP_PCT.settle); }
-        else if (stage === 'settle') { startSettle(key); }
-    }
-
-    // Recalcula a barra PRINCIPAL / contadores / rodapé a partir do estado atual das linhas.
-    // A barra principal avança SOMENTE quando uma sessão é coletada (ok ou erro) —
-    // o progresso de carregamento por estágio fica nas mini bars de cada item.
-    function refreshSummary() {
-        const all = Object.values(rows);
-        const doneCount = all.filter(r => r.dataset.state !== 'pending').length;
-        const okCount = all.filter(r => r.dataset.state === 'ok').length;
-        const failedCount = all.filter(r => r.dataset.state === 'error').length;
-
-        // Barra principal = sessões coletadas / total (independente dos estágios de loading)
-        if (batchTotal > 0) {
-            fillEl.style.width = `${Math.round((doneCount / batchTotal) * 100)}%`;
-        }
-
-        if (doneCount < batchTotal) {
-            countEl.textContent = `${doneCount}/${batchTotal}`;
-            return;
-        }
-        // Todas resolvidas (lote + eventuais retries)
-        countEl.textContent = `${okCount}/${batchTotal}`;
-        statusEl.textContent = failedCount === 0
-            ? 'Todas as sessões foram adicionadas'
-            : `${okCount} adicionada(s) · ${failedCount} com falha`;
-        footerStatusText.textContent = failedCount === 0
-            ? 'Sessões adicionadas com sucesso.'
-            : 'Toque em tentar de novo nas que falharam.';
-        if (failedCount === 0) {
-            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
-            footerStatusWrapper.classList.add('is-active');
-        } else {
-            footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`;
-            footerStatusWrapper.classList.remove('is-active');
-        }
-        modal.dataset.result = failedCount === 0 ? 'success' : 'partial';
-    }
-
-    // Aplica o resultado de uma captura (do lote ou de um retry) numa linha.
-    function applyResult(key, ok, session) {
-        const row = rows[key];
-        if (!row) return;
-        stopCreep(key);
-        stopSettle(key);
-        if (ok) {
-            row.dataset.state = 'ok';
-            // Sessão criada → adiciona ao estado local e à tela na hora (uma única vez)
-            if (session) {
+        captureFlow.run({
+            modal,
+            packageId,
+            mode: 'create',
+            targets,
+            onItemOk: (target, session) => {
+                if (!session) return;
                 packageData.sessions.push(session);
                 renderNewSessionCard(session);
-            }
-        } else {
-            row.dataset.state = 'error';
-        }
-        const retryBtn = row.querySelector('.up-item-retry');
-        if (retryBtn) retryBtn.disabled = !(batchDone && row.dataset.state === 'error');
-        refreshSummary();
-    }
-
-    // Dispara a captura de UM serviço e resolve quando a extensão responde por ele.
-    // A extensão sempre emite um authpack:addProgress por serviço (inclusive em falha),
-    // então casamos pela URL — sem depender do addDone (evita cruzar com outro lote).
-    function captureOne(service) {
-        return new Promise((resolve) => {
-            const key = keyOf(service.url);
-            let settled = false;
-            const finish = (ok, session) => {
-                if (settled) return;
-                settled = true;
-                window.removeEventListener('message', onMsg);
-                clearTimeout(timer);
-                resolve({ ok, session });
-            };
-            function onMsg(ev) {
-                if (ev.origin !== location.origin) return;
-                const d = ev.data;
-                if (d?.source !== 'authpack-extension') return;
-                if (d.type === 'authpack:addStage' && keyOf(d.current?.url) === key) {
-                    handleStage(key, d.current?.stage);
-                    return;
-                }
-                if (d.type === 'authpack:addProgress' && keyOf(d.current?.url) === key) {
-                    const ok = d.current.status === 'ok';
-                    finish(ok, ok ? d.current.session : null);
-                }
-            }
-            // Rede de segurança caso nenhuma mensagem chegue (> timeout de captura da extensão).
-            const timer = setTimeout(() => finish(false, null), 75000);
-            window.addEventListener('message', onMsg);
-            window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services: [service] }, location.origin);
+            },
         });
-    }
-
-    // Tenta de novo, no próprio modal, uma sessão que falhou.
-    async function retryRow(key) {
-        const row = rows[key];
-        const service = serviceByKey[key];
-        if (!row || !service || !batchDone) return;
-        if (row.dataset.state === 'pending') return;   // já em andamento
-        row.dataset.state = 'pending';                 // volta ao spinner (esconde o botão via CSS)
-        stopCreep(key);
-        stopSettle(key);
-        progressByKey[key] = 0;                         // zera o progresso da mini bar
-        setRowBar(key, CAP_PCT.loading);                // arranca já (creep por tempo + estágios reais)
-        startCreep(key, CAP_PCT.interactive);
-        const { ok, session } = await captureOne(service);
-        applyResult(key, ok, session);
-    }
-
-    function startCapture() {
-        const services = Array.from(selected.values());
-        const total = services.length;
-        if (total === 0) return;
-
-        batchTotal = total;
-        batchDone = false;
-        services.forEach(s => { serviceByKey[keyOf(s.url)] = s; });
-        Object.keys(progressByKey).forEach(k => delete progressByKey[k]);
-        stopAllCreeps();
-
-        modal.dataset.phase = 'progress';   // CSS troca cancelar/adicionar → fechar
-        modal.removeAttribute('data-result');
-        closeBtn.disabled = true;
-        statusEl.textContent = 'Capturando sessões…';
-        footerStatusText.textContent = 'Capturando…';
-        footerStatusIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader spin"><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>`;
-        footerStatusWrapper.classList.remove('is-active');
-        countEl.textContent = `0/${total}`;
-        fillEl.style.width = '0%';
-
-        rows = buildProgressRows(services);
-
-        // Arranca mini bars: cada item começa a andar no t=0 (creep) e é ANCORADO pelos estágios
-        // reais quando chegam (dcl → 25%, complete → 50%, settle → 75→100%). A barra principal
-        // só avança quando uma sessão termina (ok/erro).
-        services.forEach(s => { const k = keyOf(s.url); setRowBar(k, CAP_PCT.loading); startCreep(k, CAP_PCT.interactive); });
-
-        function onMessage(ev) {
-            if (ev.origin !== location.origin) return;
-            const d = ev.data;
-            if (d?.source !== 'authpack-extension') return;
-
-            if (d.type === 'authpack:addStage') {
-                handleStage(keyOf(d.current?.url), d.current?.stage);
-            } else if (d.type === 'authpack:addProgress') {
-                applyResult(keyOf(d.current?.url), d.current?.status === 'ok', d.current?.session);
-            } else if (d.type === 'authpack:addDone') {
-                window.removeEventListener('message', onMessage);
-                stopAllCreeps();
-                Object.values(rows).forEach(r => { if (r.dataset.state === 'pending') r.dataset.state = 'error'; });
-                batchDone = true;
-                // Libera o retry das linhas que falharam.
-                Object.values(rows).forEach(r => {
-                    const b = r.querySelector('.up-item-retry');
-                    if (b) b.disabled = r.dataset.state !== 'error';
-                });
-                refreshSummary();
-                closeBtn.disabled = false;
-            }
-        }
-        window.addEventListener('message', onMessage);
-        closeBtn.onclick = () => { window.removeEventListener('message', onMessage); stopAllCreeps(); utils.closeModals(); };
-
-        // Dispara a captura na extensão
-        window.postMessage({ source: 'authpack-page', type: 'authpack:addSessions', packageId, services }, location.origin);
     }
 
     confirmBtn.onclick = startCapture;
@@ -1219,6 +1105,10 @@ function setupSharePackageForm(e) {
     openSharePackageModal(packageEl.dataset.packageId);
 }
 
+// Estado do modal de compartilhamento: todos os links únicos do pacote (ativos e
+// encerrados) + o filtro selecionado na lista.
+const shareKeysState = { items: [], filter: 'all' };
+
 // Abre o modal de compartilhamento para um pacote da coleção (por id). Usado
 // tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da top bar.
 function openSharePackageModal(packageId) {
@@ -1226,8 +1116,7 @@ function openSharePackageModal(packageId) {
 
     const sharePackageModal = document.querySelector("#sharePackageModal");
     const nameEl = sharePackageModal.querySelector(".share-pkg-name");
-    const peopleCountEl = sharePackageModal.querySelector(".share-people-count");
-    const generalLinkUrl = sharePackageModal.querySelector("#generalLinkUrl");
+    const sessionsEl = sharePackageModal.querySelector(".share-pkg-sessions");
 
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
     const isOpen = packageData.open !== 0;
@@ -1235,96 +1124,205 @@ function openSharePackageModal(packageId) {
     nameEl.textContent = packageData.name || '';
     nameEl.title = packageData.name || '';
 
-    // Contagem de pessoas com acesso (membros do pacote).
-    const peopleCount = Array.isArray(packageData.users) ? packageData.users.length : 0;
-    peopleCountEl.textContent = peopleCount === 0
-        ? 'Nenhuma pessoa com acesso'
-        : `${peopleCount} ${peopleCount === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+    const sessionsCount = Array.isArray(packageData.sessions) ? packageData.sessions.length : 0;
+    sessionsEl.textContent = sessionsCount === 0
+        ? 'Nenhuma sessão'
+        : `${sessionsCount} ${sessionsCount === 1 ? 'sessão' : 'sessões'}`;
 
-    generalLinkUrl.textContent = utils.buildInviteUrl(packageData.key);
+    renderSharePeopleRow(packageData.users || []);
+    setShareInviteValues(packageData.key);
     utils.setShareModalOpenState(isOpen);
 
-    // Reset unique-keys list to empty placeholder; will be populated by loader.
-    const list = sharePackageModal.querySelector("#uniqueKeysList");
-    list.innerHTML = '<li class="unique-keys-empty">Carregando…</li>';
+    // Zera o estado da lista; o loader preenche em seguida.
+    shareKeysState.items = [];
+    shareKeysState.filter = 'all';
+    setShareFilterUI();
+    setShareListMessage('Carregando…');
 
     utils.showModal("sharePackage", packageId);
 
-    // Fetch active unique keys for this package.
-    loadActiveUniqueKeys(packageId);
+    loadUniqueKeys(packageId);
 }
 
-async function loadActiveUniqueKeys(packageId) {
-    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
-    const res = await fetchManager.getActiveUniqueKeys(packageId);
+// Preenche link de convite e código do pacote (a mesma key, em dois formatos).
+function setShareInviteValues(key) {
+    const linkEl = document.querySelector("#sharePackageModal #generalLinkUrl");
+    const codeEl = document.querySelector("#sharePackageModal #generalKeyCode");
+    const url = utils.buildInviteUrl(key);
+
+    linkEl.textContent = url || '—';
+    linkEl.title = url || '';
+    codeEl.textContent = key || '—';
+    codeEl.title = key || '';
+}
+
+// Linha de pessoas com acesso: pilha de até 3 avatares (+N) e atalho para o
+// painel de membros do pacote.
+function renderSharePeopleRow(users) {
+    const row = document.querySelector("#sharePackageModal #sharePeopleRow");
+    const avatars = row.querySelector('.share-people-avatars');
+    const countEl = row.querySelector('.share-people-count');
+
+    avatars.innerHTML = '';
+    users.slice(0, 3).forEach(user => avatars.appendChild(buildSharePersonAvatar(user)));
+    if (users.length > 3) {
+        avatars.appendChild(createElement('span', 'share-people-avatar overflow', `+${users.length - 3}`));
+    }
+
+    countEl.textContent = users.length === 0
+        ? 'Ninguém com acesso'
+        : `${users.length} ${users.length === 1 ? 'pessoa com acesso' : 'pessoas com acesso'}`;
+    row.title = users.length === 0
+        ? 'Ninguém ativou este pacote ainda'
+        : users.map(u => u.name || 'Usuário').join(', ');
+}
+
+function buildSharePersonAvatar(user) {
+    const [c1, c2] = accessPalette(user.name);
+    const avatar = createElement('span', 'share-people-avatar', shareInitials(user.name));
+    avatar.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
+
+    if (user.picture) {
+        const img = document.createElement('img');
+        img.src = user.picture;
+        img.alt = user.name || '';
+        img.onerror = function () { this.remove(); };
+        avatar.appendChild(img);
+    }
+
+    return avatar;
+}
+
+function shareInitials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+async function loadUniqueKeys(packageId) {
+    const res = await fetchManager.getUniqueKeys(packageId, 'all');
 
     if (!res.ok) {
-        list.innerHTML = '<li class="unique-keys-empty">Não foi possível carregar os links únicos.</li>';
+        setShareListMessage('Não foi possível carregar os links únicos.');
         return;
     }
 
-    renderUniqueKeysList(res.result.data || []);
+    // O modal pode ter sido fechado (ou trocado de pacote) durante a requisição.
+    if (sharePackageModal.dataset.itemId != packageId) return;
+
+    shareKeysState.items = (res.result.data || []).map(normalizeUniqueKey);
+    renderUniqueKeys();
 }
 
-function renderUniqueKeysList(keys) {
+// O backend pode mandar `status` pronto; se não mandar, deduzimos pelos campos.
+function normalizeUniqueKey(key) {
+    return Object.assign({}, key, { status: key.status || deriveUniqueKeyStatus(key) });
+}
+
+function deriveUniqueKeyStatus(key) {
+    if (key.usedAt) return 'used';
+    if (key.revokedAt) return 'revoked';
+    if (key.expiresAt && new Date(key.expiresAt).getTime() <= Date.now()) return 'expired';
+    return 'active';
+}
+
+// Momento em que o link foi encerrado — ordena a lista do mais recente ao mais antigo.
+function uniqueKeyEndedAt(key) {
+    return new Date(key.usedAt || key.revokedAt || key.expiresAt || key.createdAt || 0).getTime();
+}
+
+function matchesShareFilter(key, filter) {
+    if (filter === 'active') return key.status === 'active';
+    if (filter === 'ended') return key.status !== 'active';
+    return true;
+}
+
+// Ativos primeiro (mais novos no topo), depois os encerrados por data do evento.
+function sortUniqueKeys(a, b) {
+    if (a.status === 'active' && b.status !== 'active') return -1;
+    if (b.status === 'active' && a.status !== 'active') return 1;
+    if (a.status === 'active') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    return uniqueKeyEndedAt(b) - uniqueKeyEndedAt(a);
+}
+
+function renderUniqueKeys() {
     const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    const keys = shareKeysState.items
+        .filter(k => matchesShareFilter(k, shareKeysState.filter))
+        .sort(sortUniqueKeys);
+
+    setShareFilterUI();
     list.innerHTML = '';
 
     if (!keys.length) {
-        const empty = document.createElement('li');
-        empty.className = 'unique-keys-empty';
-        empty.textContent = 'Nenhum link único ativo no momento.';
-        list.appendChild(empty);
+        list.appendChild(buildShareEmptyItem(shareKeysState.items.length
+            ? 'Nenhum link neste filtro.'
+            : 'Nenhum link único gerado ainda.'));
         return;
     }
 
     keys.forEach(k => list.appendChild(buildUniqueKeyItem(k)));
 }
 
+function buildShareEmptyItem(message) {
+    return createElement('li', 'unique-keys-empty', message);
+}
+
+function setShareListMessage(message) {
+    const list = document.querySelector("#sharePackageModal #uniqueKeysList");
+    list.innerHTML = '';
+    list.appendChild(buildShareEmptyItem(message));
+}
+
+// Rótulo de cada filtro leva a contagem: "Todos · 8", "Ativos · 2"…
+const SHARE_FILTER_LABELS = { all: 'Todos', active: 'Ativos', ended: 'Encerrados' };
+
+function setShareFilterUI() {
+    document.querySelectorAll('#sharePackageModal .share-filter').forEach(btn => {
+        const filter = btn.dataset.filter;
+        const count = shareKeysState.items.filter(k => matchesShareFilter(k, filter)).length;
+        btn.textContent = count ? `${SHARE_FILTER_LABELS[filter]} · ${count}` : SHARE_FILTER_LABELS[filter];
+        btn.classList.toggle('active', filter === shareKeysState.filter);
+    });
+}
+
+// Um item por link: ponto de status + URL + o que aconteceu. Ativos ganham as
+// ações (copiar/revogar); encerrados ganham o selo do desfecho.
 function buildUniqueKeyItem(k) {
     const url = utils.buildInviteUrl(k.key);
+    const isActive = k.status === 'active';
+    const msToExpiry = new Date(k.expiresAt).getTime() - Date.now();
+    const expiringSoon = isActive && msToExpiry > 0 && msToExpiry <= 3600000;
 
     const li = document.createElement('li');
-    li.className = 'unique-key-item';
+    li.className = `unique-key-item ${isActive ? 'active' : `ended ${k.status}`}${expiringSoon ? ' expiring-soon' : ''}`;
 
-    const info = document.createElement('div');
-    info.className = 'unique-key-info';
+    li.appendChild(createElement('span', 'unique-key-dot'));
 
-    const urlEl = document.createElement('span');
-    urlEl.className = 'unique-key-url';
-    urlEl.textContent = url;
+    const info = createElement('div', 'unique-key-info');
+    const urlEl = createElement('span', 'unique-key-url', url);
     urlEl.title = url;
 
-    const expiryEl = document.createElement('span');
-    expiryEl.className = 'unique-key-expiry';
-    expiryEl.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
-        </svg>
-        <span>${utils.formatExpiry(k.expiresAt)}</span>
-    `;
+    const detail = describeUniqueKey(k);
+    const metaEl = createElement('span', 'unique-key-meta', detail.meta);
+    metaEl.title = detail.metaTitle || detail.meta;
 
     info.appendChild(urlEl);
-    info.appendChild(expiryEl);
+    info.appendChild(metaEl);
+    li.appendChild(info);
 
-    const actions = document.createElement('div');
-    actions.className = 'unique-key-actions';
+    if (!isActive) {
+        li.appendChild(createElement('span', `unique-key-pill ${k.status}`, detail.pill));
+        return li;
+    }
 
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'unique-key-copy';
-    copyBtn.textContent = 'Copiar';
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(url).then(() => {
-            copyBtn.textContent = 'Copiado';
-            copyBtn.classList.add('copied');
-            setTimeout(() => {
-                copyBtn.textContent = 'Copiar';
-                copyBtn.classList.remove('copied');
-            }, 1200);
-        }).catch(() => notify('error', 'Não foi possível copiar o link.'));
-    });
+    const copyBtn = createElement('button', 'unique-key-copy', 'Copiar');
+    copyBtn.type = 'button';
+    copyBtn.addEventListener('click', () => copyShareValue(url, copyBtn, 'Não foi possível copiar o link.'));
 
     const revokeBtn = document.createElement('button');
+    revokeBtn.type = 'button';
     revokeBtn.className = 'unique-key-revoke';
     revokeBtn.title = 'Revogar link';
     revokeBtn.innerHTML = `
@@ -1348,28 +1346,84 @@ function buildUniqueKeyItem(k) {
             return;
         }
 
-        // Remove item da lista com fade-out; mostra empty state se ficar vazia.
+        // Deixa de ser ativo e continua na lista, agora como revogado.
+        const item = shareKeysState.items.find(entry => entry.id === k.id);
+        if (item) {
+            item.status = 'revoked';
+            item.revokedAt = new Date().toISOString();
+        }
+
         li.classList.add('removing');
-        setTimeout(() => {
-            const list = li.parentElement;
-            li.remove();
-            if (list && !list.querySelector('.unique-key-item')) {
-                const empty = document.createElement('li');
-                empty.className = 'unique-keys-empty';
-                empty.textContent = 'Nenhum link único ativo no momento.';
-                list.appendChild(empty);
-            }
-        }, 200);
+        setTimeout(renderUniqueKeys, 200);
 
         notify('success', 'Link único revogado.');
     });
 
+    const actions = createElement('div', 'unique-key-actions');
     actions.appendChild(copyBtn);
     actions.appendChild(revokeBtn);
-
-    li.appendChild(info);
     li.appendChild(actions);
     return li;
+}
+
+// Linha de contexto do link: quando foi criado e o que aconteceu com ele.
+function describeUniqueKey(k) {
+    const created = utils.formatCreated(k.createdAt);
+
+    if (k.status === 'used') {
+        const user = resolveKeyUser(k);
+        const name = user.name || 'Usuário removido';
+        return {
+            meta: `${created} · usado por ${name} ${utils.formatEventMoment(k.createdAt, k.usedAt)}`,
+            metaTitle: user.email ? `${name} · ${user.email}` : name,
+            pill: 'Usado',
+        };
+    }
+
+    if (k.status === 'revoked') {
+        return {
+            meta: `${created} · revogado por você ${utils.formatEventMoment(k.createdAt, k.revokedAt)}`,
+            pill: 'Revogado',
+        };
+    }
+
+    if (k.status === 'expired') {
+        return {
+            meta: `${created} · expirou sem uso ${utils.formatEventMoment(k.createdAt, k.expiresAt)}`,
+            pill: 'Expirado',
+        };
+    }
+
+    return { meta: `${created} · ${utils.formatExpiry(k.expiresAt)}` };
+}
+
+// O backend pode devolver o objeto do usuário ou só o id — nesse caso buscamos
+// entre os membros do pacote (quem saiu do pacote perde nome e avatar).
+function resolveKeyUser(k) {
+    if (k.usedBy && typeof k.usedBy === 'object') return k.usedBy;
+
+    const userId = k.usedByUserId || k.usedBy;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id == sharePackageModal.dataset.itemId);
+    return (packageData && packageData.users || []).find(u => u.id === userId)
+        || { name: 'Usuário removido', email: '', picture: '' };
+}
+
+// Copia um valor e dá feedback no próprio botão. Botões com ícone trocam só o
+// texto do <span>, para o SVG não ser apagado junto.
+function copyShareValue(value, button, errorMessage) {
+    if (!value || value === '—') return;
+
+    const label = button.querySelector('span') || button;
+
+    navigator.clipboard.writeText(value).then(() => {
+        const original = label.textContent;
+        label.textContent = 'Copiado';
+        button.classList.add('copied');
+        setTimeout(() => {
+            label.textContent = original;
+            button.classList.remove('copied');
+        }, 1200);
+    }).catch(() => notify('error', errorMessage));
 }
 
 function setupDeletePackageForm(e) {
@@ -1586,6 +1640,70 @@ function showSessionScreen(event) {
     renderSessionDetails(session, package, period);
 }
 
+// Card "usando agora" ==========
+// Abre a lista de quem está na sessão neste momento. Enquanto está aberto, o
+// overview é rebuscado a cada 30s — sem isso o card mostraria a foto do momento
+// em que a página carregou (o dashboard não tem polling).
+
+let usingNowRefreshTimer = null;
+
+function handleUsingNowClick(event) {
+    event.stopPropagation();
+
+    const packageEl = this.closest('#package-details');
+    const packageId = packageEl?.dataset.packageId;
+    const packageData = packagesList.userCollection.find(pkg => pkg.id === packageId);
+    if (!packageData || !packageData.stats) return;
+
+    // O gatilho existe no rodapé do card do grid e no cabeçalho da tela da sessão.
+    const sessionId = this.closest('.session-card')?.dataset.sessionId
+        || this.closest('.preset-session-overview')?.dataset.sessionId;
+    const sessionData = (packageData.sessions || []).find(s => s.id === sessionId);
+    if (!sessionData) return;
+
+    // Sem ninguém online o bloco não é botão — nada a abrir.
+    if (!((packageData.stats.sessionsOnline || {})[sessionId] || 0)) return;
+
+    openUsingNowModal(sessionData, packageData);
+}
+
+function handleUsingNowKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    handleUsingNowClick.call(this, event);
+}
+
+function openUsingNowModal(session, pkg) {
+    // Abre já preenchido com o que está em cache e só depois busca o dado fresco
+    // — abrir num spinner seria pior do que abrir com 30s de atraso.
+    renderUsingNowModal(session, pkg);
+    utils.showModal('usingNow', session.id);
+
+    stopUsingNowTimers();
+    usingNowRefreshTimer = setInterval(() => refreshUsingNowModal(session, pkg), USING_NOW_REFRESH_MS);
+
+    refreshUsingNowModal(session, pkg);
+}
+
+async function refreshUsingNowModal(session, pkg) {
+    const modal = document.getElementById('usingNowModal');
+    if (!modal.classList.contains('show')) return stopUsingNowTimers();
+
+    // Falhou: mantém na tela o que já estava, em vez de esvaziar o card.
+    const updated = await fetchPackageStats(pkg);
+    if (!updated || !modal.classList.contains('show')) return;
+
+    renderUsingNowModal(session, pkg);
+
+    // Os cards atrás do modal não podem continuar mostrando a contagem antiga.
+    refreshSessionCardsOnline(pkg);
+}
+
+function stopUsingNowTimers() {
+    clearInterval(usingNowRefreshTimer);
+    usingNowRefreshTimer = null;
+}
+
 // Fixed Event Listeners ==========
 
 // Close modals
@@ -1603,7 +1721,155 @@ plusSubscribeBtns.forEach(btn => {
     });
 });
 
-// Plan CTA (redirect to checkout page). Um botão por plano assinável
+// ── Troca de plano: simular → confirmar → executar ──────────────────────────
+// Nenhuma cobrança acontece sem o cliente ver antes o valor exato. O clique no
+// plano só SIMULA; quem dispara a cobrança é o botão do modal de confirmação.
+
+const PLAN_LABELS = { free: 'Free', plus: 'Plus', business: 'Business', enterprise: 'Enterprise' };
+const PLAN_PEOPLE = {
+    free: 'até 10 pessoas',
+    plus: 'até 25 pessoas',
+    business: 'até 75 pessoas',
+    enterprise: 'pessoas ilimitadas',
+};
+
+function planMoney(cents, currency) {
+    return ((cents || 0) / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: (currency || 'BRL').toUpperCase(),
+    });
+}
+
+function planDate(value) {
+    if (!value) return '';
+    // effectiveAt vem em unix seconds no upgrade e como data ISO no downgrade.
+    const d = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+// Executa de fato a troca (ou o redirect para o Checkout de assinatura nova).
+async function startPlanChange(plan, { button = null } = {}) {
+    const res = await fetchManager.createSubscriptionCheckout(plan);
+
+    if (!res.ok) {
+        notify('error', res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
+            ? 'Você já está neste plano.'
+            : res.result?.error || 'Não foi possível concluir a operação.');
+        if (button) { button.disabled = false; button.textContent = 'Confirmar'; }
+        return;
+    }
+
+    const { mode, url, effectiveAt } = res.result || {};
+
+    if (mode === 'checkout') {
+        if (!url) {
+            notify('error', 'Erro ao iniciar checkout. Tente novamente.');
+            if (button) { button.disabled = false; button.textContent = 'Confirmar'; }
+            return;
+        }
+        window.location.href = url;
+        return;
+    }
+
+    utils.closeModals();
+
+    if (mode === 'upgraded') {
+        notify('success', 'Plano atualizado! Cobramos apenas a diferença proporcional.');
+    } else if (mode === 'downgrade_scheduled') {
+        notify('success', `Mudança agendada para ${planDate(effectiveAt) || 'o fim do período atual'}.`);
+    } else if (mode === 'schedule_canceled') {
+        notify('success', 'Mudança de plano cancelada. Você segue no plano atual.');
+    }
+
+    setTimeout(() => window.location.reload(), 2500);
+}
+
+// Monta e abre o modal de confirmação com os números vindos da simulação.
+function openPlanChangeConfirm(plan, preview) {
+    const el = (id) => document.getElementById(id);
+    const from = PLAN_LABELS[preview.currentTier] || preview.currentTier;
+    const to = PLAN_LABELS[preview.newTier] || preview.newTier;
+
+    const chargeBox = el('pc-charge');
+    const breakdown = el('pc-breakdown');
+    const linesEl = el('pc-lines');
+    const confirmBtn = el('pc-confirm');
+
+    // Estado limpo — o modal é reutilizado entre aberturas.
+    linesEl.innerHTML = '';
+    breakdown.style.display = 'none';
+    chargeBox.classList.remove('pc-charge--none');
+    el('pc-charge-sub').textContent = '';
+
+    // Transição entre planos
+    el('pc-from-name').textContent = `AuthPack ${from}`;
+    el('pc-from-people').textContent = PLAN_PEOPLE[preview.currentTier] || '';
+    el('pc-to-name').textContent = `AuthPack ${to}`;
+    el('pc-to-people').textContent = PLAN_PEOPLE[preview.newTier] || '';
+
+    if (preview.mode === 'upgrade') {
+        el('pc-title').textContent = 'Confirmar upgrade';
+        el('pc-to-label').textContent = 'A partir de agora';
+
+        // Detalhamento da Stripe: crédito do tempo não usado + valor do novo plano.
+        if ((preview.lines || []).length) {
+            breakdown.style.display = '';
+            preview.lines.forEach((l) => {
+                const row = document.createElement('div');
+                row.className = 'pc-line';
+                row.innerHTML = '<span></span><strong></strong>';
+                row.querySelector('span').textContent = l.description || '';
+                const value = row.querySelector('strong');
+                value.textContent = planMoney(l.amount, preview.currency);
+                if (l.amount < 0) value.classList.add('is-credit');
+                linesEl.appendChild(row);
+            });
+        }
+
+        el('pc-charge-label').textContent = 'Cobrança única agora';
+        el('pc-charge-value').textContent = planMoney(preview.amountDueNow, preview.currency);
+        el('pc-charge-sub').textContent = 'Referente apenas aos dias restantes do ciclo atual.';
+        el('pc-note').textContent = 'A mensalidade cheia do novo plano só passa a valer na próxima '
+            + 'renovação. O novo limite de pessoas fica disponível imediatamente.';
+    } else if (preview.mode === 'downgrade') {
+        const when = planDate(preview.effectiveAt);
+        el('pc-title').textContent = 'Confirmar mudança de plano';
+        el('pc-to-label').textContent = when ? `A partir de ${when}` : 'No fim do ciclo';
+
+        chargeBox.classList.add('pc-charge--none');
+        el('pc-charge-label').textContent = 'Nenhuma cobrança agora';
+        el('pc-charge-value').textContent = 'R$ 0,00';
+        el('pc-charge-sub').textContent = when
+            ? `Você já pagou o ${from} até ${when}.`
+            : `Você já pagou o ${from} até o fim do ciclo atual.`;
+        el('pc-note').textContent = `Até lá nada muda: você mantém todos os limites do ${from}. `
+            + `Depois dessa data passa a valer o limite do ${to} — acessos compartilhados acima do novo `
+            + 'limite ficam pausados até você liberar espaço.';
+    } else if (preview.mode === 'cancel_schedule') {
+        el('pc-title').textContent = 'Cancelar mudança agendada';
+        el('pc-to-label').textContent = 'Continua';
+        el('pc-to-name').textContent = `AuthPack ${from}`;
+        el('pc-to-people').textContent = PLAN_PEOPLE[preview.currentTier] || '';
+
+        chargeBox.classList.add('pc-charge--none');
+        el('pc-charge-label').textContent = 'Nenhuma cobrança agora';
+        el('pc-charge-value').textContent = 'R$ 0,00';
+        el('pc-note').textContent = `A mudança agendada será desfeita e você segue no ${from} `
+            + 'normalmente, com renovação automática.';
+    }
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar';
+    confirmBtn.onclick = async () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processando...';
+        await startPlanChange(plan, { button: confirmBtn });
+    };
+
+    utils.showModal('planChange');
+}
+
+// Plan CTA — abre a simulação. Um botão por plano assinável
 // (data-plan="plus" | "business"). Enterprise é um link de contato (sem data-plan).
 const planChooseBtns = document.querySelectorAll('.plan-choose-btn[data-plan]');
 planChooseBtns.forEach(planBtn => {
@@ -1615,33 +1881,40 @@ planChooseBtns.forEach(planBtn => {
         const originalText = planBtn.textContent;
         planBtn.textContent = 'Redirecionando...';
 
-        try {
-            const res = await fetchManager.createCheckoutOrder({ origin: 'platform', plan });
-
-            if (!res.ok) {
-                const errMsg = res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                    ? 'Você já está neste plano.'
-                    : res.result?.error || 'Erro ao iniciar checkout.';
-                alert(errMsg);
-                planBtn.disabled = false;
-                planBtn.textContent = originalText;
-                return;
-            }
-
-            const orderId = res.result?.id;
-            if (!orderId) {
-                alert('Erro ao criar pedido. Tente novamente.');
-                planBtn.disabled = false;
-                planBtn.textContent = originalText;
-                return;
-            }
-
-            window.location.href = `/pages/checkout/?orderId=${orderId}`;
-        } catch (err) {
-            console.error('Plan checkout redirect error:', err);
-            alert('Erro inesperado. Tente novamente.');
+        const restore = () => {
             planBtn.disabled = false;
             planBtn.textContent = originalText;
+        };
+
+        try {
+            // Etapa 1 — simula. Nada é cobrado aqui.
+            const res = await fetchManager.previewPlanChange(plan);
+            restore();
+
+            if (!res.ok) {
+                notify('error', res.result?.error || 'Não foi possível simular a troca de plano.');
+                return;
+            }
+
+            const preview = res.result || {};
+
+            // Assinatura nova: o próprio Checkout da Stripe é a tela de
+            // confirmação, com valor e cartão. Não duplicamos isso aqui.
+            if (preview.mode === 'checkout') {
+                await startPlanChange(plan);
+                return;
+            }
+
+            if (preview.mode === 'same') {
+                notify('error', 'Você já está neste plano.');
+                return;
+            }
+
+            openPlanChangeConfirm(plan, preview);
+        } catch (err) {
+            console.error('Plan preview error:', err);
+            notify('error', 'Erro inesperado. Tente novamente.');
+            restore();
         }
     });
 });
@@ -1650,6 +1923,28 @@ const cancelBtns = document.querySelectorAll(".cancel-btn");
 cancelBtns.forEach(item => item.addEventListener("click", event => {
     utils.closeModals();
 }));
+
+// Retorno do Checkout hospedado da Stripe (?assinatura=sucesso|cancelado).
+// O pagamento é confirmado pelo webhook invoice.paid, que pode chegar alguns
+// segundos depois do redirect — por isso a mensagem fala em "liberando" e a
+// página recarrega uma vez para pegar o plano já atualizado.
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get("assinatura");
+    if (!outcome) return;
+
+    params.delete("assinatura");
+    const query = params.toString();
+    const cleanUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+    window.history.replaceState({}, "", cleanUrl);
+
+    if (outcome === "sucesso") {
+        notify("success", "Pagamento recebido! Liberando seu plano...");
+        setTimeout(() => window.location.reload(), 4000);
+    } else if (outcome === "cancelado") {
+        notify("error", "Checkout cancelado. Nenhuma cobrança foi feita.");
+    }
+})();
 
 // Abre o modal Plus automaticamente quando vindo do upsell (ex.: extensão -> ?upgrade=plus)
 (() => {
@@ -1680,14 +1975,6 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.session-options-btn') && !e.target.closest('.session-options')) {
         const activeSessionOptions = document.querySelectorAll('.session-options:not(.hidden)');
         activeSessionOptions.forEach(opt => {
-            opt.classList.add('hidden');
-        });
-    }
-
-    // Close product options if click outside
-    if (!e.target.closest('.product-options-btn') && !e.target.closest('.product-options')) {
-        const activeProductOptions = document.querySelectorAll('.product-options:not(.hidden)');
-        activeProductOptions.forEach(opt => {
             opt.classList.add('hidden');
         });
     }
@@ -2172,14 +2459,18 @@ activationInputs.forEach(input => {
     });
 });
 
-// Share Package (v2: link público + links únicos)
+// Share Package (v2: acesso do pacote + links únicos com histórico)
 const sharePackageModal = document.querySelector('#sharePackageModal');
 const generalToggle = sharePackageModal.querySelector('#generalToggle');
 const copyGeneralLinkBtn = sharePackageModal.querySelector('#copyGeneralLinkBtn');
+const copyGeneralKeyBtn = sharePackageModal.querySelector('#copyGeneralKeyBtn');
 const renewGeneralKeyBtn = sharePackageModal.querySelector('#renewGeneralKeyBtn');
 const generateUniqueKeyBtn = sharePackageModal.querySelector('#generateUniqueKeyBtn');
+const uniqueKeysFilters = sharePackageModal.querySelector('#uniqueKeysFilters');
+const sharePeopleRow = sharePackageModal.querySelector('#sharePeopleRow');
 
-// Toggle público (open/closed) — apenas o link geral é afetado; links únicos seguem válidos.
+// Toggle público (open/closed) — apenas o acesso pelo link/código do pacote é
+// afetado; links únicos seguem válidos.
 generalToggle.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
     const fetchToggleAccess = await fetchManager.togglePackageState({ id: packageId });
@@ -2197,24 +2488,22 @@ generalToggle.addEventListener('click', async () => {
     utils.setShareModalOpenState(!wasOpen);
 });
 
-// Copia o link público.
+// Copia o link de convite e o código do pacote (a mesma key em dois formatos).
 copyGeneralLinkBtn.addEventListener('click', () => {
-    const url = sharePackageModal.querySelector("#generalLinkUrl").textContent;
-    if (!url || url === '—') return;
-    navigator.clipboard.writeText(url).then(() => {
-        copyGeneralLinkBtn.textContent = "Copiado";
-        setTimeout(() => {
-            copyGeneralLinkBtn.textContent = "Copiar";
-        }, 1000);
-    }).catch(() => {
-        notify("error", "Não foi possível copiar o link.");
-    });
+    copyShareValue(sharePackageModal.querySelector("#generalLinkUrl").textContent, copyGeneralLinkBtn, "Não foi possível copiar o link.");
 });
 
-// Renova a key geral — invalida o link público anterior.
+copyGeneralKeyBtn.addEventListener('click', () => {
+    copyShareValue(sharePackageModal.querySelector("#generalKeyCode").textContent, copyGeneralKeyBtn, "Não foi possível copiar o código.");
+});
+
+// Rotaciona a key do pacote — invalida o link e o código anteriores.
 renewGeneralKeyBtn.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
+
+    renewGeneralKeyBtn.disabled = true;
     const fetchRenewKey = await fetchManager.renewPackageKey({ id: packageId });
+    renewGeneralKeyBtn.disabled = false;
 
     if (!fetchRenewKey.ok) {
         notify("error", "Não foi possível renovar a chave.");
@@ -2223,14 +2512,31 @@ renewGeneralKeyBtn.addEventListener('click', async () => {
 
     const newKey = fetchRenewKey.result.data.key;
 
-    // Atualiza chave no array local + URL na tela.
+    // Atualiza chave no array local + link e código na tela.
     const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
     packagesList.userCollection[packageIdx].key = newKey;
+    setShareInviteValues(newKey);
 
-    const urlEl = sharePackageModal.querySelector("#generalLinkUrl");
-    urlEl.textContent = utils.buildInviteUrl(newKey);
+    notify("success", "Key do pacote rotacionada.");
+});
 
-    notify("success", "Link público renovado.");
+// Filtros da lista (todos · ativos · encerrados).
+uniqueKeysFilters.addEventListener('click', event => {
+    const button = event.target.closest('.share-filter');
+    if (!button || button.dataset.filter === shareKeysState.filter) return;
+
+    shareKeysState.filter = button.dataset.filter;
+    renderUniqueKeys();
+});
+
+// Atalho para o painel "Pessoas com acesso" do pacote.
+sharePeopleRow.addEventListener('click', () => {
+    const packageId = sharePackageModal.dataset.itemId;
+    utils.closeModals();
+    selectPackage(packageId);
+
+    const panel = document.querySelector('#package-details .collection-users-col .users-panel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 // Gera um novo link único (válido por 24h, uso único).
@@ -2252,11 +2558,11 @@ generateUniqueKeyBtn.addEventListener('click', async () => {
         return;
     }
 
-    // Append to current list (prepend so newest shows first).
-    const list = sharePackageModal.querySelector("#uniqueKeysList");
-    const emptyState = list.querySelector('.unique-keys-empty');
-    if (emptyState) emptyState.remove();
-    list.insertBefore(buildUniqueKeyItem(res.result.data), list.firstChild);
+    // Entra no estado e a lista se redesenha com ele no topo.
+    const created = Object.assign({ createdAt: new Date().toISOString() }, res.result.data);
+    shareKeysState.items.unshift(normalizeUniqueKey(created));
+    if (shareKeysState.filter === 'ended') shareKeysState.filter = 'all';
+    renderUniqueKeys();
 
     notify("success", "Link único gerado.");
 });

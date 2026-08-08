@@ -110,10 +110,6 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span>Usuários</span>
                 </button>
-                <button class="admin-nav-item" data-view="vendedores">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
-                    <span>Vendedores</span>
-                </button>
                 <button class="admin-nav-item" data-view="administradores">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span>Administradores</span>
@@ -151,7 +147,7 @@
             <section class="admin-view active" data-view="financeiro">
                 <div class="admin-view-head">
                     <h1>Financeiro</h1>
-                    <p>Receita da plataforma, taxas e saques pendentes.</p>
+                    <p>Receita recorrente das assinaturas da plataforma.</p>
                 </div>
 
                 <div class="admin-cards" id="fin-cards"></div>
@@ -173,10 +169,6 @@
                     <div class="admin-chart-wrap"><canvas id="fin-chart"></canvas></div>
                 </div>
 
-                <div class="admin-panel">
-                    <div class="admin-panel-head"><h2>Saques pendentes</h2></div>
-                    <div id="fin-withdrawals"></div>
-                </div>
             </section>
 
             <!-- USUÁRIOS -->
@@ -190,7 +182,6 @@
                     <select id="users-role-filter" class="admin-input">
                         <option value="">Todas as roles</option>
                         <option value="user">Usuário</option>
-                        <option value="seller">Vendedor</option>
                         <option value="admin">Admin</option>
                     </select>
                     <select id="users-status-filter" class="admin-input">
@@ -200,16 +191,6 @@
                     </select>
                 </div>
                 <div id="users-list"></div>
-            </section>
-
-            <!-- VENDEDORES -->
-            <section class="admin-view" data-view="vendedores">
-                <div class="admin-view-head">
-                    <h1>Vendedores</h1>
-                    <p>Parceiros aprovados para vender na Vitrine.</p>
-                    <button class="admin-btn admin-btn-primary" id="seller-create-btn">+ Cadastrar vendedor</button>
-                </div>
-                <div id="sellers-list"></div>
             </section>
 
             <!-- ADMINISTRADORES -->
@@ -228,7 +209,7 @@
         </main>
     </div>
 
-    <!-- Detail drawer (reutilizado por usuários e vendedores) -->
+    <!-- Detail drawer -->
     <div class="admin-drawer-overlay" id="admin-drawer">
         <div class="admin-drawer">
             <button class="admin-drawer-close" id="admin-drawer-close" aria-label="Fechar">×</button>
@@ -239,8 +220,6 @@
     <script src="/pages/admin/admin.js" defer></script>
     <script src="/pages/admin/financial.js" defer></script>
     <script src="/pages/admin/users.js" defer></script>
-    <script src="/pages/admin/sellers.js" defer></script>
-    <script src="/pages/admin/onboarding.js" defer></script>
     <script src="/pages/admin/admins.js" defer></script>
 </body>
 

@@ -74,15 +74,179 @@ function paletteFromSession(session) {
     };
 }
 
-// Converte um rótulo de tempo ("1h 20m", "45m", "0s") em minutos (número).
-// Usado só para dimensionar a barra de "uso no período" de forma relativa.
-function usageLabelToMinutes(label) {
-    if (typeof label !== 'string') return 0;
-    let total = 0;
-    const h = label.match(/(\d+)\s*h/); if (h) total += Number(h[1]) * 60;
-    const m = label.match(/(\d+)\s*m/); if (m) total += Number(m[1]);
-    const s = label.match(/(\d+)\s*s/); if (s) total += Number(s[1]) / 60;
-    return total;
+// ============================================================================
+// BARRA DE USO DOS SESSION CARDS
+// ============================================================================
+// Mesma conta nas duas views — "hoje vs. o costume dos últimos 30 dias" —
+// mudando só de quem é o histórico:
+//   coleção  — o total da equipe: "essa ferramenta rodou o tanto de sempre?"
+//   acessos  — só o seu uso: "hoje eu usei mais ou menos que de costume?"
+//
+// Na coleção é o TOTAL do dia (a soma de todo mundo), não a média por pessoa:
+// se cinco pessoas costumam usar o Canva e hoje só uma entrou pelo tempo de
+// sempre, a média por pessoa marcaria 100% enquanto a ferramenta ficou parada.
+// Quem paga o assento precisa ver que ficou parada.
+//
+// Até 100% a barra é a fração do costume. Passando disso ela se reescala: o
+// total de hoje passa a ser a barra inteira e um traço marca onde o costume
+// ficou — a distância do traço até o fim é o excedente.
+
+// O costume olha sempre os últimos 30 dias disponíveis (é o quanto o histórico
+// guarda). O seletor de período mexe só no gráfico do pacote.
+const USAGE_BASELINE_DAYS = 30;
+// Faixa em que hoje conta como "no costume" — evita o badge piscando 96%/104%.
+const USAGE_ON_PAR_TOLERANCE = 0.10;
+
+// Janela do heartbeat: um acesso conta como vivo enquanto o fim dele estiver a
+// menos disto de agora. Vale para o badge de online dos cards e para o card
+// "usando agora" — os dois têm que contar as mesmas pessoas.
+const ONLINE_WINDOW_SECONDS = 60;
+
+const USAGE_COPY = {
+    collection: {
+        label: 'Hoje vs. costume',
+        idle: 'sem uso hoje',
+        firstDay: 'sem costume ainda',
+        onPar: 'no costume',
+        above: ratio => `↑ ${formatMultiplier(ratio)} o costume`,
+        below: ratio => `↓ ${Math.round(ratio * 100)}% do costume`,
+        titleUnused: 'Ainda sem uso registrado nesta sessão',
+        titleIdle: 'Ninguém usou hoje',
+        titleBaseline: 'Costume'
+    },
+    access: {
+        label: 'Hoje vs. seu costume',
+        idle: 'você não usou hoje',
+        firstDay: 'sem costume ainda',
+        onPar: 'no seu costume',
+        above: ratio => `↑ ${formatMultiplier(ratio)} o seu costume`,
+        below: ratio => `↓ ${Math.round(ratio * 100)}% do seu costume`,
+        titleUnused: 'Você ainda não usou esta sessão',
+        titleIdle: 'Você não usou hoje',
+        titleBaseline: 'Seu costume'
+    }
+};
+
+function formatMultiplier(ratio) {
+    return ratio >= 10 ? `${Math.round(ratio)}×` : `${ratio.toFixed(1).replace('.', ',')}×`;
+}
+
+function meanOf(values) {
+    return values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+}
+
+// Traduz as duas grandezas no estado que o card mostra.
+//
+// Sem costume há dois casos bem diferentes: a sessão nunca foi usada ('unused',
+// barra vazia) ou hoje é o primeiro dia dela ('first-day', barra cheia). Barra
+// vazia só pode significar "não usaram" — nunca "ainda não sei comparar".
+function buildUsageComparison({ value, baseline }) {
+    const base = { value, baseline, ratio: 0 };
+
+    if (baseline <= 0) {
+        return value > 0
+            ? { ...base, state: 'first-day', ratio: 1 }
+            : { ...base, state: 'unused' };
+    }
+    if (value <= 0) return { ...base, state: 'idle' };
+
+    const ratio = value / baseline;
+    const state = Math.abs(ratio - 1) <= USAGE_ON_PAR_TOLERANCE
+        ? 'on-par'
+        : (ratio > 1 ? 'above' : 'below');
+
+    return { ...base, ratio, state };
+}
+
+// Total de uso da sessão por dia, no formato "DD/MM/AAAA" do accessHistory —
+// que já divide na meia-noite o acesso que atravessa o dia, então o total
+// diário do card bate com o do gráfico.
+function getSessionDailyTotals(sessionId, accessHistory) {
+    const totals = {};
+
+    Object.entries(accessHistory || {}).forEach(([dateKey, accesses]) => {
+        accesses.forEach(access => {
+            if (access.sessionId !== sessionId) return;
+            totals[dateKey] = (totals[dateKey] || 0) + (access.usageTimeSeconds || 0);
+        });
+    });
+
+    return totals;
+}
+
+// Total de hoje contra o total de um dia normal. O costume é a média dos dias
+// em que a sessão foi usada — dias parados (fim de semana, feriado) entrariam
+// como zero e rebaixariam o costume, fazendo todo dia útil parecer acima da
+// média. Serve às duas views: muda só o accessHistory que entra (o do pacote
+// inteiro na coleção, o do próprio membro nos acessos).
+function getSessionUsageComparison(sessionId, accessHistory, now = new Date()) {
+    const dailyTotals = filterByLastDays(getSessionDailyTotals(sessionId, accessHistory), USAGE_BASELINE_DAYS);
+    const todayKey = formatDate(now);
+
+    const previousDays = Object.entries(dailyTotals)
+        .filter(([dateKey, seconds]) => dateKey !== todayKey && seconds > 0)
+        .map(([, seconds]) => seconds);
+
+    return buildUsageComparison({
+        value: dailyTotals[todayKey] || 0,
+        baseline: meanOf(previousDays)
+    });
+}
+
+function usageComparisonTitle(comparison, view) {
+    const { state, value, baseline } = comparison;
+    const copy = USAGE_COPY[view];
+
+    if (state === 'unused') return copy.titleUnused;
+    if (state === 'first-day') {
+        return `Hoje: ${formatDuration(value)} · Ainda sem outro dia de uso para comparar`;
+    }
+
+    const costume = `${copy.titleBaseline}: ${formatDuration(baseline)} por dia (últimos ${USAGE_BASELINE_DAYS} dias)`;
+    if (state === 'idle') return `${copy.titleIdle} · ${costume}`;
+    return `Hoje: ${formatDuration(value)} · ${costume}`;
+}
+
+// Escreve a comparação no card: largura da barra, badge e tempo do cabeçalho.
+// O número do cabeçalho é sempre o mesmo que a barra mede — se um mostrasse o
+// total e o outro a média, voltaríamos a ter dois tempos discordando.
+function applySessionUsageBar(card, comparison, view = 'collection') {
+    const usage = card.querySelector('.session-card-usage');
+    const fill = card.querySelector('.session-card-usage-fill');
+    const bar = card.querySelector('.session-card-usage-bar');
+    const badge = card.querySelector('.session-card-usage-ratio');
+    const timeText = card.querySelector('.usage-time-text');
+    if (!fill) return;
+
+    const copy = USAGE_COPY[view];
+    const { state, ratio } = comparison;
+    const isEmpty = state === 'unused' || state === 'idle';
+    const isAbove = state === 'above';
+
+    fill.style.width = (isEmpty ? 0 : Math.max(4, Math.min(100, Math.round(ratio * 100)))) + '%';
+
+    if (bar) bar.classList.toggle('is-above-average', isAbove);
+
+    // Acima do costume a barra vira o total de hoje e o traço mostra onde o
+    // costume caiu — o pedaço depois dele é o que passou.
+    const mark = card.querySelector('.session-card-usage-mark');
+    if (mark) mark.style.left = (isAbove ? 100 / ratio : 100) + '%';
+
+    if (badge) {
+        // Nunca usada: nada a dizer, só a barra vazia.
+        badge.textContent = state === 'unused' ? ''
+            : state === 'idle' ? copy.idle
+                : state === 'first-day' ? copy.firstDay
+                    : state === 'on-par' ? copy.onPar
+                        : state === 'above' ? copy.above(ratio) : copy.below(ratio);
+
+        badge.classList.toggle('is-above-average', state === 'above');
+        badge.classList.toggle('is-muted', state === 'idle' || state === 'first-day');
+        badge.classList.toggle('is-hidden', state === 'unused');
+    }
+
+    if (timeText) timeText.textContent = formatDuration(comparison.value);
+    if (usage) usage.title = usageComparisonTitle(comparison, view);
 }
 
 // A sessão mais antiga (a primeira adicionada) do pacote. A ordem do array não é
@@ -275,30 +439,30 @@ function buildSessionCardBase(session, pkg, isCollection) {
     status.appendChild(statusDot);
     status.appendChild(statusText);
 
-    // Barra de "uso no período" (largura definida em loadPackageStats).
+    // Barra de uso. A largura, o badge e o tempo são preenchidos depois por
+    // applySessionUsageBar — loadPackageStats na coleção (hoje vs. costume),
+    // loadAccessOverview nos acessos (meu uso vs. média). Nasce vazio.
     const usage = createElement('div', 'session-card-usage');
     const usageHead = createElement('div', 'session-card-usage-head');
-    const usageLabel = createElement('span', 'session-card-usage-label', 'Uso no período');
+    const usageLabel = createElement('span', 'session-card-usage-label',
+        USAGE_COPY[isCollection ? 'collection' : 'access'].label);
+    const usageValueGroup = createElement('div', 'session-card-usage-value');
+    const usageRatio = createElement('span', 'session-card-usage-ratio is-hidden');
     const usageValue = createElement('span', 'usage-time-text');
-    usageValue.textContent = session.usageTime || '0m';
+    usageValue.textContent = '0s';
+    usageValueGroup.appendChild(usageRatio);
+    usageValueGroup.appendChild(usageValue);
     usageHead.appendChild(usageLabel);
-    usageHead.appendChild(usageValue);
+    usageHead.appendChild(usageValueGroup);
     const usageBar = createElement('div', 'session-card-usage-bar');
     const usageFill = createElement('div', 'session-card-usage-fill');
     // Cor da barra = gradiente do serviço (inline, robusto).
     usageFill.style.background = `linear-gradient(90deg, ${c1}, ${c2})`;
-    // Largura inicial = fração do tempo desta sessão sobre o total usado no
-    // pacote no período (o quanto ela representa do todo). Se só ela foi usada,
-    // 100%; dividido com outras, cada uma fica com sua parte. Para a collection,
-    // loadPackageStats recalcula depois com os dados reais.
-    const allMinutes = (pkg && Array.isArray(pkg.sessions) ? pkg.sessions : [session])
-        .map(s => usageLabelToMinutes(s.usageTime));
-    const totalMinutes = allMinutes.reduce((sum, m) => sum + m, 0);
-    const myMinutes = usageLabelToMinutes(session.usageTime);
-    usageFill.style.width = (myMinutes > 0 && totalMinutes > 0
-        ? Math.max(4, Math.round(myMinutes / totalMinutes * 100))
-        : 0) + '%';
+    usageFill.style.width = '0%';
+    // Traço do costume — só visível quando hoje passa dele.
+    const usageMark = createElement('span', 'session-card-usage-mark');
     usageBar.appendChild(usageFill);
+    usageBar.appendChild(usageMark);
     usage.appendChild(usageHead);
     usage.appendChild(usageBar);
 
@@ -362,6 +526,241 @@ function updateSessionUsingNow(card, onlineUsers = [], count = null) {
     if (label) label.textContent = total > 0 ? 'usando agora' : 'ninguém usando agora';
 
     members.classList.toggle('is-empty', total <= 0);
+
+    // Com gente online o rodapé abre o card de quem está usando (só na coleção —
+    // no access view o backend manda a contagem, não quem é). Sem ninguém não há
+    // o que abrir, então nem vira botão.
+    const isClickable = total > 0 && !!card.closest('.preset-collection');
+    members.classList.toggle('is-clickable', isClickable);
+    if (isClickable) {
+        members.setAttribute('role', 'button');
+        members.setAttribute('tabindex', '0');
+        members.setAttribute('aria-haspopup', 'dialog');
+        members.title = 'Ver quem está usando agora';
+    } else {
+        members.removeAttribute('role');
+        members.removeAttribute('tabindex');
+        members.removeAttribute('aria-haspopup');
+        members.removeAttribute('title');
+    }
+}
+
+// Sincroniza badge de online + avatares dos cards de sessão com o pkg.stats
+// atual. Usado depois de um refresh disparado pelo card "usando agora", para os
+// cards no fundo não continuarem mostrando a contagem antiga.
+function refreshSessionCardsOnline(pkg) {
+    if (!pkg.stats) return;
+
+    const cards = document.querySelectorAll('#package-details .preset-collection .sessions-panel .session-card');
+    cards.forEach(card => {
+        const sessionId = card.dataset.sessionId;
+        const count = (pkg.stats.sessionsOnline || {})[sessionId] || 0;
+
+        const badge = card.querySelector('.online-count-num');
+        if (badge) badge.textContent = count;
+
+        const onlineUsers = ((pkg.stats.sessionsOnlineUsers || {})[sessionId] || [])
+            .map(uid => pkg.users.find(u => u.id === uid))
+            .filter(Boolean);
+        updateSessionUsingNow(card, onlineUsers, count);
+    });
+}
+
+// ============================================================================
+// CARD "USANDO AGORA"
+// ============================================================================
+// O rodapé do session card diz quantos estão online; este card diz quem são,
+// há quanto tempo cada um está conectado e quanto já usou hoje NESTA sessão.
+// Tudo sai do pkg.stats.accessHistory — nenhuma chamada nova ao backend além
+// do refresh do próprio overview.
+
+// De quanto em quanto tempo o card refaz o overview enquanto está aberto.
+const USING_NOW_REFRESH_MS = 30000;
+
+// Agrega o histórico do pacote na visão de uma sessão. processRawAccessHistory
+// quebra em uma fatia por dia o acesso que atravessa a meia-noite, então as
+// fatias são reagrupadas por accessId antes de decidir quem está vivo.
+function buildUsingNowData(session, pkg, now = new Date()) {
+    const history = (pkg.stats && pkg.stats.accessHistory) || {};
+    const todayKey = formatDate(now);
+
+    const accesses = new Map();   // accessId -> { userId, seconds, start }
+    const todayByUser = new Map(); // userId  -> segundos usados hoje nesta sessão
+
+    Object.entries(history).forEach(([dateKey, slices]) => {
+        slices.forEach(slice => {
+            if (slice.sessionId !== session.id) return;
+
+            const seconds = slice.usageTimeSeconds || 0;
+            const start = new Date(slice.localDateTime);
+
+            const access = accesses.get(slice.accessId) || { userId: slice.userId, seconds: 0, start };
+            access.seconds += seconds;
+            if (start < access.start) access.start = start;
+            accesses.set(slice.accessId, access);
+
+            if (dateKey === todayKey) {
+                todayByUser.set(slice.userId, (todayByUser.get(slice.userId) || 0) + seconds);
+            }
+        });
+    });
+
+    const onlineByUser = new Map(); // userId -> { devices, activeSeconds }
+    const leftAtByUser = new Map(); // userId -> fim do último acesso encerrado
+
+    accesses.forEach(access => {
+        const end = new Date(access.start.getTime() + access.seconds * 1000);
+        const sinceEnd = Math.floor((now - end) / 1000);
+
+        // Mesma regra do badge de online, para as duas contagens baterem.
+        if (sinceEnd < ONLINE_WINDOW_SECONDS && sinceEnd >= 0) {
+            const live = onlineByUser.get(access.userId) || { devices: 0, activeSeconds: 0 };
+            live.devices++;
+            // O acesso está vivo, então "ativo há" é o relógio desde a conexão —
+            // é isso que faz o tempo correr sozinho entre um refresh e outro.
+            // Com dois dispositivos vale o que está aberto há mais tempo.
+            live.activeSeconds = Math.max(live.activeSeconds, Math.floor((now - access.start) / 1000));
+            onlineByUser.set(access.userId, live);
+            return;
+        }
+
+        const previous = leftAtByUser.get(access.userId);
+        if (!previous || end > previous) leftAtByUser.set(access.userId, end);
+    });
+
+    const online = [];
+    onlineByUser.forEach((live, userId) => {
+        online.push({
+            user: findUsingNowUser(userId, pkg),
+            devices: live.devices,
+            activeSeconds: live.activeSeconds,
+            todaySeconds: todayByUser.get(userId) || 0
+        });
+    });
+
+    // Quem usou hoje e já saiu — é o contexto que falta quando só uma pessoa
+    // está online no momento em que o card é aberto.
+    const past = [];
+    todayByUser.forEach((todaySeconds, userId) => {
+        if (onlineByUser.has(userId) || todaySeconds <= 0) return;
+        past.push({
+            user: findUsingNowUser(userId, pkg),
+            todaySeconds,
+            leftAt: leftAtByUser.get(userId) || null
+        });
+    });
+
+    online.sort((a, b) => b.activeSeconds - a.activeSeconds);
+    past.sort((a, b) => b.todaySeconds - a.todaySeconds);
+
+    const todayTotalSeconds = Array.from(todayByUser.values()).reduce((sum, s) => sum + s, 0);
+
+    return { online, past, todayTotalSeconds };
+}
+
+// O usuário pode ter sido removido do pacote depois de usar — a linha continua
+// valendo, só perde nome e avatar.
+function findUsingNowUser(userId, pkg) {
+    return (pkg.users || []).find(u => u.id === userId)
+        || { id: userId, name: 'Usuário removido', email: '', picture: '' };
+}
+
+function createUsingNowAvatar(user, className = 'un-avatar') {
+    const avatar = createElement('span', className);
+
+    if (user.picture) {
+        const img = document.createElement('img');
+        img.src = user.picture;
+        img.alt = user.name || '';
+        img.onerror = function () {
+            this.remove();
+            avatar.appendChild(createElement('span', 'un-avatar-fallback', (user.name || '?').charAt(0)));
+        };
+        avatar.appendChild(img);
+    } else {
+        avatar.appendChild(createElement('span', 'un-avatar-fallback', (user.name || '?').charAt(0)));
+    }
+
+    return avatar;
+}
+
+function createUsingNowRow(row) {
+    const tableRow = createElement('div', 'table-row un-row');
+    tableRow.dataset.userId = row.user.id;
+
+    const userCol = createElement('div', 'table-col un-user');
+    userCol.appendChild(createUsingNowAvatar(row.user));
+
+    const userText = createElement('div', 'un-user-text');
+    userText.appendChild(createElement('span', 'un-user-name', row.user.name || 'Usuário'));
+    if (row.user.email) userText.appendChild(createElement('span', 'un-user-email', row.user.email));
+    userCol.appendChild(userText);
+
+    // Mesma pessoa com dois acessos vivos na sessão (dois dispositivos): uma
+    // linha só, com a contagem ao lado do nome.
+    if (row.devices > 1) {
+        const devices = createElement('span', 'un-devices', `×${row.devices}`);
+        devices.title = `${row.devices} dispositivos ativos`;
+        userCol.appendChild(devices);
+    }
+
+    const activeCol = createElement('div', 'table-col un-active', formatDuration(row.activeSeconds));
+    const todayCol = createElement('div', 'table-col un-today', formatDuration(row.todaySeconds));
+
+    tableRow.appendChild(userCol);
+    tableRow.appendChild(activeCol);
+    tableRow.appendChild(todayCol);
+
+    return tableRow;
+}
+
+function createUsingNowChip(row) {
+    const chip = createElement('div', 'un-chip');
+    chip.appendChild(createUsingNowAvatar(row.user, 'un-avatar un-avatar-sm'));
+    chip.appendChild(createElement('span', 'un-chip-name', row.user.name || 'Usuário'));
+    chip.appendChild(createElement('span', 'un-chip-time', formatDuration(row.todaySeconds)));
+
+    if (row.leftAt) {
+        const time = row.leftAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        chip.title = `Saiu às ${time}`;
+    }
+
+    return chip;
+}
+
+function renderUsingNowModal(session, pkg) {
+    const modal = document.querySelector('#usingNowModal .un-modal');
+    if (!modal) return;
+
+    const data = buildUsingNowData(session, pkg);
+
+    const icon = modal.querySelector('.un-service-icon');
+    icon.alt = session.name;
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
+
+    modal.querySelector('.un-service-name').textContent = session.name;
+
+    let domain = session.url || '';
+    try {
+        domain = new URL(session.url).hostname.replace(/^www\./, '');
+    } catch { }
+    const people = data.online.length;
+    const peopleLabel = people === 0
+        ? 'ninguém usando agora'
+        : (people === 1 ? '1 pessoa usando agora' : `${people} pessoas usando agora`);
+    modal.querySelector('.un-service-meta').textContent = `${domain} · ${peopleLabel}`;
+
+    const list = modal.querySelector('.un-list');
+    list.innerHTML = '';
+    data.online.forEach(row => list.appendChild(createUsingNowRow(row)));
+
+    const pastList = modal.querySelector('.un-past-list');
+    pastList.innerHTML = '';
+    data.past.forEach(row => pastList.appendChild(createUsingNowChip(row)));
+    modal.querySelector('.un-past').classList.toggle('is-hidden', data.past.length === 0);
+
+    modal.dataset.state = data.online.length ? 'content' : 'empty';
+    modal.querySelector('.un-total').textContent = formatDuration(data.todayTotalSeconds);
 }
 
 // Gera o elemento DOM de uma sessão como card de grid (para collection view)
@@ -384,6 +783,19 @@ function createCollectionSessionCardElement(session, pkg) {
         <span>Conectar</span>
     `;
 
+    // Recaptura a sessão: abre o serviço numa aba em segundo plano, espera assentar e
+    // sobrescreve. Mesmo motor do "Adicionar sessão" (ver captureFlow.js).
+    const updateOptBtn = createElement('button', 'update-session-btn');
+    updateOptBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+        </svg>
+        <span>Atualizar</span>
+    `;
+
     const editOptBtn = createElement('button', 'edit-session-btn');
     editOptBtn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -404,6 +816,7 @@ function createCollectionSessionCardElement(session, pkg) {
     `;
 
     sessionOptions.appendChild(connectOptBtn);
+    sessionOptions.appendChild(updateOptBtn);
     sessionOptions.appendChild(editOptBtn);
     sessionOptions.appendChild(deleteOptBtn);
     card.appendChild(sessionOptions);
@@ -740,9 +1153,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Contador de pessoas do pacote (top bar da coleção, ao lado de "Compartilhar")
     if (isCollection) updatePackagePeopleCounter(pkg);
 
-    // Header da aba "Meus acessos": referencia a vitrine de origem (com
-    // identidade, contatos e descrição) ou, no acesso direto/compartilhado,
-    // uma estética neutra focada em quem compartilhou.
+    // Header da aba "Meus acessos": estética neutra focada em quem compartilhou.
     if (!isCollection) {
         renderAccessHeader(pkg, activePreset);
     }
@@ -794,7 +1205,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
         });
     }
 
-    // Busca overview do pacote (para access view: joinedAt, renewsAt, online counts)
+    // Busca overview do pacote (para access view: joinedAt, online counts)
     if (!isCollection) {
         loadAccessOverview(pkg, activePreset);
     }
@@ -892,106 +1303,43 @@ function accessAvatar(name, url, className) {
     return `<span class="${className} ph-avatar" style="background:linear-gradient(150deg, ${c1}, ${c2})"><span class="ph-avatar-initial">${escapeHtml(initial)}</span>${img}</span>`;
 }
 
-function accessContactPill(href, icon, label) {
-    return `<a class="ph-pill" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer nofollow">${icon}${label}</a>`;
-}
-
-// Linha de canais de suporte da vitrine. Retorna '' quando não há contatos.
-function renderAccessContacts(contacts) {
-    if (!contacts) return '';
-    const items = [];
-    if (contacts.whatsapp) items.push(accessContactPill(`https://wa.me/${encodeURIComponent(contacts.whatsapp)}`, ACCESS_ICONS.whatsapp, 'WhatsApp'));
-    if (contacts.telegram) items.push(accessContactPill(`https://t.me/${encodeURIComponent(contacts.telegram)}`, ACCESS_ICONS.telegram, 'Telegram'));
-    if (contacts.instagram) items.push(accessContactPill(`https://instagram.com/${encodeURIComponent(contacts.instagram)}`, ACCESS_ICONS.instagram, 'Instagram'));
-    if (contacts.website) items.push(accessContactPill(contacts.website, ACCESS_ICONS.site, 'Site'));
-    if (!items.length) return '';
-    return `<div class="ph-contacts"><span class="ph-contacts-label">Suporte:</span>${items.join('')}</div>`;
-}
-
 // Monta o header de um pacote na aba "Meus acessos". Os valores assíncronos
-// (online / entrou em / renova em) são preenchidos depois por loadAccessOverview.
+// (online / entrou em) são preenchidos depois por loadAccessOverview.
 function renderAccessHeader(pkg, activePreset) {
     const header = activePreset.querySelector('.package-info-header');
     if (!header) return;
 
-    const fromVitrine = pkg.accessOrigin === 'product' && pkg.vitrine;
-    header.className = 'package-info-header ' + (fromVitrine ? 'is-vitrine' : 'is-direct');
+    header.className = 'package-info-header is-direct';
 
     const name = escapeHtml(pkg.name || '');
-    const desc = pkg.description
-        ? `<p class="ph-desc">${escapeHtml(pkg.description)}</p>`
-        : '';
     const onlineTag = `<span class="ph-online"><span class="ph-online-dot"></span><span class="online-count-value">0 online</span></span>`;
     const joinedItem = `<span class="ph-meta-item">${ACCESS_ICONS.calendar} Entrou em <strong class="joined-at-value">—</strong></span>`;
 
-    if (fromVitrine) {
-        const v = pkg.vitrine;
-        const verified = v.verified
-            ? `<span class="ph-verified">${ACCESS_ICONS.verified} Verificada</span>`
-            : '';
-        const link = v.is_published
-            ? `<a class="ph-vitrine-link" href="/pages/vitrine/?loja=${encodeURIComponent(v.id)}">Ver vitrine ${ACCESS_ICONS.arrowUpRight}</a>`
-            : '';
-        const renewsItem = `<span class="ph-meta-item">${ACCESS_ICONS.refresh} <span class="renews-at-label">Renova em</span> <strong class="renews-at-value">—</strong></span>`;
+    const owner = pkg.owner || {};
+    const sharedBy = `
+        <span class="ph-meta-item ph-shared-by">Compartilhado por
+            <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
+        </span>`;
 
-        header.innerHTML = `
-            <div class="ph-vitrine-band">
-                <div class="ph-vitrine-id">
-                    ${accessAvatar(v.display_name, v.avatar_url, 'ph-vitrine-avatar')}
-                    <div class="ph-vitrine-meta">
-                        <span class="ph-eyebrow">Adquirido na vitrine</span>
-                        <div class="ph-vitrine-name-row">
-                            <span class="ph-vitrine-name">${escapeHtml(v.display_name || '')}</span>
-                            ${verified}
-                        </div>
-                    </div>
+    header.innerHTML = `
+        <div class="ph-direct-band">
+            ${ACCESS_ICONS.link}
+            <span>Acesso compartilhado diretamente com você.</span>
+        </div>
+        <div class="ph-hero">
+            <div class="ph-hero-top">
+                <div class="ph-hero-title">
+                    <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
+                    <h2>${name}</h2>
                 </div>
-                ${link}
+                ${onlineTag}
             </div>
-            ${renderAccessContacts(v.contacts)}
-            <div class="ph-hero">
-                <div class="ph-hero-top">
-                    <div class="ph-hero-title">
-                        <span class="ph-pkg-icon">${ACCESS_ICONS.package}</span>
-                        <h2>${name}</h2>
-                    </div>
-                    ${onlineTag}
-                </div>
-                ${desc}
-                <div class="ph-meta">
-                    ${joinedItem}
-                    ${renewsItem}
-                </div>
+            <div class="ph-meta">
+                ${sharedBy}
+                ${joinedItem}
             </div>
-        `;
-    } else {
-        const owner = pkg.owner || {};
-        const sharedBy = `
-            <span class="ph-meta-item ph-shared-by">Compartilhado por
-                <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
-            </span>`;
-
-        header.innerHTML = `
-            <div class="ph-direct-band">
-                ${ACCESS_ICONS.link}
-                <span>Acesso compartilhado diretamente com você — fora de uma vitrine.</span>
-            </div>
-            <div class="ph-hero">
-                <div class="ph-hero-top">
-                    <div class="ph-hero-title">
-                        <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
-                        <h2>${name}</h2>
-                    </div>
-                    ${onlineTag}
-                </div>
-                ${desc}
-                <div class="ph-meta">
-                    ${sharedBy}
-                    ${joinedItem}
-                </div>
-            </div>
-        `;
-    }
+        </div>
+    `;
 }
 
 // Seleciona um pacote
@@ -1061,23 +1409,6 @@ function syncPackageDetailsVisibility() {
     if (onboardingEl) onboardingEl.style.display = isEmpty ? "" : "none";
 }
 
-// Sai da view "Minha vitrine" e volta para a Home (coleção/acessos). No-op se a
-// vitrine já estiver fechada. Usado pelos toggles de seção da sidebar, já que a
-// navegação da vitrine (initVitrineNav) só cobre o caminho de ida.
-function exitVitrineView() {
-    const vitrineSection = document.getElementById('vitrine-section');
-    if (!vitrineSection || vitrineSection.style.display === 'none') return;
-    vitrineSection.style.display = 'none';
-    const navVitrine = document.getElementById('nav-vitrine');
-    navVitrine?.classList.remove('active');
-    navVitrine?.setAttribute('aria-expanded', 'false');
-    // Volta para a Home: restaura a top bar e as seções de pacotes na sidebar,
-    // fechando o dropdown da vitrine.
-    delete document.body.dataset.view;
-    // Restaura a visibilidade de #package-details / #main-onboarding conforme o estado.
-    syncPackageDetailsVisibility();
-}
-
 // Função para recarregar select de pacotes (se necessário)
 function reloadPackagesSelect(isAccess = false) {
     if (isAccess) {
@@ -1105,7 +1436,7 @@ async function loadAccessOverview(pkg, activePreset) {
 
         if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline, joinedAt, renewsAt, billingType } = fetchOverview.result.data;
+        const { totalOnline, sessionsOnline, myAccessHistory, joinedAt } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
@@ -1122,43 +1453,110 @@ async function loadAccessOverview(pkg, activePreset) {
             joinedAtEl.textContent = '—';
         }
 
-        // Atualiza "Renova em" / "Expira em" (só existe no header de vitrine)
-        const renewsAtEl = activePreset.querySelector('.package-info-header .renews-at-value');
-        const renewsLabelEl = activePreset.querySelector('.package-info-header .renews-at-label');
-
-        if (renewsLabelEl) {
-            renewsLabelEl.textContent = billingType === 'one_time' ? 'Expira em' : 'Renova em';
-        }
-
-        if (renewsAtEl && renewsAt) {
-            const renewDate = new Date(renewsAt);
-            renewsAtEl.textContent = renewDate.toLocaleDateString('pt-BR', dateFormatOptions);
-        } else if (renewsAtEl) {
-            renewsAtEl.textContent = '—';
-        }
-
         // Atualiza contagem online no header
         const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
         if (onlineCountEl) {
             onlineCountEl.textContent = `${totalOnline} online`;
         }
 
-        // Atualiza badges + rodapé "usando agora" em cada session card. O access
-        // view só recebe a contagem online (sem dados de avatar), então o rótulo
-        // é atualizado pelo count.
-        if (sessionsOnline) {
-            const sessionCards = activePreset.querySelectorAll('.session-card');
-            sessionCards.forEach(card => {
-                const sessionId = card.dataset.sessionId;
+        // Atualiza badges + rodapé "usando agora" + barra de uso em cada session
+        // card. O access view só recebe a contagem online (sem dados de avatar),
+        // então o rótulo é atualizado pelo count.
+        // O histórico é só o do próprio membro, então a barra compara o uso de
+        // hoje com o costume dele — não com o dos outros.
+        const myHistory = processRawAccessHistory(myAccessHistory || []);
+
+        const sessionCards = activePreset.querySelectorAll('.session-card');
+        sessionCards.forEach(card => {
+            const sessionId = card.dataset.sessionId;
+
+            if (sessionsOnline) {
                 const count = sessionsOnline[sessionId] || 0;
                 const badge = card.querySelector('.online-count-num');
                 if (badge) badge.textContent = count;
                 updateSessionUsingNow(card, [], count);
-            });
-        }
+            }
+
+            applySessionUsageBar(card, getSessionUsageComparison(sessionId, myHistory), 'access');
+        });
     } catch (err) {
         console.error('Error loading access overview:', err);
     }
+}
+
+// Busca o overview do pacote e (re)monta pkg.stats do zero. Separado de
+// loadPackageStats porque o card "usando agora" precisa refazer só isto para
+// saber quem está online agora, sem redesenhar a tela inteira.
+// Devolve true quando os dados foram atualizados.
+async function fetchPackageStats(pkg) {
+    const fetchPackageOverviewStats = await fetchManager.getPackageOverviewStats({ id: pkg.id });
+
+    if (!fetchPackageOverviewStats.ok) return false;
+
+    const { usersLastUsage, newUsersByDate, rawPackageAccessHistory } = fetchPackageOverviewStats.result.data;
+
+    const accessHistory = processRawAccessHistory(rawPackageAccessHistory);
+    const packageHistoryUsage = getPackageHistoryUsage(accessHistory);
+    const dailyPackageUsage = getDailyPackageUsage(accessHistory);
+
+    pkg.stats = {
+        totalSessions: pkg.sessions.length,
+        totalConnections: rawPackageAccessHistory.length,
+        totalUsers: pkg.users.length,
+        totalUsersOnline: 0,
+        sessionsOnline: {},
+        sessionsOnlineUsers: {},
+        packageHistoryUsage,
+        dailyPackageUsage,
+        newUsersByDate,
+        accessHistory
+    };
+
+    for (const userId in usersLastUsage) {
+        // Procura em pkg.users o usuario que tem o id especifico, e adiciona a data de ultima utilização
+        const user = pkg.users.find(u => u.id === userId);
+        if (user) {
+            const timestamp = usersLastUsage[userId];
+            const dateObj = new Date(timestamp.replace(' ', 'T'));
+
+            user.lastUsage = formatLocalDateTime(dateObj);
+
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - dateObj) / 1000);
+
+            if (diffInSeconds < 60) {
+                pkg.stats.totalUsersOnline++;
+            }
+        }
+    }
+
+    // Calcula sessionsOnline a partir do accessHistory
+    // Percorre todos os registros buscando acessos nos últimos 60 segundos
+    // Usa Set para deduplicar por userId (mesmo usuário reconectando não conta 2x)
+    const now = new Date();
+    const sessionsOnlineUsers = {}; // sessionId -> Set<userId>
+    Object.values(accessHistory).forEach(dayAccesses => {
+        dayAccesses.forEach(access => {
+            const accessDate = new Date(access.localDateTime);
+            const endTime = new Date(accessDate.getTime() + (access.usageTimeSeconds || 0) * 1000);
+            const diffInSec = Math.floor((now - endTime) / 1000);
+
+            if (diffInSec < ONLINE_WINDOW_SECONDS && diffInSec >= 0) {
+                if (!sessionsOnlineUsers[access.sessionId]) {
+                    sessionsOnlineUsers[access.sessionId] = new Set();
+                }
+                sessionsOnlineUsers[access.sessionId].add(access.userId);
+            }
+        });
+    });
+    // Converte Sets para contagem + lista de usuários únicos por sessão
+    // (a lista alimenta os avatares de "usando agora" no rodapé do card).
+    for (const sessionId in sessionsOnlineUsers) {
+        pkg.stats.sessionsOnline[sessionId] = sessionsOnlineUsers[sessionId].size;
+        pkg.stats.sessionsOnlineUsers[sessionId] = Array.from(sessionsOnlineUsers[sessionId]);
+    }
+
+    return true;
 }
 
 async function loadPackageStats(pkg, period) {
@@ -1171,77 +1569,7 @@ async function loadPackageStats(pkg, period) {
     const sessionsStat = contentPreset.querySelector(".package-stats .sessions-stat");
     const usersStat = contentPreset.querySelector(".package-stats .users-stat");
 
-    if (!pkg.stats) {
-        // Busca estatísticas e salva em cache
-        const fetchPackageOverviewStats = await fetchManager.getPackageOverviewStats({ id: pkg.id });
-
-        if (fetchPackageOverviewStats.ok) {
-            const { usersLastUsage, newUsersByDate, rawPackageAccessHistory } = fetchPackageOverviewStats.result.data;
-
-            const accessHistory = processRawAccessHistory(rawPackageAccessHistory);
-            const sessionsHistoryUsage = getSessionsUsageTime(accessHistory);
-            const packageHistoryUsage = getPackageHistoryUsage(accessHistory);
-            const dailyPackageUsage = getDailyPackageUsage(accessHistory);
-
-            pkg.stats = {
-                totalSessions: pkg.sessions.length,
-                totalConnections: rawPackageAccessHistory.length,
-                totalUsers: pkg.users.length,
-                totalUsersOnline: 0,
-                sessionsOnline: {},
-                sessionsOnlineUsers: {},
-                sessionsHistoryUsage,
-                packageHistoryUsage,
-                dailyPackageUsage,
-                newUsersByDate,
-                accessHistory
-            };
-
-            for (const userId in usersLastUsage) {
-                // Procura em pkg.users o usuario que tem o id especifico, e adiciona a data de ultima utilização
-                const user = pkg.users.find(u => u.id === userId);
-                if (user) {
-                    const timestamp = usersLastUsage[userId];
-                    const dateObj = new Date(timestamp.replace(' ', 'T'));
-
-                    user.lastUsage = formatLocalDateTime(dateObj);
-
-                    const now = new Date();
-                    const diffInSeconds = Math.floor((now - dateObj) / 1000);
-
-                    if (diffInSeconds < 60) {
-                        pkg.stats.totalUsersOnline++;
-                    }
-                }
-            }
-
-            // Calcula sessionsOnline a partir do accessHistory
-            // Percorre todos os registros buscando acessos nos últimos 60 segundos
-            // Usa Set para deduplicar por userId (mesmo usuário reconectando não conta 2x)
-            const now = new Date();
-            const sessionsOnlineUsers = {}; // sessionId -> Set<userId>
-            Object.values(accessHistory).forEach(dayAccesses => {
-                dayAccesses.forEach(access => {
-                    const accessDate = new Date(access.localDateTime);
-                    const endTime = new Date(accessDate.getTime() + (access.usageTimeSeconds || 0) * 1000);
-                    const diffInSec = Math.floor((now - endTime) / 1000);
-
-                    if (diffInSec < 60 && diffInSec >= 0) {
-                        if (!sessionsOnlineUsers[access.sessionId]) {
-                            sessionsOnlineUsers[access.sessionId] = new Set();
-                        }
-                        sessionsOnlineUsers[access.sessionId].add(access.userId);
-                    }
-                });
-            });
-            // Converte Sets para contagem + lista de usuários únicos por sessão
-            // (a lista alimenta os avatares de "usando agora" no rodapé do card).
-            for (const sessionId in sessionsOnlineUsers) {
-                pkg.stats.sessionsOnline[sessionId] = sessionsOnlineUsers[sessionId].size;
-                pkg.stats.sessionsOnlineUsers[sessionId] = Array.from(sessionsOnlineUsers[sessionId]);
-            }
-        }
-    }
+    if (!pkg.stats) await fetchPackageStats(pkg);
 
     const contentCard = document.querySelector('#package-details');
     const currentPackageId = contentCard.getAttribute('data-package-id');
@@ -1318,72 +1646,28 @@ async function loadPackageStats(pkg, period) {
 
     if (period === 0) {
         // Visualização diária (por hora)
-        if (Object.entries(pkg.stats.dailyPackageUsage).length === 0) {
-            loadUsageChart("package", {
-                "00:00": {
-                    "hours": -1,
-                    "users": 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("package", pkg.stats.dailyPackageUsage, true);
-        }
+        renderUsageChart("package", pkg.stats.dailyPackageUsage, true);
     } else {
         // Visualização por período (dias)
-        if (Object.entries(pkg.stats.packageHistoryUsage).length === 0) {
-            loadUsageChart("package", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    "hours": -1,
-                    "users": 0,
-                    "peak": {
-                        "hour": "00:00",
-                        "count": 0
-                    }
-                }
-            });
-        } else {
-            const packageHistoryUsageFiltered = filterByLastDays(pkg.stats.packageHistoryUsage, period);
-            loadUsageChart("package", packageHistoryUsageFiltered);
-        }
+        renderUsageChart("package", filterByLastDays(pkg.stats.packageHistoryUsage, period));
     }
 
-    // Sessions panel: atualiza usage time, barra de uso relativa e online badges
+    // Sessions panel: atualiza barra de uso e online badges. A barra não segue o
+    // seletor de período — ela é sempre "hoje vs. o costume dos últimos 30
+    // dias"; o período escolhido vale só para o gráfico acima.
     const sessionCards = document.querySelectorAll("#package-details .preset-collection .sessions-panel .session-card");
-    const sessionsHistoryUsageFiltered = filterByLastDays(pkg.stats.sessionsHistoryUsage, period);
 
-    // Primeiro passo: calcula o tempo de cada sessão para dimensionar a barra
-    // como fração do tempo total usado no pacote (o quanto cada sessão
-    // representa do todo no período).
-    const sessionTimes = [];
     sessionCards.forEach(card => {
         const sessionId = card.getAttribute("data-session-id");
-        let sessionTime = 0;
-        Object.values(sessionsHistoryUsageFiltered).forEach(daySessions => {
-            if (daySessions[sessionId]) sessionTime += daySessions[sessionId];
-        });
-        sessionTimes.push(sessionTime);
-    });
-    const totalSessionTime = sessionTimes.reduce((sum, t) => sum + t, 0);
 
-    sessionCards.forEach((card, i) => {
-        const sessionId = card.getAttribute("data-session-id");
-        const sessionTime = sessionTimes[i];
-        const sessionTimeFormatted = formatDuration(sessionTime);
-
-        // Atualiza o texto de usage time
-        const usageTimeText = card.querySelector('.usage-time-text');
-        if (usageTimeText) {
-            usageTimeText.textContent = sessionTimeFormatted === "0s" ? "0m" : sessionTimeFormatted;
-        }
-
-        // Barra de uso: largura = fração desta sessão sobre o total do pacote.
-        const usageFill = card.querySelector('.session-card-usage-fill');
-        if (usageFill) {
-            const pct = totalSessionTime > 0 && sessionTime > 0
-                ? Math.max(4, Math.round((sessionTime / totalSessionTime) * 100))
-                : 0;
-            usageFill.style.width = pct + '%';
-        }
+        // Uso de hoje comparado ao costume da própria sessão: cada serviço tem
+        // um ritmo natural (uma ferramenta de trabalho x um streaming), então
+        // comparar sessões entre si não diria nada.
+        applySessionUsageBar(
+            card,
+            getSessionUsageComparison(sessionId, pkg.stats.accessHistory),
+            'collection'
+        );
 
         // Atualiza badge de online count
         const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
@@ -1473,36 +1757,14 @@ async function loadUserStats(user, pkg, period) {
     const userLastUsageFormatted = user.lastUsage ? timeAgo(user.lastUsage) : "—";
 
     lastUsageEl.textContent = userLastUsageFormatted;
-    totalUsageEl.textContent = formatHours(user.stats.totalUsage.hours);
+    // Mesma formatação exata (em segundos) usada nos cards e no gráfico.
+    totalUsageEl.textContent = formatDuration(user.stats.totalUsage.seconds);
 
     // Gráfico de uso
     if (period === 0) {
-        if (Object.entries(user.stats.dailyUsage).length === 0) {
-            loadUsageChart("user", {
-                "00:00": {
-                    hours: -1,
-                    users: 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("user", user.stats.dailyUsage, true);
-        }
+        renderUsageChart("user", user.stats.dailyUsage, true);
     } else {
-        if (Object.entries(user.stats.historyUsage).length === 0) {
-            loadUsageChart("user", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    hours: -1,
-                    users: 0,
-                    peak: {
-                        hour: "00:00",
-                        count: 0
-                    }
-                }
-            });
-        } else {
-            const userHistoryUsageFiltered = filterByLastDays(user.stats.historyUsage, period);
-            loadUsageChart("user", userHistoryUsageFiltered);
-        }
+        renderUsageChart("user", filterByLastDays(user.stats.historyUsage, period));
     }
 
     // Tabela de acesso
@@ -1563,7 +1825,8 @@ async function loadSessionStats(session, pkg, period) {
     const sessionTimeUsage = sessionScreen.querySelector(".session-usage-stat span");
     const sessionUsers = sessionScreen.querySelector(".users-stat span");
 
-    sessionTimeUsage.textContent = formatHours(session.stats.totalUsage.hours);
+    // Mesma formatação exata (em segundos) usada no card da sessão.
+    sessionTimeUsage.textContent = formatDuration(session.stats.totalUsage.seconds);
     sessionUsers.textContent = session.stats.distinctUsers;
 
     // "Usando agora": usuários online nesta sessão (mesma lógica dos session
@@ -1574,6 +1837,24 @@ async function loadSessionStats(session, pkg, period) {
     const usersLabel = sessionScreen.querySelector(".service-users-label");
     if (usersLabel) {
         usersLabel.textContent = onlineUserIds.length > 0 ? "Usando agora" : "Ninguém usando agora";
+    }
+
+    // Com gente online o bloco abre o mesmo card de detalhe do rodapé do grid.
+    const usersSection = sessionScreen.querySelector(".service-users-section");
+    if (usersSection) {
+        const isClickable = onlineUserIds.length > 0;
+        usersSection.classList.toggle("is-clickable", isClickable);
+        if (isClickable) {
+            usersSection.setAttribute("role", "button");
+            usersSection.setAttribute("tabindex", "0");
+            usersSection.setAttribute("aria-haspopup", "dialog");
+            usersSection.title = "Ver quem está usando agora";
+        } else {
+            usersSection.removeAttribute("role");
+            usersSection.removeAttribute("tabindex");
+            usersSection.removeAttribute("aria-haspopup");
+            usersSection.removeAttribute("title");
+        }
     }
 
     const usingNowListContainer = sessionScreen.querySelector(".service-users-list");
@@ -1598,32 +1879,9 @@ async function loadSessionStats(session, pkg, period) {
 
     // Gráfico de uso
     if (period === 0) {
-        if (Object.entries(session.stats.dailyUsage).length === 0) {
-            loadUsageChart("session", {
-                "00:00": {
-                    hours: -1,
-                    users: 0
-                }
-            }, true);
-        } else {
-            loadUsageChart("session", session.stats.dailyUsage, true);
-        }
+        renderUsageChart("session", session.stats.dailyUsage, true);
     } else {
-        if (Object.entries(session.stats.historyUsage).length === 0) {
-            loadUsageChart("session", {
-                [new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })]: {
-                    hours: -1,
-                    users: 0,
-                    peak: {
-                        hour: "00:00",
-                        count: 0
-                    }
-                }
-            });
-        } else {
-            const sessionHistoryUsageFiltered = filterByLastDays(session.stats.historyUsage, period);
-            loadUsageChart("session", sessionHistoryUsageFiltered);
-        }
+        renderUsageChart("session", filterByLastDays(session.stats.historyUsage, period));
     }
 
     // Tabela de acesso
@@ -1742,23 +2000,31 @@ function formatLocalDateTime(d) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-// Função para formatar horas
+// Formata horas reutilizando formatDuration — é o mesmo tempo mostrado nos
+// cards, nas tabelas e no gráfico, então tem que sair com o mesmo texto.
+// hours === -1 é o marcador de "sem registro" e vale 0.
 function formatHours(hours) {
-    if (hours === -1) {
-        return '0h';
-    } else if (hours >= 1) {
-        return `${hours.toFixed(1)}h`;
-    } else if (hours > 0) {
-        const minutes = Math.round(hours * 60);
-        if (minutes >= 1) {
-            return `~${minutes}min`;
-        } else {
-            const seconds = Math.round(hours * 3600);
-            return `~${seconds}s`;
-        }
-    } else {
-        return '~30s';
+    if (!Number.isFinite(hours) || hours <= 0) return '0s';
+    return formatDuration(Math.round(hours * 3600));
+}
+
+// Ponto neutro do gráfico: um único registro zerado (hora atual na visão
+// diária, dia atual na visão por período) para o gráfico nunca ficar sem ponto.
+function emptyUsageChartData(isDaily) {
+    if (isDaily) {
+        const hourKey = `${String(new Date().getHours()).padStart(2, '0')}:00`;
+        return { [hourKey]: { hours: 0, users: 0 } };
     }
+    const dayKey = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    return { [dayKey]: { hours: 0, users: 0, peak: { hour: '00:00', count: 0 } } };
+}
+
+// Envia os dados ao gráfico caindo no ponto zerado quando não sobrou nada — o
+// pacote pode ter histórico e ainda assim ficar vazio depois do filtro de
+// período, caso em que o gráfico ficava sem nenhum ponto.
+function renderUsageChart(renderTarget, dataObject, isDaily = false) {
+    const hasData = dataObject && Object.keys(dataObject).length > 0;
+    loadUsageChart(renderTarget, hasData ? dataObject : emptyUsageChartData(isDaily), isDaily);
 }
 
 
@@ -1834,72 +2100,6 @@ function getSessionAccessHistory(sessionId, accessHistory) {
     });
 
     return filteredHistory;
-}
-
-function getSessionsUsageTime(packageAccessHistory) {
-    const sessionsHistoryUsage = {};
-
-    Object.entries(packageAccessHistory).forEach(([date, accesses]) => {
-        accesses.forEach(access => {
-            const { sessionId, usageTimeSeconds, localDateTime: accessDate } = access;
-
-            if (usageTimeSeconds === 0) {
-                // Se não há tempo de uso, apenas registra no dia original
-                if (!sessionsHistoryUsage[date]) {
-                    sessionsHistoryUsage[date] = {};
-                }
-                if (!sessionsHistoryUsage[date][sessionId]) {
-                    sessionsHistoryUsage[date][sessionId] = 0;
-                }
-                return;
-            }
-
-            // Calcular distribuição de tempo entre dias
-            const startTime = new Date(accessDate);
-            const endTime = new Date(startTime.getTime() + usageTimeSeconds * 1000);
-
-            const startDay = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
-            const endDay = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate());
-
-            // Se termina no mesmo dia
-            if (startDay.getTime() === endDay.getTime()) {
-                const dateKey = formatDate(startTime);
-                if (!sessionsHistoryUsage[dateKey]) {
-                    sessionsHistoryUsage[dateKey] = {};
-                }
-                if (!sessionsHistoryUsage[dateKey][sessionId]) {
-                    sessionsHistoryUsage[dateKey][sessionId] = 0;
-                }
-                sessionsHistoryUsage[dateKey][sessionId] += usageTimeSeconds;
-            } else {
-                // Sessão atravessa dias - distribuir proporcionalmente
-                let currentTime = new Date(startTime);
-                let remainingTime = usageTimeSeconds;
-
-                while (remainingTime > 0 && currentTime < endTime) {
-                    const currentDayEnd = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), 23, 59, 59, 999);
-                    const timeUntilMidnight = Math.min(
-                        (currentDayEnd.getTime() - currentTime.getTime()) / 1000,
-                        remainingTime
-                    );
-
-                    const dateKey = formatDate(currentTime);
-                    if (!sessionsHistoryUsage[dateKey]) {
-                        sessionsHistoryUsage[dateKey] = {};
-                    }
-                    if (!sessionsHistoryUsage[dateKey][sessionId]) {
-                        sessionsHistoryUsage[dateKey][sessionId] = 0;
-                    }
-                    sessionsHistoryUsage[dateKey][sessionId] += Math.ceil(timeUntilMidnight);
-
-                    remainingTime -= timeUntilMidnight;
-                    currentTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 0, 0, 0);
-                }
-            }
-        });
-    });
-
-    return sessionsHistoryUsage;
 }
 
 function getPackageHistoryUsage(packageAccessHistory) {
@@ -2301,9 +2501,9 @@ function processSessionAccessHistory(accessHistory, pkg) {
                 dateLabel = `${day}/${month}/${year} às ${timeString}`;
             }
 
-            // Converte segundos para horas e formata
-            const usageTimeHours = parseFloat((access.usageTimeSeconds / 3600).toFixed(4));
-            const usageTime = formatHours(usageTimeHours);
+            // Formata direto dos segundos do registro (sem passar por horas,
+            // que arredondava e gerava um tempo diferente do card/gráfico).
+            const usageTime = formatDuration(access.usageTimeSeconds);
 
             // Adiciona ao resultado COM o timestamp original
             result.push({
@@ -2513,9 +2713,9 @@ function processUserAccessHistory(accessHistory, pkg) {
                 dateLabel = `${day}/${month}/${year} às ${timeString}`;
             }
 
-            // Converte segundos para horas e formata
-            const usageTimeHours = parseFloat((access.usageTimeSeconds / 3600).toFixed(4));
-            const usageTime = formatHours(usageTimeHours);
+            // Formata direto dos segundos do registro (sem passar por horas,
+            // que arredondava e gerava um tempo diferente do card/gráfico).
+            const usageTime = formatDuration(access.usageTimeSeconds);
 
             // Adiciona ao resultado COM o timestamp original
             result.push({
@@ -2558,58 +2758,15 @@ function renderUserInfo(userInfo) {
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
+    // Libera o handshake com a extensão (precisa do id para comparar contas) e já
+    // dispara a checagem em segundo plano, para o primeiro clique não esperar.
+    extensionState.setUser(userInfo);
+    extensionState.check();
+
     // Roles com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
-    // Vendedor NÃO entra mais: é usuário normal e pode assinar planos.
     const PLUS_BENEFIT_ROLES = ['admin'];
     // Qualquer plano pago (plus/business/enterprise) ou papel com benefício.
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(role) || (plan && plan !== 'free');
-
-    // "Minha vitrine" aparece para vendedores e para quem já manifestou intenção
-    // de vender (pending_seller — ainda sem recebedor). Admin usa o painel admin.
-    const navVitrine = document.getElementById('nav-vitrine');
-    if (navVitrine) {
-        const canSeeVitrine = role === 'seller' || role === 'pending_seller';
-        navVitrine.style.display = canSeeVitrine ? '' : 'none';
-
-        // Badge "Novo": destaca o recurso recém-desbloqueado para o aspirante a
-        // vendedor, some após o primeiro clique (persistido em localStorage).
-        const NOVO_SEEN_KEY = 'ap-vitrine-novo-seen';
-        let novoSeen = false;
-        try { novoSeen = localStorage.getItem(NOVO_SEEN_KEY) === '1'; } catch (e) {}
-
-        const existingBadge = navVitrine.querySelector('.nav-novo-badge');
-        if (role === 'pending_seller' && !novoSeen) {
-            if (!existingBadge) {
-                const badge = document.createElement('span');
-                badge.className = 'nav-novo-badge';
-                badge.textContent = 'Novo';
-                navVitrine.appendChild(badge);
-            }
-            navVitrine.addEventListener('click', function dismissNovo(e) {
-                // Só descarta em clique real do usuário — o auto-open (?vitrine=novo)
-                // dispara um clique programático que NÃO deve sumir com o badge.
-                if (e && !e.isTrusted) return;
-                try { localStorage.setItem(NOVO_SEEN_KEY, '1'); } catch (err) {}
-                navVitrine.querySelector('.nav-novo-badge')?.remove();
-                navVitrine.removeEventListener('click', dismissNovo);
-            });
-        } else if (existingBadge) {
-            existingBadge.remove();
-        }
-
-        // Vindo de /pages/parceiros (?vitrine=novo): abre a aba automaticamente. Adiado
-        // para o fim da fila para rodar DEPOIS do init() terminar de montar a
-        // Home — senão a renderização da Home sobrescreve a troca de aba.
-        try {
-            const params = new URLSearchParams(window.location.search);
-            if (canSeeVitrine && params.get('vitrine') === 'novo') {
-                params.delete('vitrine');
-                const qs = params.toString();
-                history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
-                setTimeout(() => navVitrine.click(), 0);
-            }
-        } catch (e) {}
-    }
 
     // Admin: atalho para o painel interno.
     const navAdmin = document.getElementById('nav-admin');
@@ -2618,15 +2775,14 @@ function renderUserInfo(userInfo) {
         navAdmin.onclick = () => { window.location.href = '/pages/admin/'; };
     }
 
-    // Badge do perfil: papel (Vendedor/Admin) tem prioridade sobre Plus; senão
-    // Plus para assinantes; usuário comum não recebe badge.
+    // Badge do perfil: Admin tem prioridade; senão o plano pago do assinante;
+    // usuário comum não recebe badge.
     let badgeLabel = null;
     if (role === 'admin') badgeLabel = 'Admin';
-    else if (role === 'seller') badgeLabel = 'Vendedor';
     else if (plan && plan !== 'free') badgeLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
 
     if (hasPlusBenefits) {
-        // Esconde toda a UI de upgrade — seller/admin/plus não assinam.
+        // Esconde toda a UI de upgrade — admin/assinante não assinam de novo.
         document.querySelectorAll('.plus-subscribe-btn').forEach(btn => { btn.style.display = 'none'; });
         const sidebarPlusCard = document.getElementById('sidebar-plus-card');
         if (sidebarPlusCard) sidebarPlusCard.style.display = 'none';
@@ -2662,10 +2818,9 @@ const PEOPLE_COUNTER_ICON = `<svg class="people-counter__icon" xmlns="http://www
 const INFO_COUNTER_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`;
 
 /**
- * Conjunto de memberships suspensas ("packageId:userId") — as diretas externas
- * além do limite do plano, por ordem de chegada (granted_at). Espelha o cálculo
- * do backend (rank vs. getUserPeopleLimit). Vazio quando o plano é ilimitado.
- * Compras no marketplace (accessOrigin != 'direct') não entram no ranking.
+ * Conjunto de memberships suspensas ("packageId:userId") — as externas além do
+ * limite do plano, por ordem de chegada (granted_at). Espelha o cálculo do
+ * backend (rank vs. getUserPeopleLimit). Vazio quando o plano é ilimitado.
  */
 function getSuspendedMembershipKeys() {
     const keys = new Set();
@@ -2676,7 +2831,6 @@ function getSuspendedMembershipKeys() {
     (packagesList.userCollection || []).forEach(pkg => {
         (pkg.users || []).forEach(u => {
             if (u.isCreator) return;
-            if (u.accessOrigin && u.accessOrigin !== 'direct') return;
             memberships.push({ pkgId: pkg.id, userId: u.id, at: new Date(u.connectedAt || 0).getTime() });
         });
     });
@@ -3018,31 +3172,8 @@ async function init() {
     // Contador de pessoas (limitador único do plano)
     updatePeopleCounter();
 
-    // Verifica se há parâmetro de novo produto (vindo do checkout)
-    const urlParams = new URLSearchParams(window.location.search);
-    const newProductId = urlParams.get('newProduct');
-
     // Define estado inicial do packages list
-    if (newProductId && packagesList.userAccess.length > 0) {
-        setElementState(document.querySelector("#packages-list"), 'access');
-
-        const newPkg = packagesList.userAccess.find(p => p.id === newProductId);
-        if (newPkg) {
-            selectPackage(newPkg.id, false);
-
-            const pkgElement = document.querySelector(`.preset-access [data-package-id="${newProductId}"]`);
-            if (pkgElement) {
-                const newBadge = createElement('div', 'new-badge');
-                newBadge.textContent = 'Novo';
-                pkgElement.appendChild(newBadge);
-            }
-        } else {
-            selectPackage(packagesList.userAccess[0].id, false);
-        }
-
-        window.history.replaceState({}, '', window.location.pathname);
-        setDashSection('access');
-    } else if (packagesList.userCollection.length === 0) {
+    if (packagesList.userCollection.length === 0) {
         setElementState(document.querySelector("#packages-list"), 'empty-collection');
         setDashSection('collection');
     } else {
@@ -3056,8 +3187,6 @@ async function init() {
         if (packageItem && packageItem.dataset.packageId) {
             const isCollection = packageItem.closest('.preset-collection') !== null;
 
-            // Selecionar um pacote pela sidebar também volta da vitrine para a Home.
-            exitVitrineView();
             selectPackage(packageItem.dataset.packageId, isCollection);
         }
     });
@@ -3068,7 +3197,6 @@ async function init() {
 
     collectionTabs.forEach(tab => {
         tab.addEventListener('click', function () {
-            exitVitrineView();
             setDashSection('collection');
             // Se não houver pacotes na coleção, troca para empty state
             if (packagesList.userCollection.length === 0) {
@@ -3083,7 +3211,6 @@ async function init() {
 
     accessTabs.forEach(tab => {
         tab.addEventListener('click', function () {
-            exitVitrineView();
             setDashSection('access');
             // Se não houver pacotes de acesso, troca para empty state
             if (packagesList.userAccess.length === 0) {
@@ -3111,8 +3238,8 @@ async function init() {
         });
     }
 
-    // Seleciona o primeiro pacote da coleção por padrão (se não veio do checkout)
-    if (!newProductId && packagesList.userCollection.length > 0) {
+    // Seleciona o primeiro pacote da coleção por padrão
+    if (packagesList.userCollection.length > 0) {
         selectPackage(packagesList.userCollection[0].id);
     }
 }

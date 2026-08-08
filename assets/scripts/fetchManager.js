@@ -144,8 +144,10 @@ const fetchManager = {
         return response;
     },
 
-    async getActiveUniqueKeys(packageId) {
-        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys`);
+    // status: "active" (padrão do backend) ou "all" — "all" traz também os links
+    // encerrados (usados, expirados e revogados) que alimentam o histórico.
+    async getUniqueKeys(packageId, status = "all") {
+        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys?status=${encodeURIComponent(status)}`);
         return response;
     },
 
@@ -259,11 +261,31 @@ const fetchManager = {
         return response;
     },
 
-    async checkoutPlus(paymentData) {
+    // Simula a troca de plano (não cobra nada) para a tela de confirmação.
+    async previewPlanChange(plan) {
+        const response = await fetchRoutes(`/api/subscription/preview`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ plan })
+        });
+        return response;
+    },
+
+    // Cria a Checkout Session da Stripe e devolve { url } para redirecionar.
+    async createSubscriptionCheckout(plan) {
         const response = await fetchRoutes(`/api/subscription/checkout`, {
             method: "POST",
             credentials: "include",
-            body: JSON.stringify({ payment: paymentData })
+            body: JSON.stringify({ plan })
+        });
+        return response;
+    },
+
+    // Abre o Customer Portal da Stripe (trocar cartão, faturas, cancelar).
+    async createBillingPortal() {
+        const response = await fetchRoutes(`/api/subscription/portal`, {
+            method: "POST",
+            credentials: "include"
         });
         return response;
     },
@@ -297,262 +319,4 @@ const fetchManager = {
         return response;
     },
 
-    // ==================== Marketplace ====================
-
-    async getSellerAccountStatus() {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/status`);
-        return response;
-    },
-
-    async getSellerProducts() {
-        const response = await fetchRoutes(`/api/marketplace/seller/products`);
-        return response;
-    },
-
-    async createProduct(productData) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products`, {
-            method: "POST",
-            body: JSON.stringify(productData)
-        });
-        return response;
-    },
-
-    async deleteProduct(productId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}`, {
-            method: "DELETE"
-        });
-        return response;
-    },
-
-    async updateProduct(productId, data) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}`, {
-            method: "PATCH",
-            body: JSON.stringify(data)
-        });
-        return response;
-    },
-
-    async reactivateProduct(productId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/reactivate`, {
-            method: "PATCH"
-        });
-        return response;
-    },
-
-    async hardDeleteProduct(productId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/permanent`, {
-            method: "DELETE"
-        });
-        return response;
-    },
-
-    // ── Vitrine categories ──
-    async getSellerCategories() {
-        const response = await fetchRoutes(`/api/marketplace/seller/categories`);
-        return response;
-    },
-
-    async createCategory(data) {
-        const response = await fetchRoutes(`/api/marketplace/seller/categories`, {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-        return response;
-    },
-
-    async updateCategory(id, data) {
-        const response = await fetchRoutes(`/api/marketplace/seller/categories/${id}`, {
-            method: "PATCH",
-            body: JSON.stringify(data)
-        });
-        return response;
-    },
-
-    async deleteCategory(id) {
-        const response = await fetchRoutes(`/api/marketplace/seller/categories/${id}`, {
-            method: "DELETE"
-        });
-        return response;
-    },
-
-    async reorderCategories(order) {
-        const response = await fetchRoutes(`/api/marketplace/seller/categories/reorder`, {
-            method: "PUT",
-            body: JSON.stringify({ order })
-        });
-        return response;
-    },
-
-    async addProductToCategory(productId, categoryId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/categories`, {
-            method: "POST",
-            body: JSON.stringify({ category_id: categoryId })
-        });
-        return response;
-    },
-
-    async removeProductFromCategory(productId, categoryId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/categories/${categoryId}`, {
-            method: "DELETE"
-        });
-        return response;
-    },
-
-    async getMarketplaceProducts() {
-        const response = await fetchRoutes(`/api/marketplace/products`);
-        return response;
-    },
-
-    async getProductById(id) {
-        const response = await fetchRoutes(`/api/marketplace/products/${id}`);
-        return response;
-    },
-
-    // Public storefront (vitrine) — id doubles as the public handle
-    async getVitrine(id) {
-        const response = await fetchRoutes(`/api/marketplace/vitrines/${id}`);
-        return response;
-    },
-
-    // Seller's own vitrine (auth)
-    async getSellerVitrine() {
-        const response = await fetchRoutes(`/api/marketplace/seller/vitrine`);
-        return response;
-    },
-
-    async updateSellerVitrine(data) {
-        const response = await fetchRoutes(`/api/marketplace/seller/vitrine`, {
-            method: "PUT",
-            body: JSON.stringify(data),
-        });
-        return response;
-    },
-
-    async startCheckout(data) {
-        const response = await fetchRoutes(`/api/marketplace/checkout`, {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-        return response;
-    },
-
-    async getMyPurchases() {
-        const response = await fetchRoutes(`/api/marketplace/me/purchases`);
-        return response;
-    },
-
-    async getSellerDashboard() {
-        const response = await fetchRoutes(`/api/marketplace/seller/dashboard`);
-        return response;
-    },
-
-
-
-    async getSellerSalesHistory() {
-        const response = await fetchRoutes(`/api/marketplace/seller/sales-history`);
-        return response;
-    },
-
-    async getProductDetails(productId) {
-        const response = await fetchRoutes(`/api/marketplace/seller/products/${productId}/details`);
-        return response;
-    },
-
-    async getSellerKycStatus() {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/kyc-status`);
-        return response;
-    },
-
-    async generateKycLink() {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/kyc-link`, {
-            method: 'POST',
-        });
-        return response;
-    },
-
-    // One-click "Tornar-se parceiro": records seller intent (user → pending_seller).
-    async becomeSellerIntent() {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/intent`, {
-            method: 'POST',
-            credentials: 'include',
-        });
-        return response;
-    },
-
-    // Self-service recipient creation. Payload: { register_information, default_bank_account }.
-    async registerSeller(payload) {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/register`, {
-            method: 'POST',
-            credentials: 'include',
-            body: JSON.stringify(payload),
-        });
-        return response;
-    },
-
-    // Recipient status — used to poll whether the webhook already created the
-    // recipient row (connected: true) after self-service register.
-    async getSellerAccountStatus() {
-        const response = await fetchRoutes(`/api/marketplace/seller/account/status`, {
-            credentials: 'include',
-        });
-        return response;
-    },
-
-    async getWithdrawalInfo() {
-        const response = await fetchRoutes(`/api/marketplace/seller/withdrawal-info`);
-        return response;
-    },
-
-    async getSellerPersonalData() {
-        const response = await fetchRoutes(`/api/marketplace/seller/personal-data`);
-        return response;
-    },
-
-    async getCashFlow() {
-        const response = await fetchRoutes(`/api/marketplace/seller/cash-flow`);
-        return response;
-    },
-
-    async getCashFlowDetail(month) {
-        const qs = month ? `?month=${encodeURIComponent(month)}` : '';
-        const response = await fetchRoutes(`/api/marketplace/seller/cash-flow-detail${qs}`);
-        return response;
-    },
-
-    async getWithdrawalsDetail(month) {
-        const qs = month ? `?month=${encodeURIComponent(month)}` : '';
-        const response = await fetchRoutes(`/api/marketplace/seller/withdrawals-detail${qs}`);
-        return response;
-    },
-
-    async requestWithdrawal(amountCents) {
-        const response = await fetchRoutes(`/api/marketplace/seller/withdraw`, {
-            method: 'POST',
-            body: JSON.stringify({ amount_cents: amountCents }),
-        });
-        return response;
-    },
-
-    // ==================== Checkout Orders ====================
-
-    async createCheckoutOrder(data) {
-        const response = await fetchRoutes(`/api/checkout-orders`, {
-            method: "POST",
-            body: JSON.stringify(data),
-        });
-        return response;
-    },
-
-    async getCheckoutOrder(orderId) {
-        const response = await fetchRoutes(`/api/checkout-orders/${orderId}`);
-        return response;
-    },
-
-    async payCheckoutOrder(orderId, paymentData) {
-        const response = await fetchRoutes(`/api/checkout-orders/${orderId}/pay`, {
-            method: "POST",
-            body: JSON.stringify({ payment: paymentData }),
-        });
-        return response;
-    },
 }

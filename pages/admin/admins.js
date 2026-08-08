@@ -6,8 +6,6 @@
         'user.suspend': 'Suspendeu usuário',
         'user.unsuspend': 'Reativou usuário',
         'user.role_change': 'Alterou role',
-        'seller.create': 'Cadastrou vendedor',
-        'seller.remove': 'Removeu vendedor',
         'admin.remove': 'Removeu administrador',
     };
 
