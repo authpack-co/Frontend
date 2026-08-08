@@ -1721,9 +1721,156 @@ plusSubscribeBtns.forEach(btn => {
     });
 });
 
-// Plan CTA — redireciona para o Checkout hospedado da Stripe. Um botão por
-// plano assinável (data-plan="plus" | "business"). Enterprise é um link de
-// contato (sem data-plan).
+// ── Troca de plano: simular → confirmar → executar ──────────────────────────
+// Nenhuma cobrança acontece sem o cliente ver antes o valor exato. O clique no
+// plano só SIMULA; quem dispara a cobrança é o botão do modal de confirmação.
+
+const PLAN_LABELS = { free: 'Free', plus: 'Plus', business: 'Business', enterprise: 'Enterprise' };
+const PLAN_PEOPLE = {
+    free: 'até 10 pessoas',
+    plus: 'até 25 pessoas',
+    business: 'até 75 pessoas',
+    enterprise: 'pessoas ilimitadas',
+};
+
+function planMoney(cents, currency) {
+    return ((cents || 0) / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: (currency || 'BRL').toUpperCase(),
+    });
+}
+
+function planDate(value) {
+    if (!value) return '';
+    // effectiveAt vem em unix seconds no upgrade e como data ISO no downgrade.
+    const d = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+// Executa de fato a troca (ou o redirect para o Checkout de assinatura nova).
+async function startPlanChange(plan, { button = null } = {}) {
+    const res = await fetchManager.createSubscriptionCheckout(plan);
+
+    if (!res.ok) {
+        notify('error', res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
+            ? 'Você já está neste plano.'
+            : res.result?.error || 'Não foi possível concluir a operação.');
+        if (button) { button.disabled = false; button.textContent = 'Confirmar'; }
+        return;
+    }
+
+    const { mode, url, effectiveAt } = res.result || {};
+
+    if (mode === 'checkout') {
+        if (!url) {
+            notify('error', 'Erro ao iniciar checkout. Tente novamente.');
+            if (button) { button.disabled = false; button.textContent = 'Confirmar'; }
+            return;
+        }
+        window.location.href = url;
+        return;
+    }
+
+    utils.closeModals();
+
+    if (mode === 'upgraded') {
+        notify('success', 'Plano atualizado! Cobramos apenas a diferença proporcional.');
+    } else if (mode === 'downgrade_scheduled') {
+        notify('success', `Mudança agendada para ${planDate(effectiveAt) || 'o fim do período atual'}.`);
+    } else if (mode === 'schedule_canceled') {
+        notify('success', 'Mudança de plano cancelada. Você segue no plano atual.');
+    }
+
+    setTimeout(() => window.location.reload(), 2500);
+}
+
+// Monta e abre o modal de confirmação com os números vindos da simulação.
+function openPlanChangeConfirm(plan, preview) {
+    const el = (id) => document.getElementById(id);
+    const from = PLAN_LABELS[preview.currentTier] || preview.currentTier;
+    const to = PLAN_LABELS[preview.newTier] || preview.newTier;
+
+    const chargeBox = el('pc-charge');
+    const breakdown = el('pc-breakdown');
+    const linesEl = el('pc-lines');
+    const confirmBtn = el('pc-confirm');
+
+    // Estado limpo — o modal é reutilizado entre aberturas.
+    linesEl.innerHTML = '';
+    breakdown.style.display = 'none';
+    chargeBox.classList.remove('pc-charge--none');
+    el('pc-charge-sub').textContent = '';
+
+    // Transição entre planos
+    el('pc-from-name').textContent = `AuthPack ${from}`;
+    el('pc-from-people').textContent = PLAN_PEOPLE[preview.currentTier] || '';
+    el('pc-to-name').textContent = `AuthPack ${to}`;
+    el('pc-to-people').textContent = PLAN_PEOPLE[preview.newTier] || '';
+
+    if (preview.mode === 'upgrade') {
+        el('pc-title').textContent = 'Confirmar upgrade';
+        el('pc-to-label').textContent = 'A partir de agora';
+
+        // Detalhamento da Stripe: crédito do tempo não usado + valor do novo plano.
+        if ((preview.lines || []).length) {
+            breakdown.style.display = '';
+            preview.lines.forEach((l) => {
+                const row = document.createElement('div');
+                row.className = 'pc-line';
+                row.innerHTML = '<span></span><strong></strong>';
+                row.querySelector('span').textContent = l.description || '';
+                const value = row.querySelector('strong');
+                value.textContent = planMoney(l.amount, preview.currency);
+                if (l.amount < 0) value.classList.add('is-credit');
+                linesEl.appendChild(row);
+            });
+        }
+
+        el('pc-charge-label').textContent = 'Cobrança única agora';
+        el('pc-charge-value').textContent = planMoney(preview.amountDueNow, preview.currency);
+        el('pc-charge-sub').textContent = 'Referente apenas aos dias restantes do ciclo atual.';
+        el('pc-note').textContent = 'A mensalidade cheia do novo plano só passa a valer na próxima '
+            + 'renovação. O novo limite de pessoas fica disponível imediatamente.';
+    } else if (preview.mode === 'downgrade') {
+        const when = planDate(preview.effectiveAt);
+        el('pc-title').textContent = 'Confirmar mudança de plano';
+        el('pc-to-label').textContent = when ? `A partir de ${when}` : 'No fim do ciclo';
+
+        chargeBox.classList.add('pc-charge--none');
+        el('pc-charge-label').textContent = 'Nenhuma cobrança agora';
+        el('pc-charge-value').textContent = 'R$ 0,00';
+        el('pc-charge-sub').textContent = when
+            ? `Você já pagou o ${from} até ${when}.`
+            : `Você já pagou o ${from} até o fim do ciclo atual.`;
+        el('pc-note').textContent = `Até lá nada muda: você mantém todos os limites do ${from}. `
+            + `Depois dessa data passa a valer o limite do ${to} — acessos compartilhados acima do novo `
+            + 'limite ficam pausados até você liberar espaço.';
+    } else if (preview.mode === 'cancel_schedule') {
+        el('pc-title').textContent = 'Cancelar mudança agendada';
+        el('pc-to-label').textContent = 'Continua';
+        el('pc-to-name').textContent = `AuthPack ${from}`;
+        el('pc-to-people').textContent = PLAN_PEOPLE[preview.currentTier] || '';
+
+        chargeBox.classList.add('pc-charge--none');
+        el('pc-charge-label').textContent = 'Nenhuma cobrança agora';
+        el('pc-charge-value').textContent = 'R$ 0,00';
+        el('pc-note').textContent = `A mudança agendada será desfeita e você segue no ${from} `
+            + 'normalmente, com renovação automática.';
+    }
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar';
+    confirmBtn.onclick = async () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Processando...';
+        await startPlanChange(plan, { button: confirmBtn });
+    };
+
+    utils.showModal('planChange');
+}
+
+// Plan CTA — abre a simulação. Um botão por plano assinável
+// (data-plan="plus" | "business"). Enterprise é um link de contato (sem data-plan).
 const planChooseBtns = document.querySelectorAll('.plan-choose-btn[data-plan]');
 planChooseBtns.forEach(planBtn => {
     planBtn.addEventListener('click', async () => {
@@ -1740,27 +1887,33 @@ planChooseBtns.forEach(planBtn => {
         };
 
         try {
-            const res = await fetchManager.createSubscriptionCheckout(plan);
+            // Etapa 1 — simula. Nada é cobrado aqui.
+            const res = await fetchManager.previewPlanChange(plan);
+            restore();
 
             if (!res.ok) {
-                alert(res.result?.error === 'ALREADY_SUBSCRIBED_TO_THIS_PLAN'
-                    ? 'Você já está neste plano.'
-                    : res.result?.error || 'Erro ao iniciar checkout.');
-                restore();
+                notify('error', res.result?.error || 'Não foi possível simular a troca de plano.');
                 return;
             }
 
-            const url = res.result?.url;
-            if (!url) {
-                alert('Erro ao iniciar checkout. Tente novamente.');
-                restore();
+            const preview = res.result || {};
+
+            // Assinatura nova: o próprio Checkout da Stripe é a tela de
+            // confirmação, com valor e cartão. Não duplicamos isso aqui.
+            if (preview.mode === 'checkout') {
+                await startPlanChange(plan);
                 return;
             }
 
-            window.location.href = url;
+            if (preview.mode === 'same') {
+                notify('error', 'Você já está neste plano.');
+                return;
+            }
+
+            openPlanChangeConfirm(plan, preview);
         } catch (err) {
-            console.error('Stripe checkout redirect error:', err);
-            alert('Erro inesperado. Tente novamente.');
+            console.error('Plan preview error:', err);
+            notify('error', 'Erro inesperado. Tente novamente.');
             restore();
         }
     });

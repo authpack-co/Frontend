@@ -881,6 +881,61 @@
             </div>
         </div>
         <!-- People (shared) Modal -->
+        <!-- Confirmação de troca de plano: mostra o que será cobrado ANTES de
+             qualquer cobrança. Preenchido por eventsHandler a partir de
+             POST /api/subscription/preview. -->
+        <div class="modal-overlay" id="planChangeModal">
+            <div class="modal pc-modal">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="pc-title">Confirmar mudança de plano</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+
+                <div class="modal-body pc-body">
+                    <!-- Transição visual: plano atual → plano novo, com o limite
+                         de pessoas de cada um (o limitador real do produto). -->
+                    <div class="pc-transition">
+                        <div class="pc-plan">
+                            <span class="pc-plan-label">Atual</span>
+                            <span class="pc-plan-name" id="pc-from-name">—</span>
+                            <span class="pc-plan-people" id="pc-from-people"></span>
+                        </div>
+                        <svg class="pc-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg>
+                        <div class="pc-plan pc-plan--target">
+                            <span class="pc-plan-label" id="pc-to-label">Novo</span>
+                            <span class="pc-plan-name" id="pc-to-name">—</span>
+                            <span class="pc-plan-people" id="pc-to-people"></span>
+                        </div>
+                    </div>
+
+                    <!-- Detalhamento vindo da simulação da Stripe (só no upgrade) -->
+                    <div class="pc-breakdown" id="pc-breakdown" style="display:none">
+                        <span class="pc-breakdown-title">Cálculo proporcional</span>
+                        <div class="pc-lines" id="pc-lines"></div>
+                    </div>
+
+                    <!-- Valor em destaque -->
+                    <div class="pc-charge" id="pc-charge">
+                        <div class="pc-charge-row">
+                            <span class="pc-charge-label" id="pc-charge-label">Cobrança agora</span>
+                            <span class="pc-charge-value" id="pc-charge-value">—</span>
+                        </div>
+                        <span class="pc-charge-sub" id="pc-charge-sub"></span>
+                    </div>
+
+                    <p class="pc-note" id="pc-note"></p>
+                </div>
+
+                <div class="modal-footer pc-footer">
+                    <button class="pc-btn pc-btn--ghost cancel-btn">Voltar</button>
+                    <button class="pc-btn pc-btn--primary" id="pc-confirm">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
         <div class="modal-overlay" id="peopleModal">
             <div class="modal people-modal">
                 <div class="modal-header">

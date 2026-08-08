@@ -3631,6 +3631,274 @@ span.coming-soon {
 }
 
 /* ============================================
+   Confirmação de troca de plano
+   ============================================ */
+/* O .modal base é max-width 400px + overflow auto, e o .modal-body base trava
+   em max-height 300px. Isso espremia a confirmação num quadro estreito com
+   scroll interno. O conteúdo aqui é curto e previsível (transição + cálculo +
+   valor + nota): cabe inteiro na tela, então soltamos as duas travas e o modal
+   cresce até o tamanho natural do conteúdo.
+
+   Especificidade .modal.pc-modal (2 classes) para vencer o `.modal` base de
+   modals.css, que carrega DEPOIS de style.css — mesmo padrão já usado em
+   .modal.share-modal-v2. Com uma classe só o empate é resolvido pela ordem dos
+   arquivos e o base ganha. */
+.modal.pc-modal {
+    max-width: 580px;
+    overflow: visible;
+}
+
+/* Header alinhado à mesma sangria de 28px do corpo e do rodapé. */
+.pc-modal .modal-header {
+    padding: 22px 28px 16px;
+}
+
+.pc-modal .close-btn {
+    top: 18px;
+    right: 24px;
+}
+
+.modal-body.pc-body {
+    gap: 18px;
+    padding: 24px 28px;
+    max-height: none;
+    overflow: visible;
+}
+
+/* Válvula de segurança só para telas realmente baixas (notebook pequeno em
+   paisagem, celular deitado): aí sim volta a rolar, em vez de vazar da viewport. */
+@media (max-height: 700px) {
+    .modal-body.pc-body {
+        max-height: calc(100vh - 200px);
+        overflow: auto;
+    }
+}
+
+/* ── Transição entre planos ── */
+.pc-transition {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.pc-plan {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card-alt);
+    min-width: 0;
+}
+
+.pc-plan--target {
+    border-color: var(--ap-accent-muted);
+    background: var(--ap-accent-subtle);
+}
+
+.pc-plan-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+}
+
+.pc-plan--target .pc-plan-label {
+    color: var(--ap-accent-strong);
+}
+
+.pc-plan-name {
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--ap-text-primary);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pc-plan-people {
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+}
+
+.pc-arrow {
+    align-self: center;
+    color: var(--ap-text-muted);
+    flex-shrink: 0;
+}
+
+/* ── Detalhamento proporcional ── */
+.pc-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+}
+
+.pc-breakdown-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+}
+
+.pc-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.pc-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ap-text-secondary);
+}
+
+.pc-line strong {
+    font-family: var(--ap-font-data);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+}
+
+.pc-line strong.is-credit {
+    color: var(--ap-success-text);
+}
+
+/* ── Valor em destaque ── */
+.pc-charge {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 16px 18px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
+}
+
+.pc-charge--none {
+    background: var(--ap-success-light);
+    border-color: var(--ap-success-border);
+}
+
+.pc-charge-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.pc-charge-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.pc-charge--none .pc-charge-label {
+    color: var(--ap-success-text);
+}
+
+.pc-charge-value {
+    font-family: var(--ap-font-data);
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ap-text-primary);
+}
+
+.pc-charge--none .pc-charge-value {
+    font-size: 17px;
+    color: var(--ap-success-text);
+}
+
+.pc-charge-sub {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+.pc-charge--none .pc-charge-sub {
+    color: var(--ap-success-text);
+    opacity: .85;
+}
+
+.pc-note {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ap-text-muted);
+    margin: 0;
+}
+
+/* ── Ações ── */
+/* 2 classes pelo mesmo motivo: o .modal-footer base vem de modals.css. */
+.modal-footer.pc-footer {
+    gap: 10px;
+    padding: 0 28px 24px;
+}
+
+.pc-btn {
+    flex: 1;
+    padding: 11px 18px;
+    border-radius: var(--ap-radius-md);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+
+.pc-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.pc-btn--ghost {
+    flex: 0 0 auto;
+    min-width: 96px;
+    background: transparent;
+    border-color: var(--ap-border);
+    color: var(--ap-text-secondary);
+}
+
+.pc-btn--ghost:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+}
+
+.pc-btn--primary {
+    background: var(--ap-accent);
+    color: var(--ap-text-inverse);
+}
+
+.pc-btn--primary:hover:not(:disabled) {
+    background: var(--ap-accent-hover);
+}
+
+@media (max-width: 480px) {
+    .pc-transition {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .pc-arrow {
+        transform: rotate(90deg);
+        justify-self: center;
+    }
+}
+
+/* ============================================
    Free Plan Limits
    ============================================ */
 

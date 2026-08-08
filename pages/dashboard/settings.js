@@ -560,8 +560,13 @@
         const planLabel = isPaid ? `AuthPack ${plan.charAt(0).toUpperCase()}${plan.slice(1)}` : 'Plano Free';
         // Plano pago sem subscription row = cortesia/trial (sem cobrança).
         const isTrial   = isPaid && !sub;
-        const priceCents = invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS;
-        const currency   = (invoices[0] && invoices[0].currency) || 'BRL';
+        // Mensalidade = preço do plano, NUNCA a última fatura: depois de um
+        // upgrade a última fatura é a diferença proporcional (ex.: R$ 59,90),
+        // que não é o valor recorrente.
+        const priceCents = (sub && sub.unit_amount != null)
+            ? sub.unit_amount
+            : (invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS);
+        const currency   = (sub && sub.currency) || (invoices[0] && invoices[0].currency) || 'BRL';
 
         if (renewEl) renewEl.textContent = '';
         if (noteEl)  scHide(noteEl);
@@ -593,6 +598,20 @@
                     noteEl.textContent = 'Assinatura cancelada — não será renovada. O acesso Plus permanece até o fim do período pago.';
                     scShow(noteEl);
                 }
+            } else if (sub && sub.pending_plan) {
+                // Downgrade agendado: o plano maior continua valendo até a data.
+                const pendingLabel = `AuthPack ${sub.pending_plan.charAt(0).toUpperCase()}${sub.pending_plan.slice(1)}`;
+                scSetStatusBadge(badgeEl, 'Mudança agendada', 'trial');
+                if (priceEl) priceEl.textContent = `${scFormatMoney(priceCents, currency)} / mês`;
+                if (renewEl && sub.pending_change_at) {
+                    renewEl.textContent = `Muda em ${scFormatDate(sub.pending_change_at)}`;
+                }
+                if (noteEl) {
+                    noteEl.textContent = `Seu plano muda para ${pendingLabel} em `
+                        + `${scFormatDate(sub.pending_change_at)}. Até lá você continua no ${planLabel} `
+                        + `com todos os limites atuais.`;
+                    scShow(noteEl);
+                }
             } else {
                 scSetStatusBadge(badgeEl, 'Ativa', 'paid');
                 if (priceEl) priceEl.textContent = `${scFormatMoney(priceCents, currency)} / mês`;
@@ -620,7 +639,9 @@
         const invoices = billing.invoices || [];
         const sub      = billing.subscription;
 
-        // Ciclos já pagos (uma fatura por ciclo).
+        // Ciclos já pagos (uma fatura por ciclo). Faturas de troca de plano
+        // (billing_reason='subscription_update') são ajustes proporcionais, não
+        // mensalidades — ficam marcadas para não parecerem um mês normal.
         invoices.forEach((inv) => {
             periods.push({
                 status:      'paid',
@@ -630,6 +651,7 @@
                 amount:      inv.amount_paid,
                 currency:    inv.currency || 'BRL',
                 paidAt:      inv.paid_at,
+                isAdjustment: inv.billing_reason === 'subscription_update',
             });
         });
 
@@ -643,8 +665,11 @@
                 periodStart: sub.current_period_end,
                 periodEnd:   scAddMonthISO(sub.current_period_end),
                 dueDate:     sub.current_period_end,
-                amount:      invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS,
-                currency:    (invoices[0] && invoices[0].currency) || 'BRL',
+                // Próxima cobrança = mensalidade do plano, não a última fatura.
+                amount:      (sub.unit_amount != null)
+                    ? sub.unit_amount
+                    : (invoices.length ? invoices[0].amount_paid : PLUS_PRICE_CENTS),
+                currency:    sub.currency || (invoices[0] && invoices[0].currency) || 'BRL',
                 paidAt:      null,
             });
         }
@@ -666,6 +691,7 @@
         let metaText = '';
         if (p.status === 'paid') {
             metaText = p.paidAt ? `Pago em ${scFormatDate(p.paidAt)}` : 'Pagamento confirmado';
+            if (p.isAdjustment) metaText += ' · ajuste proporcional por troca de plano';
         } else if (p.status === 'open') {
             metaText = `Vence em ${scFormatDate(p.dueDate)}`;
         } else {

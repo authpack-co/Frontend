@@ -3238,8 +3238,8 @@ async function init() {
         });
     }
 
-    // Seleciona o primeiro pacote da coleção por padrão (se não veio do checkout)
-    if (!newProductId && packagesList.userCollection.length > 0) {
+    // Seleciona o primeiro pacote da coleção por padrão
+    if (packagesList.userCollection.length > 0) {
         selectPackage(packagesList.userCollection[0].id);
     }
 }

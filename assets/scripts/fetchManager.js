@@ -261,6 +261,16 @@ const fetchManager = {
         return response;
     },
 
+    // Simula a troca de plano (não cobra nada) para a tela de confirmação.
+    async previewPlanChange(plan) {
+        const response = await fetchRoutes(`/api/subscription/preview`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ plan })
+        });
+        return response;
+    },
+
     // Cria a Checkout Session da Stripe e devolve { url } para redirecionar.
     async createSubscriptionCheckout(plan) {
         const response = await fetchRoutes(`/api/subscription/checkout`, {
