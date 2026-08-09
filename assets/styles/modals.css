@@ -740,9 +740,256 @@
     background: var(--ap-accent-light);
 }
 
+/* ============ Plans selection modal (multi-tier: plus/business/enterprise) ============ */
+.plans-modal {
+    max-width: 900px;
+    width: 94vw;
+    border-radius: var(--ap-radius-xl);
+    background: var(--ap-bg-card);
+    position: relative;
+    padding: 34px 30px 24px;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.plans-modal-header {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.plans-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+    padding: 4px 11px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    margin-bottom: 14px;
+}
+
+.plans-modal-header h2 {
+    font-family: var(--ap-font-heading);
+    font-size: 25px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--ap-text-primary);
+    margin: 0;
+}
+
+.plans-modal-header p {
+    font-size: 13.5px;
+    color: var(--ap-text-muted);
+    margin: 10px auto 0;
+    max-width: 460px;
+    line-height: 1.55;
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    align-items: stretch;
+}
+
+/* ── Card ── */
+.plan-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 22px 20px 20px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.plan-card:hover {
+    border-color: var(--ap-border-hover);
+    box-shadow: var(--ap-shadow-sm);
+}
+
+.plan-card--featured {
+    border-color: transparent;
+    background:
+        linear-gradient(var(--ap-bg-card), var(--ap-bg-card)) padding-box,
+        linear-gradient(150deg, var(--ap-accent), var(--ap-accent-strong)) border-box;
+    box-shadow: 0 14px 34px -20px rgba(37, 99, 235, 0.55);
+}
+
+.plan-card--featured:hover {
+    border-color: transparent;
+    box-shadow: 0 18px 40px -20px rgba(37, 99, 235, 0.6);
+}
+
+/* Selo do card em destaque e do plano atual: mesma pílula, cores distintas. */
+.plan-badge,
+.plan-card--current::after {
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: var(--ap-radius-full);
+    white-space: nowrap;
+}
+
+.plan-badge {
+    background: var(--ap-accent-strong);
+    color: #fff;
+    box-shadow: 0 4px 10px -4px rgba(37, 99, 235, 0.7);
+}
+
+/* ── Cabeçalho ── */
+.plan-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 14px;
+}
+
+.plan-name {
+    font-family: var(--ap-font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ap-text-primary);
+}
+
+.plan-tag {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+/* ── Preço ── */
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    min-height: 36px;
+}
+
+.plan-price-value {
+    font-family: var(--ap-font-heading);
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--ap-text-primary);
+}
+
+.plan-price-period {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ap-text-muted);
+}
+
+/* ── Métrica que define o plano ── */
+.plan-people {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 9px 11px;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
+}
+
+.plan-people-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ap-text-primary);
+}
+
+.plan-people-label {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+/* ── Benefícios ── */
+.plan-feats {
+    list-style: none;
+    padding: 16px 0 0;
+    margin: 16px 0 22px;
+    border-top: 1px solid var(--ap-border);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.plan-feats li {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ap-text-secondary);
+    padding-left: 23px;
+    position: relative;
+}
+
+/* Check desenhado (máscara SVG) em vez de emoji — herda a cor do tema. */
+.plan-feats li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 15px;
+    height: 15px;
+    background-color: var(--ap-accent-strong);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/13px 13px no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/13px 13px no-repeat;
+}
+
+/* ── CTA ── */
+.plan-choose-btn {
+    margin-top: auto;
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid transparent;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-accent-strong);
+    color: #fff;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.plan-choose-btn:hover {
+    background: var(--ap-accent-hover);
+}
+
+.plan-choose-btn:disabled {
+    cursor: default;
+    background: var(--ap-bg-card-alt);
+    border-color: var(--ap-border);
+    color: var(--ap-text-muted);
+}
+
+.plan-choose-btn--ghost {
+    background: transparent;
+    color: var(--ap-text-primary);
+    border-color: var(--ap-border-hover);
+}
+
+.plan-choose-btn--ghost:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-text-muted);
+}
+
 /* Card do plano atual no modal de planos (marcado por annotatePlansModal). */
 .plan-card--current {
-    border-color: #22c55e !important;
+    border-color: var(--ap-success-border);
+    background: var(--ap-bg-card);
+    box-shadow: none;
 }
 
 .plan-card--current .plan-badge {
@@ -751,193 +998,58 @@
 
 .plan-card--current::after {
     content: "Plano atual";
-    position: absolute;
-    top: -11px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #22c55e;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-    white-space: nowrap;
+    background: var(--ap-success-light);
+    border: 1px solid var(--ap-success-border);
+    color: var(--ap-success-text);
 }
 
-/* ============ Plans selection modal (multi-tier: plus/business/enterprise) ============ */
-.plans-modal {
-    max-width: 860px;
-    border-radius: 16px;
-    background: var(--ap-bg-card);
-    position: relative;
-    padding: 32px;
-}
-
-.plans-modal-header {
-    text-align: center;
-    margin-bottom: 26px;
-}
-
-.plans-modal-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--ap-text-primary);
-    margin: 0;
-}
-
-.plans-modal-header p {
-    font-size: 14px;
-    color: var(--ap-text-muted);
-    margin: 8px auto 0;
-    max-width: 480px;
-    line-height: 1.5;
-}
-
-.plans-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-.plan-card {
-    position: relative;
+/* ── Rodapé de confiança ── */
+.plans-foot {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 24px 20px;
-    border: 1px solid var(--ap-border);
-    border-radius: 14px;
-    background: var(--ap-bg-page);
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 22px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--ap-border);
 }
 
-.plan-card--featured {
-    border-color: var(--ap-accent);
-    box-shadow: 0 6px 24px rgba(96, 165, 250, 0.18);
-}
-
-.plan-badge {
-    position: absolute;
-    top: -11px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--ap-accent);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-
-.plan-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--ap-text-primary);
-}
-
-.plan-people {
-    font-size: 15px;
-    color: var(--ap-text-secondary);
-}
-
-.plan-people strong {
-    font-size: 22px;
-    color: var(--ap-text-primary);
-}
-
-.plan-price {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-}
-
-.plan-price-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--ap-text-primary);
-}
-
-.plan-price-period {
-    font-size: 14px;
-    color: var(--ap-text-muted);
-}
-
-.plan-feats {
-    list-style: none;
-    padding: 0;
-    margin: 4px 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.plan-feats li {
-    font-size: 13px;
-    color: var(--ap-text-secondary);
-    padding-left: 20px;
-    position: relative;
-}
-
-.plan-feats li::before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: #22c55e;
-    font-weight: 700;
-}
-
-.plan-choose-btn {
-    margin-top: auto;
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--ap-accent);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    display: block;
-    transition: all 0.2s ease;
-}
-
-.plan-choose-btn:hover {
-    background: var(--ap-accent-hover);
-    transform: translateY(-1px);
-}
-
-.plan-choose-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.plan-choose-btn--ghost {
-    background: transparent;
-    color: var(--ap-accent);
-    border: 1px solid var(--ap-accent);
-}
-
-.plan-choose-btn--ghost:hover {
-    background: var(--ap-accent-light);
-}
-
-.plans-note {
-    text-align: center;
+.plans-foot-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     font-size: 12px;
     color: var(--ap-text-muted);
-    margin: 22px 0 0;
 }
 
-@media (max-width: 720px) {
+.plans-foot-item svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    opacity: 0.85;
+}
+
+@media (max-width: 760px) {
     .plans-grid {
         grid-template-columns: 1fr;
+        gap: 18px;
     }
 
     .plans-modal {
-        padding: 24px 18px;
+        padding: 26px 18px 20px;
+    }
+
+    .plans-modal-header h2 {
+        font-size: 21px;
+    }
+
+    .plan-feats {
+        margin-bottom: 18px;
+    }
+
+    .plans-foot {
+        gap: 8px 16px;
     }
 }
 

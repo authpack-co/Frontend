@@ -4130,42 +4130,58 @@ textarea:focus-visible {
 }
 
 /* ============================================================================
-   Share Package Modal v2 — acesso do pacote (link + código) + links únicos
-   Layout de duas colunas: a esquerda é fixa (acesso), só a direita rola.
+   Share Package Modal (design 2a) — uma ação por tela, duas abas no topo:
+   "Convite"                    → estado do acesso + link do pacote + código
+   "Convites para uma pessoa"   → criar + os que ainda valem + os encerrados
+   O data-tab no .modal decide qual painel aparece; o rodapé é o mesmo nos dois.
    ============================================================================ */
 /* Specificidade .modal.share-modal-v2 (2 classes) para vencer o `.modal`
    base de modals.css, que carrega depois de style.css e tem max-width: 400px. */
 .modal.share-modal-v2 {
-    max-width: 880px;
     width: 94vw;
+    max-width: 900px;
+    max-height: min(92vh, 720px);
     display: flex;
     flex-direction: column;
-    max-height: min(90vh, 680px);
     overflow: hidden;
 }
 
-.share-modal-v2 .modal-body {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: 352px 1fr;
-    gap: 0;
-    max-height: none;
-    overflow: hidden;
-    padding: 0;
-}
-
-/* Cabeçalho com ícone (reaproveita .up-head) + metadados do pacote */
+/* ── Cabeçalho: ícone (reaproveita .up-head) + nome e sessões do pacote ── */
 .share-modal-v2 .modal-header {
+    flex: none;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: none;
     background: var(--ap-bg-card);
 }
 
-.share-modal-v2 .up-head {
+.share-modal-v2 .up-head,
+.share-modal-v2 .up-head-text {
     flex: 1;
     min-width: 0;
+}
+
+.share-modal-v2 .modal-title {
+    padding-right: 0;
+}
+
+/* No fluxo, não absoluto: o cabeçalho aqui é uma linha flex. */
+.share-modal-v2 .close-btn {
+    position: static;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--ap-radius-sm);
+    font-size: 22px;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+}
+
+.share-modal-v2 .close-btn:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
 }
 
 .share-head-meta {
@@ -4199,58 +4215,211 @@ textarea:focus-visible {
     color: var(--ap-text-muted);
 }
 
-/* ── Coluna esquerda: acesso do pacote ── */
-.share-access-pane {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 20px;
-    min-width: 0;
-    overflow-y: auto;
-    border-right: 1px solid var(--ap-border);
-    background: var(--ap-bg-card-alt);
-}
-
-.share-pane-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.share-pane-label {
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ap-text-muted);
-}
-
-/* Convite do pacote: um bloco só — o link é a ação, o código é a alternativa. */
-.share-invite-card {
-    display: flex;
-    flex-direction: column;
-    gap: 11px;
-    min-width: 0;
-    padding: 14px;
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-lg);
+/* ── Abas ── */
+.share-tabs-bar {
+    flex: none;
+    padding: 0 20px 14px;
     background: var(--ap-bg-card);
+    border-bottom: 1px solid var(--ap-border);
 }
 
-.share-invite-title {
-    font-size: 12.5px;
-    font-weight: 700;
+.share-tabs {
+    display: inline-flex;
+    max-width: 100%;
+    gap: 3px;
+    padding: 3px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+}
+
+.share-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 8px 18px;
+    border: none;
+    border-radius: var(--ap-radius-md);
+    background: transparent;
+    color: var(--ap-text-muted);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.share-tab:hover {
     color: var(--ap-text-primary);
 }
 
-.share-invite-link {
+.share-tab.active,
+.share-tab.active:hover {
+    background: var(--ap-accent);
+    color: #ffffff;
+}
+
+.share-tab-label,
+.share-tab-label-short {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.share-tab-label-short {
+    display: none;
+}
+
+.share-tab-count {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-accent-muted);
+    color: var(--ap-accent-strong);
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.share-tab.active .share-tab-count {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+.share-tab-count.hidden {
+    display: none;
+}
+
+/* ── Painéis ── */
+.share-modal-v2 .modal-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: none;
+    padding: 0;
+    overflow: hidden;
+    background: var(--ap-bg-modal);
+}
+
+.share-panel {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    padding: 24px 20px 22px;
+    overflow-y: auto;
+}
+
+/* "Convite" dita a altura do modal; "Convites para uma pessoa" é absoluto
+   sobre ele, permitindo scroll dentro da altura ditada pelo primeiro painel. */
+.share-modal-v2[data-tab="share"] .share-panel--links {
+    display: none;
+}
+
+.share-modal-v2[data-tab="links"] .share-panel--share {
+    visibility: hidden;
+}
+
+.share-modal-v2[data-tab="links"] .share-panel--links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+}
+
+.share-panel-col {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* O convite é uma coluna estreita e centrada; a lista ocupa a largura toda. */
+.share-panel--share .share-panel-col {
+    max-width: 620px;
+}
+
+.share-panel--links {
+    padding: 20px;
+}
+
+.share-panel--links .share-panel-col {
+    gap: 18px;
+}
+
+/* ── Aba "Convite" ── */
+/* Estado do acesso: o texto explica o que está valendo, a chave inverte. */
+.share-access-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 15px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.share-access-row.restricted {
+    background: var(--ap-warning-light);
+    border-color: var(--ap-warning-border);
+}
+
+.share-access-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.share-access-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.share-access-note {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ap-text-muted);
+}
+
+.share-access-row.restricted .share-access-note {
+    color: var(--ap-warning-text);
+}
+
+.share-access-row .toggle-switch {
+    flex: none;
+}
+
+/* Link do pacote + troca de chave lado a lado. */
+.share-link-row {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
-    padding: 9px 11px;
-    border-radius: 9px;
+}
+
+.share-invite-link {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px;
+    border-radius: var(--ap-radius-lg);
     background: var(--ap-bg-input);
     border: 1px solid var(--ap-border);
     color: var(--ap-text-muted);
@@ -4260,116 +4429,187 @@ textarea:focus-visible {
     flex: none;
 }
 
-.share-invite-text,
-.share-invite-code {
+.share-invite-text {
     flex: 1;
     min-width: 0;
     font-family: var(--ap-font-data);
+    font-size: 12.5px;
+    color: var(--ap-text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.share-invite-text {
-    font-size: 11.5px;
-    color: var(--ap-text-secondary);
+.share-rotate-btn {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: var(--ap-radius-lg);
+    border: 1px solid var(--ap-border);
+    background: var(--ap-bg-card);
+    color: var(--ap-text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
+.share-rotate-btn svg {
+    transition: transform 0.55s ease;
+}
+
+.share-rotate-btn:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+
+.share-rotate-btn:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Copiar o link é a ação principal da aba — vira confirmação no lugar. */
 .share-copy-link-btn {
     width: 100%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 11px 12px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.share-invite-code-row {
-    display: flex;
-    align-items: center;
     gap: 9px;
-    min-width: 0;
-    padding-top: 11px;
-    border-top: 1px dashed var(--ap-border);
-}
-
-.share-invite-code-text {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
-.share-invite-code-label {
-    font-size: 11.5px;
-    color: var(--ap-text-muted);
-}
-
-.share-invite-code {
-    font-size: 12.5px;
-    letter-spacing: 0.04em;
-    color: var(--ap-text-primary);
-}
-
-.share-copy-code-btn {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border-radius: 7px;
-    border: 1px solid var(--ap-border);
-    background: var(--ap-bg-card);
-    color: var(--ap-text-muted);
-    font-size: 11.5px;
-    font-weight: 600;
+    padding: 17px 22px;
+    border-radius: var(--ap-radius-lg);
+    border: 1px solid var(--ap-accent);
+    background: var(--ap-accent);
+    color: #ffffff;
     font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.share-copy-code-btn:hover {
-    background: var(--ap-bg-hover);
-    border-color: var(--ap-border-hover);
-    color: var(--ap-text-primary);
+.share-copy-link-btn:hover {
+    background: var(--ap-accent-hover);
+    border-color: var(--ap-accent-hover);
 }
 
-.share-copy-code-btn.copied,
-.share-copy-link-btn.copied {
+.share-copy-link-btn.copied,
+.share-copy-link-btn.copied:hover {
     background: var(--ap-success-light);
     border-color: var(--ap-success-border);
     color: var(--ap-success-text);
 }
 
-/* Pessoas com acesso: atalho para o painel de membros do pacote. */
-.share-people-row {
+.share-copy-icon {
+    flex: none;
+}
+
+.share-copy-icon--done,
+.share-copy-link-btn.copied .share-copy-icon--idle {
+    display: none;
+}
+
+.share-copy-link-btn.copied .share-copy-icon--done {
+    display: block;
+}
+
+/* Aparece só depois de trocar a chave, para explicar o que deixou de valer. */
+.share-rotated-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-warning-light);
+    color: var(--ap-warning-text);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.share-rotated-note.hidden {
+    display: none;
+}
+
+.share-rotated-note svg {
+    flex: none;
+    margin-top: 1px;
+}
+
+/* O código é a alternativa discreta ao link. */
+.share-invite-code-row {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     min-width: 0;
-    padding: 11px 13px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--ap-border);
+}
+
+.share-invite-code-label {
+    flex: none;
+    font-size: 12px;
+    color: var(--ap-text-placeholder);
+}
+
+.share-invite-code {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--ap-font-data);
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.share-copy-code-btn {
+    flex: none;
+    padding: 6px 11px;
+    border-radius: 7px;
     border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-lg);
-    background: var(--ap-bg-card);
+    background: none;
+    color: var(--ap-text-muted);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.share-copy-code-btn:hover {
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+
+.share-copy-code-btn.copied,
+.share-fresh-copy.copied,
+.unique-key-copy.copied {
+    background: var(--ap-success-light);
+    border-color: var(--ap-success-border);
+    color: var(--ap-success-text);
+}
+
+/* Pessoas com acesso: pílula centrada, atalho para o painel de membros. */
+.share-people-row {
+    align-self: center;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 8px 12px 8px 8px;
+    border: none;
+    border-radius: var(--ap-radius-full);
+    background: none;
     color: inherit;
     font-family: inherit;
-    text-align: left;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s;
 }
 
 .share-people-row:hover {
-    background: var(--ap-bg-hover);
-    border-color: var(--ap-border-hover);
-}
-
-.share-people-row>svg {
-    flex: none;
-    color: var(--ap-text-placeholder);
+    background: var(--ap-bg-card-alt);
 }
 
 .share-people-avatars {
@@ -4391,7 +4631,7 @@ textarea:focus-visible {
     font-size: 10.5px;
     font-weight: 700;
     color: #fff;
-    border: 2px solid var(--ap-bg-card);
+    border: 2px solid var(--ap-bg-modal);
     overflow: hidden;
 }
 
@@ -4413,214 +4653,186 @@ textarea:focus-visible {
     object-fit: cover;
 }
 
-.share-people-text {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
 .share-people-count {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ap-text-primary);
-}
-
-.share-people-hint {
-    font-size: 11.5px;
+    min-width: 0;
+    font-size: 12.5px;
     color: var(--ap-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Aviso de pacote restrito: o link/código seguem copiáveis, mas não ativam. */
-.share-restricted-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    padding: 11px 12px;
-    border-radius: var(--ap-radius-lg);
-    background: var(--ap-warning-light);
-    border: 1px solid var(--ap-warning-border);
-    color: var(--ap-warning-text);
-    font-size: 12px;
-    line-height: 1.45;
+.share-people-chevron {
+    flex: none;
+    color: var(--ap-text-placeholder);
 }
 
-.share-restricted-note.hidden {
+/* Sem ninguém no pacote não há painel para abrir: vira só a frase. */
+.share-people-row.empty {
+    padding: 4px 8px;
+    cursor: default;
+}
+
+.share-people-row.empty:hover {
+    background: none;
+}
+
+.share-people-row.empty .share-people-chevron {
     display: none;
 }
 
-.share-restricted-note svg {
-    flex: none;
-    margin-top: 1px;
-}
-
-.share-rotate {
-    margin-top: auto;
-    padding-top: 14px;
-    border-top: 1px solid var(--ap-border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.share-rotate-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 9px 12px;
-    border-radius: var(--ap-radius-md);
-    border: 1px solid var(--ap-border);
-    background: var(--ap-bg-card);
-    color: var(--ap-text-muted);
-    font-size: 12.5px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.share-rotate-btn:hover {
-    background: var(--ap-danger-light);
-    border-color: var(--ap-danger-border);
-    color: var(--ap-danger-text);
-}
-
-.share-rotate-btn:disabled {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.share-rotate-hint {
-    font-size: 11.5px;
-    color: var(--ap-text-muted);
+/* A frase é longa: quebra em vez de virar reticências. */
+.share-people-row.empty .share-people-count {
+    color: var(--ap-text-placeholder);
+    white-space: normal;
+    text-align: center;
     line-height: 1.45;
 }
 
-/* ── Coluna direita: links únicos + histórico ── */
-.share-links-pane {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-    background: var(--ap-bg-page);
-}
-
+/* ── Aba "Convites para uma pessoa" ── */
 .share-links-head {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid var(--ap-border);
-}
-
-.share-links-head .btn {
-    flex: none;
-    min-width: fit-content;
-}
-
-.share-links-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 4px 20px 20px;
-}
-
-.share-filters {
-    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 14px 20px 10px;
-}
-
-.share-filter {
-    padding: 4px 10px;
-    border-radius: var(--ap-radius-full);
-    border: 1px solid var(--ap-border);
-    background: var(--ap-bg-card);
-    color: var(--ap-text-secondary);
-    font-size: 11.5px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.share-filter:hover {
-    border-color: var(--ap-border-hover);
-    color: var(--ap-text-primary);
-}
-
-.share-filter.active {
-    background: var(--ap-text-primary);
-    border-color: var(--ap-text-primary);
-    color: var(--ap-bg-card);
-}
-
-/* Rodapé: nota de segurança + botão Concluído.
-   Especificidade .modal-footer.share-footer (2 classes) para vencer o
-   `.modal-footer` base de modals.css, que carrega depois de style.css e força
-   justify-content: flex-end / padding: 0 24px 24px. */
-.modal-footer.share-footer {
     justify-content: space-between;
-    align-items: center;
     gap: 16px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--ap-border);
-    background: var(--ap-bg-card-alt);
-}
-
-.share-footer-note {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: var(--ap-text-muted);
-    line-height: 1.4;
-}
-
-.share-footer-note svg {
-    flex: none;
-    color: var(--ap-text-muted);
-}
-
-.share-done-btn {
-    flex: none;
-    min-width: fit-content;
-    padding: 10px 22px;
 }
 
 .share-section-titles {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 3px;
-    flex: 1;
-    min-width: 0;
 }
 
 .share-section-title {
     font-size: 14.5px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--ap-text-primary);
 }
 
 .share-section-sub {
     font-size: 12.5px;
-    color: var(--ap-text-muted);
     line-height: 1.45;
+    color: var(--ap-text-muted);
 }
 
-/* Generate button icon alignment */
-#generateUniqueKeyBtn {
+.share-create-btn {
+    flex: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: var(--ap-radius-lg);
+    font-size: 13.5px;
 }
 
-/* Lista única de links: ativos e encerrados usam o mesmo item, mudando só o
-   ponto de status e o que aparece à direita (ações ou selo). */
+.share-create-btn:disabled {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+/* Convite recém-criado: sai copiado e fica à vista até fechar o modal. */
+.share-fresh {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-success-border);
+}
+
+.share-fresh.hidden {
+    display: none;
+}
+
+.share-fresh-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ap-success-text);
+}
+
+.share-fresh-label svg {
+    flex: none;
+}
+
+.share-fresh-url {
+    padding: 11px 12px;
+    border-radius: var(--ap-radius-md);
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+    font-family: var(--ap-font-data);
+    font-size: 12.5px;
+    color: var(--ap-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.share-fresh-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.share-fresh-hint {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+.share-fresh-copy {
+    flex: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--ap-border);
+    background: none;
+    color: var(--ap-text-secondary);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.share-fresh-copy:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+
+.share-links-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.share-links-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.share-links-group.hidden {
+    display: none;
+}
+
+.share-group-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ap-text-placeholder);
+}
+
 .unique-keys-list {
     list-style: none;
     margin: 0;
@@ -4628,27 +4840,35 @@ textarea:focus-visible {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
 
-.unique-keys-empty {
-    padding: 14px;
-    text-align: center;
-    font-size: 12.5px;
-    color: var(--ap-text-muted);
-    background: var(--ap-bg-card-alt);
-    border: 1px dashed var(--ap-border);
-    border-radius: var(--ap-radius-md);
+/* O histórico pode ser longo; ele rola sozinho e o resto da aba fica parado. */
+.unique-keys-list--ended {
+    gap: 6px;
+    max-height: 210px;
+    overflow-y: auto;
 }
 
 .unique-key-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
-    padding: 11px 12px;
+    padding: 13px 14px;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-md);
+    border-radius: var(--ap-radius-lg);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.unique-key-item.expiring-soon {
+    border-color: var(--ap-warning-border);
+}
+
+.unique-key-item.removing {
+    opacity: 0;
+    transform: translateX(8px);
 }
 
 .unique-key-dot {
@@ -4663,13 +4883,32 @@ textarea:focus-visible {
     background: var(--ap-warning);
 }
 
-.unique-key-item.used .unique-key-dot {
-    background: var(--ap-text-placeholder);
+/* Encerrados trazem quem entrou (ou o motivo do fim) no lugar do ponto. */
+.unique-key-badge {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
 }
 
-.unique-key-item.expired .unique-key-dot,
-.unique-key-item.revoked .unique-key-dot {
-    background: var(--ap-border-hover);
+.unique-key-badge.neutral {
+    background: var(--ap-bg-card-alt);
+    color: var(--ap-text-placeholder);
+}
+
+.unique-key-badge img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .unique-key-info {
@@ -4680,9 +4919,9 @@ textarea:focus-visible {
     gap: 2px;
 }
 
-.unique-key-url {
-    font-family: var(--ap-font-data);
-    font-size: 12.5px;
+.unique-key-title {
+    font-size: 13px;
+    font-weight: 600;
     color: var(--ap-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4690,31 +4929,86 @@ textarea:focus-visible {
 }
 
 .unique-key-meta {
-    font-size: 11.5px;
+    font-size: 12px;
     color: var(--ap-text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-/* Links encerrados recuam para segundo plano; última hora de vida vira alerta. */
-.unique-key-item.ended .unique-key-url {
-    color: var(--ap-text-muted);
-}
-
 .unique-key-item.expiring-soon .unique-key-meta {
     color: var(--ap-warning-text);
 }
 
+.unique-key-item.ended {
+    padding: 12px 14px;
+}
+
+.unique-key-item.ended .unique-key-title {
+    font-size: 12.5px;
+    color: var(--ap-text-secondary);
+}
+
+.unique-key-item.ended .unique-key-meta {
+    font-size: 11.5px;
+}
+
+.unique-key-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+}
+
+.unique-key-copy,
+.unique-key-revoke {
+    padding: 7px 13px;
+    border-radius: 7px;
+    border: 1px solid var(--ap-border);
+    background: none;
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.unique-key-copy {
+    color: var(--ap-text-secondary);
+    font-weight: 600;
+}
+
+.unique-key-copy:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+    color: var(--ap-text-primary);
+}
+
+.unique-key-revoke {
+    color: var(--ap-text-muted);
+    font-weight: 500;
+}
+
+.unique-key-revoke:hover {
+    background: var(--ap-danger-light);
+    border-color: var(--ap-danger-border);
+    color: var(--ap-danger);
+}
+
+.unique-key-copy:disabled,
+.unique-key-revoke:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 .unique-key-pill {
     flex: none;
-    font-size: 10.5px;
-    font-weight: 600;
-    padding: 3px 9px;
+    padding: 3px 10px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border);
     color: var(--ap-text-muted);
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .unique-key-pill.used {
@@ -4729,109 +5023,236 @@ textarea:focus-visible {
     color: var(--ap-danger-text);
 }
 
-.unique-key-copy {
-    background: none;
+/* ── Estados da lista: vazio, carregando e falha ── */
+.share-links-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 24px 20px;
     border: 1px solid var(--ap-border);
-    color: var(--ap-text-secondary);
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    flex-shrink: 0;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
 }
 
-.unique-key-copy:hover {
-    background: var(--ap-bg-hover);
-    border-color: var(--ap-border-hover);
+.share-links-empty.hidden {
+    display: none;
+}
+
+.share-links-empty-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--ap-bg-card-alt);
+    color: var(--ap-text-placeholder);
+}
+
+.share-links-empty-title {
+    font-size: 13.5px;
+    font-weight: 600;
     color: var(--ap-text-primary);
 }
 
-.unique-key-copy.copied {
-    background: var(--ap-success-light);
-    border-color: var(--ap-success-border);
-    color: var(--ap-success-text);
+.share-links-empty-text {
+    max-width: 320px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ap-text-muted);
 }
 
-.unique-key-actions {
+.share-links-loading {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.unique-key-revoke {
+.share-links-loading.hidden {
+    display: none;
+}
+
+.share-links-skeleton {
+    height: 52px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    animation: sharePulse 1.6s ease-in-out infinite;
+}
+
+.share-links-skeleton:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.share-links-skeleton:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes sharePulse {
+
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.share-links-error {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-danger-light);
+    border: 1px solid var(--ap-danger-border);
+}
+
+.share-links-error.hidden {
+    display: none;
+}
+
+.share-links-error-title {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 28px;
-    padding: 0;
-    background: none;
-    border: 1px solid var(--ap-border);
-    border-radius: 6px;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-danger-text);
+}
+
+.share-links-error-title svg {
+    flex: none;
+}
+
+.share-links-error-text {
+    font-size: 12px;
+    line-height: 1.5;
     color: var(--ap-text-muted);
+}
+
+.share-links-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: var(--ap-radius-md);
+    border: 1px solid var(--ap-danger-border);
+    background: transparent;
+    color: var(--ap-danger-text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    transition: background 0.15s;
 }
 
-.unique-key-revoke svg {
-    width: 14px;
-    height: 14px;
-}
-
-.unique-key-revoke:hover {
+.share-links-retry:hover {
     background: var(--ap-danger-light);
-    border-color: var(--ap-danger-border);
-    color: var(--ap-danger);
 }
 
-.unique-key-revoke:disabled,
-.unique-key-copy:disabled {
-    opacity: 0.5;
+.share-links-retry:disabled {
+    opacity: 0.6;
     pointer-events: none;
 }
 
-.unique-key-item {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+/* ── Rodapé (o mesmo nas duas abas) ──
+   Especificidade .modal-footer.share-footer (2 classes) para vencer o
+   `.modal-footer` base de modals.css, que carrega depois de style.css e força
+   justify-content: flex-end / padding: 0 24px 24px. */
+.modal-footer.share-footer {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--ap-border);
+    background: var(--ap-bg-card);
 }
 
-.unique-key-item.removing {
-    opacity: 0;
-    transform: translateX(8px);
+.share-footer-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ap-text-muted);
 }
 
-/* ── Responsivo: as colunas viram empilhadas e o modal inteiro rola ── */
-@media (max-width: 820px) {
-    .modal.share-modal-v2 {
-        max-height: 90vh;
-    }
-
-    .share-modal-v2 .modal-body {
-        grid-template-columns: 1fr;
-        overflow-y: auto;
-    }
-
-    .share-access-pane {
-        border-right: none;
-        border-bottom: 1px solid var(--ap-border);
-        overflow: visible;
-    }
-
-    .share-rotate {
-        margin-top: 4px;
-    }
-
-    .share-links-scroll {
-        overflow: visible;
-    }
+.share-footer-note svg {
+    flex: none;
 }
 
+.share-done-btn {
+    flex: none;
+    min-width: fit-content;
+    padding: 10px 22px;
+    font-size: 13.5px;
+}
+
+/* ── Responsivo ── */
 @media (max-width: 620px) {
+    .modal.share-modal-v2 {
+        max-height: 92vh;
+    }
+
+    /* As abas continuam no topo, agora dividindo a largura. */
+    .share-tabs {
+        display: flex;
+        width: 100%;
+    }
+
+    .share-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 8px;
+        font-size: 12.5px;
+    }
+
+    /* Nome e contagem do pacote em uma linha só, cortando o nome se precisar. */
+    .share-head-meta {
+        flex-wrap: nowrap;
+        min-width: 0;
+    }
+
+    .share-pkg-name {
+        max-width: none;
+        flex: 0 1 auto;
+    }
+
+    .share-head-dot,
+    .share-pkg-sessions {
+        flex: none;
+        white-space: nowrap;
+    }
+
+    .share-tab--links .share-tab-label {
+        display: none;
+    }
+
+    .share-tab--links .share-tab-label-short {
+        display: inline;
+    }
+
+    .share-panel,
+    .share-panel--links {
+        padding: 16px 14px;
+    }
+
+    .share-copy-link-btn {
+        padding: 15px;
+        font-size: 14px;
+    }
+
     .modal-footer.share-footer {
         flex-direction: column;
         align-items: stretch;
+        padding: 12px 14px;
     }
 
     .share-done-btn {
@@ -4845,12 +5266,18 @@ textarea:focus-visible {
         align-items: stretch;
     }
 
-    #generateUniqueKeyBtn {
-        align-self: flex-end;
+    /* Item vira bloco: texto em cima, ações ocupando a linha de baixo. */
+    .unique-key-item {
+        flex-wrap: wrap;
     }
 
-    .share-filters {
-        flex-wrap: wrap;
+    .unique-key-actions {
+        width: 100%;
+    }
+
+    .unique-key-actions>button {
+        flex: 1;
+        padding: 10px;
     }
 }
 /* === Progresso de captura (compartilhado por adicionar/atualizar) === */

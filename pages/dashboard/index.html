@@ -317,9 +317,12 @@
         </div>
 
 
-        <!-- Share Package Modal (v2: link público + links únicos) -->
+        <!-- Share Package Modal (design 2a: uma ação por tela)
+             Duas abas no topo do mesmo modal — "Convite" traz o link do pacote e
+             "Convites para uma pessoa" a lista de uso único. O data-tab no .modal
+             decide qual painel aparece; o estado (pacote, convites) é o mesmo. -->
         <div class="modal-overlay" id="sharePackageModal">
-            <div class="modal share-modal-v2">
+            <div class="modal share-modal-v2" data-tab="share">
                 <div class="modal-header">
                     <div class="up-head">
                         <span class="up-head-icon">
@@ -342,142 +345,230 @@
                     </div>
                     <button class="close-btn">×</button>
                 </div>
+
+                <div class="share-tabs-bar">
+                    <div class="share-tabs" id="shareTabs" role="tablist">
+                        <button class="share-tab active" data-tab="share" type="button" role="tab"
+                            aria-selected="true">
+                            <span class="share-tab-label">Convite</span>
+                        </button>
+                        <button class="share-tab share-tab--links" data-tab="links" type="button" role="tab"
+                            aria-selected="false">
+                            <span class="share-tab-label">Convites para uma pessoa</span>
+                            <span class="share-tab-label-short">Para uma pessoa</span>
+                            <span class="share-tab-count hidden" id="shareTabCount"></span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="modal-body">
-                    <!-- ─── Coluna fixa: acesso do pacote (link + código) ─── -->
-                    <aside class="share-access-pane">
-                        <div class="share-pane-head">
-                            <span class="share-pane-label">Acesso do pacote</span>
-                            <div class="toggle-switch" id="generalToggle" title="Ativar/desativar acesso público">
-                                <div class="toggle-slider"></div>
-                            </div>
-                        </div>
-
-                        <div class="status-badge status-closed" id="statusBadge">
-                            <div class="status-dot"></div>
-                            <span>Acesso restrito</span>
-                        </div>
-
-                        <div class="share-invite-card">
-                            <span class="share-invite-title">Convite do pacote</span>
-
-                            <div class="share-invite-link">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                </svg>
-                                <span class="share-invite-text" id="generalLinkUrl">—</span>
+                    <!-- ─── Aba "Convite": estado do acesso + link + código ─── -->
+                    <section class="share-panel share-panel--share customScrollbar" role="tabpanel">
+                        <div class="share-panel-col">
+                            <div class="share-access-row" id="shareAccessRow">
+                                <span class="share-access-text">
+                                    <span class="share-access-title" id="shareAccessTitle">Qualquer pessoa com o link
+                                        entra</span>
+                                    <span class="share-access-note" id="shareAccessNote">Quem receber o link ou o código
+                                        consegue usar as sessões deste pacote.</span>
+                                </span>
+                                <div class="toggle-switch" id="generalToggle"
+                                    title="Ligar/desligar o compartilhamento">
+                                    <div class="toggle-slider"></div>
+                                </div>
                             </div>
 
-                            <button class="btn btn-primary share-copy-link-btn" id="copyGeneralLinkBtn" type="button">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- O link é a ação principal; o botão ao lado troca link e código de uma vez. -->
+                            <div class="share-link-row">
+                                <div class="share-invite-link">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                    </svg>
+                                    <span class="share-invite-text" id="generalLinkUrl">—</span>
+                                </div>
+                                <button class="share-rotate-btn" id="renewGeneralKeyBtn" type="button"
+                                    title="Gerar link e código novos">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                        <path d="M21 3v5h-5" />
+                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                        <path d="M8 16H3v5" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <button class="share-copy-link-btn" id="copyGeneralLinkBtn" type="button"
+                                data-copied-label="Link copiado">
+                                <svg class="share-copy-icon share-copy-icon--idle" width="17" height="17"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                 </svg>
-                                <span>Copiar link de convite</span>
+                                <svg class="share-copy-icon share-copy-icon--done" width="17" height="17"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span>Copiar link</span>
                             </button>
 
+                            <!-- Só aparece depois de trocar a chave, para explicar o que mudou. -->
+                            <div class="share-rotated-note hidden" id="shareRotatedNote">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M12 8v4" />
+                                    <path d="M12 16h.01" />
+                                </svg>
+                                <span>Link e código novos. Os antigos pararam de funcionar; quem já entrou continua com
+                                    acesso.</span>
+                            </div>
+
                             <div class="share-invite-code-row">
-                                <div class="share-invite-code-text">
-                                    <span class="share-invite-code-label">Ou use o código</span>
-                                    <span class="share-invite-code" id="generalKeyCode">—</span>
-                                </div>
+                                <span class="share-invite-code-label">Ou use o código</span>
+                                <span class="share-invite-code" id="generalKeyCode">—</span>
                                 <button class="share-copy-code-btn" id="copyGeneralKeyBtn" type="button"
                                     title="Copiar código">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                    </svg>
                                     <span>Copiar</span>
                                 </button>
                             </div>
-                        </div>
 
-                        <div class="share-restricted-note hidden" id="shareRestrictedNote">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
-                                <path d="M12 9v4" />
-                                <path d="M12 17h.01" />
-                            </svg>
-                            <span>Ninguém entra com este convite enquanto o
-                                pacote estiver restrito.</span>
-                        </div>
-
-                        <button class="share-people-row" id="sharePeopleRow" type="button">
-                            <span class="share-people-avatars"></span>
-                            <span class="share-people-text">
+                            <button class="share-people-row" id="sharePeopleRow" type="button">
+                                <span class="share-people-avatars"></span>
                                 <span class="share-people-count">Ninguém com acesso</span>
-                                <span class="share-people-hint">Ver e remover membros</span>
-                            </span>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m9 18 6-6-6-6" />
-                            </svg>
-                        </button>
-
-                        <div class="share-rotate">
-                            <button class="share-rotate-btn" id="renewGeneralKeyBtn" type="button"
-                                title="Gera um novo link e código (invalida os anteriores)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                <svg class="share-people-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
-                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                    <path d="M21 3v5h-5" />
-                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                    <path d="M8 16H3v5" />
+                                    <path d="m9 18 6-6-6-6" />
                                 </svg>
-                                <span>Rotacionar key do pacote</span>
                             </button>
-                            <span class="share-rotate-hint">Gera um novo link e código de uma vez. Os antigos param de
-                                funcionar na hora; quem já ativou mantém o acesso.</span>
                         </div>
-                    </aside>
+                    </section>
 
-                    <!-- ─── Coluna rolável: links únicos + histórico ─── -->
-                    <section class="share-links-pane">
-                        <div class="share-links-head">
-                            <div class="share-section-titles">
-                                <span class="share-section-title">Links únicos</span>
-                                <span class="share-section-sub">Uso único, 24h. Valem mesmo com o pacote
-                                    restrito.</span>
+                    <!-- ─── Aba "Convites para uma pessoa": criar + ainda valem + encerrados ─── -->
+                    <section class="share-panel share-panel--links customScrollbar" role="tabpanel">
+                        <div class="share-panel-col">
+                            <div class="share-links-head">
+                                <span class="share-section-titles">
+                                    <span class="share-section-title">Convites para uma pessoa</span>
+                                    <span class="share-section-sub">Cada convite entra uma vez só e vale por 24 horas.
+                                        Funciona mesmo com o compartilhamento desligado.</span>
+                                </span>
+                                <button class="btn btn-primary share-create-btn generate-unique-key-btn"
+                                    id="generateUniqueKeyBtn" type="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M12 5v14" />
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                    <span>Criar convite</span>
+                                </button>
                             </div>
-                            <button class="btn btn-primary btn-small" id="generateUniqueKeyBtn" type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M12 5v14" />
-                                    <path d="M5 12h14" />
-                                </svg>
-                                <span>Gerar link</span>
-                            </button>
-                        </div>
 
-                        <div class="share-filters" id="uniqueKeysFilters">
-                            <button class="share-filter active" data-filter="all" type="button">Todos</button>
-                            <button class="share-filter" data-filter="active" type="button">Ativos</button>
-                            <button class="share-filter" data-filter="ended" type="button">Encerrados</button>
-                        </div>
+                            <!-- Convite recém-criado: sai copiado e fica à vista até fechar o modal. -->
+                            <div class="share-fresh hidden" id="shareFreshLink">
+                                <span class="share-fresh-label">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6 9 17l-5-5" />
+                                    </svg>
+                                    <span class="share-fresh-label-text">Convite criado e copiado</span>
+                                </span>
+                                <span class="share-fresh-url"></span>
+                                <div class="share-fresh-foot">
+                                    <span class="share-fresh-hint">Entra uma vez só e vale por 24 horas.</span>
+                                    <button class="share-fresh-copy" type="button">
+                                        <span>Copiar de novo</span>
+                                    </button>
+                                </div>
+                            </div>
 
-                        <div class="share-links-scroll customScrollbar">
-                            <ul class="unique-keys-list" id="uniqueKeysList">
-                                <li class="unique-keys-empty">Carregando…</li>
-                            </ul>
+                            <div class="share-links-body" id="shareLinksBody">
+                                <div class="share-links-group hidden" id="shareActiveGroup">
+                                    <span class="share-group-title">Ainda valem</span>
+                                    <ul class="unique-keys-list" id="uniqueKeysList"></ul>
+                                </div>
+
+                                <div class="share-links-group hidden" id="shareEndedGroup">
+                                    <span class="share-group-title">Já encerrados</span>
+                                    <ul class="unique-keys-list unique-keys-list--ended"
+                                        id="uniqueKeysEndedList"></ul>
+                                </div>
+
+                                <div class="share-links-empty hidden" id="shareLinksEmpty">
+                                    <span class="share-links-empty-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                        </svg>
+                                    </span>
+                                    <span class="share-links-empty-title">Nenhum convite criado</span>
+                                    <span class="share-links-empty-text">Crie um convite quando quiser liberar o acesso
+                                        para uma pessoa só.</span>
+                                    <button class="btn btn-primary share-create-btn generate-unique-key-btn"
+                                        type="button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 5v14" />
+                                            <path d="M5 12h14" />
+                                        </svg>
+                                        <span>Criar convite</span>
+                                    </button>
+                                </div>
+
+                                <div class="share-links-loading" id="shareLinksLoading" aria-hidden="true">
+                                    <span class="share-links-skeleton"></span>
+                                    <span class="share-links-skeleton"></span>
+                                    <span class="share-links-skeleton"></span>
+                                </div>
+
+                                <div class="share-links-error hidden" id="shareLinksError">
+                                    <span class="share-links-error-title">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9" />
+                                            <path d="M12 8v4" />
+                                            <path d="M12 16h.01" />
+                                        </svg>
+                                        <span>Seus convites não apareceram</span>
+                                    </span>
+                                    <span class="share-links-error-text">O link do pacote continua funcionando
+                                        normalmente.</span>
+                                    <button class="share-links-retry" id="shareLinksRetry" type="button">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                            <path d="M21 3v5h-5" />
+                                        </svg>
+                                        <span>Tentar de novo</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
+
                 <div class="modal-footer share-footer">
-                    <div class="share-footer-note">
+                    <span class="share-footer-note">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
                         <span>Suas senhas nunca são compartilhadas — apenas o acesso.</span>
-                    </div>
-                    <button class="btn btn-primary cancel-btn share-done-btn">Concluído</button>
+                    </span>
+                    <button class="btn btn-secondary cancel-btn share-done-btn">Concluído</button>
                 </div>
             </div>
         </div>
@@ -554,12 +645,19 @@
             <div class="modal as-modal">
                 <div class="modal-header">
                     <div class="up-head">
-                        <span class="up-head-icon as-pkg-icon">
-                            <!-- O JS vai injetar o ícone ou texto (AuthPackFavicon / initial) aqui -->
+                        <span class="up-head-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
                         </span>
                         <div class="up-head-text">
-                            <h2 class="modal-title as-pkg-name"></h2>
-                            <p class="as-head-subtitle">Adicione serviços para compartilhar</p>
+                            <h2 class="modal-title" id="asModalTitle">Adicionar sessão</h2>
+                            <div class="share-head-meta">
+                                <span class="share-pkg-name as-pkg-name"></span>
+                            </div>
                         </div>
                     </div>
                     <button class="close-btn">×</button>
@@ -825,59 +923,104 @@
             <div class="modal plans-modal">
                 <button class="close-btn plus-close-btn">×</button>
                 <div class="plans-modal-header">
-                    <h2>Escolha seu <span class="plus-highlight">plano</span></h2>
-                    <p>O único limite é com quantas pessoas você compartilha acesso. Crie pacotes e
-                        sessões à vontade em qualquer plano.</p>
+                    <span class="plans-eyebrow">Planos</span>
+                    <h2>Escolha o tamanho do seu <span class="plus-highlight">compartilhamento</span></h2>
+                    <p>Pacotes e sessões são ilimitados em todos os planos. O único limite é com
+                        quantas pessoas você compartilha acesso.</p>
                 </div>
                 <div class="plans-grid">
                     <!-- Plus -->
                     <div class="plan-card">
-                        <div class="plan-card-head"><span class="plan-name">Plus</span></div>
-                        <div class="plan-people"><strong>25</strong> pessoas</div>
+                        <div class="plan-card-head">
+                            <span class="plan-name">Plus</span>
+                            <span class="plan-tag">Times pequenos</span>
+                        </div>
                         <div class="plan-price">
                             <span class="plan-price-value">R$ 39,90</span>
                             <span class="plan-price-period">/mês</span>
                         </div>
+                        <div class="plan-people">
+                            <span class="plan-people-value">25</span>
+                            <span class="plan-people-label">pessoas com acesso</span>
+                        </div>
                         <ul class="plan-feats">
                             <li>Pacotes e sessões ilimitados</li>
-                            <li>Compartilhe com até 25 pessoas</li>
-                            <li>Cancele quando quiser</li>
+                            <li>Extensão no navegador</li>
+                            <li>Links únicos e revogação a qualquer momento</li>
                         </ul>
                         <button class="plan-choose-btn" data-plan="plus">Assinar Plus</button>
                     </div>
                     <!-- Business (destaque) -->
                     <div class="plan-card plan-card--featured">
                         <span class="plan-badge">Mais capacidade</span>
-                        <div class="plan-card-head"><span class="plan-name">Business</span></div>
-                        <div class="plan-people"><strong>75</strong> pessoas</div>
+                        <div class="plan-card-head">
+                            <span class="plan-name">Business</span>
+                            <span class="plan-tag">Times e grupos</span>
+                        </div>
                         <div class="plan-price">
                             <span class="plan-price-value">R$ 99,90</span>
                             <span class="plan-price-period">/mês</span>
                         </div>
+                        <div class="plan-people">
+                            <span class="plan-people-value">75</span>
+                            <span class="plan-people-label">pessoas com acesso</span>
+                        </div>
                         <ul class="plan-feats">
                             <li>Tudo do Plus</li>
-                            <li>Compartilhe com até 75 pessoas</li>
-                            <li>Ideal para times e grupos</li>
+                            <li>Triplo de pessoas pelo mesmo pacote de recursos</li>
+                            <li>Suporte prioritário por e-mail</li>
                         </ul>
                         <button class="plan-choose-btn" data-plan="business">Assinar Business</button>
                     </div>
                     <!-- Enterprise (contato) -->
                     <div class="plan-card">
-                        <div class="plan-card-head"><span class="plan-name">Enterprise</span></div>
-                        <div class="plan-people"><strong>Sob medida</strong></div>
+                        <div class="plan-card-head">
+                            <span class="plan-name">Enterprise</span>
+                            <span class="plan-tag">Sob medida</span>
+                        </div>
                         <div class="plan-price">
                             <span class="plan-price-value">Sob consulta</span>
                         </div>
+                        <div class="plan-people">
+                            <span class="plan-people-value">Ilimitado</span>
+                            <span class="plan-people-label">pessoas com acesso</span>
+                        </div>
                         <ul class="plan-feats">
-                            <li>Pessoas ilimitadas</li>
-                            <li>Condições sob medida</li>
+                            <li>Tudo do Business</li>
+                            <li>Condições e faturamento sob medida</li>
                             <li>Suporte dedicado</li>
                         </ul>
                         <a class="plan-choose-btn plan-choose-btn--ghost"
                             href="mailto:team@authpack.co?subject=Plano%20Enterprise">Falar com vendas</a>
                     </div>
                 </div>
-                <p class="plans-note">Pagamento seguro · Ativação imediata · Cancele quando quiser</p>
+                <div class="plans-foot">
+                    <span class="plans-foot-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        Pagamento seguro
+                    </span>
+                    <span class="plans-foot-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" />
+                        </svg>
+                        Ativação imediata
+                    </span>
+                    <span class="plans-foot-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M8 16H3v5" />
+                        </svg>
+                        Cancele quando quiser
+                    </span>
+                </div>
             </div>
         </div>
         <!-- People (shared) Modal -->
