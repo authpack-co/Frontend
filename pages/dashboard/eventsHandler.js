@@ -1139,21 +1139,67 @@ function openSharePackageModal(packageId) {
     setShareFilterUI();
     setShareListMessage('Carregando…');
 
+    // Sempre abre na view de compartilhar, sem o link único da vez anterior.
+    setShareView('share');
+    hideFreshUniqueLink();
+
     utils.showModal("sharePackage", packageId);
 
     loadUniqueKeys(packageId);
+}
+
+// Alterna entre compartilhar e gerenciar (mesmo modal, mesmo estado).
+function setShareView(view) {
+    const card = document.querySelector('#sharePackageModal .share-modal-v2');
+    card.dataset.view = view;
+    card.querySelector('#shareModalTitle').textContent = view === 'manage'
+        ? 'Gerenciar acessos'
+        : 'Compartilhar pacote';
+}
+
+// Mostra o link único recém-criado na view de compartilhar.
+function showFreshUniqueLink(url, copied) {
+    const box = document.querySelector('#sharePackageModal #shareFreshLink');
+    const urlEl = box.querySelector('.share-fresh-url');
+
+    urlEl.textContent = url;
+    urlEl.title = url;
+    box.querySelector('.share-fresh-label-text').textContent = copied
+        ? 'Link gerado e copiado'
+        : 'Link único gerado';
+    box.dataset.url = url;
+    box.classList.remove('hidden');
+}
+
+function hideFreshUniqueLink() {
+    const box = document.querySelector('#sharePackageModal #shareFreshLink');
+    box.classList.add('hidden');
+    box.dataset.url = '';
+}
+
+// Contagem de links únicos ativos no botão "Gerenciar".
+function updateShareManageCount() {
+    const badge = document.querySelector('#sharePackageModal #shareManageCount');
+    const active = shareKeysState.items.filter(k => k.status === 'active').length;
+
+    badge.textContent = active;
+    badge.classList.toggle('hidden', active === 0);
+    badge.title = active === 1 ? '1 link único ativo' : `${active} links únicos ativos`;
 }
 
 // Preenche link de convite e código do pacote (a mesma key, em dois formatos).
 function setShareInviteValues(key) {
     const linkEl = document.querySelector("#sharePackageModal #generalLinkUrl");
     const codeEl = document.querySelector("#sharePackageModal #generalKeyCode");
+    const manageKeyEl = document.querySelector("#sharePackageModal #manageKeyCode");
     const url = utils.buildInviteUrl(key);
 
     linkEl.textContent = url || '—';
     linkEl.title = url || '';
     codeEl.textContent = key || '—';
     codeEl.title = key || '';
+    manageKeyEl.textContent = key || '—';
+    manageKeyEl.title = key || '';
 }
 
 // Linha de pessoas com acesso: pilha de até 3 avatares (+N) e atalho para o
@@ -1279,6 +1325,8 @@ function setShareListMessage(message) {
 const SHARE_FILTER_LABELS = { all: 'Todos', active: 'Ativos', ended: 'Encerrados' };
 
 function setShareFilterUI() {
+    updateShareManageCount();
+
     document.querySelectorAll('#sharePackageModal .share-filter').forEach(btn => {
         const filter = btn.dataset.filter;
         const count = shareKeysState.items.filter(k => matchesShareFilter(k, filter)).length;
@@ -2459,15 +2507,29 @@ activationInputs.forEach(input => {
     });
 });
 
-// Share Package (v2: acesso do pacote + links únicos com histórico)
+// Share Package (v3: view "compartilhar" + view "gerenciar")
 const sharePackageModal = document.querySelector('#sharePackageModal');
+const shareModalCard = sharePackageModal.querySelector('.share-modal-v2');
 const generalToggle = sharePackageModal.querySelector('#generalToggle');
 const copyGeneralLinkBtn = sharePackageModal.querySelector('#copyGeneralLinkBtn');
 const copyGeneralKeyBtn = sharePackageModal.querySelector('#copyGeneralKeyBtn');
 const renewGeneralKeyBtn = sharePackageModal.querySelector('#renewGeneralKeyBtn');
-const generateUniqueKeyBtn = sharePackageModal.querySelector('#generateUniqueKeyBtn');
+const generateUniqueKeyBtns = sharePackageModal.querySelectorAll('.generate-unique-key-btn');
 const uniqueKeysFilters = sharePackageModal.querySelector('#uniqueKeysFilters');
 const sharePeopleRow = sharePackageModal.querySelector('#sharePeopleRow');
+const shareManageBtn = sharePackageModal.querySelector('#shareManageBtn');
+const shareBackBtn = sharePackageModal.querySelector('#shareBackBtn');
+const shareFreshLink = sharePackageModal.querySelector('#shareFreshLink');
+const shareFreshCopyBtn = shareFreshLink.querySelector('.share-fresh-copy');
+
+// Navegação entre as duas views.
+shareManageBtn.addEventListener('click', () => setShareView('manage'));
+shareBackBtn.addEventListener('click', () => setShareView('share'));
+
+// Copiar de novo o último link único gerado.
+shareFreshCopyBtn.addEventListener('click', () => {
+    copyShareValue(shareFreshLink.dataset.url, shareFreshCopyBtn, 'Não foi possível copiar o link.');
+});
 
 // Toggle público (open/closed) — apenas o acesso pelo link/código do pacote é
 // afetado; links únicos seguem válidos.
@@ -2539,18 +2601,24 @@ sharePeopleRow.addEventListener('click', () => {
     if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
-// Gera um novo link único (válido por 24h, uso único).
-generateUniqueKeyBtn.addEventListener('click', async () => {
-    const packageId = sharePackageModal.dataset.itemId;
+// Gera um novo link único (válido por 24h, uso único). O mesmo handler serve os
+// dois botões: o da view de compartilhar e o da lista em gerenciar.
+generateUniqueKeyBtns.forEach(button => {
+    button.addEventListener('click', () => generateUniqueKey(button));
+});
 
-    const buttonLabel = generateUniqueKeyBtn.querySelector('span');
+async function generateUniqueKey(button) {
+    const packageId = sharePackageModal.dataset.itemId;
+    const fromShareView = shareModalCard.dataset.view === 'share';
+
+    const buttonLabel = button.querySelector('span');
     const originalLabel = buttonLabel ? buttonLabel.textContent : null;
-    generateUniqueKeyBtn.disabled = true;
+    button.disabled = true;
     if (buttonLabel) buttonLabel.textContent = 'Gerando…';
 
     const res = await fetchManager.createUniqueKey(packageId);
 
-    generateUniqueKeyBtn.disabled = false;
+    button.disabled = false;
     if (buttonLabel && originalLabel) buttonLabel.textContent = originalLabel;
 
     if (!res.ok) {
@@ -2564,8 +2632,21 @@ generateUniqueKeyBtn.addEventListener('click', async () => {
     if (shareKeysState.filter === 'ended') shareKeysState.filter = 'all';
     renderUniqueKeys();
 
-    notify("success", "Link único gerado.");
-});
+    if (!fromShareView) {
+        notify("success", "Link único gerado.");
+        return;
+    }
+
+    // Na view de compartilhar o link é o resultado: sai copiado e fica à vista.
+    const url = utils.buildInviteUrl(created.key);
+    navigator.clipboard.writeText(url).then(() => {
+        showFreshUniqueLink(url, true);
+        notify("success", "Link único gerado e copiado.");
+    }).catch(() => {
+        showFreshUniqueLink(url, false);
+        notify("success", "Link único gerado. Use o botão copiar.");
+    });
+}
 
 // Edit Session
 const editSessionModal = document.querySelector('#editSessionModal');
