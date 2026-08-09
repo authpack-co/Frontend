@@ -317,43 +317,25 @@
         </div>
 
 
-        <!-- Share Package Modal (v3: view "compartilhar" enxuta + view "gerenciar")
-             As duas views vivem no mesmo modal — data-view no .modal decide qual
-             aparece, e o estado (pacote, lista de links) é o mesmo para as duas. -->
+        <!-- Share Package Modal (design 2a: uma ação por tela)
+             Duas abas no topo do mesmo modal — "Convite" traz o link do pacote e
+             "Convites para uma pessoa" a lista de uso único. O data-tab no .modal
+             decide qual painel aparece; o estado (pacote, convites) é o mesmo. -->
         <div class="modal-overlay" id="sharePackageModal">
-            <div class="modal share-modal-v2" data-view="share">
+            <div class="modal share-modal-v2" data-tab="share">
                 <div class="modal-header">
-                    <button class="share-back-btn" id="shareBackBtn" type="button" title="Voltar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m15 18-6-6 6-6" />
-                        </svg>
-                    </button>
                     <div class="up-head">
                         <span class="up-head-icon">
-                            <svg class="share-icon-share" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                                 <polyline points="16 6 12 2 8 6" />
                                 <line x1="12" y1="2" x2="12" y2="15" />
                             </svg>
-                            <svg class="share-icon-manage" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="4" y1="21" x2="4" y2="14" />
-                                <line x1="4" y1="10" x2="4" y2="3" />
-                                <line x1="12" y1="21" x2="12" y2="12" />
-                                <line x1="12" y1="8" x2="12" y2="3" />
-                                <line x1="20" y1="21" x2="20" y2="16" />
-                                <line x1="20" y1="12" x2="20" y2="3" />
-                                <line x1="1" y1="14" x2="7" y2="14" />
-                                <line x1="9" y1="8" x2="15" y2="8" />
-                                <line x1="17" y1="16" x2="23" y2="16" />
-                            </svg>
                         </span>
                         <div class="up-head-text">
-                            <h2 class="modal-title" id="shareModalTitle">Compartilhar pacote</h2>
+                            <h2 class="modal-title">Compartilhar pacote</h2>
                             <div class="share-head-meta">
                                 <span class="share-pkg-name"></span>
                                 <span class="share-head-dot"></span>
@@ -364,117 +346,51 @@
                     <button class="close-btn">×</button>
                 </div>
 
+                <div class="share-tabs-bar">
+                    <div class="share-tabs" id="shareTabs" role="tablist">
+                        <button class="share-tab active" data-tab="share" type="button" role="tab"
+                            aria-selected="true">
+                            <span class="share-tab-label">Convite</span>
+                        </button>
+                        <button class="share-tab share-tab--links" data-tab="links" type="button" role="tab"
+                            aria-selected="false">
+                            <span class="share-tab-label">Convites para uma pessoa</span>
+                            <span class="share-tab-label-short">Para uma pessoa</span>
+                            <span class="share-tab-count hidden" id="shareTabCount"></span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="modal-body">
-                    <!-- ─── View "compartilhar": estado do acesso + link + link único ─── -->
-                    <section class="share-view share-view--share">
-                        <div class="share-access-row">
-                            <div class="status-badge status-closed" id="statusBadge">
-                                <div class="status-dot"></div>
-                                <span>Acesso restrito</span>
-                            </div>
-                            <div class="toggle-switch" id="generalToggle" title="Ativar/desativar acesso público">
-                                <div class="toggle-slider"></div>
-                            </div>
-                        </div>
-
-                        <div class="share-restricted-note hidden" id="shareRestrictedNote">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
-                                <path d="M12 9v4" />
-                                <path d="M12 17h.01" />
-                            </svg>
-                            <span>Ninguém entra com este convite enquanto o
-                                pacote estiver restrito.</span>
-                        </div>
-
-                        <div class="share-invite-card">
-                            <div class="share-invite-link">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                </svg>
-                                <span class="share-invite-text" id="generalLinkUrl">—</span>
-                            </div>
-
-                            <button class="btn btn-primary share-copy-link-btn" id="copyGeneralLinkBtn" type="button">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                </svg>
-                                <span>Copiar link de convite</span>
-                            </button>
-
-                            <div class="share-invite-code-row">
-                                <div class="share-invite-code-text">
-                                    <span class="share-invite-code-label">Ou use o código</span>
-                                    <span class="share-invite-code" id="generalKeyCode">—</span>
+                    <!-- ─── Aba "Convite": estado do acesso + link + código ─── -->
+                    <section class="share-panel share-panel--share customScrollbar" role="tabpanel">
+                        <div class="share-panel-col">
+                            <div class="share-access-row" id="shareAccessRow">
+                                <span class="share-access-text">
+                                    <span class="share-access-title" id="shareAccessTitle">Qualquer pessoa com o link
+                                        entra</span>
+                                    <span class="share-access-note" id="shareAccessNote">Quem receber o link ou o código
+                                        consegue usar as sessões deste pacote.</span>
+                                </span>
+                                <div class="toggle-switch" id="generalToggle"
+                                    title="Ligar/desligar o compartilhamento">
+                                    <div class="toggle-slider"></div>
                                 </div>
-                                <button class="share-copy-code-btn" id="copyGeneralKeyBtn" type="button"
-                                    title="Copiar código">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            </div>
+
+                            <!-- O link é a ação principal; o botão ao lado troca link e código de uma vez. -->
+                            <div class="share-link-row">
+                                <div class="share-invite-link">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                                     </svg>
-                                    <span>Copiar</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Link único: gerar aqui já copia — a lista fica em "Gerenciar". -->
-                        <div class="share-unique">
-                            <button class="share-unique-btn generate-unique-key-btn" id="generateUniqueKeyBtn"
-                                type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                                </svg>
-                                <span>Gerar link de uso único</span>
-                            </button>
-                            <span class="share-unique-hint">Vale para uma pessoa só e expira em 24h. Funciona mesmo
-                                com o pacote restrito.</span>
-
-                            <div class="share-fresh hidden" id="shareFreshLink">
-                                <div class="share-fresh-info">
-                                    <span class="share-fresh-label">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="M20 6 9 17l-5-5" />
-                                        </svg>
-                                        <span class="share-fresh-label-text">Link gerado e copiado</span>
-                                    </span>
-                                    <span class="share-fresh-url"></span>
+                                    <span class="share-invite-text" id="generalLinkUrl">—</span>
                                 </div>
-                                <button class="share-fresh-copy" type="button" title="Copiar de novo">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                    </svg>
-                                    <span>Copiar</span>
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- ─── View "gerenciar": chave do pacote + histórico de links únicos ─── -->
-                    <section class="share-view share-view--manage">
-                        <div class="manage-scroll customScrollbar">
-                            <div class="manage-card">
-                                <div class="manage-card-head">
-                                    <span class="manage-card-title">Chave do pacote</span>
-                                    <span class="manage-key" id="manageKeyCode">—</span>
-                                </div>
-                                <p class="manage-card-text">O link de convite e o código do pacote saem desta chave.</p>
                                 <button class="share-rotate-btn" id="renewGeneralKeyBtn" type="button"
-                                    title="Gera um novo link e código (invalida os anteriores)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    title="Gerar link e código novos">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
                                         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
@@ -482,90 +398,177 @@
                                         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
                                         <path d="M8 16H3v5" />
                                     </svg>
-                                    <span>Rotacionar chave</span>
                                 </button>
-                                <span class="share-rotate-hint">Gera um novo link e código de uma vez. Os antigos param
-                                    de funcionar na hora; quem já ativou mantém o acesso.</span>
                             </div>
 
-                            <div class="manage-card manage-links">
-                                <div class="share-links-head">
-                                    <div class="share-section-titles">
-                                        <span class="share-section-title">Links únicos</span>
-                                        <span class="share-section-sub">Uso único, 24h. Valem mesmo com o pacote
-                                            restrito.</span>
-                                    </div>
-                                    <button class="btn btn-primary btn-small generate-unique-key-btn"
-                                        id="generateUniqueKeyBtnManage" type="button">
+                            <button class="share-copy-link-btn" id="copyGeneralLinkBtn" type="button"
+                                data-copied-label="Link copiado">
+                                <svg class="share-copy-icon share-copy-icon--idle" width="17" height="17"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                                <svg class="share-copy-icon share-copy-icon--done" width="17" height="17"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5" />
+                                </svg>
+                                <span>Copiar link</span>
+                            </button>
+
+                            <!-- Só aparece depois de trocar a chave, para explicar o que mudou. -->
+                            <div class="share-rotated-note hidden" id="shareRotatedNote">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="9" />
+                                    <path d="M12 8v4" />
+                                    <path d="M12 16h.01" />
+                                </svg>
+                                <span>Link e código novos. Os antigos pararam de funcionar; quem já entrou continua com
+                                    acesso.</span>
+                            </div>
+
+                            <div class="share-invite-code-row">
+                                <span class="share-invite-code-label">Ou use o código</span>
+                                <span class="share-invite-code" id="generalKeyCode">—</span>
+                                <button class="share-copy-code-btn" id="copyGeneralKeyBtn" type="button"
+                                    title="Copiar código">
+                                    <span>Copiar</span>
+                                </button>
+                            </div>
+
+                            <button class="share-people-row" id="sharePeopleRow" type="button">
+                                <span class="share-people-avatars"></span>
+                                <span class="share-people-count">Ninguém com acesso</span>
+                                <svg class="share-people-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ─── Aba "Convites para uma pessoa": criar + ainda valem + encerrados ─── -->
+                    <section class="share-panel share-panel--links customScrollbar" role="tabpanel">
+                        <div class="share-panel-col">
+                            <div class="share-links-head">
+                                <span class="share-section-titles">
+                                    <span class="share-section-title">Convites para uma pessoa</span>
+                                    <span class="share-section-sub">Cada convite entra uma vez só e vale por 24 horas.
+                                        Funciona mesmo com o compartilhamento desligado.</span>
+                                </span>
+                                <button class="btn btn-primary share-create-btn generate-unique-key-btn"
+                                    id="generateUniqueKeyBtn" type="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M12 5v14" />
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                    <span>Criar convite</span>
+                                </button>
+                            </div>
+
+                            <!-- Convite recém-criado: sai copiado e fica à vista até fechar o modal. -->
+                            <div class="share-fresh hidden" id="shareFreshLink">
+                                <span class="share-fresh-label">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6 9 17l-5-5" />
+                                    </svg>
+                                    <span class="share-fresh-label-text">Convite criado e copiado</span>
+                                </span>
+                                <span class="share-fresh-url"></span>
+                                <div class="share-fresh-foot">
+                                    <span class="share-fresh-hint">Entra uma vez só e vale por 24 horas.</span>
+                                    <button class="share-fresh-copy" type="button">
+                                        <span>Copiar de novo</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="share-links-body" id="shareLinksBody">
+                                <div class="share-links-group hidden" id="shareActiveGroup">
+                                    <span class="share-group-title">Ainda valem</span>
+                                    <ul class="unique-keys-list" id="uniqueKeysList"></ul>
+                                </div>
+
+                                <div class="share-links-group hidden" id="shareEndedGroup">
+                                    <span class="share-group-title">Já encerrados</span>
+                                    <ul class="unique-keys-list unique-keys-list--ended"
+                                        id="uniqueKeysEndedList"></ul>
+                                </div>
+
+                                <div class="share-links-empty hidden" id="shareLinksEmpty">
+                                    <span class="share-links-empty-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                        </svg>
+                                    </span>
+                                    <span class="share-links-empty-title">Nenhum convite criado</span>
+                                    <span class="share-links-empty-text">Crie um convite quando quiser liberar o acesso
+                                        para uma pessoa só.</span>
+                                    <button class="btn btn-primary share-create-btn generate-unique-key-btn"
+                                        type="button">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
                                             stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M12 5v14" />
                                             <path d="M5 12h14" />
                                         </svg>
-                                        <span>Gerar link</span>
+                                        <span>Criar convite</span>
                                     </button>
                                 </div>
 
-                                <div class="share-filters" id="uniqueKeysFilters">
-                                    <button class="share-filter active" data-filter="all" type="button">Todos</button>
-                                    <button class="share-filter" data-filter="active" type="button">Ativos</button>
-                                    <button class="share-filter" data-filter="ended"
-                                        type="button">Encerrados</button>
+                                <div class="share-links-loading" id="shareLinksLoading" aria-hidden="true">
+                                    <span class="share-links-skeleton"></span>
+                                    <span class="share-links-skeleton"></span>
+                                    <span class="share-links-skeleton"></span>
                                 </div>
 
-                                <ul class="unique-keys-list" id="uniqueKeysList">
-                                    <li class="unique-keys-empty">Carregando…</li>
-                                </ul>
+                                <div class="share-links-error hidden" id="shareLinksError">
+                                    <span class="share-links-error-title">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9" />
+                                            <path d="M12 8v4" />
+                                            <path d="M12 16h.01" />
+                                        </svg>
+                                        <span>Seus convites não apareceram</span>
+                                    </span>
+                                    <span class="share-links-error-text">O link do pacote continua funcionando
+                                        normalmente.</span>
+                                    <button class="share-links-retry" id="shareLinksRetry" type="button">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                            <path d="M21 3v5h-5" />
+                                        </svg>
+                                        <span>Tentar de novo</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </section>
                 </div>
 
                 <div class="modal-footer share-footer">
-                    <div class="share-footer-view share-footer-share">
-                        <button class="share-people-row" id="sharePeopleRow" type="button">
-                            <span class="share-people-avatars"></span>
-                            <span class="share-people-text">
-                                <span class="share-people-count">Ninguém com acesso</span>
-                                <span class="share-people-hint">Ver e remover membros</span>
-                            </span>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m9 18 6-6-6-6" />
-                            </svg>
-                        </button>
-                        <button class="share-manage-btn" id="shareManageBtn" type="button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <line x1="4" y1="21" x2="4" y2="14" />
-                                <line x1="4" y1="10" x2="4" y2="3" />
-                                <line x1="12" y1="21" x2="12" y2="12" />
-                                <line x1="12" y1="8" x2="12" y2="3" />
-                                <line x1="20" y1="21" x2="20" y2="16" />
-                                <line x1="20" y1="12" x2="20" y2="3" />
-                                <line x1="1" y1="14" x2="7" y2="14" />
-                                <line x1="9" y1="8" x2="15" y2="8" />
-                                <line x1="17" y1="16" x2="23" y2="16" />
-                            </svg>
-                            <span>Gerenciar</span>
-                            <span class="share-manage-count hidden" id="shareManageCount"></span>
-                        </button>
-                    </div>
-
-                    <div class="share-footer-view share-footer-manage">
-                        <div class="share-footer-note">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            <span>Suas senhas nunca são compartilhadas — apenas o acesso.</span>
-                        </div>
-                        <button class="btn btn-primary cancel-btn share-done-btn">Concluído</button>
-                    </div>
+                    <span class="share-footer-note">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>Suas senhas nunca são compartilhadas — apenas o acesso.</span>
+                    </span>
+                    <button class="btn btn-secondary cancel-btn share-done-btn">Concluído</button>
                 </div>
             </div>
         </div>
