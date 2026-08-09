@@ -414,20 +414,10 @@ function setupUpdateModal(packageData) {
     modal.removeAttribute('data-result');
 
     const pkgNameEl = modal.querySelector('.as-pkg-name');
-    const subtitleEl = modal.querySelector('.as-head-subtitle');
-    const pkgIconEl = modal.querySelector('.as-pkg-icon');
+    const titleEl = modal.querySelector('#asModalTitle');
 
     if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
-    if (subtitleEl) subtitleEl.textContent = 'Recapture as sessões deste pacote';
-
-    if (pkgIconEl) {
-        pkgIconEl.innerHTML = '';
-        if (packageData.icon) {
-            pkgIconEl.textContent = packageData.icon;
-        } else {
-            pkgIconEl.innerHTML = `<span class="as-pkg-icon--fb">${(packageData.name || '?').charAt(0).toUpperCase()}</span>`;
-        }
-    }
+    if (titleEl) titleEl.textContent = 'Atualizar sessões';
 
     // Reset do progresso (o captureFlow reescreve, mas o modal pode reabrir sujo).
     modal.querySelector('.as-list').innerHTML = '';
@@ -736,17 +726,10 @@ async function handleAddSession(e) {
     if (modal.querySelector('.as-head-subtitle')) {
         modal.querySelector('.as-head-subtitle').textContent = 'Adicione serviços para compartilhar';
     }
-    if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
     
-    const pkgIconEl = modal.querySelector('.as-pkg-icon');
-    if (pkgIconEl) {
-        pkgIconEl.innerHTML = '';
-        if (packageData.icon) {
-            pkgIconEl.textContent = packageData.icon; // Pode ser emoji
-        } else {
-            pkgIconEl.innerHTML = `<span class="as-pkg-icon--fb">${(packageData.name || '?').charAt(0).toUpperCase()}</span>`;
-        }
-    }
+    const titleEl = modal.querySelector('#asModalTitle');
+    if (titleEl) titleEl.textContent = 'Adicionar sessão';
+    if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
 
     searchEl.value = '';
     searchDropdown.classList.add('hidden');

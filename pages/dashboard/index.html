@@ -645,12 +645,19 @@
             <div class="modal as-modal">
                 <div class="modal-header">
                     <div class="up-head">
-                        <span class="up-head-icon as-pkg-icon">
-                            <!-- O JS vai injetar o ícone ou texto (AuthPackFavicon / initial) aqui -->
+                        <span class="up-head-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
                         </span>
                         <div class="up-head-text">
-                            <h2 class="modal-title as-pkg-name"></h2>
-                            <p class="as-head-subtitle">Adicione serviços para compartilhar</p>
+                            <h2 class="modal-title" id="asModalTitle">Adicionar sessão</h2>
+                            <div class="share-head-meta">
+                                <span class="share-pkg-name as-pkg-name"></span>
+                            </div>
                         </div>
                     </div>
                     <button class="close-btn">×</button>
