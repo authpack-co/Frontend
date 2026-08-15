@@ -59,26 +59,6 @@
         return d.toISOString();
     }
 
-    function scGetDeviceSVG(type) {
-        switch (type) {
-            case 'mobile':
-                return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <rect x="5" y="2" width="14" height="20" rx="2"/>
-                            <circle cx="12" cy="18" r="0.5" fill="currentColor"/>
-                        </svg>`;
-            case 'tablet':
-                return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <rect x="4" y="2" width="16" height="20" rx="2"/>
-                            <line x1="12" y1="18" x2="12.01" y2="18"/>
-                        </svg>`;
-            default:
-                return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <rect x="2" y="3" width="20" height="14" rx="2"/>
-                            <polyline points="8 21 16 21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>`;
-        }
-    }
 
     // ─── Render: Conta Google ──────────────────────────────────────────────────────
 
@@ -138,136 +118,27 @@
         }
     }
 
-    // ─── Render: Dispositivos ─────────────────────────────────────────────────────
 
-    function scRenderDevices(devices) {
-        const list  = scEl('sc-devices-list');
-        const empty = scEl('sc-devices-empty');
-        const label = document.querySelector('.sc-devices-label');
-        const count = scEl('sc-devices-count');
-        if (!list) return;
+    // ─── Extensão neste navegador ─────────────────────────────────────────────────
 
-        list.innerHTML = '';
-
-        if (!devices || devices.length === 0) {
-            scHide(list);
-            scHide(label);
-            scShow(empty);
-            return;
-        }
-
-        scShow(list);
-        scShow(label);
-        scHide(empty);
-        if (count) {
-            count.textContent = devices.length === 1 ? '1 dispositivo' : `${devices.length} dispositivos`;
-        }
-
-        devices.forEach((device) => {
-            const date = scFormatDate(device.createdAt);
-            const row  = document.createElement('div');
-            row.className       = 'device-row';
-            row.dataset.deviceId = device.id;
-
-            row.innerHTML = `
-                <div class="device-row-main">
-                    <div class="device-type-icon">${scGetDeviceSVG(device.device)}</div>
-                    <div class="device-row-info">
-                        <div class="device-row-name"></div>
-                        <div class="device-row-meta"></div>
-                    </div>
-                    ${device.id === scCurrentDeviceId()
-                        ? `<span class="device-row-badge device-row-badge--current">Este dispositivo</span>`
-                        : `<span class="device-row-badge device-row-badge--other">v${device.version}</span>`
-                    }
-                </div>
-                <div class="device-row-actions">
-                    <button class="btn btn-danger btn-remove-device" data-device-id="${device.id}">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6l-1 14H6L5 6"/>
-                            <path d="M10 11v6"/><path d="M14 11v6"/>
-                            <path d="M9 6V4h6v2"/>
-                        </svg>
-                        Remover
-                    </button>
-                </div>
-            `;
-
-            row.querySelector('.device-row-name').textContent =
-                `${device.osName} • ${device.browserName}`;
-            row.querySelector('.device-row-meta').textContent =
-                `Registrado em ${date}`;
-
-            // Expand / collapse ao clicar na linha
-            row.addEventListener('click', (e) => {
-                if (e.target.closest('.btn-remove-device')) return;
-                row.classList.toggle('device-row--expanded');
-            });
-
-            // Remover dispositivo
-            row.querySelector('.btn-remove-device').addEventListener('click', (e) => {
-                e.stopPropagation();
-                scHandleRemoveDevice(device.id, device.osName, device.browserName, row);
-            });
-
-            list.appendChild(row);
-        });
-    }
-
-    // ─── Sincronização deste navegador ────────────────────────────────────────────
-
-    // A rota /api/auth/ é autenticada por cookie e não sabe de qual dispositivo veio
-    // a requisição; quem sabe é a extensão (deviceId no JWT) ou a própria ativação.
-    function scCurrentDeviceId() {
-        return (typeof extensionState !== 'undefined' && extensionState.getCurrentDeviceId()) || null;
-    }
-
-    function scSyncAlert(message) {
-        const box  = scEl('sc-sync-alert');
-        const text = scEl('sc-sync-alert-text');
-        if (!box || !text) return;
-
-        if (!message) {
-            box.hidden = true;
-            return;
-        }
-
-        text.textContent = message;
-        box.hidden = false;
-    }
-
+    // Não há mais o que sincronizar: a extensão usa o mesmo cookie de sessão do site.
+    // A única pergunta que sobra é se ela está instalada neste navegador.
     function scRenderSyncRow(result) {
         const row    = scEl('sc-sync');
         const title  = scEl('sc-sync-title');
         const status = scEl('sc-sync-status');
-        const btn    = scEl('sc-btn-sync-device');
         if (!row || !title || !status) return;
 
         const state = !result ? 'checking'
-            : result.status === extensionState.STATUS.READY   ? 'synced'
-            : result.status === extensionState.STATUS.MISSING ? 'missing'
-            : 'unsynced';
+            : result.status === extensionState.STATUS.READY ? 'synced'
+            : 'missing';
 
         row.dataset.state = state;
 
-        if (btn) {
-            btn.querySelector('.sc-sync-btn-label').textContent =
-                state === 'synced' ? 'Ressincronizar' : 'Sincronizar este navegador';
-        }
-
         switch (state) {
             case 'synced':
-                title.textContent  = 'Extensão sincronizada';
-                status.textContent = 'Este navegador pode abrir as sessões desta conta.';
-                break;
-            case 'unsynced':
-                title.textContent  = result.hasAuth
-                    ? 'Extensão conectada a outra conta'
-                    : 'Extensão sem conta conectada';
-                status.textContent = result.hasAuth
-                    ? 'Enquanto isso, as sessões desta conta não abrem neste navegador.'
-                    : 'Sincronize para vincular este navegador à sua conta.';
+                title.textContent  = 'Extensão instalada';
+                status.textContent = 'Este navegador pode abrir as sessões da sua conta.';
                 break;
             case 'missing':
                 title.textContent  = 'Extensão não instalada';
@@ -275,55 +146,7 @@
                 break;
             default:
                 title.textContent  = 'Verificando extensão…';
-                status.textContent = 'Conferindo se este navegador está vinculado à sua conta.';
-        }
-    }
-
-    async function scHandleSyncDevice() {
-        const btn = scEl('sc-btn-sync-device');
-        if (!btn || btn.disabled) return;
-
-        btn.classList.add('is-loading');
-        btn.disabled = true;
-        scSyncAlert(null);
-
-        try {
-            const res = await extensionState.syncCurrentDevice();
-
-            if (res.ok) {
-                // O activate devolve o deviceId, então a lista já sabe marcar qual
-                // linha é este navegador.
-                await scReloadDevices();
-                scRenderSyncRow(extensionState.getLastResult());
-                return;
-            }
-
-            if (res.code === 'device_limit_reached') {
-                // Não barramos antes de tentar: o navegador atual pode ser um dos que
-                // já estão registrados, e nesse caso a ativação nem consome vaga.
-                // Só quando o backend recusa é que pedimos para liberar espaço.
-                scSyncAlert(`Limite de ${res.limit || 2} dispositivos atingido. Remova um dos dispositivos abaixo para sincronizar este navegador.`);
-            } else {
-                scSyncAlert(res.message);
-            }
-        } catch (err) {
-            console.error('[Settings] sync device error:', err);
-            scSyncAlert('Não foi possível sincronizar este dispositivo. Tente novamente.');
-        } finally {
-            btn.classList.remove('is-loading');
-            btn.disabled = false;
-        }
-    }
-
-    async function scReloadDevices() {
-        try {
-            const res = await fetchManager.getAuthenticatedUser();
-            if (!res.ok) return;
-
-            scUserData = res.result.data;
-            scRenderDevices(scUserData.devices);
-        } catch (err) {
-            console.error('[Settings] scReloadDevices error:', err);
+                status.textContent = 'Conferindo se ela está instalada neste navegador.';
         }
     }
 
@@ -345,9 +168,8 @@
 
             scRenderAccountInfo(scUserData);
             scRenderPlanCard(scUserData);
-            scRenderDevices(scUserData.devices);
 
-            // Memoizado: se o dashboard já fez o handshake, isto não custa nada.
+            // Memoizado: se o dashboard já verificou, isto não custa nada.
             scRenderSyncRow(extensionState.getLastResult());
             extensionState.check().then(scRenderSyncRow);
 
@@ -379,66 +201,6 @@
         }
     }
 
-    // ─── Action: Remover dispositivo ──────────────────────────────────────────────
-
-    async function scHandleRemoveDevice(deviceId, osName, browserName, rowEl) {
-        const label = `${osName} • ${browserName}`;
-        if (!confirm(`Remover "${label}" da sua conta?\n\nO acesso deste dispositivo será revogado.`)) return;
-
-        const btn = rowEl.querySelector('.btn-remove-device');
-        if (btn) {
-            btn.disabled    = true;
-            btn.textContent = 'Removendo...';
-        }
-
-        try {
-            const res = await fetchManager.removeDevice(deviceId);
-
-            if (!res.ok) {
-                alert('Não foi possível remover este dispositivo. Tente novamente.');
-                if (btn) { btn.disabled = false; btn.textContent = 'Remover'; }
-                return;
-            }
-
-            // Anima saída da linha
-            rowEl.style.transition  = 'opacity 0.3s ease, max-height 0.3s ease';
-            rowEl.style.overflow    = 'hidden';
-            rowEl.style.maxHeight   = rowEl.offsetHeight + 'px';
-            requestAnimationFrame(() => {
-                rowEl.style.opacity       = '0';
-                rowEl.style.maxHeight     = '0';
-                rowEl.style.paddingTop    = '0';
-                rowEl.style.paddingBottom = '0';
-            });
-            setTimeout(() => {
-                rowEl.remove();
-                const list  = scEl('sc-devices-list');
-                const count = scEl('sc-devices-count');
-                const total = list ? list.children.length : 0;
-
-                if (count) {
-                    count.textContent = total === 1 ? '1 dispositivo' : `${total} dispositivos`;
-                }
-                if (list && total === 0) {
-                    scHide(list);
-                    scHide(document.querySelector('.sc-devices-label'));
-                    scShow(scEl('sc-devices-empty'));
-                }
-            }, 320);
-
-            // Mantém o estado local em dia e limpa o aviso de limite: a vaga que
-            // acabou de ser liberada pode ser justamente a que faltava.
-            if (scUserData) {
-                scUserData.devices = scUserData.devices.filter(d => d.id !== deviceId);
-            }
-            scSyncAlert(null);
-
-        } catch (err) {
-            console.error('[Settings] removeDevice error:', err);
-            alert('Erro inesperado. Tente novamente.');
-            if (btn) btn.disabled = false;
-        }
-    }
 
     // ─── Action: Cancelar assinatura ──────────────────────────────────────────────
 
@@ -791,37 +553,10 @@
         if (view === 'cobranca') scLoadBilling();
     }
 
-    /**
-     * Abre as configurações já na seção pedida. `options.highlight === 'device-sync'`
-     * rola até a linha de sincronização e pisca — quem chega aqui vindo do card
-     * "extensão não sincronizada" precisa saber exatamente onde clicar.
-     */
-    function scOpenAt(view, options) {
+    // Abre as configurações já na seção pedida.
+    function scOpenAt(view) {
         scOpenModal();
         scGoToView(view || 'conta');
-
-        if (!options || options.highlight !== 'device-sync') return;
-
-        const apply = () => {
-            const row = scEl('sc-sync');
-            if (!row) return;
-            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            row.classList.remove('sc-sync--highlight');
-            void row.offsetWidth; // reinicia a animação se já tinha rodado
-            row.classList.add('sc-sync--highlight');
-        };
-
-        // A view fica escondida enquanto os dados carregam; espera terminar.
-        if (scDataLoaded) {
-            setTimeout(apply, 60);
-        } else {
-            const wait = setInterval(() => {
-                if (!scDataLoaded) return;
-                clearInterval(wait);
-                setTimeout(apply, 60);
-            }, 80);
-            setTimeout(() => clearInterval(wait), 8000);
-        }
     }
 
     function scCloseModal() {
@@ -909,19 +644,11 @@
         if (assinarPlusBtn)    assinarPlusBtn.addEventListener('click',    scHandleAssinarPlus);
         if (billingPortalBtn)  billingPortalBtn.addEventListener('click',  scHandleBillingPortal);
 
-        const syncBtn = scEl('sc-btn-sync-device');
-        if (syncBtn) syncBtn.addEventListener('click', scHandleSyncDevice);
-
-        // O handshake com a extensão termina de forma assíncrona (e pode ser refeito
-        // depois de sincronizar): a linha de status e o badge "Este dispositivo"
-        // seguem o resultado mais recente.
-        extensionState.onChange((result) => {
-            scRenderSyncRow(result);
-            if (scUserData) scRenderDevices(scUserData.devices);
-        });
+        // A verificação da extensão termina de forma assíncrona; a linha de status
+        // segue o resultado mais recente.
+        extensionState.onChange(scRenderSyncRow);
     });
 
-    // Exposto para o card "extensão não sincronizada" (extensionState.js).
     window.settingsModal = { openAt: scOpenAt };
 
 })();

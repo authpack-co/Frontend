@@ -696,12 +696,12 @@ function createUsingNowRow(row) {
     if (row.user.email) userText.appendChild(createElement('span', 'un-user-email', row.user.email));
     userCol.appendChild(userText);
 
-    // Mesma pessoa com dois acessos vivos na sessão (dois dispositivos): uma
-    // linha só, com a contagem ao lado do nome.
+    // Mesma pessoa com dois acessos vivos na sessão: uma linha só, com a contagem
+    // ao lado do nome.
     if (row.devices > 1) {
-        const devices = createElement('span', 'un-devices', `×${row.devices}`);
-        devices.title = `${row.devices} dispositivos ativos`;
-        userCol.appendChild(devices);
+        const connections = createElement('span', 'un-connections', `×${row.devices}`);
+        connections.title = `${row.devices} acessos simultâneos`;
+        userCol.appendChild(connections);
     }
 
     const activeCol = createElement('div', 'table-col un-active', formatDuration(row.activeSeconds));
@@ -2805,9 +2805,8 @@ function renderUserInfo(userInfo) {
     // Salva userInfo globalmente
     currentUserInfo = userInfo;
 
-    // Libera o handshake com a extensão (precisa do id para comparar contas) e já
-    // dispara a checagem em segundo plano, para o primeiro clique não esperar.
-    extensionState.setUser(userInfo);
+    // Dispara a verificação da extensão em segundo plano, para o primeiro clique
+    // não esperar.
     extensionState.check();
 
     // Roles com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).

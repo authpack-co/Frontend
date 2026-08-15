@@ -201,16 +201,6 @@ const fetchManager = {
         return response;
     },
 
-    // Devices
-
-    async removeDevice(deviceId) {
-        const response = await fetchRoutes(`/api/devices/${deviceId}`, {
-            method: "DELETE",
-            credentials: "include"
-        });
-        return response;
-    },
-
     // Stats
 
     async getPackageOverviewStats(packageDetails) {
@@ -304,17 +294,6 @@ const fetchManager = {
         const response = await fetchRoutes(`/api/auth/logout`, {
             method: "POST",
             credentials: "include"
-        });
-        return response;
-    },
-
-    // Device Activation (universal)
-
-    async activateDevice({ visitorId, requestId }) {
-        const response = await fetchRoutes(`/api/devices/activate`, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify({ visitorId, requestId })
         });
         return response;
     },
