@@ -3449,31 +3449,36 @@ span.coming-soon {
     }
 }
 
-/* Badge "Novo" no access-item (pós-checkout) */
-.access-item .new-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: #10b981;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    z-index: 1;
-    animation: newBadgePulse 2s ease-in-out 3;
+/* Pacote recém-adquirido (volta do convite): um ponto no acento, logo depois do
+   nome. É pseudo-elemento de propósito — assim acompanha o ellipsis do título e
+   não entra no textContent de quem lê o nome do pacote. */
+/* O título corta no ellipsis (overflow: hidden), então o ponto precisa de folga
+   à direita — sem ela o próprio círculo encosta na borda do clip. */
+#packages-list .access-item.is-new .access-title {
+    padding-right: 5px;
 }
 
-@keyframes newBadgePulse {
+#packages-list .access-item.is-new .access-title::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 7px;
+    border-radius: 50%;
+    background: var(--ap-accent);
+    vertical-align: middle;
+    animation: newPackageDotIn 0.45s ease-out both;
+}
 
-    0%,
-    100% {
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+@keyframes newPackageDotIn {
+    from {
+        opacity: 0;
+        transform: scale(0.2);
     }
 
-    50% {
-        box-shadow: 0 2px 14px rgba(16, 185, 129, 0.6);
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 

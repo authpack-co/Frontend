@@ -1378,6 +1378,53 @@ function selectPackage(packageId, isCollection = true) {
     }
 }
 
+// Volta do fluxo de convite. `?newProduct=<id>` = acabou de adquirir (abre em
+// Meus acessos com o ponto de "recém-adquirido"); `?package=<id>` = já tinha
+// acesso, então só abre o pacote. Devolve true quando assumiu a seleção inicial.
+function openPackageFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const acquiredId = params.get('newProduct');
+    const packageId = acquiredId || params.get('package');
+    if (!packageId) return false;
+
+    // Limpa o param: recarregar a página não deve repetir o destaque.
+    params.delete('newProduct');
+    params.delete('package');
+    const query = params.toString();
+    window.history.replaceState({}, '',
+        window.location.pathname + (query ? `?${query}` : '') + window.location.hash);
+
+    const inAccess = packagesList.userAccess.some(p => String(p.id) === String(packageId));
+    const inCollection = packagesList.userCollection.some(p => String(p.id) === String(packageId));
+    if (!inAccess && !inCollection) return false;
+
+    // Um pacote adquirido vive em Meus acessos; o próprio dono cai na coleção.
+    const isCollection = inCollection && !inAccess;
+    setDashSection(isCollection ? 'collection' : 'access');
+    setElementState(document.querySelector('#packages-list'), isCollection ? 'collection' : 'access');
+    selectPackage(packageId, isCollection);
+
+    if (acquiredId) {
+        const root = isCollection ? '.preset-collection' : '.preset-access';
+        const row = document.querySelector(`${root} .access-item[data-package-id="${packageId}"]`);
+        if (row) {
+            row.classList.add('is-new');
+            row.title = 'Adquirido agora';
+        }
+    }
+
+    return true;
+}
+
+// O ponto de "recém-adquirido" é um marcador de primeira visita: some assim que
+// o usuário mexe na lista de pacotes.
+function clearNewPackageMarks() {
+    document.querySelectorAll('.access-item.is-new').forEach(row => {
+        row.classList.remove('is-new');
+        row.removeAttribute('title');
+    });
+}
+
 // Função para alterar estado
 function setElementState(element, newState) {
     // Remove todas as classes que terminam com "-state"
@@ -3187,6 +3234,7 @@ async function init() {
         if (packageItem && packageItem.dataset.packageId) {
             const isCollection = packageItem.closest('.preset-collection') !== null;
 
+            clearNewPackageMarks();
             selectPackage(packageItem.dataset.packageId, isCollection);
         }
     });
@@ -3238,8 +3286,9 @@ async function init() {
         });
     }
 
-    // Seleciona o primeiro pacote da coleção por padrão
-    if (packagesList.userCollection.length > 0) {
+    // Chegando do convite, o pacote da URL manda na seleção inicial; senão,
+    // abre o primeiro da coleção.
+    if (!openPackageFromQuery() && packagesList.userCollection.length > 0) {
         selectPackage(packagesList.userCollection[0].id);
     }
 }
