@@ -601,7 +601,8 @@ async function handleUpdateSession(e) {
     if (!sessionData) return;
 
     const modal = setupUpdateModal(packageData);
-    modal.querySelector('.as-head-subtitle').textContent = 'Recapturando uma sessão';
+    const titleEl = modal.querySelector('#asModalTitle');
+    if (titleEl) titleEl.textContent = 'Atualizar sessão';
     // Sem etapa de seleção: já entra no progresso (evita piscar o corpo de seleção).
     modal.dataset.phase = 'progress';
 
@@ -723,10 +724,7 @@ async function handleAddSession(e) {
     modal.dataset.mode = 'create';
     modal.dataset.phase = 'select';
     confirmBtn.textContent = 'Adicionar';
-    if (modal.querySelector('.as-head-subtitle')) {
-        modal.querySelector('.as-head-subtitle').textContent = 'Adicione serviços para compartilhar';
-    }
-    
+
     const titleEl = modal.querySelector('#asModalTitle');
     if (titleEl) titleEl.textContent = 'Adicionar sessão';
     if (pkgNameEl) pkgNameEl.textContent = packageData.name || '';
