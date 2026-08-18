@@ -182,97 +182,6 @@
             </div>
         </div>
 
-        <!-- Extension Not Synced Modal -->
-        <div class="modal-overlay" id="extensionSyncModal">
-            <div class="modal ext-card">
-                <button class="ext-card-close cancel-btn" aria-label="Fechar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
-                    </svg>
-                </button>
-
-                <div class="ext-card-head">
-                    <div class="ext-card-badge ext-card-badge--warning">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 17H7A5 5 0 0 1 7 7h2" />
-                            <path d="M15 7h2a5 5 0 0 1 4.54 7.1" />
-                            <path d="M8 12h3m3 0h2" />
-                            <path d="m2 2 20 20" />
-                        </svg>
-                    </div>
-                    <div class="ext-card-heading">
-                        <h3 class="ext-card-title">Extensão não sincronizada</h3>
-                        <p class="ext-card-subtitle" id="ext-sync-subtitle">A extensão está instalada, mas não está
-                            conectada a esta conta — por isso as sessões daqui não abrem.</p>
-                    </div>
-                </div>
-
-                <div class="ext-accounts">
-                    <div class="ext-account">
-                        <div class="ext-account-side">
-                            <div class="ext-account-avatar">
-                                <img id="ext-sync-avatar" src="" alt="">
-                                <span id="ext-sync-initials"></span>
-                            </div>
-                            <div class="ext-account-info">
-                                <span class="ext-account-label">Nesta plataforma</span>
-                                <span class="ext-account-value" id="ext-sync-email">—</span>
-                            </div>
-                        </div>
-                        <span class="ext-account-state ext-account-state--ok">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Conectado
-                        </span>
-                    </div>
-
-                    <div class="ext-accounts-link" aria-hidden="true"></div>
-
-                    <div class="ext-account">
-                        <div class="ext-account-side">
-                            <div class="ext-account-avatar ext-account-avatar--ext">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M15.5 3.5a2.5 2.5 0 0 0-5 0V6H7a1 1 0 0 0-1 1v3.5H3.5a2.5 2.5 0 0 0 0 5H6V19a1 1 0 0 0 1 1h3.5v-2.5a2.5 2.5 0 0 1 5 0V20H19a1 1 0 0 0 1-1v-3.5h-2.5a2.5 2.5 0 0 1 0-5H20V7a1 1 0 0 0-1-1h-3.5Z" />
-                                </svg>
-                            </div>
-                            <div class="ext-account-info">
-                                <span class="ext-account-label">Na extensão</span>
-                                <span class="ext-account-value" id="ext-sync-ext-value">Outra conta</span>
-                            </div>
-                        </div>
-                        <span class="ext-account-state ext-account-state--warn">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="9" />
-                                <path d="M12 8v4" />
-                                <path d="M12 16h.01" />
-                            </svg>
-                            <span id="ext-sync-ext-state">Divergente</span>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="ext-card-foot">
-                    <button type="button" class="ext-btn ext-btn--ghost cancel-btn">Agora não</button>
-                    <button type="button" class="ext-btn ext-btn--primary" id="btn-extension-manage">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                            <path
-                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.6 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-                        </svg>
-                        Gerenciar
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <!-- Create Package Modal -->
         <div class="modal-overlay" id="createPackageModal">
@@ -2006,7 +1915,7 @@
                 <div class="settings-view" id="settings-view-conta">
                     <div class="settings-view-header">
                         <h2>Conta</h2>
-                        <p>Gerencie sua conta Google e dispositivos conectados.</p>
+                        <p>Gerencie sua conta Google e a extensão deste navegador.</p>
                     </div>
 
                     <!-- Top row: Google + Plan -->
@@ -2108,23 +2017,21 @@
 
                     </div><!-- /.settings-top-row -->
 
-                    <!-- Devices Card -->
+                    <!-- Extensão neste navegador -->
                     <div class="settings-card">
                         <div class="settings-card-header">
                             <div class="settings-card-icon">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.8">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                                    <polyline points="8 21 16 21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M15.5 3.5a2.5 2.5 0 0 0-5 0V6H7a1 1 0 0 0-1 1v3.5H3.5a2.5 2.5 0 0 0 0 5H6V19a1 1 0 0 0 1 1h3.5v-2.5a2.5 2.5 0 0 1 5 0V20H19a1 1 0 0 0 1-1v-3.5h-2.5a2.5 2.5 0 0 1 0-5H20V7a1 1 0 0 0-1-1h-3.5Z" />
                                 </svg>
                             </div>
-                            <span class="settings-card-title">Dispositivos conectados</span>
+                            <span class="settings-card-title">Extensão</span>
                         </div>
 
-                        <!-- Barra de status da extensão neste navegador. Fica FORA do corpo
-                             do card de propósito: é o estado da integração, não mais um item
-                             da lista de dispositivos abaixo. -->
+                        <!-- Estado da extensão neste navegador. Não há conta a comparar:
+                             ela usa a mesma sessão do site. -->
                         <div class="sc-sync" id="sc-sync" data-state="checking">
                             <div class="sc-sync-glyph">
                                 <svg class="sc-glyph sc-glyph--ok" width="18" height="18" viewBox="0 0 24 24"
@@ -2144,37 +2051,8 @@
                             </div>
                             <div class="sc-sync-info">
                                 <div class="sc-sync-title" id="sc-sync-title">Verificando extensão…</div>
-                                <div class="sc-sync-status" id="sc-sync-status">Conferindo se este navegador está
-                                    vinculado à sua conta.</div>
-                            </div>
-                            <button class="sc-sync-btn" id="sc-btn-sync-device">
-                                <span class="sc-sync-btn-label">Sincronizar</span>
-                                <span class="sc-sync-btn-spinner"><span class="spinner"></span></span>
-                            </button>
-                        </div>
-
-                        <div class="settings-card-body">
-
-                            <div class="sc-sync-alert" id="sc-sync-alert" hidden>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="9" />
-                                    <path d="M12 8v4" />
-                                    <path d="M12 16h.01" />
-                                </svg>
-                                <span id="sc-sync-alert-text"></span>
-                            </div>
-
-                            <div class="sc-devices-label">
-                                <span>Registrados nesta conta</span>
-                                <span id="sc-devices-count"></span>
-                            </div>
-
-                            <div id="sc-devices-list"></div>
-                            <div id="sc-devices-empty" style="display:none">
-                                <p style="font-size:13px;color:var(--ap-text-muted);text-align:center;padding:12px 0;">
-                                    Nenhum dispositivo conectado.
-                                </p>
+                                <div class="sc-sync-status" id="sc-sync-status">Conferindo se ela está instalada
+                                    neste navegador.</div>
                             </div>
                         </div>
                     </div>

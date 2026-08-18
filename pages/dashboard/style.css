@@ -201,7 +201,6 @@ body {
     line-height: 1.3;
 }
 
-
 .profile-name {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     font-size: 15px;
@@ -646,109 +645,6 @@ span.coming-soon {
     color: var(--ap-text-muted);
 }
 
-/* ── Comparação de contas (card de sincronização) ── */
-.ext-accounts {
-    padding: 0 24px 2px;
-}
-
-.ext-account {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-md);
-    background: var(--ap-bg-card);
-}
-
-.ext-account-side {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    min-width: 0;
-}
-
-.ext-account-avatar {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: var(--ap-radius-full);
-    background: var(--ap-bg-input);
-    color: var(--ap-text-muted);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.ext-account-avatar img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-}
-
-.ext-account-avatar--ext {
-    border-radius: var(--ap-radius-sm);
-}
-
-.ext-account-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.ext-account-label {
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ap-text-placeholder);
-}
-
-.ext-account-value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ap-text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.ext-account-state {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 9px;
-    border: 1px solid transparent;
-    border-radius: var(--ap-radius-full);
-    font-size: 11.5px;
-    font-weight: 600;
-}
-
-.ext-account-state--ok {
-    background: var(--ap-success-light);
-    border-color: var(--ap-success-border);
-    color: var(--ap-success-text);
-}
-
-.ext-account-state--warn {
-    background: var(--ap-warning-light);
-    border-color: var(--ap-warning-border);
-    color: var(--ap-warning-text);
-}
-
-/* Conector vertical alinhado ao centro dos avatares (24 + 14 + 16 = 54px). */
-.ext-accounts-link {
-    height: 14px;
-    margin-left: 29px;
-    border-left: 2px dotted var(--ap-border-muted);
-}
-
 /* ── Rodapé ── */
 .ext-card-foot {
     display: flex;
@@ -1080,8 +976,6 @@ span.coming-soon {
     height: 120px;
     width: 240px;
 }
-
-
 
 .scroll-btn {
     position: absolute;
@@ -1652,7 +1546,6 @@ span.coming-soon {
     opacity: 0;
     visibility: hidden;
 }
-
 
 /* Sessions */
 
@@ -2493,8 +2386,6 @@ span.coming-soon {
     flex-shrink: 0;
 }
 
-
-
 /* Collection Session Card Details Button */
 .session-card .details-btn {
     display: flex;
@@ -2609,7 +2500,6 @@ span.coming-soon {
     padding: 8px 12px;
     font-size: 12px;
 }
-
 
 .spinner-container {
     display: flex;
@@ -2923,7 +2813,6 @@ span.coming-soon {
 }
 
 .chart-period-select {}
-
 
 .chart-period-select {
     background: var(--ap-bg-page);
@@ -3449,31 +3338,36 @@ span.coming-soon {
     }
 }
 
-/* Badge "Novo" no access-item (pós-checkout) */
-.access-item .new-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: #10b981;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    z-index: 1;
-    animation: newBadgePulse 2s ease-in-out 3;
+/* Pacote recém-adquirido (volta do convite): um ponto no acento, logo depois do
+   nome. É pseudo-elemento de propósito — assim acompanha o ellipsis do título e
+   não entra no textContent de quem lê o nome do pacote. */
+/* O título corta no ellipsis (overflow: hidden), então o ponto precisa de folga
+   à direita — sem ela o próprio círculo encosta na borda do clip. */
+#packages-list .access-item.is-new .access-title {
+    padding-right: 5px;
 }
 
-@keyframes newBadgePulse {
+#packages-list .access-item.is-new .access-title::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 7px;
+    border-radius: 50%;
+    background: var(--ap-accent);
+    vertical-align: middle;
+    animation: newPackageDotIn 0.45s ease-out both;
+}
 
-    0%,
-    100% {
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+@keyframes newPackageDotIn {
+    from {
+        opacity: 0;
+        transform: scale(0.2);
     }
 
-    50% {
-        box-shadow: 0 2px 14px rgba(16, 185, 129, 0.6);
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
@@ -4094,7 +3988,6 @@ textarea:focus-visible {
     margin-top: 2px;
     line-height: 1.4;
 }
-
 
 /* ============================================
    Theme Toggle Button
@@ -6784,8 +6677,8 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     text-overflow: ellipsis;
 }
 
-/* Mesma pessoa em dois dispositivos: uma linha só, com a contagem ao lado. */
-.un-devices {
+/* Mesma pessoa com dois acessos vivos: uma linha só, com a contagem ao lado. */
+.un-connections {
     flex-shrink: 0;
     padding: 2px 7px;
     border-radius: var(--ap-radius-full);

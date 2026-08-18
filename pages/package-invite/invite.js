@@ -9,9 +9,10 @@
     const stateError = document.getElementById('state-error');
     const stateInvite = document.getElementById('state-invite');
     const stateSuccess = document.getElementById('state-success');
+    const stateOwned = document.getElementById('state-owned');
 
     function show(el) {
-        [stateLoading, stateError, stateInvite, stateSuccess].forEach(s => s.classList.add('hidden'));
+        [stateLoading, stateError, stateInvite, stateSuccess, stateOwned].forEach(s => s.classList.add('hidden'));
         el.classList.remove('hidden');
         // re-trigger CSS animations by reflowing
         // eslint-disable-next-line no-unused-expressions
@@ -156,9 +157,44 @@
         frame();
     }
 
+    /* ── Já tem acesso ──────────────────────────────────────────────────── */
+
+    // Ids de todos os pacotes que já são do usuário — criados (dono) e adquiridos
+    // (participante). Devolve Set vazio para quem está deslogado: aí o convite é
+    // legítimo e segue o fluxo normal de ativação.
+    async function fetchOwnPackageIds() {
+        const [collection, access] = await Promise.all([
+            fetchManager.getCollectionPackages(),
+            fetchManager.getAccessPackages(),
+        ]);
+        const ids = new Set();
+        [collection, access].forEach(res => {
+            if (!res.ok) return;
+            const list = (res.result && res.result.data) || [];
+            list.forEach(p => ids.add(String(p.id)));
+        });
+        return ids;
+    }
+
+    // Dono ou participante abrindo o próprio convite: não há o que ativar, então
+    // o destino é o pacote — sem confete e sem tratar como aquisição nova.
+    function showAlreadyOwns(pkgName, pkgId) {
+        document.getElementById('owned-pkg-name').textContent = pkgName || 'Pacote';
+        const qs = pkgId ? `?package=${encodeURIComponent(pkgId)}` : '';
+        document.getElementById('owned-cta').href = `/pages/dashboard/${qs}`;
+        show(stateOwned);
+        setTimeout(() => { window.location.href = `/pages/dashboard/${qs}`; }, 2600);
+    }
+
     /* ── Flow ───────────────────────────────────────────────────────────── */
     async function loadPreview(key) {
-        const res = await fetchManager.getInvitePreview(key);
+        // O preview é público; a checagem de posse só faz sentido logado. As duas
+        // rodam juntas para não somar latência antes do primeiro render.
+        const [res, auth] = await Promise.all([
+            fetchManager.getInvitePreview(key),
+            fetchManager.getAuthenticatedUser(),
+        ]);
+
         if (!res.ok) {
             const msg = res.result && res.result.errorMessage
                 ? res.result.errorMessage
@@ -166,6 +202,12 @@
             return showError(msg);
         }
         const { package: pkg, owner } = res.result.data;
+
+        if (auth.ok) {
+            const ownIds = await fetchOwnPackageIds();
+            if (ownIds.has(String(pkg.id))) return showAlreadyOwns(pkg.name, pkg.id);
+        }
+
         document.getElementById('package-name').textContent = pkg.name;
         renderStack(pkg.sessions);
         renderOwner(owner);
@@ -206,6 +248,10 @@
         const data = res.result.data;
         const pkgName = data.package && data.package.name ? data.package.name : 'Pacote';
         const pkgId = data.package && data.package.id;
+
+        // Rede de segurança da checagem do preview: quem chegou aqui deslogado e
+        // logou no meio do caminho só descobre a posse na resposta do accept.
+        if (data.alreadyOwns) return showAlreadyOwns(pkgName, pkgId);
 
         // Success state + redirect.
         document.getElementById('success-pkg-name').textContent = pkgName;

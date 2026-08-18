@@ -126,6 +126,31 @@
                     <span>Redirecionando para <strong>Meus acessos</strong>…</span>
                 </div>
             </article>
+
+            <!-- ALREADY-OWNS STATE -->
+            <article class="inv-card inv-state-owned hidden" id="state-owned" aria-live="polite">
+                <div class="inv-owned-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/>
+                    </svg>
+                </div>
+                <h1 class="inv-title">Você já tem acesso</h1>
+                <p class="inv-desc">
+                    O pacote <strong id="owned-pkg-name">—</strong> já está na sua conta AuthPack.
+                    Não é preciso ativar de novo.
+                </p>
+                <a class="inv-cta" id="owned-cta" href="/pages/dashboard/">
+                    <span class="inv-cta-label">Abrir o pacote</span>
+                    <svg class="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                    </svg>
+                </a>
+                <div class="inv-success-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <span>Levando você até ele…</span>
+                </div>
+            </article>
         </main>
     </div>
 
