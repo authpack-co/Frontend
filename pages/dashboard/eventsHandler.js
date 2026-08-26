@@ -201,7 +201,6 @@ const listenerMap = [
     { selector: '.delete-session-btn', event: 'click', handler: setupDeleteSessionForm },
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
-    { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen },
     // A linha inteira da lista do dono abre os detalhes da sessão.
     { selector: '.preset-collection .session-row', event: 'click', handler: showSessionScreen },
     { selector: '.preset-collection .session-row', event: 'keydown', handler: handleSessionRowKeydown },
