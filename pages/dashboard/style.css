@@ -6760,3 +6760,23 @@ body[data-dash-section="access"] .topbar-search { display: none; }
 }
 
 .preset-access.package-inactive .access-card { opacity: .62; }
+
+/* Ação secundária do card, sem moldura — hoje ainda não abre nada. */
+.access-details-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border: 1px solid transparent;
+    border-radius: var(--ap-radius-full);
+    background: transparent;
+    color: var(--ap-text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .16s ease;
+}
+
+.access-details-btn:hover { color: var(--ap-text-secondary); }

@@ -804,7 +804,15 @@ function createSessionCardElement(session, pkg) {
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
         </svg>
     `;
+    // "Ver detalhes" ainda não abre nada: o membro não tem tela de detalhes de
+    // sessão (o histórico por usuário é dado do dono). Entra pela silhueta do
+    // design; a ação vem depois. Classe própria justamente para não cair em
+    // nenhum listener de `.details-btn` existente.
+    const detailsBtn = createElement('button', 'access-details-btn', 'Ver detalhes');
+    detailsBtn.type = 'button';
+
     actions.appendChild(connectBtn);
+    actions.appendChild(detailsBtn);
 
     card.appendChild(head);
     card.appendChild(actions);
