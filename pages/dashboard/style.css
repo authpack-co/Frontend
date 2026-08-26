@@ -5679,11 +5679,8 @@ textarea:focus-visible {
 .pkg-people-counter svg { color: var(--ap-text-muted); flex-shrink: 0; }
 .pkg-people-counter__text strong { color: var(--ap-text-primary); font-weight: 700; }
 
-.topbar-actions .activation-input { margin: 0; }
-
-/* Visibilidade das ações por seção (coleção mostra "Novo pacote", acessos mostra "Inserir chave") */
+/* A top bar é da coleção; em "Meus acessos" ela some inteira (ver abaixo). */
 body[data-dash-section="access"] .header-collection-only { display: none; }
-body:not([data-dash-section="access"]) .header-access-only { display: none; }
 
 /* ============================================
    Empty states do conteúdo principal
@@ -6635,11 +6632,14 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     border-bottom: 1px solid var(--ap-border);
 }
 
-.sessions-panel-head .panel-title {
-    padding-bottom: 0;
+/* Escopado com o #package-details para vencer o padding-bottom que o
+   .panel-title herda ali — é ele que tirava o título do eixo do campo de busca. */
+#package-details .sessions-panel .sessions-panel-head .panel-title {
+    padding: 0;
     margin: 0;
     font-size: 15px;
     font-weight: 600;
+    line-height: 1.2;
     color: var(--ap-text-secondary);
 }
 
@@ -6674,8 +6674,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 .access-search input::placeholder { color: var(--ap-text-placeholder); }
 .access-search input:focus { border-color: var(--ap-border-muted); }
 
-/* A busca da coleção mora na top bar; a dos acessos, ao lado do título. */
-body[data-dash-section="access"] .topbar-search { display: none; }
+/* Em "Meus acessos" a busca mora ao lado do título e não há mais o campo de
+   chave, então a top bar não teria o que mostrar. */
+body[data-dash-section="access"] .dashboard-topbar { display: none; }
 
 /* ── Card ── */
 .access-card {
