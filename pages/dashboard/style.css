@@ -1241,23 +1241,6 @@ span.coming-soon {
     font-weight: 600;
 }
 
-.online-pulse-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--ap-success);
-    border-radius: 50%;
-    position: relative;
-}
-
-.online-pulse-dot::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background-color: var(--ap-success);
-    opacity: 0.35;
-    animation: online-pulse 2s ease-out infinite;
-}
 
 @keyframes online-pulse {
     0% {
@@ -1633,42 +1616,14 @@ span.coming-soon {
     padding: 0.5rem 0;
 }
 
+/* Toda sessão na tela é um .session-card — é por essa classe que a busca e os
+   refreshes a encontram. A silhueta vem do modificador: .session-row na lista do
+   dono, .access-card no grid de "Meus acessos". */
 .session-card {
     position: relative;
-    border-radius: 16px;
-    border: 1px solid var(--ap-border);
-    padding: 20px;
-    background: var(--ap-bg-card);
-    box-shadow: var(--ap-shadow-sm);
-    overflow: hidden;
-    transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.session-card:hover {
-    border-color: var(--ap-border-hover);
-    box-shadow: var(--ap-shadow-md);
-    transform: translateY(-2px);
-}
-
-.session-card:hover .session-card-usage-time {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.session-card-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.session-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
 
 .session-card-icon {
     width: 48px;
@@ -1701,89 +1656,58 @@ span.coming-soon {
     text-overflow: ellipsis;
 }
 
-.session-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 4px;
-}
-
-.session-online-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    color: var(--ap-text-muted);
-}
-
-.session-online-badge .online-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #4ade80;
-    display: inline-block;
-}
-
-.session-online-badge .online-count-num {
-    color: #4ade80;
-    font-weight: 600;
-}
-
-.session-online-badge .online-label {
-    color: var(--ap-text-muted);
-}
-
-.access-state .session-card .connect-session-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    background: var(--ap-accent);
-    color: #ffffff;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.access-state .session-card .connect-session-btn:hover {
-    background: var(--ap-accent-hover);
-    transform: scale(1.03);
-}
 
 /* ============================================
    Package Info Header (Access View — "Meus acessos")
-   Estado único: .is-direct (acesso compartilhado, estética neutra).
-   ============================================ */
+   ============================================
+   Identidade do pacote como header de página: nome, quantas sessões, quem
+   compartilhou, desde quando, e os ícones dos serviços. Sem moldura de card —
+   quem tem moldura são as sessões abaixo. */
 .package-info-header {
-    background: var(--ap-bg-card);
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-lg);
-    overflow: hidden;
-    margin-bottom: 16px;
+    padding: 10px 2px 0;
+    margin-bottom: 26px;
 }
 
-/* ── Faixa neutra (acesso direto / compartilhado) ── */
-.ph-direct-band {
+.ph-title {
+    margin: 0;
+    font-family: var(--ap-font-heading);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.025em;
+    line-height: 1.15;
+    color: var(--ap-text-primary);
+}
+
+.ph-meta {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 12px 20px;
-    background: var(--ap-bg-card-alt);
-    border-bottom: 1px solid var(--ap-border);
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    font-size: 13.5px;
     color: var(--ap-text-muted);
-    font-size: 13px;
 }
 
-.ph-direct-band svg {
-    color: var(--ap-text-placeholder);
-    flex-shrink: 0;
+.ph-meta-sep { color: var(--ap-border-hover); }
+
+.ph-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
 }
 
-/* ── Avatares (imagem com fallback de inicial em gradiente) ── */
+.ph-meta-item strong {
+    color: var(--ap-text-secondary);
+    font-weight: 600;
+}
+
+.ph-shared-who {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+/* ── Avatar do dono (imagem com fallback de inicial em gradiente) ── */
 .ph-avatar {
     position: relative;
     display: inline-flex;
@@ -1804,117 +1728,48 @@ span.coming-soon {
 }
 
 .ph-shared-avatar {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    font-size: 11px;
+    font-size: 10px;
 }
 
-/* ── Bloco principal do pacote ── */
-.ph-hero {
-    padding: 18px 20px 20px;
-}
-
-.ph-hero-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-}
-
-.ph-hero-title {
+/* ── Pilha de ícones dos serviços do pacote ── */
+.ph-identity {
     display: flex;
     align-items: center;
-    gap: 9px;
+    margin-top: 14px;
 }
 
-.ph-pkg-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    display: flex;
+.ph-identity-icon {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border-radius: 50%;
+    object-fit: scale-down;
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
+    flex-shrink: 0;
+    position: relative;
+    margin-left: -6px;
+}
+
+.ph-identity-icon:first-child { margin-left: 0; }
+
+.ph-identity-rest {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    background: var(--ap-accent-light);
-    color: var(--ap-accent-strong);
-}
-
-.ph-pkg-icon--muted {
-    background: var(--ap-bg-hover);
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    margin-left: -6px;
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
     color: var(--ap-text-muted);
-}
-
-.ph-hero-title h2 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -.01em;
-    color: var(--ap-text-primary);
-}
-
-.ph-online {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--ap-success);
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
-    white-space: nowrap;
-    padding-top: 7px;
-}
-
-.ph-online-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ap-success);
-    box-shadow: 0 0 0 3px var(--ap-success-light);
-}
-
-.ph-desc {
-    margin: 12px 0 0;
-    font-size: 14px;
-    color: var(--ap-text-muted);
-    line-height: 1.55;
-    max-width: 92%;
-}
-
-.ph-meta {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    padding-top: 15px;
-    border-top: 1px solid var(--ap-border);
-}
-
-.ph-meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 13px;
-    color: var(--ap-text-muted);
-}
-
-.ph-meta-item svg {
-    color: var(--ap-text-placeholder);
-}
-
-.ph-meta-item strong {
-    color: var(--ap-text-secondary);
-    font-weight: 600;
-}
-
-.ph-shared-by {
-    gap: 8px;
-}
-
-.ph-shared-who {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
 }
 
 /* ============================================
@@ -2286,35 +2141,7 @@ span.coming-soon {
 /* ============================================
    Session Card Actions (Collection View)
    ============================================ */
-.session-card-actions {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 2;
-}
 
-.session-card-usage-time {
-    opacity: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--ap-bg-card);
-    padding: 0.25rem;
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--ap-text-muted);
-    transform: scale(0.8);
-    transition: all 0.3s;
-}
-
-.session-card-usage-time svg {
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
-}
 
 .session-options-btn {
     background: none;
@@ -2387,27 +2214,7 @@ span.coming-soon {
 }
 
 /* Collection Session Card Details Button */
-.session-card .details-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 8px;
-    background: var(--ap-bg-hover);
-    color: var(--ap-text-secondary);
-    border: 1px solid var(--ap-border);
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
 
-.session-card .details-btn:hover {
-    background: var(--ap-bg-muted);
-    color: var(--ap-text-primary);
-    border-color: var(--ap-border-hover);
-}
 
 /* ============================================
    Collection Component
@@ -3405,24 +3212,10 @@ span.coming-soon {
     color: #f59e0b;
 }
 
-/* Sessions com opacidade baixa quando pacote está inativo */
-.package-inactive .sessions-grid,
-.package-inactive .sessions-table {
-    opacity: 0.35;
-    pointer-events: none;
-}
-
-/* Collection view: sessions com opacity mas pointer-events ativo */
-.preset-collection.package-inactive .sessions-grid,
-.preset-collection.package-inactive .sessions-table {
-    pointer-events: auto;
-}
-
-/* Access view: botões de conectar desabilitados */
-.preset-access.package-inactive .connect-session-btn {
-    cursor: not-allowed !important;
-    opacity: 0.5;
-}
+/* Pacote inativo: as sessões apagam. Na coleção o dono continua podendo
+   gerenciá-las; nos acessos o card apaga e o "Conectar" fica desabilitado
+   (quem explica o porquê é o banner no topo). */
+.preset-collection.package-inactive .sessions-table { opacity: 0.35; }
 
 .preset-access.package-inactive .connect-session-btn:hover {
     background: inherit;
@@ -3959,8 +3752,6 @@ textarea:focus-visible {
    ============================================ */
 .key-value span,
 .chart-stats,
-.online-count-value,
-.session-card-usage-time,
 .table-col:last-child {
     font-family: var(--ap-font-data);
 }
@@ -6142,14 +5933,6 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 /* ---- Session cards: glow + status + barra de uso + membros ---- */
 .session-card { --card-accent: var(--ap-accent); --card-accent-2: var(--ap-accent-strong); }
 
-.session-card-glow {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(120% 90% at 0% 0%,
-        color-mix(in srgb, var(--card-accent) 22%, transparent), transparent 62%);
-}
 
 .session-card-status {
     display: flex;
@@ -6176,28 +5959,8 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 
 .session-card-usage { margin-top: 2px; }
 
-.session-card-usage-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 11.5px;
-    color: var(--ap-text-muted);
-    margin-bottom: 7px;
-}
-
-.session-card-usage-head .usage-time-text {
-    font-family: var(--ap-font-data);
-    color: var(--ap-text-secondary);
-    font-weight: 600;
-}
 
 /* Lado direito do cabeçalho: proporção vs. média + tempo absoluto. */
-.session-card-usage-value {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-}
 
 /* Badge de proporção: "↓ 62% do costume" ou, acima, "↑ 1,8× o costume" —
    é ele que carrega o excedente que a barra (cheia em 100%) não mostra. */
@@ -6227,44 +5990,13 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     padding-right: 0;
 }
 
-.session-card-usage-bar {
-    position: relative;
-    height: 6px;
-    border-radius: var(--ap-radius-full);
-    background: var(--ap-bg-input);
-    overflow: hidden;
-}
 
 /* Traço do costume: aparece só quando hoje passou dele, marcando em que ponto
    da barra os 100% ficaram. O que vem depois do traço é o excedente. */
-.session-card-usage-mark {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-1px);
-    background: var(--ap-bg-card);
-    opacity: 0;
-    pointer-events: none;
-    transition: left .4s ease, opacity .2s ease;
-}
 
-.session-card-usage-bar.is-above-average .session-card-usage-mark { opacity: 1; }
-
-.session-card-usage-fill {
-    position: relative;
-    height: 100%;
-    border-radius: var(--ap-radius-full);
-    background: linear-gradient(90deg, var(--card-accent), var(--card-accent-2));
-    transition: width .4s ease;
-}
 
 /* Acima do costume: brilho na cor do serviço, para destacar de longe. O quanto
    passou é o trecho entre o traço e o fim da barra. */
-.session-card-usage-bar.is-above-average {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-accent) 35%, transparent),
-                0 0 10px color-mix(in srgb, var(--card-accent) 30%, transparent);
-}
 
 .session-card-members {
     display: flex;
@@ -6296,27 +6028,12 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     white-space: nowrap;
 }
 
-.session-card-footer { flex-wrap: wrap; gap: 10px; }
-.session-card-footer .session-card-members { flex: 1 1 auto; }
-
 /* Botão de ação do card (Ver detalhes / Conectar) */
-.session-card-footer .details-btn,
-.session-card-footer .connect-session-btn {
-    flex-shrink: 0;
-}
 
 /* Botão ⋯ de opções da sessão: canto superior direito, sobre o glow. */
-.session-card > .session-options-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 4;
-}
 .session-card .session-options { z-index: 5; }
 /* Reserva espaço à direita do cabeçalho para o nome não passar sob o botão ⋯
    (só nos cards que têm o botão — collection view). */
-.session-card:has(> .session-options-btn) .session-card-header-text { padding-right: 20px; }
-
 /* Estado vazio da busca de sessões */
 .sessions-search-empty {
     grid-column: 1 / -1;
@@ -6367,7 +6084,6 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     padding: 0;
     background: transparent;
     min-width: 0;
-    position: relative;   /* âncora do botão "ver todas" */
 }
 
 #package-details .sessions-panel .panel-title {
@@ -6376,69 +6092,15 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     padding-bottom: 14px;
 }
 
-/* Cards de sessão maiores (como no design) */
+/* O grid de cards agora é só de "Meus acessos" — cards menores, mais por linha. */
 .sessions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+    gap: 14px;
     max-height: none;
     overflow: visible;
-    /* respiro vertical p/ o lift (-2px) + sombra de hover não serem cortados
-       quando a grade recolhe/rola (overflow hidden/auto). */
-    padding: 8px 0;
+    padding: 0;
 }
 
-/* ── Linha de sessões recolhível ──
-   Por padrão a grade mostra apenas uma linha (inline). Quando há mais sessões
-   do que cabem na linha, um botão revela as demais com altura máxima + rolagem. */
-#package-details .sessions-grid { transition: max-height 0.32s ease; }
-#package-details .sessions-grid.is-collapsed {
-    /* uma linha + os 8px de padding em cima/embaixo */
-    max-height: calc(var(--sessions-row-h, 340px) + 16px);
-    overflow: hidden;
-}
-#package-details .sessions-grid.is-expanded {
-    max-height: min(62vh, 720px);
-    overflow-y: auto;
-    padding-right: 4px;   /* respiro para a barra de rolagem */
-}
-
-/* Botão "Ver todas" no canto superior direito do painel */
-.sessions-toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--ap-bg-card);
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-full);
-    font-family: var(--ap-font-body);
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--ap-text-secondary);
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    z-index: 2;
-}
-.sessions-toggle:hover {
-    background: var(--ap-bg-hover);
-    border-color: var(--ap-border-hover);
-    color: var(--ap-text-primary);
-}
-.sessions-toggle[hidden] { display: none; }
-.sessions-toggle-chevron {
-    width: 15px;
-    height: 15px;
-    transition: transform 0.3s ease;
-}
-.sessions-toggle.is-expanded .sessions-toggle-chevron { transform: rotate(180deg); }
-
-.session-card { padding: 22px; border-radius: 18px; }
-.session-card-content { gap: 18px; }
-.session-card-icon { width: 52px; height: 52px; border-radius: 13px; }
-.session-card-name { font-size: 17px; }
 
 /* Gráfico e "Pessoas com acesso": cada um é um card próprio, mais alto */
 .collection-chart-users-row { grid-template-rows: 320px; }
@@ -6464,9 +6126,6 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     background: transparent;
     padding: 0;
 }
-
-/* Fallback do glow (caso o inline não aplique) sem depender de color-mix */
-.session-card-glow { background: radial-gradient(120% 90% at 0% 0%, rgba(96,165,250,.18), transparent 62%); }
 
 /* ============================================
    Card "Usando agora"
@@ -6957,3 +6616,167 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     /* Cabeçalho segue com os 8px da barra de rolagem somados à direita. */
     .sessions-table-head { padding-left: 14px; padding-right: 22px; }
 }
+
+/* ============================================
+   Sessões de "Meus acessos"
+   ============================================
+   O membro quer entrar no serviço: o card diz qual é e abre. Barra de uso,
+   "usando agora" e contagem de online eram leitura do dono — saíram daqui. */
+
+/* Cabeçalho da seção: título + busca das sessões do pacote. */
+.sessions-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--ap-border);
+}
+
+.sessions-panel-head .panel-title {
+    padding-bottom: 0;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.access-search {
+    position: relative;
+    width: 260px;
+    max-width: 100%;
+}
+
+.access-search > svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ap-text-muted);
+    pointer-events: none;
+}
+
+.access-search input {
+    width: 100%;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    padding: 8px 14px 8px 34px;
+    color: var(--ap-text-primary);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s ease;
+}
+
+.access-search input::placeholder { color: var(--ap-text-placeholder); }
+.access-search input:focus { border-color: var(--ap-border-muted); }
+
+/* A busca da coleção mora na top bar; a dos acessos, ao lado do título. */
+body[data-dash-section="access"] .topbar-search { display: none; }
+
+/* ── Card ── */
+.access-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--ap-border);
+    border-radius: 14px;
+    background: var(--ap-bg-card);
+    transition: border-color .16s ease, background .16s ease;
+}
+
+.access-card:hover {
+    border-color: var(--ap-border-hover);
+    background: var(--ap-bg-card-alt);
+}
+
+.access-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Bolha na cor do serviço — o fundo e a borda vêm inline, da paleta da sessão. */
+.access-card .session-card-icon {
+    width: 42px;
+    height: 42px;
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+}
+
+.access-card .session-card-name {
+    font-family: var(--ap-font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+}
+
+.access-card .session-card-domain {
+    margin-top: 3px;
+    font-size: 12.5px;
+}
+
+.access-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.access-card .connect-session-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border: 1px solid var(--ap-border-muted);
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .16s ease, border-color .16s ease;
+}
+
+.access-card .connect-session-btn svg { opacity: .85; flex-shrink: 0; }
+
+.access-card .connect-session-btn:hover {
+    background: var(--ap-bg-muted);
+    border-color: var(--ap-text-muted);
+}
+
+/* Pacote inativo: os cards continuam legíveis, mas conectar não é possível. */
+.access-card .connect-session-btn:disabled {
+    background: var(--ap-bg-page);
+    border-color: var(--ap-border);
+    color: var(--ap-text-muted);
+    cursor: not-allowed;
+}
+
+.preset-access.package-inactive .access-card { opacity: .62; }
+
+/* Ação secundária do card, sem moldura — hoje ainda não abre nada. */
+.access-details-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 14px;
+    border: 1px solid transparent;
+    border-radius: var(--ap-radius-full);
+    background: transparent;
+    color: var(--ap-text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .16s ease;
+}
+
+.access-details-btn:hover { color: var(--ap-text-secondary); }
