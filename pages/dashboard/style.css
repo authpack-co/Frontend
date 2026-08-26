@@ -3517,13 +3517,15 @@ span.coming-soon {
 }
 
 /* Sessions com opacidade baixa quando pacote está inativo */
-.package-inactive .sessions-grid {
+.package-inactive .sessions-grid,
+.package-inactive .sessions-table {
     opacity: 0.35;
     pointer-events: none;
 }
 
 /* Collection view: sessions com opacity mas pointer-events ativo */
-.preset-collection.package-inactive .sessions-grid {
+.preset-collection.package-inactive .sessions-grid,
+.preset-collection.package-inactive .sessions-table {
     pointer-events: auto;
 }
 
@@ -5378,35 +5380,6 @@ textarea:focus-visible {
 
 .up-hint { margin: 14px 0 0; font-size: 12px; color: var(--ap-text-secondary); opacity: .85; }
 
-/* === Card "Adicionar sessão" (tile no grid de sessões) === */
-.add-session-card {
-    display: grid;
-    place-items: center;
-    text-align: center;
-    border-style: dashed;
-    border-color: var(--ap-border-hover);
-    background: var(--ap-bg-card-alt);
-    min-height: 188px;
-}
-.add-session-card:hover {
-    border-color: var(--ap-accent);
-    background: var(--ap-accent-muted);
-    transform: translateY(-2px);
-}
-.add-session-content { gap: 10px; align-items: center; }
-.add-session-plus {
-    width: 46px; height: 46px; border-radius: 50%;
-    display: grid; place-items: center;
-    background: var(--ap-accent-muted); color: var(--ap-accent);
-    transition: transform .2s ease;
-}
-.add-session-card:hover .add-session-plus { transform: scale(1.06); }
-.add-session-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ap-text-primary); }
-.add-session-subtitle {
-    margin: 0; font-size: 12px; color: var(--ap-text-secondary);
-    max-width: 180px; line-height: 1.35;
-}
-
 /* === Modal "Adicionar sessão" === */
 /* max-width explícito: o `.modal` base (modals.css) tem max-width:400px e carrega
    depois de style.css, então sem isto o modal ficaria preso em 400px (grade
@@ -6002,7 +5975,8 @@ textarea:focus-visible {
 }
 
 .topbar-new-pkg,
-.topbar-share-btn {
+.topbar-share-btn,
+.topbar-add-session-btn {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -6912,4 +6886,165 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     .un-table .table-header,
     .un-table .un-row { grid-template-columns: minmax(0, 1fr) 76px 72px; }
     .un-user-email { display: none; }
+}
+
+/* ============================================
+   Sessões do dono em lista
+   ============================================
+   Na visão do dono o pacote mostra suas sessões como uma lista: uma linha por
+   serviço, nas colunas do cabeçalho (serviço, status, usando agora, tempo de
+   hoje) e o menu ⋯ à direita. Os cards continuam na visão de quem recebeu o
+   acesso (.preset-access), então tudo aqui é escopado à lista. */
+
+/* Sem overflow hidden: o menu ⋯ da última linha precisa passar da moldura.
+   Por isso o arredondamento é feito nas pontas (cabeçalho e última linha). */
+.sessions-table {
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: 14px;
+}
+
+/* Cabeçalho e linhas dividem a mesma grade — é ela que alinha as colunas. */
+.sessions-table-head,
+.session-row {
+    display: grid;
+    grid-template-columns:
+        minmax(150px, 1.6fr) minmax(84px, 0.7fr) minmax(140px, 1.2fr) minmax(110px, 1fr) 44px;
+    align-items: center;
+    gap: 16px;
+}
+
+.sessions-table-head {
+    padding: 12px 20px;
+    background: var(--ap-bg-card-alt);
+    border-radius: 13px 13px 0 0;
+}
+
+.sessions-table-head span {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+}
+
+/* A linha reaproveita as classes do card (é assim que a busca e os refreshes a
+   encontram), então precisa desfazer a silhueta de card. */
+.sessions-list .session-row {
+    padding: 14px 20px;
+    border: none;
+    border-top: 1px solid var(--ap-border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;   /* o menu ⋯ escapa da linha */
+    transition: background 0.15s ease;
+}
+
+.sessions-list .session-row.is-last-visible { border-radius: 0 0 13px 13px; }
+
+.sessions-list .session-row:hover {
+    background: var(--ap-bg-card-alt);
+    border-color: var(--ap-border);
+    box-shadow: none;
+    transform: none;
+}
+
+/* Recolhida, a lista mostra só as primeiras linhas (o resto sai no "Ver todas"). */
+.sessions-list .session-row.is-beyond-limit { display: none; }
+
+/* ── Coluna 1: serviço ── */
+.session-row-service {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.session-row .session-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
+}
+
+.session-row .session-card-name { font-size: 15px; }
+.session-row .session-card-domain { margin-top: 3px; font-size: 12.5px; }
+
+/* ── Coluna 2: status ── */
+.session-row .session-card-status { min-width: 0; }
+
+/* ── Coluna 4: tempo de hoje + comparação com o costume ── */
+.session-row .session-card-usage {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    margin: 0;
+    min-width: 0;
+}
+
+.session-row .usage-time-text {
+    font-family: var(--ap-font-data);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.session-row .session-card-usage-ratio { max-width: 100%; }
+
+/* ── Coluna 5: ações ── */
+.session-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* O ⋯ só aparece na linha sob o cursor (ou com o menu aberto), para a lista não
+   virar uma coluna de reticências. */
+.session-row .session-options-btn {
+    opacity: 0;
+    padding: 2px 6px;
+    transition: opacity 0.15s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.session-row:hover .session-options-btn,
+.session-row:focus-within .session-options-btn { opacity: 1; }
+
+.session-row .session-options {
+    top: 42px;
+    right: 16px;
+    width: 138px;
+    max-height: none;
+    background: var(--ap-bg-modal);
+}
+
+.sessions-list .sessions-search-empty { padding: 32px 16px; }
+
+/* Rodapé da lista: "Mostrando 4 de 7 sessões". */
+.sessions-showing {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    color: var(--ap-text-muted);
+}
+
+.sessions-showing[hidden] { display: none; }
+
+/* Em telas estreitas as colunas de contexto saem antes do essencial: primeiro
+   "usando agora", depois o tempo de hoje. */
+@media (max-width: 1100px) {
+    .sessions-table-head,
+    .session-row { grid-template-columns: minmax(140px, 1.6fr) minmax(84px, 0.7fr) minmax(110px, 1fr) 44px; }
+    .sessions-table-head span:nth-child(3),
+    .session-row .session-card-members { display: none; }
+}
+
+@media (max-width: 720px) {
+    .sessions-table-head,
+    .session-row { grid-template-columns: minmax(0, 1fr) minmax(84px, 0.7fr) 44px; }
+    .sessions-table-head span:nth-child(4),
+    .session-row .session-card-usage { display: none; }
+    .sessions-table-head,
+    .sessions-list .session-row { padding-left: 14px; padding-right: 14px; }
 }

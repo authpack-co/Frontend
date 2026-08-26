@@ -202,6 +202,9 @@ const listenerMap = [
     { selector: '.connect-session-btn', event: 'click', handler: handleConnectSession },
     { selector: '.list-item.user .details-btn', event: 'click', handler: showUserScreen },
     { selector: '.session-card .details-btn', event: 'click', handler: showSessionScreen },
+    // A linha inteira da lista do dono abre os detalhes da sessão.
+    { selector: '.preset-collection .session-row', event: 'click', handler: showSessionScreen },
+    { selector: '.preset-collection .session-row', event: 'keydown', handler: handleSessionRowKeydown },
     { selector: '.preset-collection .session-card-members', event: 'click', handler: handleUsingNowClick },
     { selector: '.preset-collection .session-card-members', event: 'keydown', handler: handleUsingNowKeydown },
     { selector: '.preset-session-overview .service-users-section', event: 'click', handler: handleUsingNowClick },
@@ -687,11 +690,10 @@ async function handleAddSession(e) {
     // Exige a extensão instalada e sincronizada (ela é quem abre/captura/fecha as abas).
     if (!await extensionState.ensure()) return;
 
-    const packageId = this.dataset.packageId;
+    // O botão mora na top bar, então o pacote é o que está aberto no detalhe.
+    const packageId = this.dataset.packageId
+        || document.querySelector('#package-details')?.dataset.packageId;
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
-    // Grid exato onde mora o card clicado — evita pegar o .preset-collection errado
-    // (existem dois: a lista de pacotes e o detalhe).
-    const originGrid = this.closest('.sessions-grid');
     if (!packageData) return;
 
     const modal = document.getElementById('addSessionModal');
@@ -983,16 +985,21 @@ async function handleAddSession(e) {
     renderPopularGrid();
     syncFooter();
 
-    // Insere o card de uma sessão recém-criada logo após o card "Adicionar sessão".
+    // Insere a sessão recém-criada no topo da lista do pacote aberto. A primeira
+    // sessão do pacote tira o painel do estado vazio.
     function renderNewSessionCard(session) {
-        const grid = originGrid || document.querySelector('.preset-collection .sessions-panel .sessions-grid');
-        if (!grid) return;
-        const card = createSessionElement(session, true, packageData);
-        card.classList.add('fadeInFromTop');
-        const addCard = grid.querySelector('.add-session-card');
-        if (addCard && addCard.nextSibling) grid.insertBefore(card, addCard.nextSibling);
-        else grid.appendChild(card);
-        card.addEventListener('animationend', () => card.classList.remove('fadeInFromTop'), { once: true });
+        const panelContainer = document.querySelector('#package-details .preset-collection .sessions-panel-container');
+        if (panelContainer) setElementState(panelContainer, 'content');
+
+        const list = document.querySelector('#package-details .preset-collection .sessions-panel .sessions-list');
+        if (!list) return;
+        const row = createSessionElement(session, true, packageData);
+        row.classList.add('fadeInFromTop');
+        list.insertBefore(row, list.firstChild);
+        row.addEventListener('animationend', () => row.classList.remove('fadeInFromTop'), { once: true });
+
+        // Recalcula recolhimento e "Mostrando X de Y" com a linha nova.
+        setupSessionsExpansion(list);
     }
 
     // A partir daqui é o motor compartilhado com "Atualizar" (captureFlow.js): mesma
@@ -1658,6 +1665,14 @@ function showSessionScreen(event) {
     const period = periodSelected === "today" ? 0 : (periodSelected === "7days" ? 7 : 30);
 
     renderSessionDetails(session, package, period);
+}
+
+// A linha da lista é um botão: Enter/Espaço abrem os detalhes, como o clique.
+function handleSessionRowKeydown(event) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (event.target !== this) return;
+    event.preventDefault();
+    showSessionScreen.call(this, event);
 }
 
 // Card "usando agora" ==========
