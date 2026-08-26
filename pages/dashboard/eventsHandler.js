@@ -279,8 +279,36 @@ function handleToggleSessionOptions(e) {
 
     const card = e.currentTarget.closest('.session-card');
     const sessionOptions = card?.querySelector('.session-options');
-    sessionOptions?.classList.toggle('hidden');
+    if (!sessionOptions) return;
+
+    sessionOptions.classList.toggle('hidden');
+    if (!sessionOptions.classList.contains('hidden')) placeSessionRowOptions(card, sessionOptions);
 }
+
+// A lista do dono rola dentro da moldura, e área rolável corta o que passa dela
+// — o menu ⋯ da última linha morreria pela metade. Por isso, na lista, o menu é
+// posicionado em coordenadas de viewport (position: fixed pelo CSS): aqui só
+// calculamos onde ele cabe, abrindo para cima quando não há espaço abaixo.
+function placeSessionRowOptions(row, menu) {
+    if (!row.classList.contains('session-row')) return;   // acessos: card, menu absoluto
+
+    const rowBox = row.getBoundingClientRect();
+    const menuH = menu.offsetHeight;
+
+    // Mesmo desenho do card: o menu nasce um pouco abaixo do topo da linha.
+    let top = rowBox.top + 42;
+    if (top + menuH > window.innerHeight - 8) top = Math.max(8, rowBox.bottom - 42 - menuH);
+
+    menu.style.top = top + 'px';
+    menu.style.left = (rowBox.right - 16 - menu.offsetWidth) + 'px';
+}
+
+// Rolar (a página ou a própria lista) desalinha um menu em coordenadas fixas:
+// fecha em vez de recalcular. Captura para pegar também a rolagem da lista.
+window.addEventListener('scroll', () => {
+    document.querySelectorAll('.session-row .session-options:not(.hidden)')
+        .forEach(menu => menu.classList.add('hidden'));
+}, true);
 
 function handleListItemClick(e) {
     const clickedItem = e.target.closest('.list-item');
@@ -997,9 +1025,6 @@ async function handleAddSession(e) {
         row.classList.add('fadeInFromTop');
         list.insertBefore(row, list.firstChild);
         row.addEventListener('animationend', () => row.classList.remove('fadeInFromTop'), { once: true });
-
-        // Recalcula recolhimento e "Mostrando X de Y" com a linha nova.
-        setupSessionsExpansion(list);
     }
 
     // A partir daqui é o motor compartilhado com "Atualizar" (captureFlow.js): mesma

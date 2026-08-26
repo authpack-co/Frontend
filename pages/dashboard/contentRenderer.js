@@ -2994,9 +2994,6 @@ const SESSIONS_CONTAINER_SELECTOR = '.sessions-panel .sessions-list, .sessions-p
 const PACKAGE_SESSIONS_CONTAINER_SELECTOR =
     '#package-details .sessions-panel .sessions-list, #package-details .sessions-panel .sessions-grid';
 
-// Quantas linhas a lista mostra recolhida — o resto fica atrás do "Ver todas".
-const SESSIONS_COLLAPSED_ROWS = 4;
-
 function getActiveSessionsContainer() {
     const details = document.querySelector('#package-details');
     if (!details) return null;
@@ -3006,20 +3003,21 @@ function getActiveSessionsContainer() {
     return preset ? preset.querySelector(SESSIONS_CONTAINER_SELECTOR) : null;
 }
 
-// Sessões que a busca deixou passar — a base tanto do recolhimento quanto do
-// "Mostrando X de Y".
+// Sessões que a busca deixou passar.
 function visibleSessionElements(container) {
     return Array.from(container.querySelectorAll('.session-card'))
         .filter(el => el.style.display !== 'none');
 }
 
-// Controla o recolhimento das sessões: na lista mostramos as primeiras
-// SESSIONS_COLLAPSED_ROWS linhas; no grid dos acessos, a primeira linha de
-// cards (medida depois do layout, porque depende de quantos cabem). Nos dois
-// casos o botão "Ver todas" só aparece quando sobra sessão escondida. O botão é
-// criado uma vez por painel.
+// Controla a "linha recolhível" do grid de cards dos acessos: por padrão a
+// grade mostra só a primeira linha; se houver quebra (mais cards do que cabem),
+// exibe um botão que expande com altura máxima + rolagem. O botão é criado uma
+// vez por painel. A lista do dono não passa por aqui: mostra todas as sessões e
+// rola dentro da própria moldura.
 function setupSessionsExpansion(container) {
     if (!container) return;
+    if (container.classList.contains('sessions-list')) return;
+
     const panel = container.closest('.sessions-panel');
     if (!panel) return;
 
@@ -3034,7 +3032,15 @@ function setupSessionsExpansion(container) {
                 <path d="m6 9 6 6 6-6"></path>
             </svg>`;
         toggle.addEventListener('click', () => {
-            setSessionsExpanded(container, !container.classList.contains('is-expanded'));
+            const expanded = !container.classList.contains('is-expanded');
+            container.classList.toggle('is-expanded', expanded);
+            container.classList.toggle('is-collapsed', !expanded);
+            toggle.classList.toggle('is-expanded', expanded);
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
+            // Ao recolher ("Ver menos"), volta a rolagem da grade para o topo
+            // com scroll suave em vez de snap instantâneo.
+            if (!expanded) container.scrollTo({ top: 0, behavior: 'smooth' });
         });
         panel.appendChild(toggle);
     }
@@ -3047,12 +3053,7 @@ function setupSessionsExpansion(container) {
     toggle.querySelector('.sessions-toggle-label').textContent = 'Ver todas';
     toggle.hidden = true;
 
-    if (container.classList.contains('sessions-list')) {
-        setSessionsExpanded(container, false);
-        return;
-    }
-
-    // Grid: mede depois do layout para saber se a grade quebra em mais de uma linha.
+    // Mede após o layout para saber se a grade quebra em mais de uma linha.
     requestAnimationFrame(() => {
         const cards = visibleSessionElements(container);
         if (cards.length === 0) { toggle.hidden = true; return; }
@@ -3067,65 +3068,6 @@ function setupSessionsExpansion(container) {
         container.classList.add('is-collapsed');
         toggle.hidden = false;
     });
-}
-
-// Aplica o estado recolhido/expandido e acerta o botão e o rodapé de contagem.
-function setSessionsExpanded(container, expanded) {
-    const panel = container.closest('.sessions-panel');
-    const toggle = panel && panel.querySelector('.sessions-toggle');
-    const isList = container.classList.contains('sessions-list');
-
-    container.classList.toggle('is-expanded', expanded);
-    container.classList.toggle('is-collapsed', !expanded);
-
-    let hiddenByCollapse = 0;
-    if (isList) {
-        // Na lista o recolhimento esconde linha a linha (o grid usa max-height).
-        visibleSessionElements(container).forEach((row, index) => {
-            const beyond = !expanded && index >= SESSIONS_COLLAPSED_ROWS;
-            row.classList.toggle('is-beyond-limit', beyond);
-            if (beyond) hiddenByCollapse++;
-        });
-    }
-
-    if (toggle) {
-        const hasOverflow = isList
-            ? (expanded ? visibleSessionElements(container).length > SESSIONS_COLLAPSED_ROWS : hiddenByCollapse > 0)
-            : !toggle.hidden;
-        toggle.hidden = !hasOverflow;
-        toggle.classList.toggle('is-expanded', expanded);
-        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
-    }
-
-    // Ao recolher ("Ver menos"), volta a rolagem da grade para o topo com
-    // scroll suave em vez de snap instantâneo.
-    if (!expanded && !isList) container.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (isList) markLastVisibleSessionRow(container);
-    updateSessionsShowingLabel(container);
-}
-
-// A última linha à vista é quem arredonda o pé da moldura — e ela muda com o
-// recolhimento e com a busca, então não dá para usar :last-child.
-function markLastVisibleSessionRow(container) {
-    const rows = visibleSessionElements(container).filter(el => !el.classList.contains('is-beyond-limit'));
-    container.querySelectorAll('.session-row').forEach(row => row.classList.remove('is-last-visible'));
-    if (rows.length) rows[rows.length - 1].classList.add('is-last-visible');
-}
-
-// "Mostrando 4 de 7 sessões" embaixo da lista: some quando tudo está à vista.
-function updateSessionsShowingLabel(container) {
-    const panel = container.closest('.sessions-panel');
-    const label = panel && panel.querySelector('.sessions-showing');
-    if (!label) return;
-
-    const sessions = visibleSessionElements(container);
-    const shown = sessions.filter(el => !el.classList.contains('is-beyond-limit')).length;
-    const total = sessions.length;
-
-    label.textContent = `Mostrando ${shown} de ${total} ${total === 1 ? 'sessão' : 'sessões'}`;
-    label.hidden = total === 0 || shown === total;
 }
 
 function filterSessionCards(query) {
@@ -3156,16 +3098,16 @@ function filterSessionCards(query) {
         empty.style.display = 'none';
     }
 
-    // Durante a busca, remove o recolhimento para revelar todas as correspondências;
-    // ao limpar, recalcula (recolhe de novo se transbordar).
+    // O resultado começa do topo — buscar não deve deixar a lista rolada no meio.
+    container.scrollTop = 0;
+
+    // Durante a busca, o grid dos acessos abre para revelar todas as
+    // correspondências; ao limpar, recalcula (recolhe de novo se transbordar).
     const panel = container.closest('.sessions-panel');
     const toggle = panel && panel.querySelector('.sessions-toggle');
     if (q) {
         container.classList.remove('is-collapsed', 'is-expanded');
-        cards.forEach(card => card.classList.remove('is-beyond-limit'));
         if (toggle) toggle.hidden = true;
-        markLastVisibleSessionRow(container);
-        updateSessionsShowingLabel(container);
     } else {
         setupSessionsExpansion(container);
     }

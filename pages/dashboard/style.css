@@ -6915,7 +6915,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .sessions-table-head {
-    padding: 12px 20px;
+    /* +8px à direita: a mesma faixa que a lista reserva para a barra de rolagem
+       (scrollbar-gutter), para as colunas do cabeçalho e das linhas baterem. */
+    padding: 12px 28px 12px 20px;
     background: var(--ap-bg-card-alt);
     border-radius: 13px 13px 0 0;
 }
@@ -6941,8 +6943,6 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     transition: background 0.15s ease;
 }
 
-.sessions-list .session-row.is-last-visible { border-radius: 0 0 13px 13px; }
-
 .sessions-list .session-row:hover {
     background: var(--ap-bg-card-alt);
     border-color: var(--ap-border);
@@ -6950,8 +6950,30 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     transform: none;
 }
 
-/* Recolhida, a lista mostra só as primeiras linhas (o resto sai no "Ver todas"). */
-.sessions-list .session-row.is-beyond-limit { display: none; }
+/* Todas as sessões ficam na lista; o que passa da altura vira rolagem dentro
+   da moldura, com o cabeçalho de colunas parado acima. A barra fica sempre à
+   vista (o .custom-scrollbar do dashboard só aparece no hover) para a rolagem
+   ser visível antes de o cursor chegar lá. */
+.sessions-list {
+    max-height: min(58vh, 560px);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    border-radius: 0 0 13px 13px;
+}
+
+.sessions-list::-webkit-scrollbar { width: 8px; }
+
+.sessions-list::-webkit-scrollbar-track {
+    background: var(--ap-scrollbar-track);
+    border-radius: 0 0 13px 0;
+}
+
+.sessions-list::-webkit-scrollbar-thumb {
+    background: var(--ap-scrollbar-thumb);
+    border-radius: var(--ap-radius-full);
+}
+
+.sessions-list::-webkit-scrollbar-thumb:hover { background: var(--ap-scrollbar-thumb-hover); }
 
 /* ── Coluna 1: serviço ── */
 .session-row-service {
@@ -7012,24 +7034,22 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 .session-row:hover .session-options-btn,
 .session-row:focus-within .session-options-btn { opacity: 1; }
 
+/* Posicionado em coordenadas de viewport por placeSessionRowOptions() para
+   escapar do recorte da área rolável. */
 .session-row .session-options {
-    top: 42px;
-    right: 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: auto;
     width: 138px;
     max-height: none;
     background: var(--ap-bg-modal);
+    /* O `transition: all` do menu animaria também o top/left que o JS escreve,
+       fazendo o menu atravessar a tela até a linha. Anima só a entrada. */
+    transition: opacity .2s ease, visibility .2s ease, transform .2s ease;
 }
 
 .sessions-list .sessions-search-empty { padding: 32px 16px; }
-
-/* Rodapé da lista: "Mostrando 4 de 7 sessões". */
-.sessions-showing {
-    margin: 12px 0 0;
-    font-size: 12.5px;
-    color: var(--ap-text-muted);
-}
-
-.sessions-showing[hidden] { display: none; }
 
 /* Em telas estreitas as colunas de contexto saem antes do essencial: primeiro
    "usando agora", depois o tempo de hoje. */
@@ -7045,6 +7065,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     .session-row { grid-template-columns: minmax(0, 1fr) minmax(84px, 0.7fr) 44px; }
     .sessions-table-head span:nth-child(4),
     .session-row .session-card-usage { display: none; }
-    .sessions-table-head,
     .sessions-list .session-row { padding-left: 14px; padding-right: 14px; }
+    /* Cabeçalho segue com os 8px da barra de rolagem somados à direita. */
+    .sessions-table-head { padding-left: 14px; padding-right: 22px; }
 }
