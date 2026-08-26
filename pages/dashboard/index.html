@@ -1226,7 +1226,7 @@
                 </div>
                 <div class="topbar-actions">
                     <div class="topbar-people header-collection-only" id="people-counter-slot"></div>
-                    <button class="btn btn-primary topbar-share-btn header-collection-only" id="topbar-share-btn">
+                    <button class="btn topbar-share-btn header-collection-only" id="topbar-share-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2v13" />
@@ -1234,6 +1234,17 @@
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                         </svg>
                         Compartilhar
+                    </button>
+                    <!-- Adicionar sessao virou acao da top bar: na lista nao existe mais o
+                         tile "Adicionar sessao" que ocupava a primeira celula do grid. -->
+                    <button class="btn btn-primary topbar-add-session-btn add-session-btn header-collection-only"
+                        id="topbar-add-session-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Adicionar sessão
                     </button>
                     <div class="activation-input header-access-only">
                         <div>
@@ -1459,8 +1470,20 @@
                                             <div class="preset-content">
                                                 <div class="sessions-panel">
                                                     <p class="panel-title">Minhas sessões</p>
-                                                    <div class="sessions-grid custom-scrollbar">
-                                                        <!-- Sessions rendered here as grid cards -->
+                                                    <!-- Visao do dono: as sessoes sao uma lista (uma linha por
+                                                         servico), nao mais cards. O cabecalho abaixo nomeia as
+                                                         colunas que cada linha preenche. -->
+                                                    <div class="sessions-table">
+                                                        <div class="sessions-table-head">
+                                                            <span>Serviço</span>
+                                                            <span>Status</span>
+                                                            <span>Usando agora</span>
+                                                            <span>Tempo de uso hoje</span>
+                                                            <span aria-hidden="true"></span>
+                                                        </div>
+                                                        <div class="sessions-list">
+                                                            <!-- Sessions rendered here as rows -->
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
