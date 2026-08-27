@@ -1664,8 +1664,8 @@ span.coming-soon {
    compartilhou, desde quando, e os ícones dos serviços. Sem moldura de card —
    quem tem moldura são as sessões abaixo. */
 .package-info-header {
-    padding: 10px 2px 0;
-    margin-bottom: 26px;
+    padding: 0 2px;
+    margin-bottom: 22px;
 }
 
 .ph-title {
@@ -6086,6 +6086,12 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 #package-details .sessions-panel .panel-title {
     font-size: 15px;
     color: var(--ap-text-secondary);
+}
+
+/* Só o título solto (lista do dono) se separa do que vem abaixo. Dentro do
+   .sessions-panel-head quem espaça é o próprio cabeçalho, e o padding aqui
+   tiraria o título do eixo do campo de busca. */
+#package-details .sessions-panel > .panel-title {
     padding-bottom: 14px;
 }
 
@@ -6632,9 +6638,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     border-bottom: 1px solid var(--ap-border);
 }
 
-/* Escopado com o #package-details para vencer o padding-bottom que o
-   .panel-title herda ali — é ele que tirava o título do eixo do campo de busca. */
-#package-details .sessions-panel .sessions-panel-head .panel-title {
+/* Zera o padding-bottom que .panel-title traz da base: aqui o espaçamento é do
+   cabeçalho, e o padding tiraria o título do eixo do campo de busca. */
+.sessions-panel-head .panel-title {
     padding: 0;
     margin: 0;
     font-size: 15px;
