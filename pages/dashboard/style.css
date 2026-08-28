@@ -6454,9 +6454,12 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     border-radius: 14px;
 }
 
-/* Cabeçalho e linhas dividem a mesma grade — é ela que alinha as colunas. */
+/* Cabeçalho e linhas dividem a mesma grade — é ela que alinha as colunas.
+   As linhas de skeleton do carregamento entram na mesma grade, senão as
+   colunas do esqueleto não caem embaixo das do cabeçalho. */
 .sessions-table-head,
-.session-row {
+.session-row,
+.sk-session-row {
     display: grid;
     grid-template-columns:
         minmax(150px, 1.6fr) minmax(84px, 0.7fr) minmax(140px, 1.2fr) minmax(110px, 1fr) 44px;
@@ -6605,17 +6608,22 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
    "usando agora", depois o tempo de hoje. */
 @media (max-width: 1100px) {
     .sessions-table-head,
-    .session-row { grid-template-columns: minmax(140px, 1.6fr) minmax(84px, 0.7fr) minmax(110px, 1fr) 44px; }
+    .session-row,
+    .sk-session-row { grid-template-columns: minmax(140px, 1.6fr) minmax(84px, 0.7fr) minmax(110px, 1fr) 44px; }
     .sessions-table-head span:nth-child(3),
-    .session-row .session-card-members { display: none; }
+    .session-row .session-card-members,
+    .sk-session-row .sk-session-members { display: none; }
 }
 
 @media (max-width: 720px) {
     .sessions-table-head,
-    .session-row { grid-template-columns: minmax(0, 1fr) minmax(84px, 0.7fr) 44px; }
+    .session-row,
+    .sk-session-row { grid-template-columns: minmax(0, 1fr) minmax(84px, 0.7fr) 44px; }
     .sessions-table-head span:nth-child(4),
-    .session-row .session-card-usage { display: none; }
-    .sessions-list .session-row { padding-left: 14px; padding-right: 14px; }
+    .session-row .session-card-usage,
+    .sk-session-row .sk-session-usage { display: none; }
+    .sessions-list .session-row,
+    .sk-session-row { padding-left: 14px; padding-right: 14px; }
     /* Cabeçalho segue com os 8px da barra de rolagem somados à direita. */
     .sessions-table-head { padding-left: 14px; padding-right: 22px; }
 }

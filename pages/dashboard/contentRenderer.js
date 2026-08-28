@@ -3157,9 +3157,19 @@ function setDashSection(section) {
     document.querySelectorAll('.access-tab').forEach(t => t.classList.toggle('active', isAccess));
 }
 
+// Fim do carregamento inicial: tira os skeletons de boot e devolve as áreas
+// reais. Roda mesmo se o init() falhar — skeleton eterno é pior que tela vazia.
+function clearBootSkeletons() {
+    delete document.body.dataset.dashBoot;
+}
+
 // Executa ao carregar o DOM
+function bootDashboard() {
+    init().finally(clearBootSkeletons);
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', bootDashboard);
 } else {
-    init();
+    bootDashboard();
 }

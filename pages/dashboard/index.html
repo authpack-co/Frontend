@@ -99,7 +99,7 @@
     <script src="/assets/scripts/themeManager.js" defer></script>
 </head>
 
-<body>
+<body data-dash-boot="loading">
     <!-- Hidden structures -->
     <div class="modals">
 
@@ -1106,7 +1106,7 @@
             </div>
 
             <!-- Lista de pacotes da seção selecionada (state machine preservada) -->
-            <div id="packages-list" class="collection-state">
+            <div id="packages-list" class="loading-state">
                 <div class="preset-collection">
                     <div class="access-grid sidebar-pkg-list custom-scrollbar">
                         <!-- Pacotes da coleção renderizados aqui -->
@@ -1119,6 +1119,7 @@
                 </div>
                 <div class="preset-loading">
                     <div class="sidebar-pkg-list">
+                        <div class="skeleton sidebar-pkg-skeleton"></div>
                         <div class="skeleton sidebar-pkg-skeleton"></div>
                         <div class="skeleton sidebar-pkg-skeleton"></div>
                         <div class="skeleton sidebar-pkg-skeleton"></div>
@@ -1135,19 +1136,37 @@
 
         <!-- Footer -->
         <div class="sidebar-footer">
+            <!-- Enquanto o getUserInfo não volta não dá para saber se o card de plano
+                 fica ou some (assinante não vê), nem quantas pessoas o contador mostra.
+                 Os dois skeletons seguram o espaço para o rodapé não saltar. -->
+            <div class="boot-skeleton">
+                <div class="sk-block sk-plan-card"></div>
+                <div class="sk-block sk-plan-people"></div>
+            </div>
+
             <!-- Plus Upgrade Card (hidden for Plus users via JS) -->
-            <div class="sidebar-upgrade-card" id="sidebar-plus-card">
+            <div class="sidebar-upgrade-card boot-hide" id="sidebar-plus-card">
                 <div class="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
                 <p class="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
                 <button class="plus-subscribe-btn sidebar-upgrade-link">Fazer upgrade &rarr;</button>
             </div>
 
             <!-- Limite de pessoas do plano vigente (contador único do plano) -->
-            <div class="sidebar-plan-people" id="plan-people-slot"></div>
+            <div class="sidebar-plan-people boot-hide" id="plan-people-slot"></div>
 
             <!-- User Profile -->
             <div class="sidebar-profile-wrapper">
-                <div class="profile" id="sidebar-profile">
+                <!-- Avatar, nome e e-mail entram vazios no HTML e só o renderUserInfo
+                     os preenche: até lá, círculo + duas linhas no lugar. -->
+                <div class="boot-skeleton boot-skeleton--flex sk-profile">
+                    <div class="sk-circle" style="--sk-size:35px;"></div>
+                    <div class="sk-profile-lines">
+                        <div class="sk-line" style="--sk-h:11px;--sk-w:72%;"></div>
+                        <div class="sk-line" style="--sk-h:9px;--sk-w:88%;"></div>
+                    </div>
+                </div>
+
+                <div class="profile boot-hide" id="sidebar-profile">
                     <span class="profile-picture">
                         <img>
                     </span>
@@ -1225,7 +1244,10 @@
                         autocomplete="off" />
                 </div>
                 <div class="topbar-actions">
-                    <div class="topbar-people header-collection-only" id="people-counter-slot"></div>
+                    <!-- Pill do tamanho exato do contador final, para o botão
+                         "Compartilhar" não escorregar quando ele aparecer. -->
+                    <div class="boot-skeleton sk-block sk-people-pill header-collection-only"></div>
+                    <div class="topbar-people header-collection-only boot-hide" id="people-counter-slot"></div>
                     <button class="btn topbar-share-btn header-collection-only" id="topbar-share-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1347,16 +1369,26 @@
             </div><!-- /#main-onboarding -->
 
             <!-- Package Details -->
-            <section id="package-details" class="content-card empty-state expanded">
+            <section id="package-details" class="content-card collection-state expanded">
                 <div class="preset-collection">
                     <div class="screens-container">
                         <div class="screen-section primary content-state">
                             <div class="preset-content">
                                 <div class="card-header">
                                     <div class="header-top">
-                                        <h2>Package Details</h2>
-                                        <span class="pkg-sessions-count"></span>
-                                        <p class="created-date">
+                                        <!-- Nome, contagem de sessões e data de criação chegam juntos,
+                                             no renderPackageDetails. As três linhas têm as medidas do
+                                             texto real para o cabeçalho não mudar de altura. -->
+                                        <div class="boot-skeleton">
+                                            <div class="sk-line" style="--sk-h:22px;--sk-w:196px;margin-bottom:12px;">
+                                            </div>
+                                            <div class="sk-line" style="--sk-h:13px;--sk-w:84px;margin-bottom:8px;">
+                                            </div>
+                                            <div class="sk-line" style="--sk-h:14px;--sk-w:212px;"></div>
+                                        </div>
+                                        <h2 class="boot-hide">Package Details</h2>
+                                        <span class="pkg-sessions-count boot-hide"></span>
+                                        <p class="created-date boot-hide">
                                             <span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1404,7 +1436,9 @@
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class="chart-wrapper content-state">
+                                                    <!-- Exceção: o gráfico segue com o spinner grande, e já
+                                                         nasce nele em vez de mostrar um canvas vazio. -->
+                                                    <div class="chart-wrapper loading-state">
                                                         <div class="preset-content">
                                                             <canvas id="packageUsageChart"></canvas>
                                                         </div>
@@ -1423,7 +1457,25 @@
                                                     <div class="preset-content">
                                                         <div class="users-panel">
                                                             <p class="panel-title">Pessoas com acesso</p>
-                                                            <div class="scrollable-list custom-scrollbar">
+                                                            <!-- O título é estático e fica; só a lista carrega. -->
+                                                            <div class="boot-skeleton boot-skeleton--flex sk-users-list">
+                                                                <div class="sk-user-row">
+                                                                    <div class="sk-circle"></div>
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:11px;--sk-w:58%;"></div>
+                                                                </div>
+                                                                <div class="sk-user-row">
+                                                                    <div class="sk-circle"></div>
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:11px;--sk-w:44%;"></div>
+                                                                </div>
+                                                                <div class="sk-user-row">
+                                                                    <div class="sk-circle"></div>
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:11px;--sk-w:66%;"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="scrollable-list custom-scrollbar boot-hide">
                                                                 <!-- Users rendered here -->
                                                             </div>
                                                         </div>
@@ -1457,6 +1509,8 @@
                                                          servico), nao mais cards. O cabecalho abaixo nomeia as
                                                          colunas que cada linha preenche. -->
                                                     <div class="sessions-table">
+                                                        <!-- O cabeçalho das colunas é estático e fica; só as linhas
+                                                             viram skeleton, na mesma grade. -->
                                                         <div class="sessions-table-head">
                                                             <span>Serviço</span>
                                                             <span>Status</span>
@@ -1464,7 +1518,88 @@
                                                             <span>Tempo de uso hoje</span>
                                                             <span aria-hidden="true"></span>
                                                         </div>
-                                                        <div class="sessions-list">
+                                                        <div class="boot-skeleton sk-sessions-list">
+                                                            <div class="sk-session-row">
+                                                                <div class="sk-session-service">
+                                                                    <div class="sk-block"
+                                                                        style="--sk-h:36px;--sk-w:36px;--sk-r:9px;">
+                                                                    </div>
+                                                                    <div class="sk-session-service-lines">
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:12px;--sk-w:58%;"></div>
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:9px;--sk-w:38%;"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="sk-block"
+                                                                    style="--sk-h:12px;--sk-w:54px;--sk-r:999px;">
+                                                                </div>
+                                                                <div class="sk-session-members">
+                                                                    <div class="sk-session-avatars">
+                                                                        <div class="sk-circle"
+                                                                            style="--sk-size:26px;"></div>
+                                                                        <div class="sk-circle"
+                                                                            style="--sk-size:26px;"></div>
+                                                                    </div>
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:9px;--sk-w:70px;"></div>
+                                                                </div>
+                                                                <div class="sk-line sk-session-usage"
+                                                                    style="--sk-h:11px;--sk-w:56px;"></div>
+                                                                <span aria-hidden="true"></span>
+                                                            </div>
+                                                            <div class="sk-session-row">
+                                                                <div class="sk-session-service">
+                                                                    <div class="sk-block"
+                                                                        style="--sk-h:36px;--sk-w:36px;--sk-r:9px;">
+                                                                    </div>
+                                                                    <div class="sk-session-service-lines">
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:12px;--sk-w:44%;"></div>
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:9px;--sk-w:30%;"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="sk-block"
+                                                                    style="--sk-h:12px;--sk-w:54px;--sk-r:999px;">
+                                                                </div>
+                                                                <div class="sk-session-members">
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:9px;--sk-w:104px;"></div>
+                                                                </div>
+                                                                <div class="sk-line sk-session-usage"
+                                                                    style="--sk-h:11px;--sk-w:42px;"></div>
+                                                                <span aria-hidden="true"></span>
+                                                            </div>
+                                                            <div class="sk-session-row">
+                                                                <div class="sk-session-service">
+                                                                    <div class="sk-block"
+                                                                        style="--sk-h:36px;--sk-w:36px;--sk-r:9px;">
+                                                                    </div>
+                                                                    <div class="sk-session-service-lines">
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:12px;--sk-w:52%;"></div>
+                                                                        <div class="sk-line"
+                                                                            style="--sk-h:9px;--sk-w:46%;"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="sk-block"
+                                                                    style="--sk-h:12px;--sk-w:54px;--sk-r:999px;">
+                                                                </div>
+                                                                <div class="sk-session-members">
+                                                                    <div class="sk-session-avatars">
+                                                                        <div class="sk-circle"
+                                                                            style="--sk-size:26px;"></div>
+                                                                    </div>
+                                                                    <div class="sk-line"
+                                                                        style="--sk-h:9px;--sk-w:66px;"></div>
+                                                                </div>
+                                                                <div class="sk-line sk-session-usage"
+                                                                    style="--sk-h:11px;--sk-w:38px;"></div>
+                                                                <span aria-hidden="true"></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="sessions-list boot-hide">
                                                             <!-- Sessions rendered here as rows -->
                                                         </div>
                                                     </div>
@@ -1842,39 +1977,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="preset-loading">
-                    <div class="card-header">
-                        <div class="header-top">
-                            <h2>Top IAs</h2>
-                        </div>
-                        <div class="access-grid custom-scrollbar">
-                            <!-- Package Stats -->
-                            <div class="skeleton access-item-skeleton"></div>
-                            <div class="skeleton access-item-skeleton"></div>
-                            <div class="skeleton access-item-skeleton"></div>
-                            <div class="skeleton access-item-skeleton"></div>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="sessions-panel">
-                            <p class="panel-title">Minhas Sessões</p>
-                            <div class="scrollable-list custom-scrollbar">
-                                <div class="dark-skeleton list-item-skeleton"></div>
-                                <div class="dark-skeleton list-item-skeleton"></div>
-                                <div class="dark-skeleton list-item-skeleton"></div>
-                            </div>
-                        </div>
-
-                        <div class="users-panel">
-                            <p class="panel-title">Dispositivos Conectados (4)</p>
-                            <div class="scrollable-list custom-scrollbar">
-                                <div class="dark-skeleton list-item-skeleton"></div>
-                                <div class="dark-skeleton list-item-skeleton"></div>
-                                <div class="dark-skeleton list-item-skeleton"></div>
                             </div>
                         </div>
                     </div>
