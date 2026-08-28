@@ -288,15 +288,7 @@
     padding: 16px 26px;
 }
 
-/* "Voltar" e "Pular" dividem o canto esquerdo: navegar e sair do guia de vez. */
-.oc-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.oc-prev,
-.oc-skip {
+.oc-prev {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -308,20 +300,6 @@
     font-weight: 600;
     cursor: pointer;
     padding: 8px 4px;
-}
-
-.oc-skip {
-    color: var(--ap-text-secondary);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-}
-
-.oc-skip:hover {
-    color: var(--ap-text-primary);
-}
-
-.oc-skip[hidden] {
-    display: none;
 }
 
 .oc-prev:disabled {
@@ -560,14 +538,10 @@
         padding: 14px 16px;
         gap: 8px;
     }
-    .oc-left {
-        gap: 4px;
-    }
     .oc-dots {
         gap: 6px;
     }
     .oc-prev,
-    .oc-skip,
     .oc-next {
         white-space: nowrap;
     }

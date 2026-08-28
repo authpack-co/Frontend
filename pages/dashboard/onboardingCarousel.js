@@ -8,22 +8,22 @@
  *   3. Compartilhar o pacote
  *
  * O guia abre sozinho no primeiro acesso ao dashboard e só para de aparecer
- * quando o usuário PULA ou CONCLUI — fechar no × ou no Esc é "agora não", e
- * ele volta no próximo carregamento. Por isso o markSeen() não mora no open().
+ * quando o usuário FECHA (×, Esc ou clique fora) ou CONCLUI. Por isso o
+ * markSeen() não mora no open(): abrir não é o mesmo que dispensar, então
+ * recarregar a página no meio do guia não o aposenta.
  *
  * Entrada contextual: quem acabou de criar o primeiro pacote entra direto na
  * Seção 2 (pula "criar"), e o botão "Ver como funciona" entra na Seção 1.
  *
  * A captura das sessões acontece na própria plataforma; a extensão é o motor
- * que abre e fecha as abas por baixo. Ela é apresentada num slide de intro
- * (sem link, pra não tirar o usuário do fluxo) e o link de instalar aparece
- * só no slide final.
+ * que abre e fecha as abas por baixo. Ela aparece só no slide final, junto do
+ * link de instalar.
  *
  * API pública:
  *   AuthPackOnboarding.open({ startSection })  → 'create' | 'sessions' | 'share'
- *   AuthPackOnboarding.close()   fecha sem marcar (o guia volta depois)
- *   AuthPackOnboarding.skip()    pular  → marca como visto
- *   AuthPackOnboarding.finish()  concluir → marca como visto
+ *   AuthPackOnboarding.close()   fecha sem marcar (uso interno)
+ *   AuthPackOnboarding.skip()    dispensar → marca como visto
+ *   AuthPackOnboarding.finish()  concluir  → marca como visto
  *   AuthPackOnboarding.isSeen() / markSeen()
  */
 (function () {
@@ -67,7 +67,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow">Bem-vindo</div>
         <h2 class="oc-title">Bem-vindo ao AuthPack</h2>
-        <p class="oc-text">Distribua e controle seus acessos em um só lugar. Em menos de um minuto você vê como criar um pacote, adicionar suas sessões e compartilhar o acesso — sem nunca revelar a sua senha.</p>
+        <p class="oc-text">Distribua e controle seus acessos em um só lugar.</p>
       </div>
     </div>`;
 
@@ -108,7 +108,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 1 · Criar um pacote</div>
         <h2 class="oc-title">Crie o seu pacote</h2>
-        <p class="oc-text">Um <strong>pacote</strong> guarda suas sessões de login. Clique em <strong>Novo pacote</strong>, dê um nome — como “Trabalho” — e confirme. É o primeiro passo.</p>
+        <p class="oc-text">O <strong>pacote</strong> guarda suas sessões de login. Dê um nome e confirme.</p>
       </div>
     </div>`;
 
@@ -128,36 +128,15 @@
       </div>
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 1 · Criar um pacote</div>
-        <h2 class="oc-title">Pronto — pacote criado</h2>
-        <p class="oc-text">Ele aparece <strong>vazio</strong> na sua coleção. Agora é só preencher com as sessões dos serviços que você usa. Vamos ver como na próxima seção.</p>
+        <h2 class="oc-title">Pacote criado</h2>
+        <p class="oc-text">Ele nasce vazio na sua coleção. Agora é só adicionar as sessões.</p>
       </div>
     </div>`;
 
     // ---- Seção 2 · Adicionar sessões ----
     // O fluxo todo acontece na plataforma: o usuário escolhe os serviços aqui e
-    // a extensão abre, captura e fecha as abas por baixo.
-    const S_EXT_INTRO = `
-    <div class="oc-slide">
-      <div class="oc-demo oc-demo--center">
-        <div style="width:300px;">
-          <div style="background:#eef0f3; border:1px solid #e3e6ea; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 18px 40px rgba(0,0,0,.35);">
-            <div style="flex:1; height:26px; background:#fff; border:1px solid #e1e4e9; border-radius:13px;"></div>
-            <span style="width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#5b6573;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 19.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0"/><path d="M4.39 8.61a1 1 0 0 0 .474 1.68 2.5 2.5 0 1 1-3.014 3.015 1 1 0 0 0-1.68.474"/></svg></span>
-            <div style="position:relative;">
-              <span style="position:absolute; inset:-6px; border:2px solid #60a5fa; border-radius:11px; animation:s3ring 2.6s ease-out infinite;"></span>
-              <img src="${ICON}" alt="" style="width:26px; height:26px; border-radius:6px; display:block;">
-            </div>
-          </div>
-          <div style="margin-top:14px; text-align:center; font-size:11.5px; color:rgba(255,255,255,.55); font-weight:500;">A extensão do AuthPack, fixada na barra do navegador</div>
-        </div>
-      </div>
-      <div class="oc-copy">
-        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">A extensão trabalha por baixo</h2>
-        <p class="oc-text">Você faz tudo <strong>aqui na plataforma</strong> — quem abre os sites e captura as sessões com segurança é a <strong>extensão do navegador</strong>. Não precisa buscar agora: o link pra instalar está no <strong>final deste guia</strong>.</p>
-      </div>
-    </div>`;
-
+    // a extensão abre, captura e fecha as abas por baixo. Ela aparece só no
+    // slide final, junto do link de instalar.
     const S_ADD_OPEN = `
     <div class="oc-slide">
       <div class="oc-demo">
@@ -190,7 +169,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
         <h2 class="oc-title">Clique em “Adicionar sessão”</h2>
-        <p class="oc-text">Com o pacote aberto, o botão <strong>Adicionar sessão</strong> fica no topo da própria plataforma. Não precisa sair daqui nem abrir a extensão.</p>
+        <p class="oc-text">Com o pacote aberto, o botão fica no topo da plataforma.</p>
       </div>
     </div>`;
 
@@ -241,7 +220,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
         <h2 class="oc-title">Escolha os serviços</h2>
-        <p class="oc-text">Busque pelo nome, cole a URL ou clique num dos <strong>serviços populares</strong>. Dá pra escolher vários de uma vez — só precisa <strong>já estar logado</strong> neles neste navegador.</p>
+        <p class="oc-text">Busque pelo nome ou clique nos populares. Pode escolher vários.</p>
       </div>
     </div>`;
 
@@ -280,7 +259,7 @@
 
             <div style="display:flex; align-items:center; gap:7px; margin-top:12px; background:#f4f6f9; border:1px solid #e5e7eb; border-radius:9px; padding:9px 11px;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              <span style="font-size:10.5px; color:#6b7280; line-height:1.4;">Mantenha esta aba aberta — as abas dos serviços abrem e fecham sozinhas.</span>
+              <span style="font-size:10.5px; color:#6b7280; line-height:1.4;">Mantenha esta aba aberta. As abas dos serviços abrem e fecham sozinhas.</span>
             </div>
           </div>
         </div>
@@ -288,7 +267,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
         <h2 class="oc-title">O AuthPack captura pra você</h2>
-        <p class="oc-text">Clique em <strong>Adicionar</strong> e pronto. Cada serviço abre e fecha numa aba sozinho enquanto a captura acontece — é só <strong>manter esta aba aberta</strong> e acompanhar. Ao final, as sessões já estão no pacote.</p>
+        <p class="oc-text">As abas abrem e fecham sozinhas. Só <strong>mantenha esta aba aberta</strong>.</p>
       </div>
     </div>`;
 
@@ -329,8 +308,8 @@
       </div>
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 3 · Compartilhar</div>
-        <h2 class="oc-title">Abra o menu e clique em “Compartilhar”</h2>
-        <p class="oc-text">Com o pacote pronto, abra o menu dos <strong>três pontinhos</strong> e escolha <strong>Compartilhar</strong>. É aqui que você gera o acesso para outras pessoas.</p>
+        <h2 class="oc-title">Clique em “Compartilhar”</h2>
+        <p class="oc-text">Com o pacote pronto, é aqui que você libera o acesso.</p>
       </div>
     </div>`;
 
@@ -360,8 +339,8 @@
       </div>
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 3 · Compartilhar</div>
-        <h2 class="oc-title">Envie o link — sem senhas</h2>
-        <p class="oc-text">Ative o <strong>link público</strong> (ou gere um <strong>link único</strong>) e envie para quem quiser. A pessoa entra no serviço direto pela sessão — <strong>sem nunca ver a sua senha</strong>.</p>
+        <h2 class="oc-title">Envie o link, sem senhas</h2>
+        <p class="oc-text">Quem receber entra direto na sessão. <strong>Sua senha nunca aparece.</strong></p>
       </div>
     </div>`;
 
@@ -386,7 +365,7 @@
       <div class="oc-copy">
         <div class="oc-eyebrow oc-eyebrow--success">Tudo pronto</div>
         <h2 class="oc-title">É só começar 🎉</h2>
-        <p class="oc-text" style="margin-bottom:24px;">Você já sabe criar um pacote, adicionar sessões e compartilhar. Falta só um passo: instale a extensão para capturar suas sessões com um clique.</p>
+        <p class="oc-text" style="margin-bottom:24px;">Falta instalar a extensão, que é quem captura suas sessões.</p>
         <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
           <a class="oc-cta oc-cta--blue" href="${EXT_URL}" target="_blank" rel="noopener"><img src="${ICON}" alt=""> Instalar extensão</a>
           <button class="oc-done-btn" type="button" data-oc-done>Começar a usar</button>
@@ -400,7 +379,6 @@
         { sec: -1, html: S_WELCOME },
         { sec: 0, html: S_CREATE_1 },
         { sec: 0, html: S_CREATE_2 },
-        { sec: 1, html: S_EXT_INTRO },
         { sec: 1, html: S_ADD_OPEN },
         { sec: 1, html: S_ADD_PICK },
         { sec: 1, html: S_ADD_CAPTURE },
@@ -416,7 +394,7 @@
     // ═══════════════════════ RUNTIME ═══════════════════════
 
     let built = false;
-    let overlay, card, track, progressFill, dotsWrap, tabsWrap, prevBtn, nextBtn, playBtn, skipBtn;
+    let overlay, card, track, progressFill, dotsWrap, tabsWrap, prevBtn, nextBtn, playBtn;
     let timer = null;
     let last = 0;
     const state = { current: 0, progress: 0, playing: true, hover: false };
@@ -435,10 +413,7 @@
 <div class="oc-footer">
   <div class="oc-progress"><div class="oc-progress-fill"></div></div>
   <div class="oc-controls">
-    <div class="oc-left">
-      <button class="oc-prev" type="button">‹ Voltar</button>
-      <button class="oc-skip" type="button">Pular</button>
-    </div>
+    <button class="oc-prev" type="button">‹ Voltar</button>
     <div class="oc-dots"></div>
     <div class="oc-right">
       <button class="oc-play" type="button" title="Reproduzir/pausar">❚❚</button>
@@ -470,25 +445,23 @@
         prevBtn = card.querySelector('.oc-prev');
         nextBtn = card.querySelector('.oc-next');
         playBtn = card.querySelector('.oc-play');
-        skipBtn = card.querySelector('.oc-skip');
 
         // Abas de seção
         tabsWrap.querySelectorAll('.oc-tab').forEach(tab => {
             tab.addEventListener('click', () => go(sectionStart(Number(tab.dataset.sec))));
         });
 
-        // Controles. Só "Pular" e "Concluir" encerram o guia de vez; o × e o
-        // clique fora são "agora não" e ele volta no próximo carregamento.
+        // Controles. Fechar o guia é pular: o × (e o Esc, e o clique fora)
+        // aposenta o guia igual a chegar no fim.
         prevBtn.addEventListener('click', () => go(state.current - 1));
         nextBtn.addEventListener('click', onNext);
         playBtn.addEventListener('click', togglePlay);
-        skipBtn.addEventListener('click', skip);
-        card.querySelector('.oc-close').addEventListener('click', close);
+        card.querySelector('.oc-close').addEventListener('click', skip);
         card.querySelectorAll('[data-oc-done]').forEach(b => b.addEventListener('click', finish));
 
         card.addEventListener('mouseenter', () => { state.hover = true; });
         card.addEventListener('mouseleave', () => { state.hover = false; });
-        overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        overlay.addEventListener('click', e => { if (e.target === overlay) skip(); });
 
         built = true;
     }
@@ -567,16 +540,11 @@
         });
 
         prevBtn.disabled = state.current === 0;
-
-        const isLast = state.current >= COUNT - 1;
-        nextBtn.textContent = (isLast ? 'Concluir' : 'Próximo') + ' ›';
-        // No último slide "Próximo" já vira "Concluir": um "Pular" ao lado
-        // seria a mesma saída com outro nome.
-        skipBtn.hidden = isLast;
+        nextBtn.textContent = (state.current >= COUNT - 1 ? 'Concluir' : 'Próximo') + ' ›';
     }
 
     function onKeydown(e) {
-        if (e.key === 'Escape') close();
+        if (e.key === 'Escape') skip();
         else if (e.key === 'ArrowRight') onNext();
         else if (e.key === 'ArrowLeft') go(state.current - 1);
     }
@@ -617,7 +585,8 @@
         document.removeEventListener('keydown', onKeydown);
     }
 
-    // As duas únicas saídas que aposentam o guia.
+    // As duas saídas que aposentam o guia: fechar (×, Esc, clique fora) e
+    // chegar ao fim. O close() sozinho não marca nada.
     function skip() {
         markSeen();
         close();

@@ -3166,8 +3166,7 @@ function clearBootSkeletons() {
 }
 
 // O guia abre logo de cara, sobre o dashboard já carregado, e só para de
-// aparecer quando o usuário PULA ou CONCLUI: fechar no × é "agora não", então
-// ele volta no próximo carregamento (ver onboardingCarousel.js).
+// aparecer quando o usuário fecha ou conclui (ver onboardingCarousel.js).
 function openOnboardingIfPending() {
     if (window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
         AuthPackOnboarding.open();

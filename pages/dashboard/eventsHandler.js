@@ -2159,7 +2159,7 @@ const createPackageHandler = async (event) => {
 
     // Primeiro pacote criado → abre o guia direto na Seção 2 (adicionar sessões),
     // pulando a de criar pacote, já que ele acabou de criar. Só para quem ainda
-    // não pulou nem concluiu o guia — quem fechou no × ganha esta segunda deixa.
+    // não dispensou nem concluiu o guia.
     // Pequeno atraso para a animação do card e o scroll assentarem antes do overlay.
     if (isFirstPackage && window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
         setTimeout(() => AuthPackOnboarding.open({ startSection: 'sessions' }), 650);
