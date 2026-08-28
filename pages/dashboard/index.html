@@ -86,6 +86,7 @@
     <link rel="stylesheet" href="/pages/dashboard/onboarding.css">
     <link rel="stylesheet" href="/assets/styles/modals.css">
     <link rel="stylesheet" href="/assets/styles/animations.css">
+    <link rel="stylesheet" href="/assets/styles/favicon.css">
 
     <!-- Theme: FOUC prevention + manager -->
     <script>
@@ -1136,22 +1137,16 @@
 
         <!-- Footer -->
         <div class="sidebar-footer">
-            <!-- Enquanto o getUserInfo não volta não dá para saber se o card de plano
-                 fica ou some (assinante não vê), nem quantas pessoas o contador mostra.
-                 Os dois skeletons seguram o espaço para o rodapé não saltar. -->
-            <div class="boot-skeleton">
-                <div class="sk-block sk-plan-card"></div>
-                <div class="sk-block sk-plan-people"></div>
-            </div>
-
             <!-- Plus Upgrade Card (hidden for Plus users via JS) -->
-            <div class="sidebar-upgrade-card boot-hide" id="sidebar-plus-card">
+            <div class="sidebar-upgrade-card" id="sidebar-plus-card">
                 <div class="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
                 <p class="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
                 <button class="plus-subscribe-btn sidebar-upgrade-link">Fazer upgrade &rarr;</button>
             </div>
 
-            <!-- Limite de pessoas do plano vigente (contador único do plano) -->
+            <!-- Limite de pessoas do plano vigente (contador único do plano). Só o
+                 getUserInfo sabe quantas pessoas são, então o slot nasce em skeleton. -->
+            <div class="boot-skeleton sk-block sk-plan-people"></div>
             <div class="sidebar-plan-people boot-hide" id="plan-people-slot"></div>
 
             <!-- User Profile -->

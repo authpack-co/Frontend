@@ -783,7 +783,9 @@ function createSessionCardElement(session, pkg) {
     const icon = document.createElement('img');
     icon.className = 'session-card-icon';
     icon.alt = session.name;
-    icon.style.background = pal.glow(0.1);
+    // backgroundColor, não o atalho background: o atalho zeraria o
+    // background-image do placeholder de carregamento do favicon.
+    icon.style.backgroundColor = pal.glow(0.1);
     icon.style.borderColor = pal.glow(0.3);
     AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
 

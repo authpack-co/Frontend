@@ -165,13 +165,7 @@ body[data-dash-boot="loading"] .boot-skeleton { display: block; }
 body[data-dash-boot="loading"] .boot-skeleton.boot-skeleton--flex { display: flex; }
 body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 
-/* 2 — card de plano + contador de pessoas do rodapé da sidebar */
-.sk-plan-card {
-    height: 74px;
-    border-radius: var(--ap-radius-lg);
-    margin-bottom: 6px;
-}
-
+/* 2 — contador de pessoas do plano, no rodapé da sidebar */
 .sk-plan-people {
     height: 38px;
     border-radius: var(--ap-radius-md);
