@@ -1,20 +1,29 @@
 /**
  * AuthPack — Guia de Onboarding (carrossel)
  *
- * Guia único dividido em 3 seções, com abas no topo (é possível saltar):
+ * Abre um slide de boas-vindas e depois 3 seções, com abas no topo (dá pra
+ * saltar):
  *   1. Criar um pacote
  *   2. Adicionar sessões ao pacote
  *   3. Compartilhar o pacote
  *
- * Entrada contextual: quem ainda não tem pacote começa na Seção 1; quem
- * acabou de criar o primeiro pacote começa na Seção 2 (pula "criar").
+ * O guia abre sozinho no primeiro acesso ao dashboard e só para de aparecer
+ * quando o usuário PULA ou CONCLUI — fechar no × ou no Esc é "agora não", e
+ * ele volta no próximo carregamento. Por isso o markSeen() não mora no open().
  *
- * A extensão é apresentada num slide de intro (sem link, pra não tirar o
- * usuário do fluxo) e o link de instalar aparece só no slide final.
+ * Entrada contextual: quem acabou de criar o primeiro pacote entra direto na
+ * Seção 2 (pula "criar"), e o botão "Ver como funciona" entra na Seção 1.
+ *
+ * A captura das sessões acontece na própria plataforma; a extensão é o motor
+ * que abre e fecha as abas por baixo. Ela é apresentada num slide de intro
+ * (sem link, pra não tirar o usuário do fluxo) e o link de instalar aparece
+ * só no slide final.
  *
  * API pública:
  *   AuthPackOnboarding.open({ startSection })  → 'create' | 'sessions' | 'share'
- *   AuthPackOnboarding.close()
+ *   AuthPackOnboarding.close()   fecha sem marcar (o guia volta depois)
+ *   AuthPackOnboarding.skip()    pular  → marca como visto
+ *   AuthPackOnboarding.finish()  concluir → marca como visto
  *   AuthPackOnboarding.isSeen() / markSeen()
  */
 (function () {
@@ -36,6 +45,31 @@
     ];
 
     // ═══════════════════════ SLIDES (HTML) ═══════════════════════
+
+    // ---- Boas-vindas (fora das seções) ----
+    const S_WELCOME = `
+    <div class="oc-slide">
+      <div class="oc-demo oc-demo--center">
+        <div style="text-align:center;">
+          <div style="position:relative; width:104px; height:104px; margin:0 auto 26px;">
+            <span style="position:absolute; inset:-10px; border:2px solid #60a5fa; border-radius:30px; animation:s3ring 3s ease-out infinite;"></span>
+            <img src="${ICON}" alt="" style="width:104px; height:104px; border-radius:26px; display:block; box-shadow:0 22px 48px rgba(0,0,0,.5); animation:ocFloat 5s ease-in-out infinite;">
+          </div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+            <span style="width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,#ff9a56,#ff6b35); animation:ocRise .5s ease both;"></span>
+            <span style="width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,#22c55e,#16a34a); animation:ocRise .5s .1s ease both;"></span>
+            <span style="width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,#60a5fa,#2563eb); animation:ocRise .5s .2s ease both;"></span>
+            <span style="width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg,#c084fc,#7c3aed); animation:ocRise .5s .3s ease both;"></span>
+          </div>
+          <div style="margin-top:16px; font-size:11.5px; color:rgba(255,255,255,.55); font-weight:500;">Suas sessões, num lugar só</div>
+        </div>
+      </div>
+      <div class="oc-copy">
+        <div class="oc-eyebrow">Bem-vindo</div>
+        <h2 class="oc-title">Bem-vindo ao AuthPack</h2>
+        <p class="oc-text">Distribua e controle seus acessos em um só lugar. Em menos de um minuto você vê como criar um pacote, adicionar suas sessões e compartilhar o acesso — sem nunca revelar a sua senha.</p>
+      </div>
+    </div>`;
 
     // ---- Seção 1 · Criar um pacote ----
     const S_CREATE_1 = `
@@ -80,7 +114,7 @@
 
     const S_CREATE_2 = `
     <div class="oc-slide">
-      <div class="oc-demo" style="display:flex; align-items:center; justify-content:center;">
+      <div class="oc-demo oc-demo--center">
         <div style="width:290px; background:#fff; border-radius:16px; box-shadow:0 22px 50px rgba(0,0,0,.4); padding:15px; animation:ocFloat 5s ease-in-out infinite;">
           <div style="display:flex; align-items:center; gap:11px; padding-bottom:12px; border-bottom:1px solid #f0f1f3;">
             <span style="width:36px; height:36px; border-radius:9px; background:linear-gradient(135deg,#ff9a56,#ff6b35); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'Sora',sans-serif;">T</span>
@@ -100,9 +134,11 @@
     </div>`;
 
     // ---- Seção 2 · Adicionar sessões ----
+    // O fluxo todo acontece na plataforma: o usuário escolhe os serviços aqui e
+    // a extensão abre, captura e fecha as abas por baixo.
     const S_EXT_INTRO = `
     <div class="oc-slide">
-      <div class="oc-demo" style="display:flex; align-items:center; justify-content:center;">
+      <div class="oc-demo oc-demo--center">
         <div style="width:300px;">
           <div style="background:#eef0f3; border:1px solid #e3e6ea; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:10px; box-shadow:0 18px 40px rgba(0,0,0,.35);">
             <div style="flex:1; height:26px; background:#fff; border:1px solid #e1e4e9; border-radius:13px;"></div>
@@ -117,177 +153,142 @@
       </div>
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">Você vai usar a extensão</h2>
-        <p class="oc-text">Pra capturar suas sessões com segurança, o AuthPack usa uma <strong>extensão do navegador</strong>. Não precisa buscar agora: o link pra instalar está no <strong>final deste guia</strong>. Por enquanto, veja como o fluxo funciona.</p>
+        <h2 class="oc-title">A extensão trabalha por baixo</h2>
+        <p class="oc-text">Você faz tudo <strong>aqui na plataforma</strong> — quem abre os sites e captura as sessões com segurança é a <strong>extensão do navegador</strong>. Não precisa buscar agora: o link pra instalar está no <strong>final deste guia</strong>.</p>
       </div>
     </div>`;
 
-    const S_ABRIR = `
+    const S_ADD_OPEN = `
     <div class="oc-slide">
       <div class="oc-demo">
-        <div style="position:absolute; left:36px; top:92px; width:368px; height:300px; background:#fff; border-radius:13px; box-shadow:0 26px 55px rgba(0,0,0,.5); overflow:hidden;">
-          <div style="height:46px; background:#eef0f3; border-bottom:1px solid #e3e6ea; position:relative;">
-            <div style="position:absolute; left:14px; top:18px; display:flex; gap:6px;">
-              <span style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></span>
-              <span style="width:9px;height:9px;border-radius:50%;background:#febc2e;"></span>
-              <span style="width:9px;height:9px;border-radius:50%;background:#28c840;"></span>
-            </div>
-            <div style="position:absolute; left:64px; top:11px; width:212px; height:24px; background:#fff; border:1px solid #e1e4e9; border-radius:13px; display:flex; align-items:center; padding:0 9px; gap:6px; overflow:hidden;">
-              <span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#22c55e,#16a34a);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700; animation:s2fav 6.5s ease-in-out infinite;">S</span>
-              <span style="white-space:nowrap; overflow:hidden; display:inline-block; animation:s2type 6.5s ease-in-out infinite; font-size:11.5px; color:#334155; font-weight:500;">app.servico.com</span>
-              <span style="width:1.5px; height:14px; background:#2563eb; display:inline-block; animation:s2caret 6.5s steps(1) infinite, apBlink .9s steps(1) infinite;"></span>
-            </div>
-            <div style="position:absolute; right:14px; top:13px;"><img src="${ICON}" alt="" style="width:22px; height:22px; border-radius:5px; opacity:.85;"></div>
-          </div>
-          <div style="position:relative; height:254px;">
-            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; animation:s2blank 6.5s ease-in-out infinite;">
-              <div style="width:26px;height:26px;border:3px solid #e5e7eb;border-top-color:#94a3b8;border-radius:50%;animation:apSpin .8s linear infinite;"></div>
-            </div>
-            <div style="position:absolute; inset:0; padding:16px; animation:s2page 6.5s ease-in-out infinite;">
-              <div style="display:flex; align-items:center; gap:9px; margin-bottom:14px;">
-                <span style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#22c55e,#16a34a);"></span>
-                <span style="height:11px; width:110px; background:#e8ebef; border-radius:6px;"></span>
-                <span style="margin-left:auto; height:24px; width:64px; border-radius:7px; background:#eef2f7;"></span>
-              </div>
-              <div style="height:74px; border-radius:10px; background:linear-gradient(135deg,#eef2f7,#e3e9f0); margin-bottom:12px;"></div>
-              <div style="display:flex; gap:10px;">
-                <div style="flex:1; height:54px; border-radius:9px; background:#f1f4f8;"></div>
-                <div style="flex:1; height:54px; border-radius:9px; background:#f1f4f8;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div style="position:absolute; left:0; top:0; animation:s2cur 6.5s ease-in-out infinite; z-index:9;">${CURSOR}</div>
-      </div>
-      <div class="oc-copy">
-        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">Abra o serviço que quer adicionar</h2>
-        <p class="oc-text">Navegue até o site cuja sessão você quer guardar — já logado na sua conta. É essa sessão que vai entrar no pacote.</p>
-      </div>
-    </div>`;
-
-    const S_ICONE = `
-    <div class="oc-slide">
-      <div class="oc-demo">
-        <div style="position:absolute; left:36px; top:92px; width:368px; height:300px; background:#fff; border-radius:13px; box-shadow:0 26px 55px rgba(0,0,0,.5); overflow:hidden;">
-          <div style="height:46px; background:#eef0f3; border-bottom:1px solid #e3e6ea; position:relative;">
-            <div style="position:absolute; left:14px; top:18px; display:flex; gap:6px;">
-              <span style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></span>
-              <span style="width:9px;height:9px;border-radius:50%;background:#febc2e;"></span>
-              <span style="width:9px;height:9px;border-radius:50%;background:#28c840;"></span>
-            </div>
-            <div style="position:absolute; left:64px; top:11px; width:212px; height:24px; background:#fff; border:1px solid #e1e4e9; border-radius:13px; display:flex; align-items:center; padding:0 9px; gap:6px;">
-              <span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#22c55e,#16a34a);"></span>
-              <span style="font-size:11.5px; color:#334155; font-weight:500;">app.servico.com</span>
-            </div>
-            <div style="position:absolute; right:8px; top:7px; width:34px; height:34px; border-radius:9px; border:2px solid #60a5fa; animation:s3ring 6.5s ease-out infinite;"></div>
-            <div style="position:absolute; right:14px; top:13px;"><img src="${ICON}" alt="" style="width:22px; height:22px; border-radius:5px;"></div>
-          </div>
-          <div style="padding:16px;">
-            <div style="display:flex; align-items:center; gap:9px; margin-bottom:14px;">
-              <span style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#22c55e,#16a34a);"></span>
-              <span style="height:11px; width:110px; background:#e8ebef; border-radius:6px;"></span>
-            </div>
-            <div style="height:74px; border-radius:10px; background:linear-gradient(135deg,#eef2f7,#e3e9f0);"></div>
-          </div>
-        </div>
-        <div style="position:absolute; right:18px; top:128px; width:228px; transform-origin:top right; animation:s3pop 6.5s ease-out infinite; z-index:7;">
-          <div style="background:rgba(24,26,30,.96); border:1px solid rgba(255,255,255,.13); border-radius:16px; box-shadow:0 24px 50px rgba(0,0,0,.5); padding:12px; backdrop-filter:blur(8px);">
-            <div style="display:flex; align-items:center; gap:8px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,.08);">
-              <span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ff8a65,#f06292);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">JS</span>
-              <div style="line-height:1.1;"><div style="font-size:9px;color:rgba(255,255,255,.5);">Olá,</div><div style="font-size:12px;color:#fff;font-weight:600;">João</div></div>
-              <img src="${ICON}" alt="" style="width:20px;height:20px;border-radius:5px;margin-left:auto;">
-            </div>
-            <div style="margin-top:11px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:11px; display:flex; align-items:center; gap:9px;">
-              <span style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#ff9a56,#ff6b35);"></span>
-              <div style="line-height:1.2;"><div style="font-size:9px;color:rgba(255,255,255,.55);">criado agora mesmo</div><div style="font-size:12px;color:#fff;font-weight:500;">Trabalho</div></div>
-            </div>
-          </div>
-        </div>
-        <div style="position:absolute; left:0; top:0; animation:s3cur 6.5s ease-in-out infinite; z-index:9;">${CURSOR}</div>
-      </div>
-      <div class="oc-copy">
-        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">Clique no ícone do AuthPack</h2>
-        <p class="oc-text">Com o site aberto, clique no ícone da extensão na barra do navegador. O AuthPack abre mostrando a sua coleção de pacotes.</p>
-      </div>
-    </div>`;
-
-    const S_NOVA_SESSAO = `
-    <div class="oc-slide">
-      <div class="oc-demo">
-        <div style="position:absolute; left:92px; top:70px; width:256px; background:rgba(24,26,30,.97); border:1px solid rgba(255,255,255,.13); border-radius:18px; box-shadow:0 30px 60px rgba(0,0,0,.55); padding:14px;">
-          <div style="display:flex; align-items:center; gap:9px; padding-bottom:11px; border-bottom:1px solid rgba(255,255,255,.08);">
-            <span style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ff8a65,#f06292);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">JS</span>
-            <div style="line-height:1.15;"><div style="font-size:10px;color:rgba(255,255,255,.5);">Olá,</div><div style="font-size:13px;color:#fff;font-weight:600;">João</div></div>
-            <img src="${ICON}" alt="" style="width:22px;height:22px;border-radius:5px;margin-left:auto;">
-          </div>
-          <div style="margin-top:13px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:12px;">
-            <div style="position:relative; display:flex; align-items:center; gap:10px; padding:12px;">
-              <span style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#ff9a56,#ff6b35);"></span>
-              <div style="line-height:1.25; flex:1;"><div style="font-size:10px;color:rgba(255,255,255,.55);">criado agora mesmo</div><div style="font-size:13px;color:#fff;font-weight:500;">Trabalho</div></div>
-              <span style="font-size:10px;color:rgba(255,255,255,.5);margin-right:4px;">0/5</span>
-              <span style="color:#fff; font-size:15px; letter-spacing:1px;">···</span>
-            </div>
-          </div>
-          <div style="position:absolute; right:16px; top:118px; width:140px; background:#2d2f30; border:1px solid #5e5d5d; border-radius:10px; box-shadow:0 14px 30px rgba(0,0,0,.5); overflow:hidden; padding:3px; z-index:5;">
-            <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:7px; color:#fff; font-size:11.5px; animation:s5hl 6.5s ease-in-out infinite;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
-              Nova sessão
-            </div>
-            <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:7px; color:#e5e7eb; font-size:11.5px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
-              Compartilhar
-            </div>
-            <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:7px; color:#e5e7eb; font-size:11.5px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
-              Editar
-            </div>
-          </div>
-        </div>
-        <div style="position:absolute; left:0; top:0; animation:s5cur 6.5s ease-in-out infinite; z-index:9;">${CURSOR}</div>
-      </div>
-      <div class="oc-copy">
-        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">Escolha o pacote e clique em “Nova sessão”</h2>
-        <p class="oc-text">Encontre o pacote onde a sessão deve entrar, abra o menu dos <strong>três pontinhos</strong> e escolha <strong>Nova sessão</strong>. O AuthPack captura a sessão do site aberto.</p>
-      </div>
-    </div>`;
-
-    const S_NOMEAR = `
-    <div class="oc-slide">
-      <div class="oc-demo">
-        <div style="position:absolute; left:92px; top:70px; width:256px; height:460px; background:rgba(18,20,24,.9); border:1px solid rgba(255,255,255,.1); border-radius:18px;"></div>
-        <div style="position:absolute; left:92px; top:150px; width:256px; background:rgba(28,30,34,.99); border:1px solid rgba(255,255,255,.15); border-radius:16px; box-shadow:0 30px 60px rgba(0,0,0,.6); overflow:hidden; animation:s6sheet 6.5s ease-out infinite;">
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 14px; border-bottom:1px solid rgba(255,255,255,.08);">
-            <span style="font-size:13px; font-weight:600; color:#fff;">Adicionar à <strong>Trabalho</strong></span>
-            <span style="color:rgba(255,255,255,.5); font-size:16px;">×</span>
+        <div style="position:absolute; left:26px; top:96px; width:388px; height:300px; background:#fff; border-radius:14px; box-shadow:0 26px 55px rgba(0,0,0,.5); overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:8px; padding:13px 14px; border-bottom:1px solid #eef0f3;">
+            <div style="flex:1; height:30px; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:9px;"></div>
+            <span style="font-size:10.5px; font-weight:600; color:#374151; background:#f4f6f9; border:1px solid #d1d5db; border-radius:7px; padding:7px 10px;">Compartilhar</span>
+            <span style="position:relative; font-size:10.5px; font-weight:600; color:#fff; background:#2563eb; border-radius:7px; padding:7px 10px; white-space:nowrap;">
+              + Adicionar sessão
+              <span style="position:absolute; inset:-5px; border:2px solid #60a5fa; border-radius:11px; animation:s3ring 6.5s ease-out infinite;"></span>
+            </span>
           </div>
           <div style="padding:14px;">
-            <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:10px; margin-bottom:13px;">
-              <span style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">S</span>
-              <span style="font-size:12px; color:rgba(255,255,255,.65);">app.servico.com</span>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <div style="flex:1; display:flex; align-items:center; background:#0e1117; border:1px solid #2563eb; border-radius:9px; padding:0 11px; height:38px; overflow:hidden;">
-                <span style="white-space:nowrap; overflow:hidden; display:inline-block; animation:s6type 6.5s ease-in-out infinite; font-size:12.5px; color:#fff; font-weight:500;">Minha conta</span>
-                <span style="width:1.5px; height:16px; background:#60a5fa; display:inline-block; margin-left:1px; animation:s6caret 6.5s steps(1) infinite, apBlink .9s steps(1) infinite;"></span>
+            <div style="font-size:11px; font-weight:700; color:#111827; margin-bottom:3px;">Trabalho</div>
+            <div style="font-size:10px; color:#9ca3af; margin-bottom:13px;">Nenhuma sessão ainda</div>
+            <div style="border:1px solid #e5e7eb; border-radius:11px; overflow:hidden;">
+              <div style="display:flex; gap:12px; padding:9px 14px; background:#f9fafb;">
+                <span style="flex:1.6; font-size:8.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#6b7280;">Serviço</span>
+                <span style="flex:.8; font-size:8.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#6b7280;">Status</span>
+                <span style="flex:1; font-size:8.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#6b7280;">Usando agora</span>
               </div>
-              <div style="position:relative; width:46px; height:38px;">
-                <button style="position:absolute; inset:0; background:#2563eb; color:#fff; border:none; border-radius:9px; font-size:12.5px; font-weight:600; animation:s6okidle 6.5s ease-in-out infinite;">Ok</button>
-                <div style="position:absolute; inset:0; background:#2563eb; border-radius:9px; display:flex; align-items:center; justify-content:center; animation:s6okload 6.5s ease-in-out infinite;">
-                  <div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:apSpin .7s linear infinite;"></div>
-                </div>
+              <div style="display:flex; align-items:center; justify-content:center; height:96px; border-top:1px solid #eef0f3; color:#9ca3af; font-size:11.5px;">
+                Suas sessões aparecerão aqui
               </div>
             </div>
           </div>
         </div>
-        <div style="position:absolute; left:0; top:0; animation:s6cur 6.5s ease-in-out infinite; z-index:9;">${CURSOR}</div>
+        <div style="position:absolute; left:0; top:0; animation:ocCurAdd 6.5s ease-in-out infinite; z-index:9;">${CURSOR}</div>
       </div>
       <div class="oc-copy">
         <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
-        <h2 class="oc-title">Dê um nome à sessão</h2>
-        <p class="oc-text">Escolha um nome que ajude a reconhecê-la depois — como “Minha conta” — e confirme em <strong>Ok</strong>. A sessão entra no pacote na hora.</p>
+        <h2 class="oc-title">Clique em “Adicionar sessão”</h2>
+        <p class="oc-text">Com o pacote aberto, o botão <strong>Adicionar sessão</strong> fica no topo da própria plataforma. Não precisa sair daqui nem abrir a extensão.</p>
+      </div>
+    </div>`;
+
+    const S_ADD_PICK = `
+    <div class="oc-slide">
+      <div class="oc-demo oc-demo--center">
+        <div style="width:326px; background:#fff; border-radius:16px; box-shadow:0 26px 55px rgba(0,0,0,.45); overflow:hidden; animation:ocRise .5s ease both;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid #eef0f3;">
+            <div style="line-height:1.25;">
+              <div style="font-size:13px; font-weight:600; color:#111827;">Adicionar sessão</div>
+              <div style="font-size:10px; color:#9ca3af;">Trabalho</div>
+            </div>
+            <span style="color:#9ca3af; font-size:16px;">×</span>
+          </div>
+          <div style="padding:14px 15px;">
+            <div style="display:flex; align-items:center; gap:8px; background:#f3f4f6; border:1px solid #2563eb; border-radius:10px; padding:0 11px; height:36px; overflow:hidden;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span style="white-space:nowrap; overflow:hidden; display:inline-block; animation:ocPickType 6.5s ease-in-out infinite; font-size:12px; color:#111827; font-weight:500;">Netflix</span>
+              <span style="width:1.5px; height:15px; background:#2563eb; display:inline-block; animation:apBlink .9s steps(1) infinite;"></span>
+            </div>
+
+            <div style="margin-top:11px; animation:ocPickChip 6.5s ease-out infinite;">
+              <span style="display:inline-flex; align-items:center; gap:7px; background:rgba(37,99,235,.08); border:1px solid #dbeafe; border-radius:99px; padding:5px 10px 5px 6px;">
+                <span style="width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,#ef4444,#b91c1c);"></span>
+                <span style="font-size:11px; font-weight:600; color:#1d4ed8;">Netflix</span>
+                <span style="color:#60a5fa; font-size:12px;">×</span>
+              </span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:9px; margin:13px 0 10px;">
+              <span style="flex:1; height:1px; background:#eef0f3;"></span>
+              <span style="font-size:9.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#9ca3af;">Serviços populares</span>
+              <span style="flex:1; height:1px; background:#eef0f3;"></span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:9px 4px; text-align:center;"><span style="display:block; width:22px;height:22px;margin:0 auto 5px;border-radius:6px;background:linear-gradient(135deg,#22c55e,#16a34a);"></span><span style="font-size:8.5px; color:#6b7280;">Spotify</span></div>
+              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:9px 4px; text-align:center;"><span style="display:block; width:22px;height:22px;margin:0 auto 5px;border-radius:6px;background:linear-gradient(135deg,#374151,#111827);"></span><span style="font-size:8.5px; color:#6b7280;">ChatGPT</span></div>
+              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:9px 4px; text-align:center;"><span style="display:block; width:22px;height:22px;margin:0 auto 5px;border-radius:6px;background:linear-gradient(135deg,#c084fc,#7c3aed);"></span><span style="font-size:8.5px; color:#6b7280;">Figma</span></div>
+              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:9px 4px; text-align:center;"><span style="display:block; width:22px;height:22px;margin:0 auto 5px;border-radius:6px;background:linear-gradient(135deg,#60a5fa,#2563eb);"></span><span style="font-size:8.5px; color:#6b7280;">Notion</span></div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 15px; border-top:1px solid #eef0f3; background:#f9fafb;">
+            <span style="font-size:10.5px; color:#6b7280;">1 serviço adicionado</span>
+            <span style="font-size:11.5px; font-weight:600; color:#fff; background:#2563eb; border-radius:8px; padding:7px 14px; animation:ocPulse 2.4s ease-in-out infinite;">Adicionar</span>
+          </div>
+        </div>
+      </div>
+      <div class="oc-copy">
+        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
+        <h2 class="oc-title">Escolha os serviços</h2>
+        <p class="oc-text">Busque pelo nome, cole a URL ou clique num dos <strong>serviços populares</strong>. Dá pra escolher vários de uma vez — só precisa <strong>já estar logado</strong> neles neste navegador.</p>
+      </div>
+    </div>`;
+
+    const S_ADD_CAPTURE = `
+    <div class="oc-slide">
+      <div class="oc-demo oc-demo--center">
+        <div style="width:326px; background:#fff; border-radius:16px; box-shadow:0 26px 55px rgba(0,0,0,.45); overflow:hidden;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid #eef0f3;">
+            <div style="font-size:13px; font-weight:600; color:#111827;">Adicionar sessão</div>
+            <span style="color:#9ca3af; font-size:16px;">×</span>
+          </div>
+          <div style="padding:14px 15px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:12px; font-weight:600; color:#111827;">Capturando sessões…</span>
+              <span style="font-family:'Fira Code',monospace; font-size:10.5px; color:#6b7280;">2/3</span>
+            </div>
+            <div style="height:5px; background:#eef0f3; border-radius:99px; overflow:hidden; margin-bottom:14px;">
+              <div style="height:100%; background:#2563eb; border-radius:99px; animation:ocBar 6.5s ease-in-out infinite;"></div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; padding:9px 0;">
+              <span style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#ef4444,#b91c1c);flex-shrink:0;"></span>
+              <span style="flex:1; font-size:12px; color:#111827; font-weight:500;">Netflix</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid #f3f4f6;">
+              <span style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#22c55e,#16a34a);flex-shrink:0;"></span>
+              <span style="flex:1; font-size:12px; color:#111827; font-weight:500;">Spotify</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation:ocRowDone 6.5s ease-out infinite;"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid #f3f4f6;">
+              <span style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#374151,#111827);flex-shrink:0;"></span>
+              <span style="flex:1; font-size:12px; color:#111827; font-weight:500;">ChatGPT</span>
+              <span style="width:15px;height:15px;border:2px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:apSpin .8s linear infinite;"></span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:7px; margin-top:12px; background:#f4f6f9; border:1px solid #e5e7eb; border-radius:9px; padding:9px 11px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <span style="font-size:10.5px; color:#6b7280; line-height:1.4;">Mantenha esta aba aberta — as abas dos serviços abrem e fecham sozinhas.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="oc-copy">
+        <div class="oc-eyebrow">Seção 2 · Adicionar sessões</div>
+        <h2 class="oc-title">O AuthPack captura pra você</h2>
+        <p class="oc-text">Clique em <strong>Adicionar</strong> e pronto. Cada serviço abre e fecha numa aba sozinho enquanto a captura acontece — é só <strong>manter esta aba aberta</strong> e acompanhar. Ao final, as sessões já estão no pacote.</p>
       </div>
     </div>`;
 
@@ -335,7 +336,7 @@
 
     const S_SHARE_MODAL = `
     <div class="oc-slide">
-      <div class="oc-demo" style="display:flex; align-items:center; justify-content:center;">
+      <div class="oc-demo oc-demo--center">
         <div style="width:308px; background:#fff; border-radius:15px; box-shadow:0 26px 55px rgba(0,0,0,.45); overflow:hidden; animation:ocRise .5s ease both;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #eef0f3;">
             <span style="font-size:13.5px; font-weight:600; color:#111827;">Compartilhar pacote</span>
@@ -394,14 +395,15 @@
     </div>`;
 
     // Ordem achatada dos slides + a que seção cada um pertence.
+    // sec -1 = fora das seções (boas-vindas): nenhuma aba fica ativa nele.
     const SLIDES = [
+        { sec: -1, html: S_WELCOME },
         { sec: 0, html: S_CREATE_1 },
         { sec: 0, html: S_CREATE_2 },
         { sec: 1, html: S_EXT_INTRO },
-        { sec: 1, html: S_ABRIR },
-        { sec: 1, html: S_ICONE },
-        { sec: 1, html: S_NOVA_SESSAO },
-        { sec: 1, html: S_NOMEAR },
+        { sec: 1, html: S_ADD_OPEN },
+        { sec: 1, html: S_ADD_PICK },
+        { sec: 1, html: S_ADD_CAPTURE },
         { sec: 2, html: S_SHARE_MENU },
         { sec: 2, html: S_SHARE_MODAL },
         { sec: 2, html: S_FINAL },
@@ -414,7 +416,7 @@
     // ═══════════════════════ RUNTIME ═══════════════════════
 
     let built = false;
-    let overlay, card, track, progressFill, dotsWrap, tabsWrap, prevBtn, nextBtn, playBtn;
+    let overlay, card, track, progressFill, dotsWrap, tabsWrap, prevBtn, nextBtn, playBtn, skipBtn;
     let timer = null;
     let last = 0;
     const state = { current: 0, progress: 0, playing: true, hover: false };
@@ -433,7 +435,10 @@
 <div class="oc-footer">
   <div class="oc-progress"><div class="oc-progress-fill"></div></div>
   <div class="oc-controls">
-    <button class="oc-prev" type="button">‹ Voltar</button>
+    <div class="oc-left">
+      <button class="oc-prev" type="button">‹ Voltar</button>
+      <button class="oc-skip" type="button">Pular</button>
+    </div>
     <div class="oc-dots"></div>
     <div class="oc-right">
       <button class="oc-play" type="button" title="Reproduzir/pausar">❚❚</button>
@@ -465,18 +470,21 @@
         prevBtn = card.querySelector('.oc-prev');
         nextBtn = card.querySelector('.oc-next');
         playBtn = card.querySelector('.oc-play');
+        skipBtn = card.querySelector('.oc-skip');
 
         // Abas de seção
         tabsWrap.querySelectorAll('.oc-tab').forEach(tab => {
             tab.addEventListener('click', () => go(sectionStart(Number(tab.dataset.sec))));
         });
 
-        // Controles
+        // Controles. Só "Pular" e "Concluir" encerram o guia de vez; o × e o
+        // clique fora são "agora não" e ele volta no próximo carregamento.
         prevBtn.addEventListener('click', () => go(state.current - 1));
         nextBtn.addEventListener('click', onNext);
         playBtn.addEventListener('click', togglePlay);
+        skipBtn.addEventListener('click', skip);
         card.querySelector('.oc-close').addEventListener('click', close);
-        card.querySelectorAll('[data-oc-done]').forEach(b => b.addEventListener('click', close));
+        card.querySelectorAll('[data-oc-done]').forEach(b => b.addEventListener('click', finish));
 
         card.addEventListener('mouseenter', () => { state.hover = true; });
         card.addEventListener('mouseleave', () => { state.hover = false; });
@@ -518,7 +526,7 @@
     }
 
     function onNext() {
-        if (state.current >= COUNT - 1) close();
+        if (state.current >= COUNT - 1) finish();
         else go(state.current + 1);
     }
 
@@ -559,7 +567,12 @@
         });
 
         prevBtn.disabled = state.current === 0;
-        nextBtn.textContent = (state.current >= COUNT - 1 ? 'Concluir' : 'Próximo') + ' ›';
+
+        const isLast = state.current >= COUNT - 1;
+        nextBtn.textContent = (isLast ? 'Concluir' : 'Próximo') + ' ›';
+        // No último slide "Próximo" já vira "Concluir": um "Pular" ao lado
+        // seria a mesma saída com outro nome.
+        skipBtn.hidden = isLast;
     }
 
     function onKeydown(e) {
@@ -594,8 +607,6 @@
         last = performance.now();
         clearInterval(timer);
         timer = setInterval(tick, TICK_MS);
-
-        markSeen();
     }
 
     function close() {
@@ -606,6 +617,17 @@
         document.removeEventListener('keydown', onKeydown);
     }
 
+    // As duas únicas saídas que aposentam o guia.
+    function skip() {
+        markSeen();
+        close();
+    }
+
+    function finish() {
+        markSeen();
+        close();
+    }
+
     function isSeen() {
         try { return localStorage.getItem(SEEN_KEY) === '1'; } catch (e) { return false; }
     }
@@ -614,5 +636,5 @@
         try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* ignore */ }
     }
 
-    window.AuthPackOnboarding = { open, close, isSeen, markSeen };
+    window.AuthPackOnboarding = { open, close, skip, finish, isSeen, markSeen };
 })();

@@ -3165,9 +3165,29 @@ function clearBootSkeletons() {
     delete document.body.dataset.dashBoot;
 }
 
+// O guia abre logo de cara, sobre o dashboard já carregado, e só para de
+// aparecer quando o usuário PULA ou CONCLUI: fechar no × é "agora não", então
+// ele volta no próximo carregamento (ver onboardingCarousel.js).
+function openOnboardingIfPending() {
+    if (window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
+        AuthPackOnboarding.open();
+    }
+}
+
 // Executa ao carregar o DOM
-function bootDashboard() {
-    init().finally(clearBootSkeletons);
+async function bootDashboard() {
+    try {
+        await init();
+    } catch (err) {
+        // Dashboard quebrado não ganha guia por cima — mas os skeletons saem
+        // do mesmo jeito, no finally.
+        console.error('Falha ao carregar o dashboard:', err);
+        return;
+    } finally {
+        clearBootSkeletons();
+    }
+
+    openOnboardingIfPending();
 }
 
 if (document.readyState === 'loading') {

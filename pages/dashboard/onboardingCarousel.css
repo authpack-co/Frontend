@@ -174,11 +174,17 @@
     background: linear-gradient(160deg, #1f2937, #0f141c);
 }
 
+/* Centraliza o conteúdo do demo. Precisa ser classe, e não style inline: o
+   painel some abaixo de 760px, e um display inline venceria o display:none. */
+.oc-demo--center,
 .oc-demo.oc-demo--success {
-    background: linear-gradient(160deg, #13351f, #0f1f17);
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.oc-demo.oc-demo--success {
+    background: linear-gradient(160deg, #13351f, #0f1f17);
 }
 
 /* Right copy panel */
@@ -282,7 +288,15 @@
     padding: 16px 26px;
 }
 
-.oc-prev {
+/* "Voltar" e "Pular" dividem o canto esquerdo: navegar e sair do guia de vez. */
+.oc-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.oc-prev,
+.oc-skip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -294,6 +308,20 @@
     font-weight: 600;
     cursor: pointer;
     padding: 8px 4px;
+}
+
+.oc-skip {
+    color: var(--ap-text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.oc-skip:hover {
+    color: var(--ap-text-primary);
+}
+
+.oc-skip[hidden] {
+    display: none;
 }
 
 .oc-prev:disabled {
@@ -376,6 +404,26 @@
 @keyframes ocRise { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
 @keyframes ocFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes ocPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,.4); } 50% { box-shadow: 0 0 0 6px rgba(37,99,235,0); } }
+
+/* Seção 2 · adicionar sessão pela plataforma */
+
+/* Cursor sobe até o "Adicionar sessão" da top bar e clica. */
+@keyframes ocCurAdd {
+    0%   { transform: translate(190px,330px) scale(1); }
+    26%  { transform: translate(352px,118px) scale(1); }
+    31%  { transform: translate(352px,118px) scale(.8); }
+    36%  { transform: translate(352px,118px) scale(1); }
+    64%  { transform: translate(352px,118px) scale(1); }
+    100% { transform: translate(190px,330px) scale(1); }
+}
+
+/* Busca do modal: digita o nome do serviço e o chip do selecionado entra. */
+@keyframes ocPickType { 0%,12%{ width:0; } 38%,100%{ width:46px; } }
+@keyframes ocPickChip { 0%,42%{ opacity:0; transform:translateY(6px); } 54%,100%{ opacity:1; transform:translateY(0); } }
+
+/* Fase de captura: barra andando e a segunda linha concluindo no meio. */
+@keyframes ocBar { 0%{ width:8%; } 100%{ width:70%; } }
+@keyframes ocRowDone { 0%,44%{ opacity:0; transform:scale(.5); } 56%,100%{ opacity:1; transform:scale(1); } }
 
 /* Scene 1: instalar (puzzle -> dropdown -> pin) */
 @keyframes s1cur {
@@ -512,10 +560,14 @@
         padding: 14px 16px;
         gap: 8px;
     }
+    .oc-left {
+        gap: 4px;
+    }
     .oc-dots {
         gap: 6px;
     }
     .oc-prev,
+    .oc-skip,
     .oc-next {
         white-space: nowrap;
     }
