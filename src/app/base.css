@@ -1,11 +1,22 @@
-/* Estilo mínimo do andaime. Some conforme as telas reais chegam com o CSS
-   que já existe em pages/dashboard/. */
+/* Base do app. O reset é o mesmo do painel antigo (style.css): o CSS herdado
+   das telas migradas conta com border-box em tudo e com margem zerada — sem
+   isso, um padding qualquer estoura a largura do elemento. */
+
+*,
+*::before,
+*::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0;
+    min-height: 100vh;
     background: var(--ap-bg-page);
-    color: var(--ap-text-primary);
-    font-family: Inter, system-ui, sans-serif;
+    color: var(--ap-text-secondary);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .ap-shell {
@@ -107,4 +118,76 @@ body {
     border-radius: 12px;
     padding: 16px;
     background: var(--ap-bg-card);
+}
+
+/* ─── Estados de boot e spinner ───────────────────────────────
+   O spinner é o mesmo do painel antigo (style.css), trazido para cá porque
+   as telas migradas já o usam e o resto daquele arquivo não vem junto. */
+
+.ap-boot-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 60vh;
+    color: var(--ap-text-muted);
+    font-size: 14px;
+}
+
+.ap-boot-detail {
+    font-size: 12px;
+    color: var(--ap-text-placeholder);
+}
+
+.spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--ap-border);
+    border-top: 2px solid var(--ap-accent);
+    border-radius: 50%;
+    animation: ap-spin 0.7s linear infinite;
+}
+
+.spinner.large {
+    width: 30px;
+    height: 30px;
+    border-width: 3px;
+}
+
+@keyframes ap-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* A página de configurações traz a própria casca; o padding do main
+   atrapalharia. */
+.ap-shell-main:has(.settings-page) {
+    padding: 0;
+}
+
+/* No mobile a navegação vira uma faixa no topo. É provisório: o menu de
+   verdade (hambúrguer + overlay) vem junto com a sidebar de pacotes. */
+@media (max-width: 900px) {
+    .ap-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .ap-shell-nav {
+        border-right: none;
+        border-bottom: 1px solid var(--ap-border);
+        padding: 12px 14px;
+    }
+
+    .ap-shell-brand {
+        margin-bottom: 12px;
+    }
+
+    .ap-shell-nav nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .ap-shell-main {
+        padding: 20px 16px;
+    }
 }

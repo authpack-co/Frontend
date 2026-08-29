@@ -1,4 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router';
+import { RequireAuth } from '../lib/auth.jsx';
+import AccountView from '../features/settings/AccountView.jsx';
+import BillingView from '../features/settings/BillingView.jsx';
+import SettingsPage from '../features/settings/SettingsPage.jsx';
 import AppShell from './AppShell.jsx';
 import Placeholder from './Placeholder.jsx';
 
@@ -18,7 +22,7 @@ import Placeholder from './Placeholder.jsx';
 export default function AppRoutes() {
     return (
         <Routes>
-            <Route element={<AppShell />}>
+            <Route element={<RequireAuth><AppShell /></RequireAuth>}>
                 {/* ── Minha coleção (pacotes que eu criei) ───────────────── */}
                 <Route path="/collection" element={<Placeholder name="Minha coleção" from="sidebar .preset-collection" />} />
                 <Route path="/collection/new" element={<Placeholder name="Novo pacote" from="#createPackageModal" />} />
@@ -36,9 +40,11 @@ export default function AppRoutes() {
                 <Route path="/shared/:packageId/session/:sessionId" element={<Placeholder name="Sessão (acesso)" from=".preset-session-overview" />} />
 
                 {/* ── Configurações ─────────────────────────────────────── */}
-                <Route path="/settings" element={<Navigate to="/settings/account" replace />} />
-                <Route path="/settings/account" element={<Placeholder name="Conta" from="#settings-view-conta" />} />
-                <Route path="/settings/billing" element={<Placeholder name="Cobrança" from="#settings-view-cobranca" />} />
+                <Route path="/settings" element={<SettingsPage />}>
+                    <Route index element={<Navigate to="/settings/account" replace />} />
+                    <Route path="account" element={<AccountView />} />
+                    <Route path="billing" element={<BillingView />} />
+                </Route>
 
                 {/* ── Planos ────────────────────────────────────────────── */}
                 <Route path="/upgrade" element={<Placeholder name="Planos" from="#plusSubscribeModal" />} />
