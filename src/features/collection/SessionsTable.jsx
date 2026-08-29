@@ -5,6 +5,7 @@ import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import useConnectSession from '../../components/useConnectSession.jsx';
 import { paletteFromSession } from '../../lib/palette.js';
 import UpdateSessionModal from './capture/UpdateSessionModal.jsx';
+import UsingNowModal from './UsingNowModal.jsx';
 import { DeleteSessionModal, RenameSessionModal } from './SessionModals.jsx';
 import {
     formatDuration,
@@ -25,6 +26,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     // A recaptura mora aqui (e não na linha) para o progresso sobreviver a
     // qualquer re-render da lista enquanto as abas abrem.
     const [updating, setUpdating] = useState(null);
+    const [usingNow, setUsingNow] = useState(null);
 
     const visible = sessions.filter((session) => {
         if (!query) return true;
@@ -73,6 +75,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                                     statsStatus={statsStatus}
                                     onConnect={connect}
                                     onUpdate={setUpdating}
+                                    onShowUsingNow={setUsingNow}
                                 />
                             ))}
 
@@ -89,6 +92,15 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
 
             {gate}
 
+            {usingNow && (
+                <UsingNowModal
+                    pkg={pkg}
+                    session={usingNow}
+                    accessHistory={stats?.accessHistory}
+                    onClose={() => setUsingNow(null)}
+                />
+            )}
+
             {updating && (
                 <UpdateSessionModal
                     pkg={pkg}
@@ -100,7 +112,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate }) {
+function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate, onShowUsingNow }) {
     const navigate = useNavigate();
     // 'rename' | 'delete' | null
     const [action, setAction] = useState(null);
@@ -149,7 +161,11 @@ function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate }) {
                 <span className="session-card-status-text">{inactive ? 'Pausada' : 'Ativa'}</span>
             </div>
 
-            <UsingNow users={onlineUsers} loading={statsStatus === 'loading'} />
+            <UsingNow
+                users={onlineUsers}
+                loading={statsStatus === 'loading'}
+                onOpen={() => onShowUsingNow(session)}
+            />
             <UsageToday
                 session={session}
                 accessHistory={stats?.accessHistory}
@@ -225,7 +241,7 @@ function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate }) {
     );
 }
 
-function UsingNow({ users, loading }) {
+function UsingNow({ users, loading, onOpen }) {
     if (loading) {
         return (
             <div className="session-card-members is-empty">
@@ -234,8 +250,26 @@ function UsingNow({ users, loading }) {
         );
     }
 
+    // Com gente online o rodapé abre o card de quem está usando. Sem ninguém
+    // não há o que abrir, então nem vira botão.
+    const clickable = users.length > 0;
+
     return (
-        <div className={`session-card-members${users.length === 0 ? ' is-empty' : ''}`}>
+        <div
+            className={`session-card-members${users.length === 0 ? ' is-empty' : ''}${clickable ? ' is-clickable' : ''}`}
+            role={clickable ? 'button' : undefined}
+            tabIndex={clickable ? 0 : undefined}
+            aria-haspopup={clickable ? 'dialog' : undefined}
+            title={clickable ? 'Ver quem está usando agora' : undefined}
+            onClick={clickable ? (event) => { event.stopPropagation(); onOpen(); } : undefined}
+            onKeyDown={clickable ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onOpen();
+                }
+            } : undefined}
+        >
             <div className="session-card-avatars">
                 {users.slice(0, 4).map((user) => (
                     <img
