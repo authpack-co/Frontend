@@ -142,9 +142,9 @@
 }
 
 .filter-chip.active {
-  background: var(--ink);
+  background: var(--blue);
   color: #fff;
-  border-color: var(--ink);
+  border-color: var(--blue);
 }
 
 /* ===== Post grid ===== */
@@ -454,22 +454,23 @@
 /* Article CTA */
 .article-cta {
   margin: 56px 0 8px;
-  background: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   padding: 40px;
   text-align: center;
-  color: #fff;
+  color: var(--ink);
 }
 
 .article-cta h3 {
   font-size: 24px;
   letter-spacing: -0.02em;
   margin: 0 0 10px;
-  color: #fff;
+  color: var(--ink);
 }
 
 .article-cta p {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--ink-2);
   margin: 0 0 22px;
   font-size: 15.5px;
 }
