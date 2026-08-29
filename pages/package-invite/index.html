@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Convite para ativar pacote — AuthPack</title>
-    <meta name="description" content="Você foi convidado para ativar um pacote no AuthPack." />
+    <title>Solicitar acesso | AuthPack</title>
+    <meta name="description" content="Peça acesso a um pacote compartilhado no AuthPack." />
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="/assets/styles/theme-tokens.css" />
@@ -54,9 +54,9 @@
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
                     </svg>
                 </div>
-                <h1 class="inv-title">Convite inválido</h1>
+                <h1 class="inv-title">Link inválido</h1>
                 <p class="inv-desc" id="error-desc">
-                    Este link de convite expirou, já foi utilizado ou não existe mais.
+                    Peça um link novo para quem compartilhou o pacote.
                 </p>
                 <a class="inv-cta" href="/pages/dashboard/">
                     <span class="inv-cta-label">Ir para o painel</span>
@@ -70,7 +70,7 @@
             <article class="inv-card inv-state-invite hidden" id="state-invite">
                 <div class="inv-inviter">
                     <span class="inv-inviter-avatar" id="owner-avatar">?</span>
-                    <span class="inv-inviter-text"><b id="owner-name">Convite</b> te convidou para ativar este pacote</span>
+                    <span class="inv-inviter-text"><b id="owner-name">Alguém</b> compartilhou este pacote com você</span>
                     <svg class="inv-verified" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 1l2.4 2.1 3.2-.3 1 3 2.9 1.4-1 3 1 3-2.9 1.4-1 3-3.2-.3L12 23l-2.4-2.1-3.2.3-1-3L2.5 16.8l1-3-1-3 2.9-1.4 1-3 3.2.3L12 1z" fill="currentColor"/>
                         <path d="M16.2 9.2l-5 5-2.4-2.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -90,20 +90,19 @@
 
                 <div class="inv-gift-pill" id="tier-pill">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="8" width="18" height="4" rx="1"/>
-                        <path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>
-                        <path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <span id="tier-pill-label">Acesso de cortesia · grátis</span>
+                    <span id="tier-pill-label">O dono precisa aprovar</span>
                 </div>
 
                 <p class="inv-desc">
-                    Ative o pacote para liberar, de uma só vez, o acesso a todos os serviços inclusos. Ativação imediata e sem custo.
+                    Peça acesso a todos os serviços deste pacote.
                 </p>
 
                 <button class="inv-cta" id="activate-btn">
                     <span class="inv-spinner" id="activate-spinner" hidden></span>
-                    <span class="inv-cta-label" id="activate-label">Ativar pacote</span>
+                    <span class="inv-cta-label" id="activate-label">Solicitar acesso</span>
                     <svg class="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
                     </svg>
@@ -111,21 +110,29 @@
 
                 <p class="inv-fineprint">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                    Ativação imediata · acesso protegido pelo AuthPack
+                    Nenhuma senha passa por você
                 </p>
             </article>
 
-            <!-- SUCCESS STATE -->
-            <article class="inv-card inv-state-success hidden" id="state-success" aria-live="polite">
-                <div class="inv-success-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <!-- SENT STATE: pedido feito, esperando a decisão do dono -->
+            <article class="inv-card inv-state-sent hidden" id="state-sent" aria-live="polite">
+                <div class="inv-sent-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+                    </svg>
                 </div>
-                <h1 class="inv-title">Tudo pronto, aproveite!</h1>
-                <p class="inv-desc">O pacote <strong id="success-pkg-name">—</strong> já está disponível na sua conta AuthPack.</p>
-                <div class="inv-success-meta">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                    <span>Redirecionando para <strong>Meus acessos</strong>…</span>
-                </div>
+                <h1 class="inv-title" id="sent-title">Solicitação enviada</h1>
+                <p class="inv-desc" id="sent-desc">
+                    <strong id="sent-owner-name">O dono</strong> precisa aprovar.
+                    <strong id="sent-pkg-name">O pacote</strong> aparece em
+                    <strong>Meus acessos</strong> quando isso acontecer.
+                </p>
+                <a class="inv-cta" href="/pages/dashboard/">
+                    <span class="inv-cta-label">Ir para o painel</span>
+                    <svg class="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                    </svg>
+                </a>
             </article>
 
             <!-- ALREADY-OWNS STATE -->
@@ -138,8 +145,7 @@
                 </div>
                 <h1 class="inv-title">Você já tem acesso</h1>
                 <p class="inv-desc">
-                    O pacote <strong id="owned-pkg-name">—</strong> já está na sua conta AuthPack.
-                    Não é preciso ativar de novo.
+                    <strong id="owned-pkg-name">Este pacote</strong> já está na sua conta.
                 </p>
                 <a class="inv-cta" id="owned-cta" href="/pages/dashboard/">
                     <span class="inv-cta-label">Abrir o pacote</span>
@@ -149,13 +155,11 @@
                 </a>
                 <div class="inv-success-meta">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                    <span>Levando você até ele…</span>
+                    <span>Abrindo o pacote…</span>
                 </div>
             </article>
         </main>
     </div>
-
-    <canvas class="inv-confetti" id="inv-confetti" aria-hidden="true"></canvas>
 
     <script src="/assets/scripts/envManager.js"></script>
     <script src="/assets/scripts/fetchManager.js"></script>

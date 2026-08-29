@@ -116,44 +116,43 @@ const fetchManager = {
         return response;
     },
 
-    async togglePackageState(packageDetails) {
-        const { id } = packageDetails;
-        const response = await fetchRoutes(`/api/packages/${id}/state`, {
-            method: "PATCH"
-        });
-        return response;
-    },
+    // Link do pacote e solicitações de acesso
 
-    // Invite links (package sharing v2)
     async getInvitePreview(key) {
         const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}`);
         return response;
     },
 
-    async acceptInvite(key) {
-        const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}/accept`, {
+    // Situação de quem está olhando o link: já é membro? já pediu? Exige login —
+    // a tela de convite só chama depois de confirmar que há sessão.
+    async getInviteStatus(key) {
+        const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}/status`);
+        return response;
+    },
+
+    async requestPackageAccess(key) {
+        const response = await fetchRoutes(`/api/packages/invite/${encodeURIComponent(key)}/request`, {
             method: "POST"
         });
         return response;
     },
 
-    async createUniqueKey(packageId) {
-        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys`, {
+    // Membros + solicitações do pacote, numa chamada só (as duas abas do modal).
+    async getPackagePeople(packageId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/people`);
+        return response;
+    },
+
+    async approvePackageRequest(packageId, requestId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/requests/${requestId}/approve`, {
             method: "POST"
         });
         return response;
     },
 
-    // status: "active" (padrão do backend) ou "all" — "all" traz também os links
-    // encerrados (usados, expirados e revogados) que alimentam o histórico.
-    async getUniqueKeys(packageId, status = "all") {
-        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys?status=${encodeURIComponent(status)}`);
-        return response;
-    },
-
-    async revokeUniqueKey(packageId, keyId) {
-        const response = await fetchRoutes(`/api/packages/${packageId}/unique-keys/${keyId}`, {
-            method: "DELETE"
+    async rejectPackageRequest(packageId, requestId) {
+        const response = await fetchRoutes(`/api/packages/${packageId}/requests/${requestId}/reject`, {
+            method: "POST"
         });
         return response;
     },

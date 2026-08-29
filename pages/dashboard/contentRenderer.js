@@ -265,6 +265,12 @@ function createPackageElement(pkg, isAccess = false) {
     const container = createElement('div', 'access-item sidebar-pkg-item');
     container.dataset.packageId = pkg.id;
     container.dataset.isActive = pkg.isActive !== false ? 'true' : 'false';
+    // Solicitação esperando resposta: mesmo ponto do pacote recém-adquirido,
+    // pelo mesmo mecanismo. Só na coleção — em "Meus acessos" não há o que aprovar.
+    if (!isAccess && Number(pkg.pendingRequests || 0) > 0) {
+        container.classList.add('has-pending');
+        container.title = 'Alguém pediu acesso';
+    }
 
     // Linha principal: nome à esquerda + pilha de logos (perdendo opacidade)
     const main = createElement('div', 'sidebar-pkg-main');
@@ -1165,25 +1171,7 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Renderiza usuários
 
     if (isCollection && pkg.users) {
-        const usersPanelContainer = activePreset.querySelector(".users-panel-container");
-        const usersList = usersPanelContainer.querySelector(".scrollable-list");
-
-        if (pkg.users.length === 0) {
-            setElementState(usersPanelContainer, "empty");
-        } else {
-            setElementState(usersPanelContainer, "content");
-        }
-
-        usersList.innerHTML = "";
-
-        // Criador sempre no topo (a ordem do JSON_ARRAYAGG não é garantida).
-        const orderedUsers = [...pkg.users].sort((a, b) => (b.isCreator ? 1 : 0) - (a.isCreator ? 1 : 0));
-        const suspendedKeys = getSuspendedMembershipKeys();
-        orderedUsers.forEach(user => {
-            const suspended = suspendedKeys.has(pkg.id + ':' + user.id);
-            const userElement = createUserElement(user, suspended);
-            usersList.appendChild(userElement);
-        })
+        renderPackageUsersPanel(pkg, activePreset);
     }
 
     // Renderiza estatísticas (apenas para collection)
@@ -1377,6 +1365,31 @@ function clearNewPackageMarks() {
     document.querySelectorAll('.access-item.is-new').forEach(row => {
         row.classList.remove('is-new');
         row.removeAttribute('title');
+    });
+}
+
+// Painel "Pessoas com acesso", ao lado do gráfico de uso. Separado do
+// renderPackageDetails porque também precisa ser redesenhado quando a lista de
+// membros muda sem troca de pacote — aprovar ou remover alguém no modal.
+function renderPackageUsersPanel(pkg, activePreset) {
+    const preset = activePreset
+        || document.querySelector('#package-details .preset-collection');
+    if (!preset || !pkg || !pkg.users) return;
+
+    const usersPanelContainer = preset.querySelector(".users-panel-container");
+    if (!usersPanelContainer) return;
+
+    const usersList = usersPanelContainer.querySelector(".scrollable-list");
+    setElementState(usersPanelContainer, pkg.users.length === 0 ? "empty" : "content");
+
+    usersList.innerHTML = "";
+
+    // Criador sempre no topo (a ordem do JSON_ARRAYAGG não é garantida).
+    const orderedUsers = [...pkg.users].sort((a, b) => (b.isCreator ? 1 : 0) - (a.isCreator ? 1 : 0));
+    const suspendedKeys = getSuspendedMembershipKeys();
+    orderedUsers.forEach(user => {
+        const suspended = suspendedKeys.has(pkg.id + ':' + user.id);
+        usersList.appendChild(createUserElement(user, suspended));
     });
 }
 
@@ -2841,26 +2854,56 @@ function updatePeopleCounter() {
     }
 }
 
-// Contador de pessoas do PACOTE selecionado (top bar da coleção). Mostra quantas
-// pessoas têm acesso àquele pacote específico, ao lado do botão "Compartilhar".
+// Contador de pessoas do PACOTE selecionado (top bar da coleção), ao lado do
+// botão "Compartilhar". É um botão: abre o painel de membros e solicitações.
+// A bolinha aparece quando há pedido esperando resposta — é o único aviso de
+// que algo chegou, já que a contagem vem junto da carga dos pacotes e não há
+// polling atrás disso.
 function updatePackagePeopleCounter(pkg) {
     const slot = document.getElementById('people-counter-slot');
     if (!slot) return;
 
     const count = (pkg && pkg.users ? pkg.users.length : 0);
+    const pending = Number(pkg && pkg.pendingRequests || 0);
 
     let counter = slot.querySelector('.pkg-people-counter');
     if (!counter) {
-        counter = document.createElement('span');
+        counter = document.createElement('button');
+        counter.type = 'button';
         counter.className = 'pkg-people-counter';
-        counter.innerHTML = `${PEOPLE_COUNTER_ICON}<span class="pkg-people-counter__text"></span>`;
+        counter.innerHTML = `${PEOPLE_COUNTER_ICON}<span class="pkg-people-counter__text"></span>` +
+            `<span class="pkg-people-counter__dot" aria-hidden="true"></span>`;
+        counter.addEventListener('click', () => {
+            const packageId = counter.dataset.packageId;
+            // Com pedido esperando, o painel abre já na aba que precisa de ação.
+            openPackagePeopleModal(packageId, counter.classList.contains('has-pending') ? 'requests' : 'members');
+        });
         slot.appendChild(counter);
     }
+
+    counter.dataset.packageId = pkg ? pkg.id : '';
 
     const textEl = counter.querySelector('.pkg-people-counter__text');
     textEl.innerHTML = count === 1
         ? `<strong>1</strong> pessoa`
         : `<strong>${count}</strong> pessoas`;
+
+    counter.classList.toggle('has-pending', pending > 0);
+    counter.title = pending > 0
+        ? `${pending} ${pending === 1 ? 'pessoa pediu acesso' : 'pessoas pediram acesso'}`
+        : 'Ver quem tem acesso a este pacote';
+}
+
+// Bolinha de "tem novidade" na linha do pacote na sidebar. Fica fora do
+// createPackageElement porque também é chamada depois, quando uma decisão no
+// painel muda a contagem sem redesenhar a lista inteira.
+function updatePackagePendingBadge(packageId, pending) {
+    const has = Number(pending) > 0;
+    document.querySelectorAll(`.preset-collection .access-item[data-package-id="${packageId}"]`).forEach(row => {
+        row.classList.toggle('has-pending', has);
+        if (has) row.title = 'Alguém pediu acesso';
+        else if (!row.classList.contains('is-new')) row.removeAttribute('title');
+    });
 }
 
 // ============================================================================

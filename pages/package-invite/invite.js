@@ -1,5 +1,10 @@
 /* ============================================================================
-   AuthPack — Package Invite (ativação por convite)
+   AuthPack — Package Invite (solicitação de acesso)
+
+   O link do pacote não dá acesso: dá a chance de pedir. Quem abre vê o que tem
+   dentro e manda uma solicitação; o dono aprova no painel dele. Esta tela cobre
+   os quatro desfechos disso — link quebrado, pedido a fazer, pedido já feito e
+   acesso que a pessoa já tinha.
    ============================================================================ */
 
 (function () {
@@ -8,11 +13,14 @@
     const stateLoading = document.getElementById('state-loading');
     const stateError = document.getElementById('state-error');
     const stateInvite = document.getElementById('state-invite');
-    const stateSuccess = document.getElementById('state-success');
+    const stateSent = document.getElementById('state-sent');
     const stateOwned = document.getElementById('state-owned');
 
+    // Nome do dono, guardado do preview para a tela de "solicitação enviada".
+    let ownerName = 'o dono';
+
     function show(el) {
-        [stateLoading, stateError, stateInvite, stateSuccess, stateOwned].forEach(s => s.classList.add('hidden'));
+        [stateLoading, stateError, stateInvite, stateSent, stateOwned].forEach(s => s.classList.add('hidden'));
         el.classList.remove('hidden');
         // re-trigger CSS animations by reflowing
         // eslint-disable-next-line no-unused-expressions
@@ -68,7 +76,8 @@
     function renderOwner(owner) {
         const avatar = document.getElementById('owner-avatar');
         const nameEl = document.getElementById('owner-name');
-        nameEl.textContent = owner.name || 'Alguém';
+        ownerName = owner.name || 'Alguém';
+        nameEl.textContent = ownerName;
         avatar.textContent = '';
         if (owner.picture) {
             const img = document.createElement('img');
@@ -84,12 +93,6 @@
         }
     }
 
-    function renderInvitePill() {
-        // Pacotes não têm mais tier — todo convite é um acesso compartilhado.
-        const label = document.getElementById('tier-pill-label');
-        if (label) label.textContent = 'Acesso compartilhado';
-    }
-
     function showError(message) {
         if (message) {
             document.getElementById('error-desc').textContent = message;
@@ -97,87 +100,22 @@
         show(stateError);
     }
 
-    /* ── Confetti burst ─────────────────────────────────────────────────── */
-    function fireConfetti() {
-        const canvas = document.getElementById('inv-confetti');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const dpr = window.devicePixelRatio || 1;
-        const W = window.innerWidth, H = window.innerHeight;
-        canvas.width = W * dpr; canvas.height = H * dpr;
-        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-        ctx.scale(dpr, dpr);
+    /* ── Desfechos ──────────────────────────────────────────────────────── */
 
-        const accent = getComputedStyle(document.documentElement).getPropertyValue('--inv-accent').trim() || '#60a5fa';
-        const success = getComputedStyle(document.documentElement).getPropertyValue('--ap-success').trim() || '#16a34a';
-        const colors = [accent, success, '#fbbf24', '#ffffff', '#f472b6'];
-
-        const N = 150;
-        const parts = [];
-        const originX = W / 2, originY = H * 0.36;
-        for (let i = 0; i < N; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 4 + Math.random() * 9;
-            parts.push({
-                x: originX, y: originY,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed - 4,
-                size: 5 + Math.random() * 6,
-                rot: Math.random() * Math.PI,
-                vrot: (Math.random() - 0.5) * 0.4,
-                color: colors[(Math.random() * colors.length) | 0],
-                shape: Math.random() > 0.5 ? 'rect' : 'circle',
-                life: 1,
-            });
-        }
-        let raf;
-        const gravity = 0.22, drag = 0.992;
-        function frame() {
-            ctx.clearRect(0, 0, W, H);
-            let alive = false;
-            for (const p of parts) {
-                p.vy += gravity; p.vx *= drag; p.vy *= drag;
-                p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
-                if (p.y > H * 0.62) p.life -= 0.02;
-                if (p.life <= 0) continue;
-                alive = true;
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, p.life);
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rot);
-                ctx.fillStyle = p.color;
-                if (p.shape === 'rect') ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
-                else { ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill(); }
-                ctx.restore();
-            }
-            if (alive) raf = requestAnimationFrame(frame);
-            else ctx.clearRect(0, 0, W, H);
-        }
-        cancelAnimationFrame(raf);
-        frame();
+    // Pedido registrado. `alreadyPending` separa o pedido feito agora do que já
+    // estava esperando desde antes — o segundo caso não é uma novidade para
+    // quem chega, e dizer "enviada" de novo soaria como se algo tivesse mudado.
+    function showSent(pkgName, alreadyPending) {
+        document.getElementById('sent-pkg-name').textContent = pkgName || 'este pacote';
+        document.getElementById('sent-owner-name').textContent = ownerName;
+        document.getElementById('sent-title').textContent = alreadyPending
+            ? 'Seu pedido está com o dono'
+            : 'Solicitação enviada';
+        show(stateSent);
     }
 
-    /* ── Já tem acesso ──────────────────────────────────────────────────── */
-
-    // Ids de todos os pacotes que já são do usuário — criados (dono) e adquiridos
-    // (participante). Devolve Set vazio para quem está deslogado: aí o convite é
-    // legítimo e segue o fluxo normal de ativação.
-    async function fetchOwnPackageIds() {
-        const [collection, access] = await Promise.all([
-            fetchManager.getCollectionPackages(),
-            fetchManager.getAccessPackages(),
-        ]);
-        const ids = new Set();
-        [collection, access].forEach(res => {
-            if (!res.ok) return;
-            const list = (res.result && res.result.data) || [];
-            list.forEach(p => ids.add(String(p.id)));
-        });
-        return ids;
-    }
-
-    // Dono ou participante abrindo o próprio convite: não há o que ativar, então
-    // o destino é o pacote — sem confete e sem tratar como aquisição nova.
+    // Dono ou membro abrindo o próprio link: não há o que pedir, o destino é o
+    // pacote.
     function showAlreadyOwns(pkgName, pkgId) {
         document.getElementById('owned-pkg-name').textContent = pkgName || 'Pacote';
         const qs = pkgId ? `?package=${encodeURIComponent(pkgId)}` : '';
@@ -188,8 +126,9 @@
 
     /* ── Flow ───────────────────────────────────────────────────────────── */
     async function loadPreview(key) {
-        // O preview é público; a checagem de posse só faz sentido logado. As duas
-        // rodam juntas para não somar latência antes do primeiro render.
+        // O preview é público; a situação da pessoa (já é membro? já pediu?) só
+        // faz sentido logada. As duas rodam juntas para não somar latência antes
+        // do primeiro render.
         const [res, auth] = await Promise.all([
             fetchManager.getInvitePreview(key),
             fetchManager.getAuthenticatedUser(),
@@ -198,33 +137,36 @@
         if (!res.ok) {
             const msg = res.result && res.result.errorMessage
                 ? res.result.errorMessage
-                : 'Não foi possível carregar este convite.';
+                : 'Não foi possível carregar este link.';
             return showError(msg);
         }
         const { package: pkg, owner } = res.result.data;
 
-        if (auth.ok) {
-            const ownIds = await fetchOwnPackageIds();
-            if (ownIds.has(String(pkg.id))) return showAlreadyOwns(pkg.name, pkg.id);
-        }
-
         document.getElementById('package-name').textContent = pkg.name;
         renderStack(pkg.sessions);
         renderOwner(owner);
-        renderInvitePill();
+
+        if (auth.ok) {
+            const status = await fetchManager.getInviteStatus(key);
+            const data = status.ok && status.result ? status.result.data : null;
+            if (data && data.hasAccess) return showAlreadyOwns(pkg.name, pkg.id);
+            if (data && data.request && data.request.status === 'pending') {
+                return showSent(pkg.name, true);
+            }
+        }
+
         show(stateInvite);
     }
 
-    async function activate(key) {
+    async function requestAccess(key) {
         const btn = document.getElementById('activate-btn');
         const spinner = document.getElementById('activate-spinner');
-        const label = document.getElementById('activate-label');
 
         btn.classList.add('loading');
         btn.disabled = true;
         spinner.hidden = false;
 
-        // 1. Check auth first to redirect to login (with return URL).
+        // 1. Sem login não há a quem atribuir o pedido — manda logar e volta.
         const auth = await fetchManager.getAuthenticatedUser();
         if (!auth.ok) {
             const here = window.location.pathname + window.location.search;
@@ -232,8 +174,8 @@
             return;
         }
 
-        // 2. Accept.
-        const res = await fetchManager.acceptInvite(key);
+        // 2. Pede.
+        const res = await fetchManager.requestPackageAccess(key);
         btn.classList.remove('loading');
         btn.disabled = false;
         spinner.hidden = true;
@@ -241,7 +183,7 @@
         if (!res.ok) {
             const msg = res.result && res.result.errorMessage
                 ? res.result.errorMessage
-                : 'Não foi possível ativar este pacote.';
+                : 'Não foi possível enviar sua solicitação.';
             return showError(msg);
         }
 
@@ -249,29 +191,22 @@
         const pkgName = data.package && data.package.name ? data.package.name : 'Pacote';
         const pkgId = data.package && data.package.id;
 
-        // Rede de segurança da checagem do preview: quem chegou aqui deslogado e
-        // logou no meio do caminho só descobre a posse na resposta do accept.
+        // Rede de segurança do preview: quem chegou aqui deslogado e logou no
+        // meio do caminho só descobre a posse na resposta do pedido.
         if (data.alreadyOwns) return showAlreadyOwns(pkgName, pkgId);
 
-        // Success state + redirect.
-        document.getElementById('success-pkg-name').textContent = pkgName;
-        show(stateSuccess);
-        requestAnimationFrame(fireConfetti);
-
-        setTimeout(() => {
-            const qs = pkgId ? `?newProduct=${encodeURIComponent(pkgId)}` : '';
-            window.location.href = `/pages/dashboard/${qs}`;
-        }, 1800);
+        if (data.owner && data.owner.name) ownerName = data.owner.name;
+        showSent(pkgName, data.alreadyPending);
     }
 
     /* ── Boot ───────────────────────────────────────────────────────────── */
     const key = getInviteKey();
     if (!key) {
-        showError('Link de convite ausente ou inválido.');
+        showError('Link ausente ou inválido.');
         return;
     }
 
-    document.getElementById('activate-btn').addEventListener('click', () => activate(key));
+    document.getElementById('activate-btn').addEventListener('click', () => requestAccess(key));
 
     loadPreview(key);
 })();

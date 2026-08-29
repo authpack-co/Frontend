@@ -55,27 +55,6 @@ const utils = {
         }
     },
 
-    // Link e código continuam copiáveis com o compartilhamento desligado — só
-    // não deixam ninguém entrar. A própria linha do estado diz isso, em vez de
-    // desabilitar os campos.
-    setShareModalOpenState(isOpen) {
-        const row = document.querySelector('#sharePackageModal #shareAccessRow');
-        const toggle = document.querySelector('#sharePackageModal #generalToggle');
-        const title = document.querySelector('#sharePackageModal #shareAccessTitle');
-        const note = document.querySelector('#sharePackageModal #shareAccessNote');
-        if (!row || !toggle || !title || !note) return;
-
-        toggle.classList.toggle('active', isOpen);
-        row.classList.toggle('restricted', !isOpen);
-
-        title.textContent = isOpen
-            ? 'Qualquer pessoa com o link entra'
-            : 'Compartilhamento desligado';
-        note.textContent = isOpen
-            ? 'Quem receber o link ou o código consegue usar as sessões deste pacote.'
-            : 'O link continua aqui, mas ninguém consegue entrar com ele até você ligar.';
-    },
-
     buildInviteUrl(key) {
         if (!key) return '';
         return `${window.location.origin}/pages/package-invite/?key=${encodeURIComponent(key)}`;
@@ -91,27 +70,6 @@ const utils = {
         if (days === 0) return `Hoje, ${time}`;
         if (days === 1) return `Ontem, ${time}`;
         return `${this.formatDayLabel(date)}, ${time}`;
-    },
-
-    // O mesmo carimbo como título de um convite: "Criado hoje, 14:22".
-    formatCreatedStamp(createdAt) {
-        const stamp = this.formatDayStamp(createdAt);
-        if (!stamp) return 'Criado recentemente';
-        return `Criado ${stamp.charAt(0).toLowerCase()}${stamp.slice(1)}`;
-    },
-
-    // Quanto ainda resta: "vale por mais 21 horas"; na última hora vira contagem
-    // apertada ("vence em 38 minutos") para dar o senso de urgência.
-    formatRemaining(expiresAt) {
-        const diffMs = new Date(expiresAt).getTime() - Date.now();
-        if (!expiresAt || Number.isNaN(diffMs)) return 'sem prazo definido';
-        if (diffMs <= 0) return 'venceu';
-
-        const totalMin = Math.floor(diffMs / 60000);
-        if (totalMin < 60) return `vence em ${totalMin} ${totalMin === 1 ? 'minuto' : 'minutos'}`;
-
-        const hours = Math.floor(totalMin / 60);
-        return `vale por mais ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
     },
 
     // Diferença em dias de calendário entre a data e hoje (0 = hoje, 1 = ontem).
@@ -1101,99 +1059,24 @@ function setupSharePackageForm(e) {
     openSharePackageModal(packageEl.dataset.packageId);
 }
 
-// Estado do modal de compartilhamento: todos os convites de uma pessoa do
-// pacote (os que ainda valem e os encerrados).
-const shareKeysState = { items: [], loading: false, failed: false };
-
-// Abre o modal de compartilhamento para um pacote da coleção (por id). Usado
-// tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da top bar.
+// Abre o modal de compartilhamento de um pacote da coleção (por id). Usado
+// tanto pelo botão de opções da sidebar quanto pelo botão "Compartilhar" da
+// top bar. O modal tem uma ação só — copiar o link —, então não há estado a
+// carregar nem requisição a fazer aqui.
 function openSharePackageModal(packageId) {
     if (!packageId) return;
 
-    const sharePackageModal = document.querySelector("#sharePackageModal");
-    const nameEl = sharePackageModal.querySelector(".share-pkg-name");
-    const sessionsEl = sharePackageModal.querySelector(".share-pkg-sessions");
-
     const packageData = packagesList.userCollection.find(pkg => pkg.id == packageId);
-    const isOpen = packageData.open !== 0;
+    if (!packageData) return;
 
-    nameEl.textContent = packageData.name || '';
-    nameEl.title = packageData.name || '';
-
-    const sessionsCount = Array.isArray(packageData.sessions) ? packageData.sessions.length : 0;
-    sessionsEl.textContent = sessionsCount === 0
-        ? 'Nenhuma sessão'
-        : `${sessionsCount} ${sessionsCount === 1 ? 'sessão' : 'sessões'}`;
-
-    renderSharePeopleRow(packageData.users || []);
     setShareInviteValues(packageData.key);
-    utils.setShareModalOpenState(isOpen);
-
-    // Sempre abre no convite do pacote, sem os resíduos da vez anterior.
-    setShareTab('share');
-    hideRotatedNote();
-    hideFreshUniqueLink();
-
     utils.showModal("sharePackage", packageId);
-
-    loadUniqueKeys(packageId);
 }
 
-// Alterna entre as duas abas (mesmo modal, mesmo estado).
-function setShareTab(tab) {
-    const card = document.querySelector('#sharePackageModal .share-modal-v2');
-    card.dataset.tab = tab;
-
-    card.querySelectorAll('.share-tab').forEach(button => {
-        const isActive = button.dataset.tab === tab;
-        button.classList.toggle('active', isActive);
-        button.setAttribute('aria-selected', String(isActive));
-    });
-}
-
-// Mostra o convite recém-criado na aba de convites para uma pessoa.
-function showFreshUniqueLink(url, copied) {
-    const box = document.querySelector('#sharePackageModal #shareFreshLink');
-    const urlEl = box.querySelector('.share-fresh-url');
-
-    urlEl.textContent = url;
-    urlEl.title = url;
-    box.querySelector('.share-fresh-label-text').textContent = copied
-        ? 'Convite criado e copiado'
-        : 'Convite criado';
-    box.dataset.url = url;
-    box.classList.remove('hidden');
-}
-
-function hideFreshUniqueLink() {
-    const box = document.querySelector('#sharePackageModal #shareFreshLink');
-    box.classList.add('hidden');
-    box.dataset.url = '';
-}
-
-// O aviso da troca de chave só faz sentido logo depois da troca.
-function showRotatedNote() {
-    document.querySelector('#sharePackageModal #shareRotatedNote').classList.remove('hidden');
-}
-
-function hideRotatedNote() {
-    document.querySelector('#sharePackageModal #shareRotatedNote').classList.add('hidden');
-}
-
-// Contagem de convites que ainda valem, na aba.
-function updateShareTabCount() {
-    const badge = document.querySelector('#sharePackageModal #shareTabCount');
-    const active = shareKeysState.items.filter(k => k.status === 'active').length;
-
-    badge.textContent = active;
-    badge.classList.toggle('hidden', active === 0);
-    badge.title = active === 1 ? '1 convite ainda vale' : `${active} convites ainda valem`;
-}
-
-// Preenche link de convite e código do pacote (a mesma key, em dois formatos).
+// Link e código são a mesma chave em dois formatos.
 function setShareInviteValues(key) {
-    const linkEl = document.querySelector("#sharePackageModal #generalLinkUrl");
-    const codeEl = document.querySelector("#sharePackageModal #generalKeyCode");
+    const linkEl = document.querySelector("#sharePackageModal #shareLinkUrl");
+    const codeEl = document.querySelector("#sharePackageModal #shareCodeBtn");
     const url = utils.buildInviteUrl(key);
 
     linkEl.textContent = url || '—';
@@ -1202,38 +1085,167 @@ function setShareInviteValues(key) {
     codeEl.title = key || '';
 }
 
-// Linha de pessoas com acesso: pilha de até 3 avatares (+N) e atalho para o
-// painel de membros. Sem ninguém no pacote não há painel para abrir — vira só
-// uma frase, sem afordância de clique.
-function renderSharePeopleRow(users) {
-    const row = document.querySelector("#sharePackageModal #sharePeopleRow");
-    const avatars = row.querySelector('.share-people-avatars');
-    const countEl = row.querySelector('.share-people-count');
-    const isEmpty = users.length === 0;
+// ============================================================================
+// PESSOAS DO PACOTE (membros + solicitações)
+// ============================================================================
 
-    avatars.innerHTML = '';
-    users.slice(0, 3).forEach(user => avatars.appendChild(buildSharePersonAvatar(user)));
-    if (users.length > 3) {
-        avatars.appendChild(createElement('span', 'share-people-avatar overflow', `+${users.length - 3}`));
-    }
+// Uma carga só alimenta as duas abas: elas mudam juntas (aprovar tira da
+// segunda e põe na primeira), então manter duas fontes separadas só criaria
+// chance das listas discordarem entre si.
+const pkgPeopleState = {
+    packageId: null,
+    tab: 'members',
+    members: [],
+    requests: [],
+    peopleLimit: null,
+    loading: false,
+    failed: false,
+};
 
-    row.classList.toggle('empty', isEmpty);
-    row.disabled = isEmpty;
-    countEl.textContent = isEmpty
-        ? 'Ninguém tem acesso ainda — quem entrar pelo convite aparece aqui.'
-        : `${users.length} ${users.length === 1 ? 'pessoa já tem acesso' : 'pessoas já têm acesso'}`;
-    row.title = isEmpty ? '' : users.map(u => u.name || 'Usuário').join(', ');
+async function openPackagePeopleModal(packageId, tab) {
+    if (!packageId) return;
+
+    pkgPeopleState.packageId = packageId;
+    pkgPeopleState.tab = tab || 'members';
+    pkgPeopleState.members = [];
+    pkgPeopleState.requests = [];
+    pkgPeopleState.loading = true;
+    pkgPeopleState.failed = false;
+
+    setPkgPeopleTab(pkgPeopleState.tab);
+    renderPackagePeople();
+    utils.showModal('packagePeople', packageId);
+
+    await loadPackagePeople(packageId);
 }
 
-function buildSharePersonAvatar(user) {
-    const [c1, c2] = accessPalette(user.name);
-    const avatar = createElement('span', 'share-people-avatar', shareInitials(user.name));
+async function loadPackagePeople(packageId) {
+    pkgPeopleState.loading = true;
+    pkgPeopleState.failed = false;
+    renderPackagePeople();
+
+    const res = await fetchManager.getPackagePeople(packageId);
+
+    // O modal pode ter fechado (ou trocado de pacote) durante a requisição.
+    if (pkgPeopleState.packageId !== packageId) return;
+
+    pkgPeopleState.loading = false;
+
+    if (!res.ok || !res.result || !res.result.data) {
+        pkgPeopleState.failed = true;
+        renderPackagePeople();
+        return;
+    }
+
+    const data = res.result.data;
+    pkgPeopleState.members = data.members || [];
+    pkgPeopleState.requests = data.requests || [];
+    pkgPeopleState.peopleLimit = data.peopleLimit;
+
+    // O contador do pacote e a bolinha da sidebar são derivados desta mesma
+    // resposta — é a leitura mais fresca que existe, mais nova que a do boot.
+    syncPackagePendingCount(packageId, pkgPeopleState.requests.filter(r => r.status === 'pending').length);
+
+    renderPackagePeople();
+}
+
+function setPkgPeopleTab(tab) {
+    const card = document.querySelector('#packagePeopleModal .pkg-people-modal');
+    if (!card) return;
+
+    pkgPeopleState.tab = tab;
+    card.dataset.tab = tab;
+    card.querySelectorAll('.pkg-people-tab').forEach(button => {
+        const isActive = button.dataset.tab === tab;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+    });
+}
+
+function renderPackagePeople() {
+    const body = document.querySelector('#packagePeopleModal #pkgPeopleBody');
+    if (!body) return;
+
+    const membersCount = document.querySelector('#packagePeopleModal #pkgMembersCount');
+    const requestsCount = document.querySelector('#packagePeopleModal #pkgRequestsCount');
+    const pending = pkgPeopleState.requests.filter(r => r.status === 'pending');
+
+    membersCount.textContent = pkgPeopleState.members.length || '';
+    requestsCount.textContent = pending.length;
+    requestsCount.classList.toggle('hidden', pending.length === 0);
+
+    if (pkgPeopleState.loading) {
+        body.innerHTML = '<div class="pkg-people-loading">' +
+            '<span class="pkg-people-skeleton"></span>'.repeat(3) + '</div>';
+        return;
+    }
+
+    if (pkgPeopleState.failed) {
+        body.innerHTML = '';
+        const box = createElement('div', 'pkg-people-empty');
+        box.appendChild(createElement('span', 'pkg-people-empty-title', 'Não foi possível carregar'));
+        const retry = createElement('button', 'pkg-people-retry', 'Tentar de novo');
+        retry.type = 'button';
+        retry.addEventListener('click', () => loadPackagePeople(pkgPeopleState.packageId));
+        box.appendChild(retry);
+        body.appendChild(box);
+        return;
+    }
+
+    body.innerHTML = '';
+
+    if (pkgPeopleState.tab === 'requests') {
+        renderRequestsTab(body, pending);
+    } else {
+        renderMembersTab(body);
+    }
+}
+
+function renderMembersTab(body) {
+    const list = createElement('div', 'pkg-people-list');
+    pkgPeopleState.members.forEach(member => list.appendChild(buildMemberRow(member)));
+    body.appendChild(list);
+
+    // Só o dono na lista: a lista existe, mas ainda não é um pacote compartilhado.
+    // A dica vai embaixo dela, não no lugar dela.
+    if (pkgPeopleState.members.every(m => m.isCreator)) {
+        body.appendChild(createElement('p', 'pkg-people-hint',
+            'Ninguém entrou ainda. Compartilhe o link do pacote para receber solicitações.'));
+    }
+}
+
+function renderRequestsTab(body, pending) {
+    if (!pending.length) {
+        body.appendChild(buildPkgPeopleEmpty(
+            'Nenhuma solicitação',
+            'Quando alguém abrir o link do pacote e pedir acesso, o pedido chega aqui.'
+        ));
+        return;
+    }
+
+    const list = createElement('div', 'pkg-people-list');
+    pending.forEach(request => list.appendChild(buildRequestRow(request)));
+    body.appendChild(list);
+}
+
+function buildPkgPeopleEmpty(title, text) {
+    const box = createElement('div', 'pkg-people-empty');
+    box.appendChild(createElement('span', 'pkg-people-empty-title', title));
+    box.appendChild(createElement('span', 'pkg-people-empty-text', text));
+    return box;
+}
+
+// Avatar de uma pessoa: foto quando existe, iniciais com cor derivada do nome
+// quando não.
+function buildPersonAvatar(person) {
+    const [c1, c2] = accessPalette(person.name);
+    const avatar = createElement('span', 'pkg-person-avatar', shareInitials(person.name));
     avatar.style.background = `linear-gradient(150deg, ${c1}, ${c2})`;
 
-    if (user.picture) {
+    if (person.picture) {
         const img = document.createElement('img');
-        img.src = user.picture;
-        img.alt = user.name || '';
+        img.src = person.picture;
+        img.alt = person.name || '';
         img.onerror = function () { this.remove(); };
         avatar.appendChild(img);
     }
@@ -1248,214 +1260,187 @@ function shareInitials(name) {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-async function loadUniqueKeys(packageId) {
-    shareKeysState.loading = true;
-    shareKeysState.failed = false;
-    renderUniqueKeys();
+// Cabeçalho comum de membro e solicitação: avatar, nome, e-mail e a data que
+// importa para aquela linha (quando entrou / quando pediu).
+function buildPersonHead(person, metaText, tagText) {
+    const head = createElement('div', 'pkg-person-head');
+    head.appendChild(buildPersonAvatar(person));
 
-    const res = await fetchManager.getUniqueKeys(packageId, 'all');
+    const info = createElement('div', 'pkg-person-info');
+    const nameRow = createElement('div', 'pkg-person-name-row');
+    nameRow.appendChild(createElement('span', 'pkg-person-name', person.name || '—'));
+    if (tagText) nameRow.appendChild(createElement('span', 'pkg-person-tag', tagText));
+    info.appendChild(nameRow);
+    info.appendChild(createElement('span', 'pkg-person-email', person.email || ''));
+    info.appendChild(createElement('span', 'pkg-person-meta', metaText));
+    head.appendChild(info);
 
-    // O modal pode ter sido fechado (ou trocado de pacote) durante a requisição.
-    if (sharePackageModal.dataset.itemId != packageId) return;
+    return head;
+}
 
-    shareKeysState.loading = false;
+function buildMemberRow(member) {
+    const row = createElement('div', 'pkg-person' + (member.suspended ? ' suspended' : ''));
+    const entered = utils.formatDayStamp(member.connectedAt);
+
+    const tag = member.isCreator
+        ? 'dono'
+        // Sobre-limite do plano: está na lista, mas sem acesso até liberar espaço.
+        : (member.suspended ? 'sem acesso' : '');
+
+    row.appendChild(buildPersonHead(
+        member,
+        member.isCreator
+            ? 'Criou o pacote'
+            : (entered ? `Entrou ${entered.charAt(0).toLowerCase()}${entered.slice(1)}` : 'Entrou recentemente'),
+        tag
+    ));
+
+    // O dono é quem está olhando: não há o que remover nem atividade a auditar.
+    if (member.isCreator) return row;
+
+    const actions = createElement('div', 'pkg-person-actions');
+
+    const activityBtn = createElement('button', 'pkg-person-btn', 'Ver atividade');
+    activityBtn.type = 'button';
+    activityBtn.addEventListener('click', () => {
+        // A tela de detalhes vive atrás do modal, então o modal sai da frente.
+        const packageId = pkgPeopleState.packageId;
+        utils.closeModals();
+        openUserScreen(member.id, packageId);
+    });
+    actions.appendChild(activityBtn);
+
+    const removeBtn = createElement('button', 'pkg-person-btn pkg-person-btn--danger', 'Remover');
+    removeBtn.type = 'button';
+    removeBtn.addEventListener('click', () => removeMember(member, removeBtn));
+    actions.appendChild(removeBtn);
+
+    row.appendChild(actions);
+
+    return row;
+}
+
+function buildRequestRow(request) {
+    const row = createElement('div', 'pkg-person pkg-person--request');
+    const asked = utils.formatDayStamp(request.createdAt);
+
+    row.appendChild(buildPersonHead(
+        request.user,
+        asked ? `Pediu ${asked.charAt(0).toLowerCase()}${asked.slice(1)}` : 'Pediu recentemente'
+    ));
+
+    const actions = createElement('div', 'pkg-person-actions');
+
+    const rejectBtn = createElement('button', 'pkg-person-btn', 'Recusar');
+    rejectBtn.type = 'button';
+
+    const approveBtn = createElement('button', 'pkg-person-btn pkg-person-btn--primary', 'Aprovar');
+    approveBtn.type = 'button';
+
+    approveBtn.addEventListener('click', () => decideRequest(request, 'approve', [approveBtn, rejectBtn]));
+    rejectBtn.addEventListener('click', () => decideRequest(request, 'reject', [approveBtn, rejectBtn]));
+
+    actions.appendChild(rejectBtn);
+    actions.appendChild(approveBtn);
+    row.appendChild(actions);
+
+    return row;
+}
+
+// Aprovar ou recusar. Os dois botões travam juntos: a linha inteira está sendo
+// decidida, não só o botão clicado.
+async function decideRequest(request, action, buttons) {
+    const packageId = pkgPeopleState.packageId;
+    buttons.forEach(b => { b.disabled = true; });
+
+    const res = action === 'approve'
+        ? await fetchManager.approvePackageRequest(packageId, request.id)
+        : await fetchManager.rejectPackageRequest(packageId, request.id);
 
     if (!res.ok) {
-        shareKeysState.failed = true;
-        renderUniqueKeys();
+        buttons.forEach(b => { b.disabled = false; });
+        notify('error', res.result && res.result.errorMessage
+            ? res.result.errorMessage
+            : 'Não foi possível responder à solicitação.');
         return;
     }
 
-    shareKeysState.items = (res.result.data || []).map(normalizeUniqueKey);
-    renderUniqueKeys();
+    notify('success', action === 'approve' ? 'Acesso liberado.' : 'Solicitação recusada.');
+
+    // Aprovar muda as duas listas e o pacote (novo membro), então vale recarregar
+    // tudo em vez de remendar o estado local.
+    await refreshPackageAfterMembershipChange(packageId);
 }
 
-// O backend pode mandar `status` pronto; se não mandar, deduzimos pelos campos.
-function normalizeUniqueKey(key) {
-    return Object.assign({}, key, { status: key.status || deriveUniqueKeyStatus(key) });
-}
+// Remove alguém do pacote. Sem modal de confirmação: a ação é reversível — a
+// pessoa pode pedir de novo pelo mesmo link.
+async function removeMember(member, button) {
+    const packageId = pkgPeopleState.packageId;
+    button.disabled = true;
 
-function deriveUniqueKeyStatus(key) {
-    if (key.usedAt) return 'used';
-    if (key.revokedAt) return 'revoked';
-    if (key.expiresAt && new Date(key.expiresAt).getTime() <= Date.now()) return 'expired';
-    return 'active';
-}
+    const res = await fetchManager.removeUserFromPackage({ packageId, userId: member.id });
 
-// Momento em que o convite foi encerrado — ordena do mais recente ao mais antigo.
-function uniqueKeyEndedAt(key) {
-    return new Date(key.usedAt || key.revokedAt || key.expiresAt || key.createdAt || 0).getTime();
-}
-
-// Duas listas independentes: "ainda valem" (mais novos no topo) e "já
-// encerrados" (por data do desfecho). Cada grupo some quando fica vazio.
-function renderUniqueKeys() {
-    const modal = document.querySelector('#sharePackageModal');
-    const activeGroup = modal.querySelector('#shareActiveGroup');
-    const endedGroup = modal.querySelector('#shareEndedGroup');
-    const activeList = modal.querySelector('#uniqueKeysList');
-    const endedList = modal.querySelector('#uniqueKeysEndedList');
-    const emptyBox = modal.querySelector('#shareLinksEmpty');
-    const loadingBox = modal.querySelector('#shareLinksLoading');
-    const errorBox = modal.querySelector('#shareLinksError');
-
-    updateShareTabCount();
-
-    const active = shareKeysState.items
-        .filter(k => k.status === 'active')
-        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-    const ended = shareKeysState.items
-        .filter(k => k.status !== 'active')
-        .sort((a, b) => uniqueKeyEndedAt(b) - uniqueKeyEndedAt(a));
-
-    const busy = shareKeysState.loading || shareKeysState.failed;
-
-    loadingBox.classList.toggle('hidden', !shareKeysState.loading);
-    errorBox.classList.toggle('hidden', !shareKeysState.failed);
-    activeGroup.classList.toggle('hidden', busy || !active.length);
-    endedGroup.classList.toggle('hidden', busy || !ended.length);
-    emptyBox.classList.toggle('hidden', busy || shareKeysState.items.length > 0);
-
-    if (busy) return;
-
-    activeList.innerHTML = '';
-    endedList.innerHTML = '';
-    active.forEach(k => activeList.appendChild(buildUniqueKeyItem(k)));
-    ended.forEach(k => endedList.appendChild(buildUniqueKeyItem(k)));
-}
-
-// Item de convite que ainda vale: ponto de status + quando foi criado + quanto
-// falta, com copiar e cancelar à direita.
-function buildUniqueKeyItem(k) {
-    if (k.status !== 'active') return buildEndedUniqueKeyItem(k);
-
-    const url = utils.buildInviteUrl(k.key);
-    const msToExpiry = new Date(k.expiresAt).getTime() - Date.now();
-    const expiringSoon = msToExpiry > 0 && msToExpiry <= 3600000;
-
-    const li = document.createElement('li');
-    li.className = `unique-key-item active${expiringSoon ? ' expiring-soon' : ''}`;
-    li.appendChild(createElement('span', 'unique-key-dot'));
-
-    const info = createElement('div', 'unique-key-info');
-    info.appendChild(createElement('span', 'unique-key-title', utils.formatCreatedStamp(k.createdAt)));
-
-    const meta = `Ninguém entrou ainda · ${utils.formatRemaining(k.expiresAt)}`;
-    const metaEl = createElement('span', 'unique-key-meta', meta);
-    metaEl.title = url;
-    info.appendChild(metaEl);
-    li.appendChild(info);
-
-    const copyBtn = createElement('button', 'unique-key-copy', 'Copiar');
-    copyBtn.type = 'button';
-    copyBtn.title = url;
-    copyBtn.addEventListener('click', () => copyShareValue(url, copyBtn, 'Não foi possível copiar o convite.'));
-
-    const revokeBtn = createElement('button', 'unique-key-revoke', 'Cancelar');
-    revokeBtn.type = 'button';
-    revokeBtn.title = 'Cancelar este convite';
-    revokeBtn.addEventListener('click', async () => {
-        const packageId = sharePackageModal.dataset.itemId;
-        revokeBtn.disabled = true;
-        copyBtn.disabled = true;
-
-        const res = await fetchManager.revokeUniqueKey(packageId, k.id);
-
-        if (!res.ok) {
-            revokeBtn.disabled = false;
-            copyBtn.disabled = false;
-            notify('error', res.result && res.result.errorMessage ? res.result.errorMessage : 'Não foi possível cancelar o convite.');
-            return;
-        }
-
-        // Deixa de valer e desce para "já encerrados", agora como cancelado.
-        const item = shareKeysState.items.find(entry => entry.id === k.id);
-        if (item) {
-            item.status = 'revoked';
-            item.revokedAt = new Date().toISOString();
-        }
-
-        li.classList.add('removing');
-        setTimeout(renderUniqueKeys, 200);
-
-        notify('success', 'Convite cancelado.');
-    });
-
-    const actions = createElement('div', 'unique-key-actions');
-    actions.appendChild(copyBtn);
-    actions.appendChild(revokeBtn);
-    li.appendChild(actions);
-    return li;
-}
-
-// Item encerrado: quem entrou (ou o motivo do fim) + quando + selo do desfecho.
-function buildEndedUniqueKeyItem(k) {
-    const detail = describeEndedUniqueKey(k);
-
-    const li = document.createElement('li');
-    li.className = `unique-key-item ended ${k.status}`;
-    li.appendChild(detail.badge);
-
-    const info = createElement('div', 'unique-key-info');
-    const titleEl = createElement('span', 'unique-key-title', detail.title);
-    titleEl.title = detail.titleHint || detail.title;
-    info.appendChild(titleEl);
-    info.appendChild(createElement('span', 'unique-key-meta', utils.formatDayStamp(detail.at) || '—'));
-    li.appendChild(info);
-
-    li.appendChild(createElement('span', `unique-key-pill ${k.status}`, detail.pill));
-    return li;
-}
-
-function describeEndedUniqueKey(k) {
-    if (k.status === 'used') {
-        const user = resolveKeyUser(k);
-        const name = user.name || 'Usuário removido';
-        return {
-            badge: buildSharePersonAvatar(user),
-            title: `${name} entrou com este convite`,
-            titleHint: user.email ? `${name} · ${user.email}` : name,
-            at: k.usedAt,
-            pill: 'Usado',
-        };
+    if (!res.ok) {
+        button.disabled = false;
+        notify('error', res.result && res.result.errorMessage
+            ? res.result.errorMessage
+            : 'Não foi possível remover a pessoa.');
+        return;
     }
 
-    if (k.status === 'revoked') {
-        return {
-            badge: buildUniqueKeyIcon('<circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'),
-            title: 'Você cancelou este convite',
-            at: k.revokedAt,
-            pill: 'Cancelado',
-        };
+    notify('success', `${member.name || 'Pessoa'} saiu do pacote.`);
+    await refreshPackageAfterMembershipChange(packageId);
+}
+
+// Entrar ou sair do pacote muda a lista de membros, o contador da top bar e o
+// limite de pessoas da conta — os três vêm do mesmo recarregamento.
+async function refreshPackageAfterMembershipChange(packageId) {
+    const res = await fetchManager.getCollectionPackages();
+    if (res.ok && res.result && res.result.data) {
+        // Guarda quem estava aberto: renderPackages limpa o container e leva a
+        // marca de selecionado junto. Repor a classe basta — chamar selectPackage
+        // inteiro remontaria a tela por baixo do modal.
+        const selectedId = document
+            .querySelector('.preset-collection .access-item.selected')?.dataset.packageId;
+
+        packagesList.userCollection = res.result.data;
+        renderPackages(packagesList.userCollection, '.preset-collection .access-grid', false);
+
+        if (selectedId) {
+            document
+                .querySelector(`.preset-collection .access-item[data-package-id="${selectedId}"]`)
+                ?.classList.add('selected');
+        }
+
+        const pkg = packagesList.userCollection.find(item => item.id == packageId);
+        if (pkg) {
+            updatePackagePeopleCounter(pkg);
+            // "Pessoas com acesso", ao lado do gráfico: mesma lista, outro lugar
+            // da tela. Sem isso o novo membro só apareceria ao trocar de pacote.
+            if (selectedId === String(packageId)) renderPackageUsersPanel(pkg);
+        }
     }
 
-    return {
-        badge: buildUniqueKeyIcon('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
-        title: 'Venceu sem ninguém usar',
-        at: k.expiresAt,
-        pill: 'Vencido',
-    };
+    // Aprovar ou remover mexe no total de pessoas da conta, que é o limite do
+    // plano exibido no rodapé da sidebar.
+    const info = await fetchManager.getUserInfo();
+    if (info.ok && info.result && info.result.data) {
+        renderUserInfo(info.result.data);
+        updatePeopleCounter();
+    }
+
+    if (pkgPeopleState.packageId === packageId) await loadPackagePeople(packageId);
 }
 
-function buildUniqueKeyIcon(paths) {
-    const badge = createElement('span', 'unique-key-badge neutral');
-    badge.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            ${paths}
-        </svg>
-    `;
-    return badge;
-}
+// Mantém a contagem de pendentes do pacote em dia no estado local, para a
+// bolinha da sidebar e o contador da top bar não ficarem para trás do modal.
+function syncPackagePendingCount(packageId, pending) {
+    const pkg = packagesList.userCollection.find(item => item.id == packageId);
+    if (!pkg) return;
 
-// O backend pode devolver o objeto do usuário ou só o id — nesse caso buscamos
-// entre os membros do pacote (quem saiu do pacote perde nome e avatar).
-function resolveKeyUser(k) {
-    if (k.usedBy && typeof k.usedBy === 'object') return k.usedBy;
-
-    const userId = k.usedByUserId || k.usedBy;
-    const packageData = packagesList.userCollection.find(pkg => pkg.id == sharePackageModal.dataset.itemId);
-    return (packageData && packageData.users || []).find(u => u.id === userId)
-        || { name: 'Usuário removido', email: '', picture: '' };
+    pkg.pendingRequests = pending;
+    updatePackagePendingBadge(packageId, pending);
+    updatePackagePeopleCounter(pkg);
 }
 
 // Copia um valor e dá feedback no próprio botão. Botões com ícone trocam só o
@@ -1583,11 +1568,19 @@ function setupDeleteSessionForm(event) {
 
 function showUserScreen(event) {
     event.stopPropagation();
-    const userEl = this.closest(".user");
-    const userId = userEl.dataset.userId;
+    const userId = this.closest(".user").dataset.userId;
+    const packageId = document.querySelector("#package-details").dataset.packageId;
 
-    const packageDetails = document.querySelector("#package-details");
-    const packageId = packageDetails.dataset.packageId;
+    openUserScreen(userId, packageId);
+}
+
+// Abre a tela de detalhes de uma pessoa dentro do pacote: perfil, uso total,
+// última vez e o histórico de sessões. Depende de pkg.stats, que é carregado
+// junto com o pacote selecionado.
+function openUserScreen(userId, packageId) {
+    const package = packagesList.userCollection.find(p => p.id === packageId);
+    const user = package && package.users.find(u => u.id === userId);
+    if (!user) return;
 
     const screensContainer = document.querySelector(".screens-container");
     screensContainer.classList.add("show-next-screen");
@@ -1607,9 +1600,6 @@ function showUserScreen(event) {
         const primaryScreenSection = screensContainer.querySelector(".screen-section.primary");
         setElementState(primaryScreenSection, "none");
     }, { once: true });
-
-    const package = packagesList.userCollection.find(p => p.id === packageId);
-    const user = package.users.find(u => u.id === userId);
 
     // Obtém o período selecionado
     const periodSelected = document.querySelector("#packageChartPeriodSelect option:checked").value;
@@ -2417,7 +2407,7 @@ const removeUserAccessBtn = removeUserAccessModal.querySelector(".confirm-btn");
 removeUserAccessBtn.addEventListener('click', handleRemoveUser);
 
 
-// Activate Package
+// Pedir acesso pelo código do pacote
 const activationInputs = document.querySelectorAll(".activation-input input");
 const activationBtns = document.querySelectorAll(".activation-input button");
 const activatePackageHandler = async event => {
@@ -2435,71 +2425,33 @@ const activatePackageHandler = async event => {
 
     // Verifica se já está em estado de loading (evita múltiplas ações)
     const buttonContent = activationBtn.closest(".buttonContent");
-    const isLoadingState = buttonContent.classList.contains("loading-state");
+    if (buttonContent.classList.contains("loading-state")) return;
 
-    if (isLoadingState) return;
-
-    // Seta estado de loading
     setElementState(buttonContent, "loading");
 
-    // Simula carregamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const res = await fetchManager.usePackageKey({ key });
 
-    // Envia fetch para usar package key
-    const fetchUsePackageKey = await fetchManager.usePackageKey({ key });
+    setElementState(buttonContent, "content");
 
-    console.log(fetchUsePackageKey);
-
-    // Se houver erro durante a ativação
-    if (!fetchUsePackageKey.ok) {
-        // Seta botão para estado inicial
-        setElementState(buttonContent, "content");
-
-        if (fetchUsePackageKey.status === 400) {
-            notify("error", fetchUsePackageKey.result.errorMessage);
-        } else {
-            notify("error", fetchUsePackageKey.result.errorMessage);
-        }
-
+    if (!res.ok) {
+        notify("error", res.result && res.result.errorMessage
+            ? res.result.errorMessage
+            : "Não foi possível solicitar o acesso.");
         return;
     }
 
-    // Se não tiver packages, seta estado de content
-    if (packagesList.userAccess.length === 0) {
-        setElementState(document.querySelector("#packages-list"), "access");
-    }
+    const data = res.result.data || {};
+    const pkgName = data.package && data.package.name ? data.package.name : 'pacote';
+    const ownerName = data.owner && data.owner.name ? data.owner.name : 'o dono';
 
-    // Adiciona novo package no array local de packages
-    const packageData = fetchUsePackageKey.result.data;
-    packagesList.userAccess.push(packageData);
+    // O pacote não entra em "Meus acessos" agora — só quando o dono aprovar. Por
+    // isso a mensagem fala de espera, e não de pacote ativado.
+    notify("success", data.alreadyPending
+        ? `Seu pedido para "${pkgName}" continua com ${ownerName}.`
+        : `Pedido enviado. ${ownerName} precisa aprovar para você usar "${pkgName}".`);
 
-    // Notifica ação
-    notify("success", "Pacote Ativado.");
-
-    // Seta estado do botão para content, reseta e limpa input
-    setElementState(buttonContent, "content");
     activationInput.value = "";
     utils.clearInputError(activationSection);
-
-    // Adiciona novo package na tela
-    const packageEl = createPackageElement(packageData, true);
-    packageEl.classList.add("fadeInFromRight");
-
-    const packagesGrid = document.querySelector("#packages-list .preset-access .access-grid");
-    packagesGrid.appendChild(packageEl);
-
-    // Seleciona package
-    selectPackage(packageData.id, false)
-
-    packageEl.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest", // evita scroll vertical
-        inline: "end"     // rola horizontalmente até o fim
-    });
-
-    packageEl.addEventListener("animationend", () => {
-        packageEl.classList.remove("fadeInFromRight");
-    }, { once: true });
 };
 
 activationBtns.forEach(activationBtn => {
@@ -2519,145 +2471,59 @@ activationInputs.forEach(input => {
     });
 });
 
-// Share Package (design 2a: aba "Convite" + aba "Convites para uma pessoa")
+// ── Compartilhar pacote: copiar o link, copiar o código, trocar o link ──────
 const sharePackageModal = document.querySelector('#sharePackageModal');
-const shareModalCard = sharePackageModal.querySelector('.share-modal-v2');
-const shareTabs = sharePackageModal.querySelector('#shareTabs');
-const generalToggle = sharePackageModal.querySelector('#generalToggle');
-const copyGeneralLinkBtn = sharePackageModal.querySelector('#copyGeneralLinkBtn');
-const copyGeneralKeyBtn = sharePackageModal.querySelector('#copyGeneralKeyBtn');
-const renewGeneralKeyBtn = sharePackageModal.querySelector('#renewGeneralKeyBtn');
-const generateUniqueKeyBtns = sharePackageModal.querySelectorAll('.generate-unique-key-btn');
-const sharePeopleRow = sharePackageModal.querySelector('#sharePeopleRow');
-const shareLinksRetry = sharePackageModal.querySelector('#shareLinksRetry');
-const shareFreshLink = sharePackageModal.querySelector('#shareFreshLink');
-const shareFreshCopyBtn = shareFreshLink.querySelector('.share-fresh-copy');
+const shareCopyBtn = sharePackageModal.querySelector('#shareCopyBtn');
+const shareCodeBtn = sharePackageModal.querySelector('#shareCodeBtn');
+const shareRotateBtn = sharePackageModal.querySelector('#shareRotateBtn');
 
-// Navegação entre as duas abas.
-shareTabs.addEventListener('click', event => {
-    const button = event.target.closest('.share-tab');
-    if (!button || button.dataset.tab === shareModalCard.dataset.tab) return;
-
-    setShareTab(button.dataset.tab);
+shareCopyBtn.addEventListener('click', () => {
+    copyShareValue(sharePackageModal.querySelector('#shareLinkUrl').textContent, shareCopyBtn,
+        'Não foi possível copiar o link.');
 });
 
-// Copiar de novo o último convite gerado.
-shareFreshCopyBtn.addEventListener('click', () => {
-    copyShareValue(shareFreshLink.dataset.url, shareFreshCopyBtn, 'Não foi possível copiar o convite.');
+shareCodeBtn.addEventListener('click', () => {
+    copyShareValue(shareCodeBtn.textContent, shareCodeBtn, 'Não foi possível copiar o código.');
 });
 
-// Nova tentativa depois de uma falha ao carregar a lista.
-shareLinksRetry.addEventListener('click', () => loadUniqueKeys(sharePackageModal.dataset.itemId));
-
-// Liga/desliga o compartilhamento — só o acesso pelo link/código do pacote é
-// afetado; os convites para uma pessoa seguem valendo.
-generalToggle.addEventListener('click', async () => {
-    const packageId = sharePackageModal.dataset.itemId;
-    const fetchToggleAccess = await fetchManager.togglePackageState({ id: packageId });
-
-    if (!fetchToggleAccess.ok) {
-        notify("error", "Não foi possível alterar o acesso.");
-        return utils.closeModals();
-    }
-
-    const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
-    const packageData = packagesList.userCollection[packageIdx];
-    const wasOpen = packageData.open !== 0;
-    packagesList.userCollection[packageIdx].open = wasOpen ? 0 : 1;
-
-    utils.setShareModalOpenState(!wasOpen);
-});
-
-// Copia o link de convite e o código do pacote (a mesma key em dois formatos).
-copyGeneralLinkBtn.addEventListener('click', () => {
-    copyShareValue(sharePackageModal.querySelector("#generalLinkUrl").textContent, copyGeneralLinkBtn, "Não foi possível copiar o link.");
-});
-
-copyGeneralKeyBtn.addEventListener('click', () => {
-    copyShareValue(sharePackageModal.querySelector("#generalKeyCode").textContent, copyGeneralKeyBtn, "Não foi possível copiar o código.");
-});
-
-// Troca a key do pacote — invalida o link e o código anteriores de uma vez. A
-// volta completa do ícone é o retorno visual da ação.
+// Troca a chave do pacote: link e código anteriores param de valer de uma vez.
+// Quem já entrou não é afetado — a chave só serve para pedir acesso.
 let shareRotateSpins = 0;
-renewGeneralKeyBtn.addEventListener('click', async () => {
+shareRotateBtn.addEventListener('click', async () => {
     const packageId = sharePackageModal.dataset.itemId;
-    const icon = renewGeneralKeyBtn.querySelector('svg');
 
+    // A volta completa da seta é o retorno visual da troca.
     shareRotateSpins += 1;
-    icon.style.transform = `rotate(${shareRotateSpins * 360}deg)`;
+    shareRotateBtn.querySelector('svg').style.transform = `rotate(${shareRotateSpins * 360}deg)`;
 
-    renewGeneralKeyBtn.disabled = true;
-    const fetchRenewKey = await fetchManager.renewPackageKey({ id: packageId });
-    renewGeneralKeyBtn.disabled = false;
-
-    if (!fetchRenewKey.ok) {
-        notify("error", "Não foi possível renovar a chave.");
-        return utils.closeModals();
-    }
-
-    const newKey = fetchRenewKey.result.data.key;
-
-    // Atualiza chave no array local + link e código na tela.
-    const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
-    packagesList.userCollection[packageIdx].key = newKey;
-    setShareInviteValues(newKey);
-    copyGeneralLinkBtn.classList.remove('copied');
-    showRotatedNote();
-
-    notify("success", "Link e código do pacote trocados.");
-});
-
-// Atalho para o painel "Pessoas com acesso" do pacote.
-sharePeopleRow.addEventListener('click', () => {
-    const packageId = sharePackageModal.dataset.itemId;
-    utils.closeModals();
-    selectPackage(packageId);
-
-    const panel = document.querySelector('#package-details .collection-users-col .users-panel');
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-});
-
-// Cria um convite para uma pessoa (uso único, 24h). O mesmo handler serve o
-// botão do cabeçalho da aba e o do estado vazio.
-generateUniqueKeyBtns.forEach(button => {
-    button.addEventListener('click', () => generateUniqueKey(button));
-});
-
-async function generateUniqueKey(button) {
-    const packageId = sharePackageModal.dataset.itemId;
-
-    const buttonLabel = button.querySelector('span');
-    const originalLabel = buttonLabel ? buttonLabel.textContent : null;
-    button.disabled = true;
-    if (buttonLabel) buttonLabel.textContent = 'Criando…';
-
-    const res = await fetchManager.createUniqueKey(packageId);
-
-    button.disabled = false;
-    if (buttonLabel && originalLabel) buttonLabel.textContent = originalLabel;
+    shareRotateBtn.disabled = true;
+    const res = await fetchManager.renewPackageKey({ id: packageId });
+    shareRotateBtn.disabled = false;
 
     if (!res.ok) {
-        notify("error", res.result && res.result.errorMessage ? res.result.errorMessage : "Não foi possível criar o convite.");
+        notify('error', 'Não foi possível trocar o link.');
         return;
     }
 
-    // Entra no estado e a lista se redesenha com ele no topo de "ainda valem".
-    const created = Object.assign({ createdAt: new Date().toISOString() }, res.result.data);
-    shareKeysState.items.unshift(normalizeUniqueKey(created));
-    shareKeysState.failed = false;
-    renderUniqueKeys();
+    const newKey = res.result.data.key;
+    const packageIdx = packagesList.userCollection.findIndex(pkg => pkg.id == packageId);
+    if (packageIdx !== -1) packagesList.userCollection[packageIdx].key = newKey;
 
-    // O convite é o resultado da ação: sai copiado e fica à vista na aba.
-    const url = utils.buildInviteUrl(created.key);
-    navigator.clipboard.writeText(url).then(() => {
-        showFreshUniqueLink(url, true);
-        notify("success", "Convite criado e copiado.");
-    }).catch(() => {
-        showFreshUniqueLink(url, false);
-        notify("success", "Convite criado. Use o botão copiar.");
-    });
-}
+    setShareInviteValues(newKey);
+    shareCopyBtn.classList.remove('copied');
+    notify('success', 'Link novo gerado. O anterior parou de funcionar.');
+});
+
+// ── Pessoas do pacote: navegação entre "Membros" e "Solicitações" ───────────
+const packagePeopleModal = document.querySelector('#packagePeopleModal');
+
+packagePeopleModal.querySelector('.pkg-people-tabs').addEventListener('click', event => {
+    const button = event.target.closest('.pkg-people-tab');
+    if (!button || button.dataset.tab === pkgPeopleState.tab) return;
+
+    setPkgPeopleTab(button.dataset.tab);
+    renderPackagePeople();
+});
 
 // Edit Session
 const editSessionModal = document.querySelector('#editSessionModal');
