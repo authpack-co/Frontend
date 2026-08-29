@@ -4,6 +4,8 @@ import CollectionPage from '../features/collection/CollectionPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
+import PeopleModal from '../features/collection/PeopleModal.jsx';
+import ShareModal from '../features/collection/ShareModal.jsx';
 import SessionDetail from '../features/collection/SessionDetail.jsx';
 import UserDetail from '../features/collection/UserDetail.jsx';
 import AccountView from '../features/settings/AccountView.jsx';
@@ -31,10 +33,9 @@ export default function AppRoutes() {
             <Route element={<RequireAuth><AppShell /></RequireAuth>}>
                 {/* ── Minha coleção (pacotes que eu criei) ───────────────── */}
                 <Route path="/collection" element={<CollectionPage />} />
-                <Route path="/collection/new" element={<Placeholder name="Novo pacote" from="#createPackageModal" />} />
                 <Route path="/collection/:packageId" element={<PackageDetail />}>
-                    <Route path="share" element={<Placeholder name="Compartilhar pacote" from="#sharePackageModal" />} />
-                    <Route path="people" element={<Placeholder name="Pessoas do pacote" from="#packagePeopleModal" />} />
+                    <Route path="share" element={<ShareModal />} />
+                    <Route path="people" element={<PeopleModal />} />
                     <Route path="sessions/new" element={<Placeholder name="Adicionar sessão" from="#addSessionModal" />} />
                 </Route>
                 <Route path="/collection/:packageId/session/:sessionId" element={<SessionDetail />} />

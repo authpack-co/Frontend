@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
+import OptionsMenu from '../components/OptionsMenu.jsx';
 import ServiceIcon from '../components/ServiceIcon.jsx';
+import {
+    AbortAccessModal,
+    CreatePackageModal,
+    DeletePackageModal,
+    RenamePackageModal,
+} from '../features/collection/PackageModals.jsx';
 import { useAuth } from '../lib/auth.jsx';
 import { getOldestSession, PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
@@ -39,6 +46,7 @@ function Sidebar() {
     // Abaixo de 1199px a sidebar sai da tela e volta pelo hambúrguer (as regras
     // já vêm do CSS do painel antigo; lá o botão era criado em JS solto).
     const [menuOpen, setMenuOpen] = useState(false);
+    const [creating, setCreating] = useState(false);
 
     // Navegar fecha o menu: no celular a sidebar cobre o conteúdo que a pessoa
     // acabou de pedir.
@@ -113,6 +121,20 @@ function Sidebar() {
 
                 <div className="sidebar-packages-head">
                     <span className="sidebar-packages-heading">Pacotes</span>
+                    {!isAccess && (
+                        <button
+                            className="sidebar-add-pkg"
+                            type="button"
+                            title="Novo pacote"
+                            aria-label="Novo pacote"
+                            onClick={() => setCreating(true)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
 
                 <div id="packages-list" className={`${listState}-state`}>
@@ -154,6 +176,8 @@ function Sidebar() {
 
             <SidebarFooter userInfo={userInfo} loading={status === 'loading'} />
         </aside>
+
+            <CreatePackageModal open={creating} onClose={() => setCreating(false)} />
         </>
     );
 }
@@ -164,17 +188,25 @@ function SidebarPackage({ pkg, section, isAccess }) {
     // Solicitação esperando resposta — só na coleção, onde há o que aprovar.
     const pending = !isAccess && Number(pkg.pendingRequests || 0) > 0;
 
+    // 'rename' | 'delete' | 'abort' | null
+    const [action, setAction] = useState(null);
+    const close = () => setAction(null);
+
+    // O item deixou de ser um link inteiro: ele hospeda o menu de ações e os
+    // modais, e nada disso pode viver dentro de uma <a>. O link é a área
+    // principal; a seleção é calculada aqui em vez de vir do NavLink.
+    const selected = useMatch({ path: `/${section}/${pkg.id}`, end: false });
+
     return (
-        <NavLink
-            to={`/${section}/${pkg.id}`}
-            className={({ isActive }) => [
+        <div
+            className={[
                 'access-item sidebar-pkg-item',
                 pending ? 'has-pending' : '',
-                isActive ? 'selected' : '',
+                selected ? 'selected' : '',
             ].filter(Boolean).join(' ')}
             title={pending ? 'Alguém pediu acesso' : undefined}
         >
-            <div className="sidebar-pkg-main">
+            <Link className="sidebar-pkg-main" to={`/${section}/${pkg.id}`}>
                 <div className="access-title">{pkg.name}</div>
                 <div className="icon-stack sidebar-pkg-logos">
                     {oldest && (
@@ -183,7 +215,53 @@ function SidebarPackage({ pkg, section, isAccess }) {
                         </div>
                     )}
                 </div>
-            </div>
+            </Link>
+
+            <OptionsMenu label="Ações do pacote">
+                {(closeMenu) => (isAccess ? (
+                    <button
+                        className="abort-package-access-btn"
+                        type="button"
+                        onClick={() => { closeMenu(); setAction('abort'); }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                        <span>Encerrar</span>
+                    </button>
+                ) : (
+                    <>
+                        <Link className="share-package-btn" to={`/collection/${pkg.id}/share`} onClick={closeMenu}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2v13" />
+                                <path d="m16 6-4-4-4 4" />
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            </svg>
+                            <span>Compartilhar</span>
+                        </Link>
+                        <button className="edit-package-btn" type="button" onClick={() => { closeMenu(); setAction('rename'); }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                            </svg>
+                            <span>Editar</span>
+                        </button>
+                        <button className="delete-package-btn" type="button" onClick={() => { closeMenu(); setAction('delete'); }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
+                            <span>Excluir</span>
+                        </button>
+                    </>
+                ))}
+            </OptionsMenu>
+
+            {action === 'rename' && <RenamePackageModal pkg={pkg} open onClose={close} />}
+            {action === 'delete' && <DeletePackageModal pkg={pkg} open onClose={close} />}
+            {action === 'abort' && <AbortAccessModal pkg={pkg} open onClose={close} />}
 
             {inactive && (
                 <div className="inactive-badge">
@@ -194,7 +272,7 @@ function SidebarPackage({ pkg, section, isAccess }) {
                     </svg>
                 </div>
             )}
-        </NavLink>
+        </div>
     );
 }
 

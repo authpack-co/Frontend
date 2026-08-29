@@ -68,6 +68,39 @@ export const api = {
     getCollectionPackages: () => request('/api/packages/created'),
     getAccessPackages: () => request('/api/packages/acquired'),
 
+    createPackage: (name) => request('/api/packages', {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+    }),
+    renamePackage: (packageId, name) => request(`/api/packages/${packageId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+    }),
+    deletePackage: (packageId) => request(`/api/packages/${packageId}`, { method: 'DELETE' }),
+
+    // Troca a chave: link e código anteriores param de valer de uma vez. Quem
+    // já entrou não é afetado — a chave só serve para pedir acesso.
+    renewPackageKey: (packageId) => request(`/api/packages/${packageId}/key`, { method: 'PATCH' }),
+
+    // Sai de um pacote que compartilharam com você.
+    abortPackageAccess: (packageId) => request(`/api/packages/access/${packageId}`, { method: 'DELETE' }),
+
+    // ── Pessoas do pacote ─────────────────────────────────────────────────
+    getPackagePeople: (packageId) => request(`/api/packages/${packageId}/people`),
+    approvePackageRequest: (packageId, requestId) =>
+        request(`/api/packages/${packageId}/requests/${requestId}/approve`, { method: 'POST' }),
+    rejectPackageRequest: (packageId, requestId) =>
+        request(`/api/packages/${packageId}/requests/${requestId}/reject`, { method: 'POST' }),
+    removeUserFromPackage: (packageId, userId) =>
+        request(`/api/packages/${packageId}/users/${userId}`, { method: 'DELETE' }),
+
+    // ── Sessões ───────────────────────────────────────────────────────────
+    renameSession: (sessionId, name) => request(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+    }),
+    deleteSession: (sessionId) => request(`/api/sessions/${sessionId}`, { method: 'DELETE' }),
+
     // Pede acesso a um pacote pela chave. O acesso não vale na hora: o dono
     // ainda precisa aprovar.
     usePackageKey: (key) => request('/api/packages/access', {

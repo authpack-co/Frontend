@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { isExtensionInstalled, WEBSTORE_URL } from '../lib/extension.js';
 
 /**
@@ -38,10 +39,18 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
         }, 400);
     }
 
-    return (
+    // Pelo portal: aberto de dentro de uma lista clicável, o clique dele
+    // subiria para a linha.
+    return createPortal(
         <div
             className="modal-overlay show"
-            onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+            onClick={(event) => {
+                // O React propaga pela árvore de componentes mesmo com portal:
+                // sem parar aqui, o clique volta para a linha que abriu isto.
+                event.stopPropagation();
+                if (event.target === event.currentTarget) onClose();
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
         >
             <div className="modal ext-card" role="dialog" aria-modal="true" aria-label="Extensão necessária">
                 <button className="ext-card-close" type="button" aria-label="Fechar" onClick={onClose}>
@@ -118,6 +127,7 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
                     </p>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

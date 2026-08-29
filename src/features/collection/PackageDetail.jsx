@@ -44,6 +44,19 @@ export default function PackageDetail() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
+
+                <div className="topbar-actions">
+                    <PackagePeopleCounter pkg={pkg} />
+
+                    <Link className="btn topbar-share-btn" to={`/collection/${pkg.id}/share`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2v13" />
+                            <path d="m16 6-4-4-4 4" />
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        </svg>
+                        Compartilhar
+                    </Link>
+                </div>
             </div>
 
             <section
@@ -109,6 +122,37 @@ export default function PackageDetail() {
             {/* Modais com rota própria (compartilhar, pessoas, adicionar sessão). */}
             <Outlet />
         </>
+    );
+}
+
+/**
+ * Quantas pessoas têm acesso a este pacote. Com pedido esperando, ganha a
+ * bolinha e abre direto na aba que precisa de ação — é o único aviso de que
+ * algo chegou, já que a contagem vem junto da carga dos pacotes.
+ */
+function PackagePeopleCounter({ pkg }) {
+    const count = (pkg.users || []).length;
+    const pending = Number(pkg.pendingRequests || 0);
+
+    return (
+        <div className="topbar-people">
+            <Link
+                className={`pkg-people-counter${pending > 0 ? ' has-pending' : ''}`}
+                to={`/collection/${pkg.id}/people${pending > 0 ? '?tab=requests' : ''}`}
+                title={pending > 0
+                    ? `${pending} ${pending === 1 ? 'pessoa pediu acesso' : 'pessoas pediram acesso'}`
+                    : 'Ver quem tem acesso a este pacote'}
+            >
+                <svg className="people-counter__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span className="pkg-people-counter__text">
+                    <strong>{count}</strong> {count === 1 ? 'pessoa' : 'pessoas'}
+                </span>
+                <span className="pkg-people-counter__dot" aria-hidden="true"></span>
+            </Link>
+        </div>
     );
 }
 

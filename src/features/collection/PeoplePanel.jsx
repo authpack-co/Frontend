@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { timeAgo } from '../../lib/usage.js';
+import { RemoveUserModal } from './SessionModals.jsx';
 
 /**
  * Pessoas com acesso ao pacote.
@@ -54,6 +56,7 @@ export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, stats
 }
 
 function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
+    const [removing, setRemoving] = useState(false);
     const seen = lastUsage ? timeAgo(lastUsage) : null;
     // "agora mesmo" é o que acende a linha como online.
     const online = seen === 'agora mesmo';
@@ -76,6 +79,25 @@ function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
             </div>
 
             <div className="item-actions">
+                {/* Quem criou o pacote não pode ser removido dele. */}
+                {!user.isCreator && (
+                    <div className="management-actions">
+                        <button
+                            className="remove-user-access-btn actionBtn"
+                            type="button"
+                            title="Remover"
+                            aria-label={`Remover ${user.name}`}
+                            onClick={() => setRemoving(true)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="22" x2="16" y1="11" y2="11" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+
                 <Link
                     className="btn btn-small details-btn"
                     to={`/collection/${pkg.id}/user/${user.id}`}
@@ -83,6 +105,10 @@ function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
                     Ver detalhes
                 </Link>
             </div>
+
+            {removing && (
+                <RemoveUserModal pkg={pkg} user={user} open onClose={() => setRemoving(false)} />
+            )}
 
             <div className="item-details">
                 {/* Enquanto as estatísticas não chegam, a linha fica sem rótulo:

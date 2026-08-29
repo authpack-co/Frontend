@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import ExtensionRequiredModal from '../../components/ExtensionRequiredModal.jsx';
-import { useNotify } from '../../components/Notifications.jsx';
 import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
+import useConnectSession from '../../components/useConnectSession.jsx';
 import { api } from '../../lib/api.js';
-import { connectSession, isExtensionInstalled, useConnectResult } from '../../lib/extension.js';
 import { usePackage } from '../../lib/packages.jsx';
 import AccessSessionCard from './AccessSessionCard.jsx';
 
@@ -21,11 +19,10 @@ const IDENTITY_ICONS = 3;
 export default function AccessDetail() {
     const { packageId } = useParams();
     const { pkg, notFound } = usePackage(packageId);
-    const notify = useNotify();
+    const { connect, gate } = useConnectSession(pkg, { isAcquired: true });
 
     const [search, setSearch] = useState('');
     const [joinedAt, setJoinedAt] = useState(null);
-    const [pendingSession, setPendingSession] = useState(null);
 
     useEffect(() => {
         if (!pkg) return undefined;
@@ -40,23 +37,6 @@ export default function AccessDetail() {
         return () => { alive = false; };
     }, [pkg, packageId]);
 
-    const handleConnectFailure = useCallback((code) => {
-        if (code === 'unauthorized') {
-            // A extensão usa a mesma sessão desta página: 401 lá significa que
-            // ela caiu para os dois lados, e recarregar leva ao login.
-            notify('error', 'Sua sessão expirou. Faça login novamente para continuar.');
-            setTimeout(() => window.location.reload(), 1500);
-            return;
-        }
-        if (code === 'not_found') {
-            notify('error', 'Esta sessão não está mais disponível. Atualize o pacote e tente novamente.');
-            return;
-        }
-        notify('error', 'Não foi possível conectar à sessão. Tente novamente em instantes.');
-    }, [notify]);
-
-    useConnectResult(handleConnectFailure);
-
     if (notFound) return <AccessNotFound />;
     if (!pkg) return null;
 
@@ -70,15 +50,6 @@ export default function AccessDetail() {
         const domain = (faviconDomain(session.url) || '').toLowerCase();
         return name.includes(query) || domain.includes(query);
     });
-
-    function handleConnect(session) {
-        // Sem extensão não há conexão: quem escreve os cookies na aba é ela.
-        if (!isExtensionInstalled()) {
-            setPendingSession(session);
-            return;
-        }
-        connectSession({ session, pkg, isAcquired: true });
-    }
 
     return (
         <>
@@ -150,7 +121,7 @@ export default function AccessDetail() {
                                                     key={session.id}
                                                     session={session}
                                                     inactive={inactive}
-                                                    onConnect={handleConnect}
+                                                    onConnect={connect}
                                                 />
                                             ))}
                                         </div>
@@ -168,15 +139,7 @@ export default function AccessDetail() {
                 </div>
             </section>
 
-            <ExtensionRequiredModal
-                open={pendingSession !== null}
-                onClose={() => setPendingSession(null)}
-                onReady={() => {
-                    const session = pendingSession;
-                    setPendingSession(null);
-                    if (session) connectSession({ session, pkg, isAcquired: true });
-                }}
-            />
+            {gate}
         </>
     );
 }

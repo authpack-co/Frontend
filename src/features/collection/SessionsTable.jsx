@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import OptionsMenu from '../../components/OptionsMenu.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
+import useConnectSession from '../../components/useConnectSession.jsx';
 import { paletteFromSession } from '../../lib/palette.js';
+import { DeleteSessionModal, RenameSessionModal } from './SessionModals.jsx';
 import {
     formatDuration,
     getSessionUsageComparison,
@@ -15,6 +19,8 @@ function sessionDomain(session) {
 
 export default function SessionsTable({ pkg, sessions, search, stats, statsStatus }) {
     const query = (search || '').trim().toLowerCase();
+    // Um portão de extensão para a lista inteira, não um por linha.
+    const { connect, gate } = useConnectSession(pkg, { isAcquired: false });
 
     const visible = sessions.filter((session) => {
         if (!query) return true;
@@ -61,6 +67,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                                     pkg={pkg}
                                     stats={stats}
                                     statsStatus={statsStatus}
+                                    onConnect={connect}
                                 />
                             ))}
 
@@ -74,12 +81,17 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                     </div>
                 </div>
             </div>
+
+            {gate}
         </div>
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus }) {
+function SessionRow({ session, pkg, stats, statsStatus, onConnect }) {
     const navigate = useNavigate();
+    // 'rename' | 'delete' | null
+    const [action, setAction] = useState(null);
+    const closeAction = () => setAction(null);
     const inactive = pkg.isActive === false;
     const target = `/collection/${pkg.id}/session/${session.id}`;
     const palette = paletteFromSession(session);
@@ -131,7 +143,56 @@ function SessionRow({ session, pkg, stats, statsStatus }) {
                 loading={statsStatus === 'loading'}
             />
 
-            <div className="session-row-actions"></div>
+            <div className="session-row-actions">
+                <OptionsMenu
+                    buttonClassName="session-options-btn"
+                    menuClassName="session-options"
+                    label="Ações da sessão"
+                    glyph="⋯"
+                >
+                    {(closeMenu) => (
+                        <>
+                            <button
+                                className="connect-session-btn"
+                                type="button"
+                                disabled={inactive}
+                                onClick={() => { closeMenu(); onConnect(session); }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+                                </svg>
+                                <span>Conectar</span>
+                            </button>
+                            <button
+                                className="edit-session-btn"
+                                type="button"
+                                onClick={() => { closeMenu(); setAction('rename'); }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                                </svg>
+                                <span>Editar</span>
+                            </button>
+                            <button
+                                className="delete-session-btn"
+                                type="button"
+                                onClick={() => { closeMenu(); setAction('delete'); }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                </svg>
+                                <span>Excluir</span>
+                            </button>
+                        </>
+                    )}
+                </OptionsMenu>
+            </div>
+
+            {action === 'rename' && <RenameSessionModal session={session} open onClose={closeAction} />}
+            {action === 'delete' && <DeleteSessionModal session={session} open onClose={closeAction} />}
         </div>
     );
 }
