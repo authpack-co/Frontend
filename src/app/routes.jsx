@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireAuth } from '../lib/auth.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
+import AccessDetail from '../features/shared/AccessDetail.jsx';
+import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
 import AccountView from '../features/settings/AccountView.jsx';
 import BillingView from '../features/settings/BillingView.jsx';
@@ -37,8 +39,8 @@ export default function AppRoutes() {
                 <Route path="/collection/:packageId/user/:userId" element={<Placeholder name="Pessoa" from=".preset-user-overview" />} />
 
                 {/* ── Meus acessos (pacotes que compartilharam comigo) ───── */}
-                <Route path="/shared" element={<Placeholder name="Meus acessos" from="sidebar .preset-access" />} />
-                <Route path="/shared/:packageId" element={<Placeholder name="Acesso" from="renderAccessHeader / loadAccessOverview" />} />
+                <Route path="/shared" element={<SharedPage />} />
+                <Route path="/shared/:packageId" element={<AccessDetail />} />
                 <Route path="/shared/:packageId/session/:sessionId" element={<Placeholder name="Sessão (acesso)" from=".preset-session-overview" />} />
 
                 {/* ── Configurações ─────────────────────────────────────── */}

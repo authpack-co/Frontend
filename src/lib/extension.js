@@ -22,6 +22,49 @@ export function isExtensionInstalled() {
  * já ter renderizado — daí o observer, em vez do resultado memoizado que o
  * extensionState.js usava e que podia congelar em "não instalada".
  */
+/**
+ * Pede à extensão que abra a sessão.
+ *
+ * Não é window.open: a ponte da extensão relança isto como "redirectUser", que
+ * pré-seta os cookies antes de abrir a aba. Abrir a aba daqui deixaria a
+ * pessoa numa tela de login.
+ */
+export function connectSession({ session, pkg, isAcquired }) {
+    window.postMessage({
+        source: 'authpack-page',
+        type: 'authpack:connect',
+        session: {
+            id: session.id,
+            packageId: pkg.id,
+            isAcquired,
+            url: session.url,
+            sessionName: session.name || '',
+            sessionIcon: session.icon || '',
+            ownerName: pkg.owner?.name || '',
+        },
+    }, window.location.origin);
+}
+
+/**
+ * A extensão devolve o desfecho do connect por postMessage. Sem ouvir isso,
+ * uma falha dela não produziria sinal nenhum na tela.
+ */
+export function useConnectResult(onFailure) {
+    useEffect(() => {
+        function handleMessage(event) {
+            if (event.source !== window) return;
+            if (event.data?.source !== 'authpack-extension') return;
+            if (event.data.type !== 'authpack:connectResult') return;
+            if (event.data.ok) return;
+
+            onFailure(event.data.code);
+        }
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [onFailure]);
+}
+
 export function useExtensionStatus() {
     const [status, setStatus] = useState('checking');
 

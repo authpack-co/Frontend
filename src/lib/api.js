@@ -68,8 +68,16 @@ export const api = {
     getCollectionPackages: () => request('/api/packages/created'),
     getAccessPackages: () => request('/api/packages/acquired'),
 
+    // Pede acesso a um pacote pela chave. O acesso não vale na hora: o dono
+    // ainda precisa aprovar.
+    usePackageKey: (key) => request('/api/packages/access', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+    }),
+
     // ── Estatísticas ──────────────────────────────────────────────────────
     getPackageOverviewStats: (packageId) => request(`/api/stats/package/overview/${packageId}`),
+    getPackageAccessOverview: (packageId) => request(`/api/stats/package/access-overview/${packageId}`),
 
     // ── Assinatura ────────────────────────────────────────────────────────
     getBilling: () => request('/api/subscription/billing'),
