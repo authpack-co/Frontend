@@ -113,6 +113,16 @@ export const api = {
     getPackageAccessOverview: (packageId) => request(`/api/stats/package/access-overview/${packageId}`),
 
     // ── Assinatura ────────────────────────────────────────────────────────
+    // Simula a troca. Nada é cobrado aqui — é o que alimenta a confirmação.
+    previewPlanChange: (plan) => request('/api/subscription/preview', {
+        method: 'POST',
+        body: JSON.stringify({ plan }),
+    }),
+    createSubscriptionCheckout: (plan) => request('/api/subscription/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ plan }),
+    }),
+
     getBilling: () => request('/api/subscription/billing'),
     createBillingPortal: () => request('/api/subscription/portal', { method: 'POST' }),
     cancelBilling: () => request('/api/subscription/cancel', { method: 'POST' }),

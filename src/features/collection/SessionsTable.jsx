@@ -4,6 +4,7 @@ import OptionsMenu from '../../components/OptionsMenu.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import useConnectSession from '../../components/useConnectSession.jsx';
 import { paletteFromSession } from '../../lib/palette.js';
+import UpdateSessionModal from './capture/UpdateSessionModal.jsx';
 import { DeleteSessionModal, RenameSessionModal } from './SessionModals.jsx';
 import {
     formatDuration,
@@ -21,6 +22,9 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     const query = (search || '').trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
     const { connect, gate } = useConnectSession(pkg, { isAcquired: false });
+    // A recaptura mora aqui (e não na linha) para o progresso sobreviver a
+    // qualquer re-render da lista enquanto as abas abrem.
+    const [updating, setUpdating] = useState(null);
 
     const visible = sessions.filter((session) => {
         if (!query) return true;
@@ -68,6 +72,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                                     stats={stats}
                                     statsStatus={statsStatus}
                                     onConnect={connect}
+                                    onUpdate={setUpdating}
                                 />
                             ))}
 
@@ -83,11 +88,19 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
             </div>
 
             {gate}
+
+            {updating && (
+                <UpdateSessionModal
+                    pkg={pkg}
+                    session={updating}
+                    onClose={() => setUpdating(null)}
+                />
+            )}
         </div>
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus, onConnect }) {
+function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate }) {
     const navigate = useNavigate();
     // 'rename' | 'delete' | null
     const [action, setAction] = useState(null);
@@ -162,6 +175,21 @@ function SessionRow({ session, pkg, stats, statsStatus, onConnect }) {
                                     <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
                                 </svg>
                                 <span>Conectar</span>
+                            </button>
+                            {/* Recaptura: mesmo motor do "Adicionar sessão",
+                                sem etapa de seleção. */}
+                            <button
+                                className="update-session-btn"
+                                type="button"
+                                onClick={() => { closeMenu(); onUpdate(session); }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
+                                <span>Atualizar</span>
                             </button>
                             <button
                                 className="edit-session-btn"

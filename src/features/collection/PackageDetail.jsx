@@ -48,6 +48,14 @@ export default function PackageDetail() {
                 <div className="topbar-actions">
                     <PackagePeopleCounter pkg={pkg} />
 
+                    <Link className="btn btn-primary" to={`/collection/${pkg.id}/sessions/new`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Adicionar sessão
+                    </Link>
+
                     <Link className="btn topbar-share-btn" to={`/collection/${pkg.id}/share`}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2v13" />

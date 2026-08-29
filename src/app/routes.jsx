@@ -1,9 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireAuth } from '../lib/auth.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
+import PlansPage from '../features/plans/PlansPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
+import AddSessionModal from '../features/collection/capture/AddSessionModal.jsx';
 import PeopleModal from '../features/collection/PeopleModal.jsx';
 import ShareModal from '../features/collection/ShareModal.jsx';
 import SessionDetail from '../features/collection/SessionDetail.jsx';
@@ -36,7 +38,7 @@ export default function AppRoutes() {
                 <Route path="/collection/:packageId" element={<PackageDetail />}>
                     <Route path="share" element={<ShareModal />} />
                     <Route path="people" element={<PeopleModal />} />
-                    <Route path="sessions/new" element={<Placeholder name="Adicionar sessão" from="#addSessionModal" />} />
+                    <Route path="sessions/new" element={<AddSessionModal />} />
                 </Route>
                 <Route path="/collection/:packageId/session/:sessionId" element={<SessionDetail />} />
                 <Route path="/collection/:packageId/user/:userId" element={<UserDetail />} />
@@ -54,7 +56,7 @@ export default function AppRoutes() {
                 </Route>
 
                 {/* ── Planos ────────────────────────────────────────────── */}
-                <Route path="/upgrade" element={<Placeholder name="Planos" from="#plusSubscribeModal" />} />
+                <Route path="/upgrade" element={<PlansPage />} />
 
                 {/* ── Admin (hoje vive em hash: #financeiro, #usuarios…) ─── */}
                 <Route path="/admin" element={<Navigate to="/admin/finance" replace />} />

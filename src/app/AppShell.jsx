@@ -8,6 +8,7 @@ import {
     DeletePackageModal,
     RenamePackageModal,
 } from '../features/collection/PackageModals.jsx';
+import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import { useAuth } from '../lib/auth.jsx';
 import { getOldestSession, PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
@@ -23,6 +24,9 @@ const PLUS_BENEFIT_ROLES = ['admin'];
  * assim cada tela migrada nasce idêntica à que está no ar.
  */
 export default function AppShell() {
+    // O retorno do Checkout cai em qualquer rota do app, não só nos planos.
+    useCheckoutReturn();
+
     return (
         <PackagesProvider>
             <Sidebar />
