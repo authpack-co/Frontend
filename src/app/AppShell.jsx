@@ -1,29 +1,383 @@
-import { NavLink, Outlet } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import ServiceIcon from '../components/ServiceIcon.jsx';
+import { useAuth } from '../lib/auth.jsx';
+import { getOldestSession, PackagesProvider, usePackages } from '../lib/packages.jsx';
+import { useTheme } from '../lib/theme.js';
+import './dashboard-legacy.css';
+
+// Papéis com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
+const PLUS_BENEFIT_ROLES = ['admin'];
 
 /**
- * Casca do app: o que sobrevive a qualquer troca de rota.
+ * Casca do app: sidebar fixa + área de conteúdo.
  *
- * Por enquanto só a navegação de seções — a sidebar de verdade (lista de
- * pacotes, rodapé de plano, perfil) entra quando a tela de coleção migrar.
+ * Mesmas classes do painel antigo de propósito — o CSS vem inteiro de lá, e
+ * assim cada tela migrada nasce idêntica à que está no ar.
  */
 export default function AppShell() {
     return (
-        <div className="ap-shell">
-            <aside className="ap-shell-nav">
-                <div className="ap-shell-brand">
-                    <img src="/assets/images/favicon-128x128.png" alt="" width="24" height="24" />
-                    <span>AuthPack</span>
+        <PackagesProvider>
+            <Sidebar />
+            <div className="page-content">
+                <main className="main-content">
+                    <Outlet />
+                </main>
+            </div>
+        </PackagesProvider>
+    );
+}
+
+function Sidebar() {
+    const { pathname } = useLocation();
+    const isAccess = pathname === '/shared' || pathname.startsWith('/shared/');
+    const section = isAccess ? 'access' : 'collection';
+
+    const { status, collection, access, userInfo } = usePackages();
+    const packages = isAccess ? access : collection;
+
+    // Abaixo de 1199px a sidebar sai da tela e volta pelo hambúrguer (as regras
+    // já vêm do CSS do painel antigo; lá o botão era criado em JS solto).
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    // Navegar fecha o menu: no celular a sidebar cobre o conteúdo que a pessoa
+    // acabou de pedir.
+    useEffect(() => { setMenuOpen(false); }, [pathname]);
+
+    useEffect(() => {
+        document.body.style.overflow = menuOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [menuOpen]);
+
+    // A visibilidade de vários controles da top bar é decidida no CSS por
+    // body[data-dash-section]; mantê-lo é o que preserva aquelas regras.
+    useEffect(() => {
+        document.body.dataset.dashSection = section;
+        return () => { delete document.body.dataset.dashSection; };
+    }, [section]);
+
+    const listState = status === 'loading'
+        ? 'loading'
+        : (packages.length === 0 ? `empty-${section}` : section);
+
+    return (
+        <>
+            <button
+                className={`hamburger-btn${menuOpen ? ' active' : ''}`}
+                type="button"
+                aria-label="Menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((open) => !open)}
+            >
+                <div className="hamburger-icon"><span></span><span></span><span></span></div>
+            </button>
+            <div
+                className={`sidebar-overlay${menuOpen ? ' active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+            ></div>
+
+        <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
+            <div className="sidebar-brand">
+                <img src="/assets/images/favicon-128x128.png" alt="AuthPack" />
+                <span className="sidebar-brand-name">AuthPack</span>
+            </div>
+
+            <nav className="sidebar-nav">
+                {userInfo?.role === 'admin' && (
+                    <div className="sidebar-role-nav">
+                        <Link className="nav-item sidebar-admin-link" to="/admin">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                            Painel admin
+                        </Link>
+                    </div>
+                )}
+
+                {/* As duas seções são rotas: a lista abaixo reflete a da URL. */}
+                <div className="sidebar-sections">
+                    <NavLink className="sidebar-section-toggle collection-tab" to="/collection">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                        </svg>
+                        <span>Minha coleção</span>
+                    </NavLink>
+                    <NavLink className="sidebar-section-toggle access-tab" to="/shared">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z" />
+                            <path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
+                        </svg>
+                        <span>Meus acessos</span>
+                    </NavLink>
                 </div>
-                <nav>
-                    <NavLink to="/collection">Minha coleção</NavLink>
-                    <NavLink to="/shared">Meus acessos</NavLink>
-                    <NavLink to="/settings">Configurações</NavLink>
-                    <NavLink to="/upgrade">Planos</NavLink>
-                </nav>
-            </aside>
-            <main className="ap-shell-main">
-                <Outlet />
-            </main>
+
+                <div className="sidebar-packages-head">
+                    <span className="sidebar-packages-heading">Pacotes</span>
+                </div>
+
+                <div id="packages-list" className={`${listState}-state`}>
+                    {status === 'loading' && (
+                        <div className="preset-loading">
+                            <div className="sidebar-pkg-list">
+                                <div className="skeleton sidebar-pkg-skeleton"></div>
+                                <div className="skeleton sidebar-pkg-skeleton"></div>
+                                <div className="skeleton sidebar-pkg-skeleton"></div>
+                                <div className="skeleton sidebar-pkg-skeleton"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {status !== 'loading' && packages.length > 0 && (
+                        <div className={`preset-${section}`}>
+                            <div className="access-grid sidebar-pkg-list custom-scrollbar">
+                                {packages.map((pkg) => (
+                                    <SidebarPackage
+                                        key={pkg.id}
+                                        pkg={pkg}
+                                        section={section}
+                                        isAccess={isAccess}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {status !== 'loading' && packages.length === 0 && (
+                        <div className={`preset-empty-${section}`}>
+                            <p className="sidebar-pkg-empty">
+                                {isAccess ? 'Nenhum acesso ainda.' : 'Você ainda não tem pacotes.'}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </nav>
+
+            <SidebarFooter userInfo={userInfo} loading={status === 'loading'} />
+        </aside>
+        </>
+    );
+}
+
+function SidebarPackage({ pkg, section, isAccess }) {
+    const oldest = getOldestSession(pkg.sessions);
+    const inactive = pkg.isActive === false;
+    // Solicitação esperando resposta — só na coleção, onde há o que aprovar.
+    const pending = !isAccess && Number(pkg.pendingRequests || 0) > 0;
+
+    return (
+        <NavLink
+            to={`/${section}/${pkg.id}`}
+            className={({ isActive }) => [
+                'access-item sidebar-pkg-item',
+                pending ? 'has-pending' : '',
+                isActive ? 'selected' : '',
+            ].filter(Boolean).join(' ')}
+            title={pending ? 'Alguém pediu acesso' : undefined}
+        >
+            <div className="sidebar-pkg-main">
+                <div className="access-title">{pkg.name}</div>
+                <div className="icon-stack sidebar-pkg-logos">
+                    {oldest && (
+                        <div className="stack-icon">
+                            <ServiceIcon icon={oldest.icon} url={oldest.url} name={oldest.name} />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {inactive && (
+                <div className="inactive-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                        <path d="M12 9v4" />
+                        <path d="M12 17h.01" />
+                    </svg>
+                </div>
+            )}
+        </NavLink>
+    );
+}
+
+function SidebarFooter({ userInfo, loading }) {
+    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
+        || (userInfo?.plan && userInfo.plan !== 'free');
+
+    return (
+        <div className="sidebar-footer">
+            {!loading && !hasPlusBenefits && (
+                <div className="sidebar-upgrade-card">
+                    <div className="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
+                    <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
+                    <Link className="sidebar-upgrade-link" to="/upgrade">Fazer upgrade &rarr;</Link>
+                </div>
+            )}
+
+            {loading
+                ? <div className="sk-block sk-plan-people"></div>
+                : <PeopleCounter userInfo={userInfo} />}
+
+            <ProfileMenu userInfo={userInfo} loading={loading} hasPlusBenefits={hasPlusBenefits} />
+        </div>
+    );
+}
+
+/**
+ * Pessoas com quem o usuário compartilha, contra o limite do plano — o único
+ * limitador: pacotes e sessões são ilimitados.
+ */
+function PeopleCounter({ userInfo }) {
+    const used = Math.max(0, Number(userInfo?.peopleUsed || 0));
+    const limit = userInfo?.peopleLimit; // null/undefined = ilimitado
+    const unlimited = limit == null;
+
+    const className = [
+        'people-counter',
+        !unlimited && used > limit ? 'over-limit' : '',
+        !unlimited && used === limit ? 'at-limit' : '',
+    ].filter(Boolean).join(' ');
+
+    return (
+        <div className="sidebar-plan-people">
+            <span className={className}>
+                <svg className="people-counter__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span className="people-counter__text">
+                    <strong>{used}</strong>{unlimited ? ' pessoas' : ` / ${limit} pessoas`}
+                </span>
+                <span className="people-counter__info" tabIndex={0} role="img" aria-label="Sobre o limite de pessoas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                    </svg>
+                    <span className="people-counter__tip">
+                        Pessoas com quem você compartilha acesso nos seus pacotes. Esse é o limite
+                        do seu plano — pacotes e sessões são ilimitados.
+                    </span>
+                </span>
+            </span>
+        </div>
+    );
+}
+
+function ProfileMenu({ userInfo, loading, hasPlusBenefits }) {
+    const [open, setOpen] = useState(false);
+    const { logout } = useAuth();
+    const { theme, toggle } = useTheme();
+    const navigate = useNavigate();
+    const wrapperRef = useRef(null);
+
+    useEffect(() => {
+        if (!open) return undefined;
+
+        function handleOutside(event) {
+            if (!wrapperRef.current?.contains(event.target)) setOpen(false);
+        }
+        function handleEscape(event) {
+            if (event.key === 'Escape') setOpen(false);
+        }
+
+        document.addEventListener('click', handleOutside);
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+            document.removeEventListener('click', handleOutside);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [open]);
+
+    if (loading) {
+        return (
+            <div className="sidebar-profile-wrapper">
+                <div className="boot-skeleton--flex sk-profile" style={{ display: 'flex' }}>
+                    <div className="sk-circle" style={{ '--sk-size': '35px' }}></div>
+                    <div className="sk-profile-lines">
+                        <div className="sk-line" style={{ '--sk-h': '11px', '--sk-w': '72%' }}></div>
+                        <div className="sk-line" style={{ '--sk-h': '9px', '--sk-w': '88%' }}></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Admin tem prioridade sobre o plano no badge; usuário comum não recebe um.
+    let badge = null;
+    if (userInfo?.role === 'admin') badge = 'Admin';
+    else if (userInfo?.plan && userInfo.plan !== 'free') {
+        badge = userInfo.plan.charAt(0).toUpperCase() + userInfo.plan.slice(1);
+    }
+
+    return (
+        <div className="sidebar-profile-wrapper" ref={wrapperRef}>
+            <div
+                className={`profile${open ? ' menu-open' : ''}`}
+                id="sidebar-profile"
+                role="button"
+                tabIndex={0}
+                onClick={() => setOpen((value) => !value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen((v) => !v); }}
+            >
+                <span className={`profile-picture${hasPlusBenefits ? ' plus-avatar' : ''}`}>
+                    {userInfo?.picture && <img src={userInfo.picture} alt="" />}
+                </span>
+                <div className="sidebar-profile-info">
+                    <span className="profile-name">{userInfo?.name}</span>
+                    <span className="sidebar-profile-email">{userInfo?.email}</span>
+                </div>
+                {badge && <span className="plus-badge">{badge}</span>}
+                <svg className="sidebar-profile-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m18 15-6-6-6 6" />
+                </svg>
+            </div>
+
+            <div className={`sidebar-profile-menu${open ? ' open' : ''}`}>
+                <button
+                    className="sidebar-profile-menu-item"
+                    type="button"
+                    onClick={() => { setOpen(false); navigate('/settings'); }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Configurações
+                </button>
+
+                <button className="sidebar-profile-menu-item" type="button" onClick={toggle}>
+                    {theme === 'dark' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" /><path d="M12 20v2" />
+                            <path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
+                            <path d="M2 12h2" /><path d="M20 12h2" />
+                            <path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
+                        </svg>
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                    )}
+                    <span className="theme-toggle-label">
+                        {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+                    </span>
+                </button>
+
+                <div className="sidebar-profile-menu-divider"></div>
+
+                <button
+                    className="sidebar-profile-menu-item sidebar-profile-menu-item--danger"
+                    type="button"
+                    onClick={logout}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Sair
+                </button>
+            </div>
         </div>
     );
 }

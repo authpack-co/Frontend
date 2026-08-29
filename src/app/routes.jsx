@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireAuth } from '../lib/auth.jsx';
+import CollectionPage from '../features/collection/CollectionPage.jsx';
+import PackageDetail from '../features/collection/PackageDetail.jsx';
 import AccountView from '../features/settings/AccountView.jsx';
 import BillingView from '../features/settings/BillingView.jsx';
 import SettingsPage from '../features/settings/SettingsPage.jsx';
@@ -24,9 +26,9 @@ export default function AppRoutes() {
         <Routes>
             <Route element={<RequireAuth><AppShell /></RequireAuth>}>
                 {/* ── Minha coleção (pacotes que eu criei) ───────────────── */}
-                <Route path="/collection" element={<Placeholder name="Minha coleção" from="sidebar .preset-collection" />} />
+                <Route path="/collection" element={<CollectionPage />} />
                 <Route path="/collection/new" element={<Placeholder name="Novo pacote" from="#createPackageModal" />} />
-                <Route path="/collection/:packageId" element={<Placeholder name="Pacote" from="#package-details .screen-section.primary" />}>
+                <Route path="/collection/:packageId" element={<PackageDetail />}>
                     <Route path="share" element={<Placeholder name="Compartilhar pacote" from="#sharePackageModal" />} />
                     <Route path="people" element={<Placeholder name="Pessoas do pacote" from="#packagePeopleModal" />} />
                     <Route path="sessions/new" element={<Placeholder name="Adicionar sessão" from="#addSessionModal" />} />

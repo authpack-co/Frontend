@@ -60,6 +60,14 @@ export const api = {
     getAuthenticatedUser: () => request('/api/auth/'),
     logout: () => request('/api/auth/logout', { method: 'POST' }),
 
+    // ── Usuário ───────────────────────────────────────────────────────────
+    // Complementa o /api/auth/: é daqui que vêm peopleUsed e peopleLimit.
+    getUserInfo: () => request('/api/users/info'),
+
+    // ── Pacotes ───────────────────────────────────────────────────────────
+    getCollectionPackages: () => request('/api/packages/created'),
+    getAccessPackages: () => request('/api/packages/acquired'),
+
     // ── Assinatura ────────────────────────────────────────────────────────
     getBilling: () => request('/api/subscription/billing'),
     createBillingPortal: () => request('/api/subscription/portal', { method: 'POST' }),

@@ -19,53 +19,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.ap-shell {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    min-height: 100vh;
-}
-
-.ap-shell-nav {
-    background: var(--ap-bg-sidebar);
-    border-right: 1px solid var(--ap-border);
-    padding: 20px 14px;
-}
-
-.ap-shell-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    margin-bottom: 24px;
-}
-
-.ap-shell-nav nav {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.ap-shell-nav a {
-    padding: 9px 10px;
-    border-radius: 8px;
-    color: var(--ap-text-secondary);
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.ap-shell-nav a:hover {
-    background: var(--ap-bg-hover);
-}
-
-.ap-shell-nav a.active {
-    background: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
-    font-weight: 600;
-}
-
-.ap-shell-main {
-    padding: 32px;
-}
 
 .ap-placeholder h1 {
     font-family: Sora, Inter, sans-serif;
@@ -159,35 +112,122 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* A página de configurações traz a própria casca; o padding do main
-   atrapalharia. */
-.ap-shell-main:has(.settings-page) {
-    padding: 0;
+
+/* ============================================================================
+   Ajustes sobre o snapshot do painel antigo (dashboard-legacy.css).
+
+   Importado por último de propósito: é aqui que mora a diferença entre o
+   markup de lá e o daqui. Cada regra abaixo existe porque a migração mudou
+   alguma coisa de verdade — não são correções de estilo.
+   ============================================================================ */
+
+/* A tela primária ocupava metade de um container de 200%, e ir para a sessão
+   era um translateX entre as duas metades. Agora cada tela é uma rota, então
+   a que está montada ocupa a largura inteira. */
+#package-details .preset-collection .screen-section,
+#package-details .preset-access .screen-section {
+    width: 100%;
 }
 
-/* No mobile a navegação vira uma faixa no topo. É provisório: o menu de
-   verdade (hambúrguer + overlay) vem junto com a sidebar de pacotes. */
-@media (max-width: 900px) {
-    .ap-shell {
-        grid-template-columns: 1fr;
-    }
+/* Itens da sidebar e da lista viraram <a> (eram <div> e <button> com listener
+   de clique). Link herda sublinhado e a cor do navegador. */
+.navigation-sidebar a,
+.access-item,
+.sidebar-section-toggle,
+.details-btn,
+.empty-screen-cta {
+    text-decoration: none;
+    color: inherit;
+}
 
-    .ap-shell-nav {
-        border-right: none;
-        border-bottom: 1px solid var(--ap-border);
-        padding: 12px 14px;
-    }
+/* ─── Menu do perfil na sidebar ───────────────────────────────────────────
+   Vinha de pages/dashboard/settings.css, junto do modal de configurações.
+   Configurações virou rota e o menu ficou sendo da casca, então as regras
+   passam a viver aqui. */
 
-    .ap-shell-brand {
-        margin-bottom: 12px;
-    }
+.sidebar-profile-wrapper {
+    position: relative;
+}
 
-    .ap-shell-nav nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
+.sidebar-profile-chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--ap-text-muted);
+    transition: transform 0.18s ease;
+    opacity: 0.6;
+}
 
-    .ap-shell-main {
-        padding: 20px 16px;
-    }
+#sidebar-profile.menu-open .sidebar-profile-chevron {
+    transform: rotate(180deg);
+}
+
+.sidebar-profile-menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    padding: 4px;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    pointer-events: none;
+}
+
+.sidebar-profile-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.sidebar-profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--ap-radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--ap-text-secondary);
+    font-size: 13.5px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-profile-menu-item:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
+}
+
+.sidebar-profile-menu-item--danger {
+    color: var(--ap-danger);
+}
+
+.sidebar-profile-menu-item--danger:hover {
+    background: var(--ap-danger-light);
+    color: var(--ap-danger);
+}
+
+.sidebar-profile-menu-divider {
+    height: 1px;
+    background: var(--ap-border);
+    margin: 3px 0;
+}
+
+/* Enquanto a coluna do gráfico não volta (depende do pipeline de
+   estatísticas), a linha tem um filho só: sem isto ele ficaria com a largura
+   da coluna estreita, com metade da tela vazia ao lado. Sai junto com o
+   gráfico. */
+.collection-chart-users-row:not(:has(.collection-chart-col)) {
+    grid-template-columns: 1fr;
 }
