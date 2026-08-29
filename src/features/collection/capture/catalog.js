@@ -48,8 +48,8 @@ export const CATALOG = [
     { name: 'Facebook', url: 'https://www.facebook.com', cat: 'social' },
 ];
 
-/** Quantos serviços aparecem antes do "ver todos". */
-export const POPULAR_COUNT = 8;
+/** Os que aparecem antes do "ver todos" — a mesma escolha do painel antigo. */
+export const POPULAR_NAMES = ['ChatGPT', 'Notion', 'Slack', 'Canva'];
 
 /** Chave de deduplicação de um serviço. */
 export function keyOf(url) {

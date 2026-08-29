@@ -32,7 +32,7 @@ export default function CaptureProgress({ mode, rows, batchDone, summary, onRetr
     if (batchDone) status = failed === 0 ? copy.allOk : copy.partial(ok, failed);
 
     return (
-        <div className="as-progress-body">
+        <div className="modal-body as-progress-body">
             <div className="up-progress">
                 <div className="up-progress-top">
                     <span className="up-status as-status">{status}</span>

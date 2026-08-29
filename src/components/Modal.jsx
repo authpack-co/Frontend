@@ -4,8 +4,7 @@ import { createPortal } from 'react-dom';
 /**
  * Casca dos modais.
  *
- * Fecha no Escape, no clique fora e no ×. O painel antigo tinha isso
- * espalhado por listener em cada modal; aqui é uma regra só.
+ * Fecha no Escape, no clique fora e no ×, numa regra só.
  *
  * Vai para o body por portal, e não é firula: um modal aberto de dentro de uma
  * linha clicável herdava o clique dela — confirmar "excluir sessão" abria a
@@ -16,10 +15,23 @@ export default function Modal({
     open = true,
     onClose,
     title,
+    // O CSS é escopado por id e por classe NO PRÓPRIO .modal-body /
+    // .modal-footer (ex.: .modal-body.pc-body). Sem poder pôr a classe no
+    // elemento certo, o modal nasce sem metade do estilo.
+    id,
     className = '',
+    bodyClassName = '',
+    footerClassName = '',
+    headerClassName = '',
+    // Conteúdo do cabeçalho no lugar do título simples (o card de "usando
+    // agora" põe o serviço inteiro ali).
+    header,
+    // Fica entre o cabeçalho e o corpo — é onde as abas de "pessoas" moram.
+    aside,
     children,
     footer,
     closable = true,
+    overlayProps = {},
 }) {
     useEffect(() => {
         if (!open || !closable) return undefined;
@@ -42,10 +54,12 @@ export default function Modal({
                 if (closable && event.target === event.currentTarget) onClose();
             }}
             onKeyDown={(event) => event.stopPropagation()}
+            id={id}
+            {...overlayProps}
         >
             <div className={`modal ${className}`.trim()} role="dialog" aria-modal="true">
-                <div className="modal-header">
-                    <h2 className="modal-title">{title}</h2>
+                <div className={`modal-header ${headerClassName}`.trim()}>
+                    {header || <h2 className="modal-title">{title}</h2>}
                     {closable && (
                         <button className="close-btn" type="button" aria-label="Fechar" onClick={onClose}>
                             ×
@@ -53,9 +67,11 @@ export default function Modal({
                     )}
                 </div>
 
-                <div className="modal-body">{children}</div>
+                {aside}
 
-                {footer && <div className="modal-footer">{footer}</div>}
+                <div className={`modal-body ${bodyClassName}`.trim()}>{children}</div>
+
+                {footer && <div className={`modal-footer ${footerClassName}`.trim()}>{footer}</div>}
             </div>
         </div>,
         document.body

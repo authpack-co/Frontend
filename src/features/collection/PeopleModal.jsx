@@ -97,33 +97,42 @@ export default function PeopleModal() {
     }
 
     return (
-        <Modal open onClose={close} title="Pessoas do pacote" className="pkg-people-modal">
-            <div className="pkg-people-tabs" role="tablist">
-                <button
-                    className={`pkg-people-tab${tab === 'members' ? ' active' : ''}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === 'members'}
-                    onClick={() => setSearchParams({}, { replace: true })}
-                >
-                    <span>Membros</span>
-                    <span className="pkg-people-tab-count">{state.members.length || ''}</span>
-                </button>
-                <button
-                    className={`pkg-people-tab${tab === 'requests' ? ' active' : ''}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === 'requests'}
-                    onClick={() => setSearchParams({ tab: 'requests' }, { replace: true })}
-                >
-                    <span>Solicitações</span>
-                    <span className={`pkg-people-tab-count pkg-people-tab-count--alert${pending.length ? '' : ' hidden'}`}>
-                        {pending.length}
-                    </span>
-                </button>
-            </div>
-
-            <div className="pkg-people-body custom-scrollbar">
+        <Modal
+            open
+            onClose={close}
+            title="Pessoas do pacote"
+            id="packagePeopleModal"
+            className="pkg-people-modal"
+            bodyClassName="pkg-people-body custom-scrollbar"
+            // As abas são irmãs do corpo, não filhas: é assim que o CSS as posiciona.
+            aside={(
+                <div className="pkg-people-tabs" role="tablist">
+                    <button
+                        className={`pkg-people-tab${tab === 'members' ? ' active' : ''}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === 'members'}
+                        onClick={() => setSearchParams({}, { replace: true })}
+                    >
+                        <span>Membros</span>
+                        <span className="pkg-people-tab-count">{state.members.length || ''}</span>
+                    </button>
+                    <button
+                        className={`pkg-people-tab${tab === 'requests' ? ' active' : ''}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === 'requests'}
+                        onClick={() => setSearchParams({ tab: 'requests' }, { replace: true })}
+                    >
+                        <span>Solicitações</span>
+                        <span className={`pkg-people-tab-count pkg-people-tab-count--alert${pending.length ? '' : ' hidden'}`}>
+                            {pending.length}
+                        </span>
+                    </button>
+                </div>
+            )}
+        >
+            <>
                 {state.status === 'loading' && (
                     <div className="spinner-container" style={{ height: 160 }}>
                         <div className="spinner large"></div>
@@ -150,7 +159,7 @@ export default function PeopleModal() {
                 {state.status === 'ready' && tab === 'requests' && (
                     <RequestsTab pending={pending} busyId={deciding} onDecide={decide} />
                 )}
-            </div>
+            </>
         </Modal>
     );
 }

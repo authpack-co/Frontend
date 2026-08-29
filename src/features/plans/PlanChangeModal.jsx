@@ -62,7 +62,10 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
             open
             onClose={onClose}
             title={copy.title}
+            id="planChangeModal"
             className="pc-modal"
+            bodyClassName="pc-body"
+            footerClassName="pc-footer"
             closable={!busy}
             footer={(
                 <>
@@ -75,7 +78,7 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
                 </>
             )}
         >
-            <div className="pc-body">
+            <>
                 {/* Plano atual → plano novo, com o limite de pessoas de cada um
                     (o limitador real do produto). */}
                 <div className="pc-transition">
@@ -121,7 +124,7 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
                 </div>
 
                 <p className="pc-note">{copy.note}</p>
-            </div>
+            </>
         </Modal>
     );
 }

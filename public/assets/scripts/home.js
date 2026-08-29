@@ -25,12 +25,12 @@
         var plusBadge = isPlus ? '<span class="nav-plus-badge">Plus</span>' : '';
         var avatarClass = isPlus ? 'nav-avatar plus-avatar' : 'nav-avatar';
         return (
-            '<a href="/pages/dashboard/" class="nav-profile">' +
+            '<a href="/collection" class="nav-profile">' +
                 '<span class="nav-profile-name">' + escHtml(firstName) + '</span>' +
                 plusBadge +
                 '<img class="' + avatarClass + '" src="' + escHtml(user.picture || '') + '" alt="' + escHtml(user.name || 'User') + '">' +
             '</a>' +
-            '<a href="/pages/dashboard/" class="btn btn-primary">Abrir painel</a>'
+            '<a href="/collection" class="btn btn-primary">Abrir painel</a>'
         );
     }
 

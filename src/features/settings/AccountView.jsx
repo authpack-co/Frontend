@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/auth.jsx';
 import { useExtensionStatus } from '../../lib/extension.js';
@@ -9,11 +8,11 @@ import { GoogleIcon, PuzzleIcon, StarIcon } from './icons.jsx';
 // Papéis que já têm o benefício sem assinar.
 const PLUS_BENEFIT_ROLES = ['admin'];
 
-export default function AccountView() {
+export default function AccountView({ onOpenPlans }) {
     const { user, reload, logout } = useAuth();
 
     return (
-        <div className="settings-view">
+        <div className="settings-view active" id="settings-view-conta">
             <div className="settings-view-header">
                 <h2>Conta</h2>
                 <p>Gerencie sua conta Google e a extensão deste navegador.</p>
@@ -21,7 +20,7 @@ export default function AccountView() {
 
             <div className="settings-top-row">
                 <GoogleAccountCard user={user} onDisconnect={logout} />
-                <PlanCard user={user} onChange={reload} />
+                <PlanCard user={user} onChange={reload} onOpenPlans={onOpenPlans} />
             </div>
 
             <ExtensionCard />
@@ -74,7 +73,7 @@ function GoogleAccountCard({ user, onDisconnect }) {
     );
 }
 
-function PlanCard({ user, onChange }) {
+function PlanCard({ user, onChange, onOpenPlans }) {
     const [canceling, setCanceling] = useState(false);
 
     async function handleCancel() {
@@ -104,13 +103,13 @@ function PlanCard({ user, onChange }) {
                 <span className="settings-card-title">Plano</span>
             </div>
             <div className="settings-card-body sc-plan-body">
-                <PlanState user={user} canceling={canceling} onCancel={handleCancel} />
+                <PlanState user={user} canceling={canceling} onCancel={handleCancel} onOpenPlans={onOpenPlans} />
             </div>
         </div>
     );
 }
 
-function PlanState({ user, canceling, onCancel }) {
+function PlanState({ user, canceling, onCancel, onOpenPlans }) {
     const plan = user?.plan;
     const status = user?.plan_status;
     const expiresAt = user?.plan_expires_at;
@@ -163,11 +162,14 @@ function PlanState({ user, canceling, onCancel }) {
         <div className="sc-plan-state">
             <p className="sc-plan-text">Você está no plano <strong>Free</strong>.</p>
             <p className="sc-plan-sub">Acesso básico à plataforma.</p>
-            {/* Era um modal aberto por cima das configurações; agora os planos
-                têm rota própria, e o botão só leva até ela. */}
-            <Link className="sc-full-btn btn-primary" style={{ marginTop: 'auto' }} to="/upgrade">
+            <button
+                className="sc-full-btn btn-primary"
+                type="button"
+                style={{ marginTop: 'auto' }}
+                onClick={onOpenPlans}
+            >
                 Ver benefícios Plus
-            </Link>
+            </button>
         </div>
     );
 }

@@ -174,7 +174,7 @@
                         <li>Compartilhe com até 10 pessoas</li>
                         <li>Extensão no navegador</li>
                     </ul>
-                    <div class="pr-cta"><a href="/pages/dashboard/" class="btn btn-outline">Começar grátis</a></div>
+                    <div class="pr-cta"><a href="/collection" class="btn btn-outline">Começar grátis</a></div>
                 </div>
 
                 <!-- Plus (destaque) -->
@@ -188,7 +188,7 @@
                         <li>Compartilhe com até 25 pessoas</li>
                         <li>Ideal para times pequenos</li>
                     </ul>
-                    <div class="pr-cta"><a href="/pages/dashboard/?upgrade=plus" class="btn btn-grad">Assinar Plus</a></div>
+                    <div class="pr-cta"><a href="/collection?upgrade=plus" class="btn btn-grad">Assinar Plus</a></div>
                 </div>
 
                 <!-- Business -->
@@ -201,7 +201,7 @@
                         <li>Compartilhe com até 75 pessoas</li>
                         <li>Ideal para times e grupos</li>
                     </ul>
-                    <div class="pr-cta"><a href="/pages/dashboard/?upgrade=plus" class="btn btn-outline">Assinar Business</a></div>
+                    <div class="pr-cta"><a href="/collection?upgrade=plus" class="btn btn-outline">Assinar Business</a></div>
                 </div>
 
                 <!-- Enterprise -->
@@ -280,12 +280,12 @@
                     var badge = isPlus ? '<span class="nav-plus-badge">Plus</span>' : '';
                     var avatarClass = isPlus ? 'nav-avatar plus-avatar' : 'nav-avatar';
                     navUser.innerHTML =
-                        '<a href="/pages/dashboard/" class="nav-profile">' +
+                        '<a href="/collection" class="nav-profile">' +
                             '<span class="nav-profile-name">' + esc((u.name || '').split(' ')[0]) + '</span>' +
                             badge +
                             '<img class="' + avatarClass + '" src="' + esc(u.picture || '') + '" alt="' + esc(u.name || 'User') + '">' +
                         '</a>' +
-                        '<a href="/pages/dashboard/"><button class="btn btn-primary">Entrar</button></a>';
+                        '<a href="/collection"><button class="btn btn-primary">Entrar</button></a>';
                     document.body.classList.add('user-logged-in');
                 })
                 .catch(function () { /* mantém estado de visitante */ });

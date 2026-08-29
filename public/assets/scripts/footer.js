@@ -44,14 +44,14 @@
         var plusAvatarClass = isPlus ? ' plus-avatar' : '';
 
         return (
-            '<a href="/pages/dashboard/" class="nav-profile">' +
+            '<a href="/collection" class="nav-profile">' +
                 '<span class="nav-profile-name">' + escHtml(firstName) + '</span>' +
                 '<span class="nav-profile-picture' + plusAvatarClass + '">' +
                     plusBadge +
                     '<img src="' + escHtml(picture) + '" alt="' + escHtml(user.name || 'User') + '">' +
                 '</span>' +
             '</a>' +
-            '<a href="/pages/dashboard/">' +
+            '<a href="/collection">' +
                 '<button class="nav-btn-primary">Entrar</button>' +
             '</a>'
         );

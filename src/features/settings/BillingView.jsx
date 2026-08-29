@@ -26,7 +26,7 @@ export default function BillingView() {
     }, []);
 
     return (
-        <div className="settings-view">
+        <div className="settings-view active" id="settings-view-cobranca">
             <div className="settings-view-header">
                 <h2>Cobrança</h2>
                 <p>Acompanhe seu plano vigente e o histórico de pagamentos da assinatura.</p>

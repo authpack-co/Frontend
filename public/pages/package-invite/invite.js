@@ -119,9 +119,9 @@
     function showAlreadyOwns(pkgName, pkgId) {
         document.getElementById('owned-pkg-name').textContent = pkgName || 'Pacote';
         const qs = pkgId ? `?package=${encodeURIComponent(pkgId)}` : '';
-        document.getElementById('owned-cta').href = `/pages/dashboard/${qs}`;
+        document.getElementById('owned-cta').href = `/collection${qs}`;
         show(stateOwned);
-        setTimeout(() => { window.location.href = `/pages/dashboard/${qs}`; }, 2600);
+        setTimeout(() => { window.location.href = `/collection${qs}`; }, 2600);
     }
 
     /* ── Flow ───────────────────────────────────────────────────────────── */

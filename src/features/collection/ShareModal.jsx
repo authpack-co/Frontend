@@ -76,7 +76,10 @@ export default function ShareModal() {
             open
             onClose={close}
             title="Compartilhar pacote"
+            id="sharePackageModal"
             className="share-modal"
+            bodyClassName="share-body"
+            footerClassName="share-footer"
             footer={(
                 <>
                     <span className="share-code-label">Ou use o código</span>
@@ -91,47 +94,45 @@ export default function ShareModal() {
                 </>
             )}
         >
-            <div className="share-body">
-                <div className="share-field">
-                    <span className="share-field-label">Link do pacote</span>
+        <div className="share-field">
+                <span className="share-field-label">Link do pacote</span>
 
-                    <div className="share-link-row">
-                        <span className="share-link-url" title={url}>{url || '—'}</span>
-                        <button
-                            className="btn btn-primary share-copy-btn"
-                            type="button"
-                            onClick={() => copy(url, 'link', 'Não foi possível copiar o link.')}
+                <div className="share-link-row">
+                    <span className="share-link-url" title={url}>{url || '—'}</span>
+                    <button
+                        className="btn btn-primary share-copy-btn"
+                        type="button"
+                        onClick={() => copy(url, 'link', 'Não foi possível copiar o link.')}
+                    >
+                        {copied === 'link' ? 'Copiado!' : 'Copiar'}
+                    </button>
+                    {/* Trocar a chave derruba link e código anteriores de uma
+                        vez. Quem já entrou não é afetado — a chave só serve
+                        para pedir acesso. */}
+                    <button
+                        className="share-rotate-btn"
+                        type="button"
+                        title="Gerar um link novo e derrubar o anterior"
+                        aria-label="Gerar link novo"
+                        onClick={handleRotate}
+                        disabled={rotating}
+                    >
+                        <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ transform: `rotate(${spins * 360}deg)`, transition: 'transform 0.6s ease' }}
                         >
-                            {copied === 'link' ? 'Copiado!' : 'Copiar'}
-                        </button>
-                        {/* Trocar a chave derruba link e código anteriores de uma
-                            vez. Quem já entrou não é afetado — a chave só serve
-                            para pedir acesso. */}
-                        <button
-                            className="share-rotate-btn"
-                            type="button"
-                            title="Gerar um link novo e derrubar o anterior"
-                            aria-label="Gerar link novo"
-                            onClick={handleRotate}
-                            disabled={rotating}
-                        >
-                            <svg
-                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                                style={{ transform: `rotate(${spins * 360}deg)`, transition: 'transform 0.6s ease' }}
-                            >
-                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                <path d="M21 3v5h-5" />
-                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                <path d="M8 16H3v5" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <p className="share-hint">
-                        Compartilhe com quem precisa entrar. Você aprova cada pedido.
-                    </p>
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M8 16H3v5" />
+                        </svg>
+                    </button>
                 </div>
+
+                <p className="share-hint">
+                    Compartilhe com quem precisa entrar. Você aprova cada pedido.
+                </p>
             </div>
         </Modal>
     );

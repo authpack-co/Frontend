@@ -8,7 +8,7 @@
     // ============================================
     // Auth check: populate header + redirect if logged in
     // ============================================
-    const DASHBOARD_URL = '/pages/dashboard/';
+    const DASHBOARD_URL = '/collection';
 
     // Se ?persist=true estiver na URL, nunca redireciona para o dashboard
     const persistMode = new URLSearchParams(window.location.search).get('persist') === 'true';

@@ -1,6 +1,6 @@
-/* Base do app. O reset é o mesmo do painel antigo (style.css): o CSS herdado
-   das telas migradas conta com border-box em tudo e com margem zerada — sem
-   isso, um padding qualquer estoura a largura do elemento. */
+/* Base do app. O reset vem de dashboard.css: o CSS das telas conta com
+   border-box em tudo e com margem zerada — sem isso, um padding qualquer
+   estoura a largura do elemento. */
 
 *,
 *::before,
@@ -74,8 +74,8 @@ body {
 }
 
 /* ─── Estados de boot e spinner ───────────────────────────────
-   O spinner é o mesmo do painel antigo (style.css), trazido para cá porque
-   as telas migradas já o usam e o resto daquele arquivo não vem junto. */
+   O spinner mora aqui porque é usado por toda a aplicação, não só pelo
+   painel. */
 
 .ap-boot-state {
     display: flex;
@@ -114,11 +114,10 @@ body {
 
 
 /* ============================================================================
-   Ajustes sobre o snapshot do painel antigo (dashboard-legacy.css).
+   Ajustes sobre o CSS do painel (dashboard.css).
 
-   Importado por último de propósito: é aqui que mora a diferença entre o
-   markup de lá e o daqui. Cada regra abaixo existe porque a migração mudou
-   alguma coisa de verdade — não são correções de estilo.
+   Importado por último de propósito. Cada regra abaixo existe porque a
+   migração mudou alguma coisa de verdade — não são correções de estilo.
    ============================================================================ */
 
 /* A tela primária ocupava metade de um container de 200%, e ir para a sessão
@@ -129,97 +128,12 @@ body {
     width: 100%;
 }
 
-/* Itens da sidebar e da lista viraram <a> (eram <div> e <button> com listener
-   de clique). Link herda sublinhado e a cor do navegador. */
-.navigation-sidebar a,
-.access-item,
-.sidebar-section-toggle,
-.details-btn,
-.empty-screen-cta {
-    text-decoration: none;
+/* Vários controles que eram <button> viraram <a> — é o que dá URL a eles.
+   Link nasce sublinhado e com a cor do navegador; aqui eles são botões e
+   itens de menu. Antes das rotas não havia link nenhum na área logada, e a
+   regra não existia. */
+a {
     color: inherit;
+    text-decoration: none;
 }
 
-/* ─── Menu do perfil na sidebar ───────────────────────────────────────────
-   Vinha de pages/dashboard/settings.css, junto do modal de configurações.
-   Configurações virou rota e o menu ficou sendo da casca, então as regras
-   passam a viver aqui. */
-
-.sidebar-profile-wrapper {
-    position: relative;
-}
-
-.sidebar-profile-chevron {
-    margin-left: auto;
-    flex-shrink: 0;
-    color: var(--ap-text-muted);
-    transition: transform 0.18s ease;
-    opacity: 0.6;
-}
-
-#sidebar-profile.menu-open .sidebar-profile-chevron {
-    transform: rotate(180deg);
-}
-
-.sidebar-profile-menu {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: var(--ap-bg-card);
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-md);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-    padding: 4px;
-    z-index: 200;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(6px);
-    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
-    pointer-events: none;
-}
-
-.sidebar-profile-menu.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    pointer-events: all;
-}
-
-.sidebar-profile-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: var(--ap-radius-sm);
-    border: none;
-    background: transparent;
-    color: var(--ap-text-secondary);
-    font-size: 13.5px;
-    font-family: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.12s ease, color 0.12s ease;
-}
-
-.sidebar-profile-menu-item:hover {
-    background: var(--ap-bg-hover);
-    color: var(--ap-text-primary);
-}
-
-.sidebar-profile-menu-item--danger {
-    color: var(--ap-danger);
-}
-
-.sidebar-profile-menu-item--danger:hover {
-    background: var(--ap-danger-light);
-    color: var(--ap-danger);
-}
-
-.sidebar-profile-menu-divider {
-    height: 1px;
-    background: var(--ap-border);
-    margin: 3px 0;
-}

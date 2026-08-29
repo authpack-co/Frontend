@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
 import ServiceIcon from '../components/ServiceIcon.jsx';
 import {
@@ -8,11 +8,14 @@ import {
     DeletePackageModal,
     RenamePackageModal,
 } from '../features/collection/PackageModals.jsx';
+import PlansModal from '../features/plans/PlansModal.jsx';
 import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
+import useUpgradeParam from '../features/plans/useUpgradeParam.js';
+import SettingsModal from '../features/settings/SettingsModal.jsx';
 import { useAuth } from '../lib/auth.jsx';
 import { getOldestSession, PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
-import './dashboard-legacy.css';
+import './dashboard.css';
 
 // Papéis com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
 const PLUS_BENEFIT_ROLES = ['admin'];
@@ -20,8 +23,7 @@ const PLUS_BENEFIT_ROLES = ['admin'];
 /**
  * Casca do app: sidebar fixa + área de conteúdo.
  *
- * Mesmas classes do painel antigo de propósito — o CSS vem inteiro de lá, e
- * assim cada tela migrada nasce idêntica à que está no ar.
+ * As classes são as do CSS em dashboard.css: é o que mantém o desenho de pé.
  */
 export default function AppShell() {
     // O retorno do Checkout cai em qualquer rota do app, não só nos planos.
@@ -47,10 +49,15 @@ function Sidebar() {
     const { status, collection, access, userInfo } = usePackages();
     const packages = isAccess ? access : collection;
 
-    // Abaixo de 1199px a sidebar sai da tela e volta pelo hambúrguer (as regras
-    // já vêm do CSS do painel antigo; lá o botão era criado em JS solto).
+    // Abaixo de 1199px a sidebar sai da tela e volta pelo hambúrguer.
     const [menuOpen, setMenuOpen] = useState(false);
     const [creating, setCreating] = useState(false);
+    // Configurações e planos abrem por cima da tela, sem trocar de rota.
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [plansOpen, setPlansOpen] = useState(false);
+
+    // Chegando pelo upsell da página de preços, os planos já abrem.
+    useUpgradeParam(() => setPlansOpen(true));
 
     // Navegar fecha o menu: no celular a sidebar cobre o conteúdo que a pessoa
     // acabou de pedir.
@@ -178,10 +185,24 @@ function Sidebar() {
                 </div>
             </nav>
 
-            <SidebarFooter userInfo={userInfo} loading={status === 'loading'} />
+            <SidebarFooter
+                userInfo={userInfo}
+                loading={status === 'loading'}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onOpenPlans={() => setPlansOpen(true)}
+            />
         </aside>
 
             <CreatePackageModal open={creating} onClose={() => setCreating(false)} />
+
+            <SettingsModal
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                // "Ver benefícios Plus" troca de modal: configurações sai da
+                // frente e os planos entram, como no painel antigo.
+                onOpenPlans={() => { setSettingsOpen(false); setPlansOpen(true); }}
+            />
+            <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
         </>
     );
 }
@@ -280,7 +301,7 @@ function SidebarPackage({ pkg, section, isAccess }) {
     );
 }
 
-function SidebarFooter({ userInfo, loading }) {
+function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans }) {
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
         || (userInfo?.plan && userInfo.plan !== 'free');
 
@@ -290,7 +311,9 @@ function SidebarFooter({ userInfo, loading }) {
                 <div className="sidebar-upgrade-card">
                     <div className="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
                     <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
-                    <Link className="sidebar-upgrade-link" to="/upgrade">Fazer upgrade &rarr;</Link>
+                    <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
+                        Fazer upgrade &rarr;
+                    </button>
                 </div>
             )}
 
@@ -298,7 +321,12 @@ function SidebarFooter({ userInfo, loading }) {
                 ? <div className="sk-block sk-plan-people"></div>
                 : <PeopleCounter userInfo={userInfo} />}
 
-            <ProfileMenu userInfo={userInfo} loading={loading} hasPlusBenefits={hasPlusBenefits} />
+            <ProfileMenu
+                userInfo={userInfo}
+                loading={loading}
+                hasPlusBenefits={hasPlusBenefits}
+                onOpenSettings={onOpenSettings}
+            />
         </div>
     );
 }
@@ -344,11 +372,10 @@ function PeopleCounter({ userInfo }) {
     );
 }
 
-function ProfileMenu({ userInfo, loading, hasPlusBenefits }) {
+function ProfileMenu({ userInfo, loading, hasPlusBenefits, onOpenSettings }) {
     const [open, setOpen] = useState(false);
     const { logout } = useAuth();
     const { theme, toggle } = useTheme();
-    const navigate = useNavigate();
     const wrapperRef = useRef(null);
 
     useEffect(() => {
@@ -417,7 +444,7 @@ function ProfileMenu({ userInfo, loading, hasPlusBenefits }) {
                 <button
                     className="sidebar-profile-menu-item"
                     type="button"
-                    onClick={() => { setOpen(false); navigate('/settings'); }}
+                    onClick={() => { setOpen(false); onOpenSettings(); }}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />

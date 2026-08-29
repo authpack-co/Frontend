@@ -1,16 +1,13 @@
 /* ============================================================================
-   Snapshot do CSS do painel antigo.
+   CSS do painel.
 
-   É cópia literal de pages/dashboard/{presets,style}.css mais as animações e o
-   placeholder de favicon — sem o @import de fontes (o app.html já as carrega) e
-   sem o reset/body, que o base.css passou a mandar.
+   Veio do painel que existia antes desta migração e agora é o do app: o markup
+   React usa exatamente estas classes, e foi assim que cada tela chegou igual à
+   que estava no ar.
 
-   Existe para a migração ser like-for-like: o markup React reproduz as mesmas
-   classes, então cada tela chega pixel a pixel igual à que está no ar, e a
-   revisão fica sobre o comportamento, não sobre o desenho.
-
-   Encolhe conforme as telas migram: o que sobrar de regra sem markup
-   correspondente aqui dentro é lixo, e sai junto com o painel antigo.
+   Ainda tem regra sem markup correspondente (o que sobrou de telas que mudaram
+   de forma). Dá para podar com calma, mas só com a tela na frente — apagar por
+   busca de texto aqui é como quebra desenho sem ninguém perceber.
    ============================================================================ */
 
 /* ===== Estado de Content ===== */

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNotify } from '../../components/Notifications.jsx';
 import { api, ApiError } from '../../lib/api.js';
 import { usePackages } from '../../lib/packages.jsx';
@@ -6,10 +7,6 @@ import PlanChangeModal from './PlanChangeModal.jsx';
 
 /**
  * Planos.
- *
- * Era um modal aberto por cima do painel; virou rota porque é uma tela de
- * decisão — dá para mandar por link ("olha os planos") e para voltar com o
- * botão do navegador sem perder onde se estava.
  *
  * Pacotes e sessões são ilimitados em todos os planos: o único limite é com
  * quantas pessoas você compartilha acesso, e é isso que os cards comparam.
@@ -62,7 +59,7 @@ const PLANS = [
     },
 ];
 
-export default function PlansPage() {
+export default function PlansModal({ open, onClose }) {
     const { userInfo } = usePackages();
     const notify = useNotify();
 
@@ -106,8 +103,15 @@ export default function PlansPage() {
         }
     }
 
-    return (
-        <div className="plans-modal" style={{ maxWidth: 'none' }}>
+    if (!open) return null;
+
+    return createPortal(
+        <div
+            className="modal-overlay show"
+            onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+        >
+        <div className="modal plans-modal" role="dialog" aria-modal="true">
+            <button className="close-btn plus-close-btn" type="button" aria-label="Fechar" onClick={onClose}>×</button>
             <div className="plans-modal-header">
                 <span className="plans-eyebrow">Planos</span>
                 <h2>Escolha o tamanho do seu <span className="plus-highlight">compartilhamento</span></h2>
@@ -199,5 +203,7 @@ export default function PlansPage() {
                 />
             )}
         </div>
+        </div>,
+        document.body
     );
 }

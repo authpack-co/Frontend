@@ -38,22 +38,29 @@ export default function UsingNowModal({ pkg, session, accessHistory, onClose }) 
         <Modal
             open
             onClose={onClose}
+            id="usingNowModal"
             className="un-modal"
-            title={session.name}
+            headerClassName="un-header"
+            bodyClassName="un-body"
+            footerClassName="un-footer"
+            // O cabeçalho é o serviço inteiro: ícone, nome e o resumo de quem
+            // está usando. O nome é o próprio título do modal.
+            header={(
+                <div className="un-service">
+                    <ServiceIcon className="un-service-icon" icon={session.icon} url={session.url} name={session.name} />
+                    <div className="un-service-text">
+                        <h2 className="modal-title un-service-name">{session.name}</h2>
+                        <p className="un-service-meta">{domain} · {peopleLabel}</p>
+                    </div>
+                </div>
+            )}
             footer={(
                 <span className="un-total-label">
                     Hoje nesta sessão · <strong className="un-total">{formatDuration(data.todayTotalSeconds)}</strong>
                 </span>
             )}
         >
-            <div className="un-service">
-                <ServiceIcon className="un-service-icon" icon={session.icon} url={session.url} name={session.name} />
-                <div className="un-service-text">
-                    <p className="un-service-meta">{domain} · {peopleLabel}</p>
-                </div>
-            </div>
-
-            <div className="un-body">
+            <>
                 {people > 0 ? (
                     <div className="data-table un-table">
                         <div className="table-header">
@@ -115,7 +122,7 @@ export default function UsingNowModal({ pkg, session, accessHistory, onClose }) 
                         </div>
                     </div>
                 )}
-            </div>
+            </>
         </Modal>
     );
 }

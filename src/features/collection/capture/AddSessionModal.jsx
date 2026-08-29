@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
-import ServiceIcon from '../../../components/ServiceIcon.jsx';
-import { isExtensionInstalled } from '../../../lib/extension.js';
 import ExtensionRequiredModal from '../../../components/ExtensionRequiredModal.jsx';
+import { isExtensionInstalled } from '../../../lib/extension.js';
 import { usePackage, usePackages } from '../../../lib/packages.jsx';
-import { CATALOG, CATEGORIES, keyOf, normalizeServiceInput, POPULAR_COUNT } from './catalog.js';
+import { CATALOG, keyOf, normalizeServiceInput } from './catalog.js';
 import CaptureProgress, { progressFooterStatus } from './CaptureProgress.jsx';
+import SelectServices from './SelectServices.jsx';
 import useCapture from './useCapture.js';
 
 /**
@@ -15,6 +15,9 @@ import useCapture from './useCapture.js';
  * Duas fases: escolher os serviços e acompanhar a captura. Quem captura é a
  * extensão — ela abre cada serviço numa aba, espera assentar e devolve a
  * sessão. Por isso a tela exige extensão antes de qualquer coisa.
+ *
+ * O id e o data-phase não são decoração: o CSS deste modal é todo escopado em
+ * #addSessionModal, e é o data-phase que decide qual corpo aparece.
  */
 export default function AddSessionModal() {
     const { packageId } = useParams();
@@ -41,16 +44,15 @@ export default function AddSessionModal() {
         const query = search.trim().toLowerCase();
         if (!query) return [];
 
-        const matches = CATALOG.filter((service) => service.name.toLowerCase().includes(query)
-            || service.url.toLowerCase().includes(query));
-
-        // Uma URL colada que não está no catálogo vira a primeira opção.
+        // Uma URL colada que não está no catálogo é a única opção — foi ela
+        // que a pessoa digitou.
         const custom = normalizeServiceInput(search);
         if (custom && !CATALOG.some((service) => keyOf(service.url) === keyOf(custom.url))) {
-            return [{ ...custom, custom: true }, ...matches];
+            return [custom];
         }
 
-        return matches;
+        return CATALOG.filter((service) => service.name.toLowerCase().includes(query)
+            || service.url.toLowerCase().includes(query));
     }, [search]);
 
     if (!pkg) return null;
@@ -81,13 +83,12 @@ export default function AddSessionModal() {
         })));
     }
 
-    const footer = capture.started
-        ? <ProgressFooter capture={capture} onClose={close} />
-        : <SelectFooter count={selected.length} onCancel={close} onConfirm={handleConfirm} />;
-
     return createPortal(
         <div
             className="modal-overlay show"
+            id="addSessionModal"
+            data-mode="create"
+            data-phase={capture.started ? 'progress' : 'select'}
             onClick={(event) => {
                 event.stopPropagation();
                 // Durante a captura o clique fora não fecha: as abas estão
@@ -126,7 +127,7 @@ export default function AddSessionModal() {
                         onRetry={capture.retry}
                     />
                 ) : (
-                    <SelectPhase
+                    <SelectServices
                         search={search}
                         onSearch={setSearch}
                         suggestions={suggestions}
@@ -138,7 +139,11 @@ export default function AddSessionModal() {
                     />
                 )}
 
-                <div className="modal-footer as-footer">{footer}</div>
+                <div className="modal-footer as-footer">
+                    {capture.started
+                        ? <ProgressFooter capture={capture} onClose={close} />
+                        : <SelectFooter count={selected.length} onCancel={close} onConfirm={handleConfirm} />}
+                </div>
             </div>
 
             <ExtensionRequiredModal
@@ -148,137 +153,6 @@ export default function AddSessionModal() {
             />
         </div>,
         document.body
-    );
-}
-
-function SelectPhase({ search, onSearch, suggestions, selected, isSelected, onToggle, viewAll, onViewAll }) {
-    const popular = CATALOG.slice(0, POPULAR_COUNT);
-
-    return (
-        <div className="modal-body as-select-body">
-            <div className="as-hero-texts">
-                <h3>Qual serviço você quer adicionar?</h3>
-                <p>Busque pelo nome do serviço ou cole a URL para começar.</p>
-            </div>
-
-            <div className="as-search-container">
-                <div className="as-search-row">
-                    <span className="as-search-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </svg>
-                    </span>
-                    <input
-                        type="text"
-                        className="form-input as-search"
-                        placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com)…"
-                        autoComplete="off"
-                        value={search}
-                        onChange={(event) => onSearch(event.target.value)}
-                    />
-                </div>
-
-                {suggestions.length > 0 && (
-                    <div className="as-search-dropdown">
-                        <ul className="as-dropdown-list">
-                            {suggestions.map((service) => (
-                                <li key={keyOf(service.url)}>
-                                    <button
-                                        type="button"
-                                        onClick={() => { onToggle(service); onSearch(''); }}
-                                    >
-                                        <ServiceIcon url={service.url} name={service.name} />
-                                        <span>{service.name}</span>
-                                        {service.custom && <em>URL personalizada</em>}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                <p className="as-search-hint">
-                    <svg className="as-search-hint-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 16v-4"></path>
-                        <path d="M12 8h.01"></path>
-                    </svg>
-                    Esteja logado no serviço para funcionar corretamente.
-                </p>
-            </div>
-
-            {selected.length > 0 && (
-                <div className="as-selected-section">
-                    {selected.map((service) => (
-                        <span className="as-chip" key={keyOf(service.url)}>
-                            <ServiceIcon url={service.url} name={service.name} />
-                            <span>{service.name}</span>
-                            <button
-                                type="button"
-                                aria-label={`Remover ${service.name}`}
-                                onClick={() => onToggle(service)}
-                            >
-                                ×
-                            </button>
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {viewAll ? (
-                <div className="as-view-all-sections">
-                    {CATEGORIES.map((category) => (
-                        <section key={category.id}>
-                            <div className="as-divider"><span>{category.label}</span></div>
-                            <div className="as-popular-grid">
-                                {CATALOG.filter((service) => service.cat === category.id).map((service) => (
-                                    <ServiceCard
-                                        key={keyOf(service.url)}
-                                        service={service}
-                                        selected={isSelected(service)}
-                                        onToggle={onToggle}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    ))}
-                </div>
-            ) : (
-                <div className="as-view-popular">
-                    <div className="as-divider"><span>Serviços populares</span></div>
-                    <div className="as-popular-grid">
-                        {popular.map((service) => (
-                            <ServiceCard
-                                key={keyOf(service.url)}
-                                service={service}
-                                selected={isSelected(service)}
-                                onToggle={onToggle}
-                            />
-                        ))}
-                    </div>
-                    <div className="as-view-all-wrapper">
-                        <button className="btn btn-outline as-view-all-btn" type="button" onClick={onViewAll}>
-                            Ver todos os serviços &rarr;
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function ServiceCard({ service, selected, onToggle }) {
-    return (
-        <button
-            type="button"
-            className={`as-service-card${selected ? ' is-selected' : ''}`}
-            onClick={() => onToggle(service)}
-            aria-pressed={selected}
-        >
-            <ServiceIcon url={service.url} name={service.name} />
-            <span>{service.name}</span>
-        </button>
     );
 }
 

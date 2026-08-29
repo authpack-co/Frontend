@@ -45,6 +45,9 @@ export default function UpdateSessionModal({ pkg, session, onClose }) {
     return createPortal(
         <div
             className="modal-overlay show"
+            id="addSessionModal"
+            data-mode="update"
+            data-phase="progress"
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
         >

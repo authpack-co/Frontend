@@ -3,8 +3,9 @@
 
 User-agent: *
 Allow: /
-Disallow: /pages/dashboard/
-Disallow: /pages/activation/
+Disallow: /collection
+Disallow: /shared
+Disallow: /admin
 Disallow: /pages/package-invite/
 
 # ── Crawlers de IA explicitamente bem-vindos (descoberta da ferramenta) ──

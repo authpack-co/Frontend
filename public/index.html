@@ -68,7 +68,7 @@
             fetch(serverURL + '/api/auth/', { credentials: 'include' })
                 .then(function (res) {
                     if (res.ok) {
-                        window.location.replace('/pages/dashboard/');
+                        window.location.replace('/collection');
                     } else {
                         release();
                     }
@@ -213,7 +213,7 @@
                 </div>
 
                 <div class="hero-media">
-                    <!-- Mockup do painel (pages/dashboard/): barra lateral com os pacotes,
+                    <!-- Mockup do painel: barra lateral com os pacotes,
                          topbar de busca + compartilhar, e a grade de cards de sessão. -->
                     <figure class="figure figure--hero is-art">
                         <svg viewBox="0 0 620 420" role="img"

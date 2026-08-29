@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireAuth } from '../lib/auth.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
-import PlansPage from '../features/plans/PlansPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
@@ -10,9 +9,6 @@ import PeopleModal from '../features/collection/PeopleModal.jsx';
 import ShareModal from '../features/collection/ShareModal.jsx';
 import SessionDetail from '../features/collection/SessionDetail.jsx';
 import UserDetail from '../features/collection/UserDetail.jsx';
-import AccountView from '../features/settings/AccountView.jsx';
-import BillingView from '../features/settings/BillingView.jsx';
-import SettingsPage from '../features/settings/SettingsPage.jsx';
 import AppShell from './AppShell.jsx';
 import Placeholder from './Placeholder.jsx';
 
@@ -20,10 +16,12 @@ import Placeholder from './Placeholder.jsx';
  * Tabela de rotas do app.
  *
  * Regra que orienta o mapa: a URL guarda o que alguém pode querer mandar por
- * link ou reencontrar depois do F5 — seção, pacote, sessão, usuário, aba de
- * configurações. Confirmação de excluir, "usando agora" e afins ficam de fora:
- * ressuscitar um modal de confirmação sem o contexto que levou até ele é pior
- * do que não restaurar nada.
+ * link ou reencontrar depois do F5 — seção, pacote, sessão, usuário.
+ *
+ * Fora dela ficam configurações, planos e as confirmações: são coisas que se
+ * abrem por cima do que já está na tela e se fecham voltando para ela. Dar URL
+ * a elas só criaria endereços que ressuscitam um modal sem o contexto que
+ * levou até ele.
  *
  * Os modais que TÊM rota (compartilhar, pessoas, adicionar sessão) são filhos
  * da rota do pacote: a tela de detalhe continua montada atrás deles, e fechar o
@@ -47,16 +45,6 @@ export default function AppRoutes() {
                 <Route path="/shared" element={<SharedPage />} />
                 <Route path="/shared/:packageId" element={<AccessDetail />} />
                 <Route path="/shared/:packageId/session/:sessionId" element={<Placeholder name="Sessão (acesso)" from=".preset-session-overview" />} />
-
-                {/* ── Configurações ─────────────────────────────────────── */}
-                <Route path="/settings" element={<SettingsPage />}>
-                    <Route index element={<Navigate to="/settings/account" replace />} />
-                    <Route path="account" element={<AccountView />} />
-                    <Route path="billing" element={<BillingView />} />
-                </Route>
-
-                {/* ── Planos ────────────────────────────────────────────── */}
-                <Route path="/upgrade" element={<PlansPage />} />
 
                 {/* ── Admin (hoje vive em hash: #financeiro, #usuarios…) ─── */}
                 <Route path="/admin" element={<Navigate to="/admin/finance" replace />} />

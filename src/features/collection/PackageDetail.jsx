@@ -45,24 +45,25 @@ export default function PackageDetail() {
                     />
                 </div>
 
+                {/* Ordem do painel: pessoas, compartilhar, adicionar sessão. */}
                 <div className="topbar-actions">
                     <PackagePeopleCounter pkg={pkg} />
 
-                    <Link className="btn btn-primary" to={`/collection/${pkg.id}/sessions/new`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 5v14" />
-                            <path d="M5 12h14" />
-                        </svg>
-                        Adicionar sessão
-                    </Link>
-
                     <Link className="btn topbar-share-btn" to={`/collection/${pkg.id}/share`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2v13" />
                             <path d="m16 6-4-4-4 4" />
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
                         </svg>
                         Compartilhar
+                    </Link>
+
+                    <Link className="btn btn-primary topbar-add-session-btn add-session-btn" to={`/collection/${pkg.id}/sessions/new`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        Adicionar sessão
                     </Link>
                 </div>
             </div>

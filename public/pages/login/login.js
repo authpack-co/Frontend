@@ -11,7 +11,7 @@ const SERVER_URL = IS_DEV
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Read redirect param from URL
     const params = new URLSearchParams(window.location.search);
-    const redirectPath = params.get('redirect') || '/pages/dashboard/';
+    const redirectPath = params.get('redirect') || '/collection';
 
     // 2. Check if user is already logged in
     try {
