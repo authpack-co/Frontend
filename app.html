@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AuthPack</title>
+
+    <!-- O app é área logada: não deve ser indexado. -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=Fira+Code:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/theme-tokens.css">
+
+    <!-- Mesmo boot de tema do painel antigo: escolhe antes do primeiro paint
+         para não piscar claro em quem usa escuro. -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('authpack-theme');
+                if (t !== 'light') document.documentElement.setAttribute('data-theme', 'dark');
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

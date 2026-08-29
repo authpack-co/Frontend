@@ -1,0 +1,110 @@
+/* Estilo mínimo do andaime. Some conforme as telas reais chegam com o CSS
+   que já existe em pages/dashboard/. */
+
+body {
+    margin: 0;
+    background: var(--ap-bg-page);
+    color: var(--ap-text-primary);
+    font-family: Inter, system-ui, sans-serif;
+}
+
+.ap-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+}
+
+.ap-shell-nav {
+    background: var(--ap-bg-sidebar);
+    border-right: 1px solid var(--ap-border);
+    padding: 20px 14px;
+}
+
+.ap-shell-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+.ap-shell-nav nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ap-shell-nav a {
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: var(--ap-text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.ap-shell-nav a:hover {
+    background: var(--ap-bg-hover);
+}
+
+.ap-shell-nav a.active {
+    background: var(--ap-accent-subtle);
+    color: var(--ap-accent-strong);
+    font-weight: 600;
+}
+
+.ap-shell-main {
+    padding: 32px;
+}
+
+.ap-placeholder h1 {
+    font-family: Sora, Inter, sans-serif;
+    font-size: 22px;
+    margin: 0 0 6px;
+}
+
+.ap-placeholder-url {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--ap-accent-strong);
+    margin: 0 0 16px;
+}
+
+.ap-placeholder-params {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.ap-placeholder-params div {
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.ap-placeholder-params dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ap-text-muted);
+}
+
+.ap-placeholder-params dd {
+    margin: 2px 0 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+}
+
+.ap-placeholder-from {
+    font-size: 12px;
+    color: var(--ap-text-muted);
+}
+
+.ap-placeholder .ap-placeholder {
+    margin-top: 20px;
+    border: 1px dashed var(--ap-border-muted);
+    border-radius: 12px;
+    padding: 16px;
+    background: var(--ap-bg-card);
+}

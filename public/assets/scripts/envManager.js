@@ -1,4 +1,4 @@
-const ENV = "prod";
+const ENV = "dev";
 const IS_DEV = ENV === "dev";
 
 // Sem chave de pagamento no client: o checkout é hospedado pela Stripe, então

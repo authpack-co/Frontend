@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/collection/:path*", "destination": "/app.html" },
+    { "source": "/collection", "destination": "/app.html" },
+    { "source": "/shared/:path*", "destination": "/app.html" },
+    { "source": "/shared", "destination": "/app.html" },
+    { "source": "/settings/:path*", "destination": "/app.html" },
+    { "source": "/settings", "destination": "/app.html" },
+    { "source": "/upgrade", "destination": "/app.html" },
+    { "source": "/admin/:path*", "destination": "/app.html" },
+    { "source": "/admin", "destination": "/app.html" }
+  ]
+}
