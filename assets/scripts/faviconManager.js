@@ -23,6 +23,11 @@
     const FALLBACK_SRC = '/assets/images/fallback-session-icon.png';
     const GOOGLE_SIZE = 64;
 
+    // Enquanto a cadeia roda o <img> não tem nada para desenhar, e um favicon
+    // lento chega a levar segundos. A classe pinta um placeholder no lugar até
+    // um dos três elos terminar de carregar (ver assets/styles/favicon.css).
+    const LOADING_CLASS = 'fav-loading';
+
     // Deriva o hostname de uma URL/domínio livre. Retorna '' quando não dá.
     function faviconDomain(urlOrDomain) {
         const raw = (urlOrDomain || '').toString().trim();
@@ -45,7 +50,8 @@
     }
 
     /**
-     * Liga a cadeia de fallback (original → Google S2 → fallback final) num <img>.
+     * Liga a cadeia de fallback (original → Google S2 → fallback final) num <img>
+     * e mostra um placeholder enquanto ela roda.
      * Não defina img.src antes de chamar — passe o favicon em opts.icon para
      * garantir que o onerror seja registrado antes do carregamento.
      *
@@ -63,11 +69,24 @@
         const googleUrl = googleFaviconUrl(opts.url, opts.size);
         const original = opts.icon != null ? opts.icon : (img.getAttribute('src') || '');
 
+        function settle() {
+            img.classList.remove(LOADING_CLASS);
+        }
+
         function goFinal() {
             img.onerror = null;
-            if (typeof opts.onFinalError === 'function') opts.onFinalError(img);
-            else img.src = opts.fallbackSrc || FALLBACK_SRC;
+            if (typeof opts.onFinalError === 'function') {
+                // O fallback custom costuma trocar o <img> por outra coisa (a
+                // inicial do nome, por exemplo): tira o placeholder antes.
+                settle();
+                opts.onFinalError(img);
+            } else {
+                img.src = opts.fallbackSrc || FALLBACK_SRC;   // local, resolve no onload
+            }
         }
+
+        img.classList.add(LOADING_CLASS);
+        img.onload = settle;
 
         let triedGoogle = false;
         img.onerror = function () {
@@ -87,6 +106,9 @@
         } else {
             goFinal();
         }
+
+        // Favicon já em cache resolve na hora — não mostra placeholder nenhum.
+        if (img.complete && img.naturalWidth > 0) settle();
 
         return img;
     }

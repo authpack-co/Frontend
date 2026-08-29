@@ -1,0 +1,28 @@
+/* ============================================================================
+   AuthPack — Placeholder do favicon de serviços
+
+   Par de assets/scripts/faviconManager.js: a cadeia original → Google S2 →
+   fallback local pode levar segundos, e até o primeiro byte chegar o <img>
+   não tem nada para desenhar — o ícone aparecia como um buraco na linha.
+
+   Enquanto o JS mantém a classe, o próprio <img> pinta um bloco no lugar. Ele
+   herda o tamanho e o arredondamento que a folha de estilo da tela já deu ao
+   ícone, então o placeholder tem a forma exata do que vai substituí-lo.
+
+   Autossuficiente de propósito (keyframes próprios): as páginas que usam o
+   faviconManager não carregam as mesmas folhas de animação.
+   ============================================================================ */
+
+.fav-loading {
+    background-image: linear-gradient(90deg,
+            var(--ap-bg-skeleton-from) 25%,
+            var(--ap-bg-skeleton-via) 50%,
+            var(--ap-bg-skeleton-from) 75%);
+    background-size: 200% 100%;
+    animation: ap-fav-shimmer 1.5s infinite;
+}
+
+@keyframes ap-fav-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}

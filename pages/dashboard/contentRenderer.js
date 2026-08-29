@@ -98,33 +98,21 @@ const USAGE_BASELINE_DAYS = 30;
 const USAGE_ON_PAR_TOLERANCE = 0.10;
 
 // Janela do heartbeat: um acesso conta como vivo enquanto o fim dele estiver a
-// menos disto de agora. Vale para o badge de online dos cards e para o card
+// menos disto de agora. Vale para a coluna "usando agora" da lista e para o card
 // "usando agora" — os dois têm que contar as mesmas pessoas.
 const ONLINE_WINDOW_SECONDS = 60;
 
+// Comparação de uso: só o dono a vê (coluna "tempo de uso hoje" da lista).
 const USAGE_COPY = {
-    collection: {
-        label: 'Hoje vs. costume',
-        idle: 'sem uso hoje',
-        firstDay: 'sem costume ainda',
-        onPar: 'no costume',
-        above: ratio => `↑ ${formatMultiplier(ratio)} o costume`,
-        below: ratio => `↓ ${Math.round(ratio * 100)}% do costume`,
-        titleUnused: 'Ainda sem uso registrado nesta sessão',
-        titleIdle: 'Ninguém usou hoje',
-        titleBaseline: 'Costume'
-    },
-    access: {
-        label: 'Hoje vs. seu costume',
-        idle: 'você não usou hoje',
-        firstDay: 'sem costume ainda',
-        onPar: 'no seu costume',
-        above: ratio => `↑ ${formatMultiplier(ratio)} o seu costume`,
-        below: ratio => `↓ ${Math.round(ratio * 100)}% do seu costume`,
-        titleUnused: 'Você ainda não usou esta sessão',
-        titleIdle: 'Você não usou hoje',
-        titleBaseline: 'Seu costume'
-    }
+    label: 'Hoje vs. costume',
+    idle: 'sem uso hoje',
+    firstDay: 'sem costume ainda',
+    onPar: 'no costume',
+    above: ratio => `↑ ${formatMultiplier(ratio)} o costume`,
+    below: ratio => `↓ ${Math.round(ratio * 100)}% do costume`,
+    titleUnused: 'Ainda sem uso registrado nesta sessão',
+    titleIdle: 'Ninguém usou hoje',
+    titleBaseline: 'Costume'
 };
 
 function formatMultiplier(ratio) {
@@ -193,9 +181,9 @@ function getSessionUsageComparison(sessionId, accessHistory, now = new Date()) {
     });
 }
 
-function usageComparisonTitle(comparison, view) {
+function usageComparisonTitle(comparison) {
     const { state, value, baseline } = comparison;
-    const copy = USAGE_COPY[view];
+    const copy = USAGE_COPY;
 
     if (state === 'unused') return copy.titleUnused;
     if (state === 'first-day') {
@@ -207,23 +195,23 @@ function usageComparisonTitle(comparison, view) {
     return `Hoje: ${formatDuration(value)} · ${costume}`;
 }
 
-// Escreve a comparação no card: largura da barra, badge e tempo do cabeçalho.
-// O número do cabeçalho é sempre o mesmo que a barra mede — se um mostrasse o
-// total e o outro a média, voltaríamos a ter dois tempos discordando.
-function applySessionUsageBar(card, comparison, view = 'collection') {
+// Escreve a comparação na sessão: largura da barra, badge e tempo. A linha da
+// lista do dono não tem barra — mostra só o tempo e o badge, que dizem a mesma
+// coisa. O número é sempre o mesmo que a barra mediria: se um mostrasse o total
+// e o outro a média, voltaríamos a ter dois tempos discordando.
+function applySessionUsageBar(card, comparison) {
     const usage = card.querySelector('.session-card-usage');
     const fill = card.querySelector('.session-card-usage-fill');
     const bar = card.querySelector('.session-card-usage-bar');
     const badge = card.querySelector('.session-card-usage-ratio');
     const timeText = card.querySelector('.usage-time-text');
-    if (!fill) return;
 
-    const copy = USAGE_COPY[view];
+    const copy = USAGE_COPY;
     const { state, ratio } = comparison;
     const isEmpty = state === 'unused' || state === 'idle';
     const isAbove = state === 'above';
 
-    fill.style.width = (isEmpty ? 0 : Math.max(4, Math.min(100, Math.round(ratio * 100)))) + '%';
+    if (fill) fill.style.width = (isEmpty ? 0 : Math.max(4, Math.min(100, Math.round(ratio * 100)))) + '%';
 
     if (bar) bar.classList.toggle('is-above-average', isAbove);
 
@@ -246,7 +234,7 @@ function applySessionUsageBar(card, comparison, view = 'collection') {
     }
 
     if (timeText) timeText.textContent = formatDuration(comparison.value);
-    if (usage) usage.title = usageComparisonTitle(comparison, view);
+    if (usage) usage.title = usageComparisonTitle(comparison);
 }
 
 // A sessão mais antiga (a primeira adicionada) do pacote. A ordem do array não é
@@ -378,125 +366,25 @@ function createPackageElement(pkg, isAccess = false) {
     return container;
 }
 
-// Gera o elemento DOM de uma sessão (grid card para ambas as views)
+// Gera o elemento DOM de uma sessão. As duas views divergem na forma: o dono vê
+// uma linha da lista do pacote; quem recebeu o acesso continua vendo um card.
 function createSessionElement(session, isCollection = true, pkg = null) {
     // Access view: grid card
     if (!isCollection) {
         return createSessionCardElement(session, pkg);
     }
 
-    // Collection view: grid card com ações de gerenciamento
-    return createCollectionSessionCardElement(session, pkg);
+    // Collection view: linha da lista, com ações de gerenciamento no menu ⋯
+    return createCollectionSessionRowElement(session, pkg);
 }
 
-// Monta a base visual comum dos cards de sessão (glow, header, status, barra de
-// uso e rodapé com avatares/online). `pkg` fornece isActive + membros. Retorna
-// { card, content, footer } para cada view acrescentar suas ações específicas.
-function buildSessionCardBase(session, pkg, isCollection) {
-    const card = createElement('div', 'session-card');
-    card.dataset.sessionId = session.id;
-
-    // Cor do serviço (glow + barra) a partir do darkPalette real da sessão.
-    const pal = paletteFromSession(session);
-    const c1 = pal.c1, c2 = pal.c2;
-    card.style.setProperty('--card-accent', c1);
-    card.style.setProperty('--card-accent-2', c2);
-
-    // Glow radial no canto superior esquerdo (rgba inline — não depende de color-mix).
-    const glow = createElement('div', 'session-card-glow');
-    glow.style.background = `radial-gradient(120% 90% at 0% 0%, ${pal.glow(0.22)}, transparent 62%)`;
-    card.appendChild(glow);
-
-    const content = createElement('div', 'session-card-content');
-
-    // Header: ícone + nome + domínio
-    const header = createElement('div', 'session-card-header');
-
-    const icon = document.createElement('img');
-    icon.className = 'session-card-icon';
-    icon.alt = session.name;
-    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
-
-    const headerText = createElement('div', 'session-card-header-text');
-    const name = createElement('h3', 'session-card-name');
-    name.textContent = session.name;
-    const domain = createElement('p', 'session-card-domain');
+// Domínio exibido embaixo do nome do serviço. URL inválida cai na própria URL.
+function sessionDomain(session) {
     try {
-        domain.textContent = new URL(session.url).hostname.replace(/^www\./, '');
+        return new URL(session.url).hostname.replace(/^www\./, '');
     } catch {
-        domain.textContent = session.url || '';
+        return session.url || '';
     }
-    headerText.appendChild(name);
-    headerText.appendChild(domain);
-    header.appendChild(icon);
-    header.appendChild(headerText);
-
-    // Linha de status: pacote ativo/pausado.
-    const isInactive = pkg && pkg.isActive === false;
-    const status = createElement('div', 'session-card-status' + (isInactive ? ' is-inactive' : ''));
-    const statusDot = createElement('span', 'session-card-status-dot');
-    const statusText = createElement('span', 'session-card-status-text', isInactive ? 'Pausada' : 'Ativa');
-    status.appendChild(statusDot);
-    status.appendChild(statusText);
-
-    // Barra de uso. A largura, o badge e o tempo são preenchidos depois por
-    // applySessionUsageBar — loadPackageStats na coleção (hoje vs. costume),
-    // loadAccessOverview nos acessos (meu uso vs. média). Nasce vazio.
-    const usage = createElement('div', 'session-card-usage');
-    const usageHead = createElement('div', 'session-card-usage-head');
-    const usageLabel = createElement('span', 'session-card-usage-label',
-        USAGE_COPY[isCollection ? 'collection' : 'access'].label);
-    const usageValueGroup = createElement('div', 'session-card-usage-value');
-    const usageRatio = createElement('span', 'session-card-usage-ratio is-hidden');
-    const usageValue = createElement('span', 'usage-time-text');
-    usageValue.textContent = '0s';
-    usageValueGroup.appendChild(usageRatio);
-    usageValueGroup.appendChild(usageValue);
-    usageHead.appendChild(usageLabel);
-    usageHead.appendChild(usageValueGroup);
-    const usageBar = createElement('div', 'session-card-usage-bar');
-    const usageFill = createElement('div', 'session-card-usage-fill');
-    // Cor da barra = gradiente do serviço (inline, robusto).
-    usageFill.style.background = `linear-gradient(90deg, ${c1}, ${c2})`;
-    usageFill.style.width = '0%';
-    // Traço do costume — só visível quando hoje passa dele.
-    const usageMark = createElement('span', 'session-card-usage-mark');
-    usageBar.appendChild(usageFill);
-    usageBar.appendChild(usageMark);
-    usage.appendChild(usageHead);
-    usage.appendChild(usageBar);
-
-    // Rodapé: quem está usando a sessão agora (online) + contagem online.
-    const footer = createElement('div', 'session-card-footer');
-
-    // "Usando agora": avatares dos usuários online, preenchidos depois por
-    // loadPackageStats (collection) / loadAccessOverview (access). Início neutro:
-    // ninguém usando.
-    const members = createElement('div', 'session-card-members is-empty');
-    const stack = createElement('div', 'session-card-avatars');
-    const membersLabel = createElement('span', 'session-card-members-label', 'ninguém usando agora');
-    members.appendChild(stack);
-    members.appendChild(membersLabel);
-
-    const onlineBadge = createElement('div', 'session-online-badge');
-    const onlineDot = createElement('span', 'online-dot');
-    const onlineNum = createElement('span', 'online-count-num');
-    onlineNum.textContent = session.onlineCount || '0';
-    const onlineLabel = createElement('span', 'online-label', 'online');
-    onlineBadge.appendChild(onlineDot);
-    onlineBadge.appendChild(onlineNum);
-    onlineBadge.appendChild(onlineLabel);
-
-    footer.appendChild(members);
-    footer.appendChild(onlineBadge);
-
-    content.appendChild(header);
-    content.appendChild(status);
-    content.appendChild(usage);
-    content.appendChild(footer);
-    card.appendChild(content);
-
-    return { card, content, footer };
 }
 
 // Atualiza o rodapé "usando agora" de um card: avatares dos usuários online e
@@ -555,9 +443,6 @@ function refreshSessionCardsOnline(pkg) {
     cards.forEach(card => {
         const sessionId = card.dataset.sessionId;
         const count = (pkg.stats.sessionsOnline || {})[sessionId] || 0;
-
-        const badge = card.querySelector('.online-count-num');
-        if (badge) badge.textContent = count;
 
         const onlineUsers = ((pkg.stats.sessionsOnlineUsers || {})[sessionId] || [])
             .map(uid => pkg.users.find(u => u.id === uid))
@@ -763,16 +648,9 @@ function renderUsingNowModal(session, pkg) {
     modal.querySelector('.un-total').textContent = formatDuration(data.todayTotalSeconds);
 }
 
-// Gera o elemento DOM de uma sessão como card de grid (para collection view)
-// Inclui: botão ⋯ (session-options), avatares, barra de uso, botão "Ver detalhes"
-function createCollectionSessionCardElement(session, pkg) {
-    const { card, footer } = buildSessionCardBase(session, pkg, true);
-
-    // Botão de 3 pontinhos (canto superior direito)
-    const optionsBtn = createElement('button', 'session-options-btn', '⋯');
-    card.appendChild(optionsBtn);
-
-    // Session Options Dropdown
+// Menu ⋯ de uma sessão do dono: conectar, recapturar, renomear e excluir.
+// Os handlers são ligados por eventsHandler.js a partir das classes dos botões.
+function createSessionOptionsMenu() {
     const sessionOptions = createElement('div', 'session-options hidden');
 
     const connectOptBtn = createElement('button', 'connect-session-btn');
@@ -819,53 +697,127 @@ function createCollectionSessionCardElement(session, pkg) {
     sessionOptions.appendChild(updateOptBtn);
     sessionOptions.appendChild(editOptBtn);
     sessionOptions.appendChild(deleteOptBtn);
-    card.appendChild(sessionOptions);
 
-    // Ação principal: ver detalhes da sessão.
-    const detailsBtn = createElement('button', 'details-btn', 'Ver detalhes');
-    footer.appendChild(detailsBtn);
-
-    return card;
+    return sessionOptions;
 }
 
-// Card "Adicionar sessão": mesma silhueta de um session-card, mas como tile de ação.
-// Abre o #addSessionModal (captura em segundo plano → cria a sessão no pacote). Presente
-// só na collection view (dono), sempre como primeiro card do grid — inclusive quando o
-// pacote ainda não tem nenhuma sessão, para que a seção nunca fique vazia.
-function createAddSessionCardElement(pkg) {
-    const card = createElement('div', 'session-card add-session-card add-session-btn');
-    card.dataset.packageId = pkg.id;
-    card.setAttribute('role', 'button');
-    card.setAttribute('tabindex', '0');
+// Linha da lista de sessões do dono. Uma linha por serviço, nas colunas do
+// cabeçalho: serviço, status, quem está usando agora e o tempo de hoje. A linha
+// inteira abre os detalhes da sessão; o menu ⋯ (só no hover) traz as ações.
+// Mantém as classes `session-card*` porque é por elas que o resto do dashboard
+// encontra a sessão na tela (busca, refresh de online, renomear, excluir).
+function createCollectionSessionRowElement(session, pkg) {
+    const row = createElement('div', 'session-card session-row');
+    row.dataset.sessionId = session.id;
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.title = 'Ver detalhes da sessão';
 
-    const content = createElement('div', 'session-card-content add-session-content');
+    // Cor do serviço: o badge de "acima do costume" é pintado com ela.
+    const pal = paletteFromSession(session);
+    row.style.setProperty('--card-accent', pal.c1);
+    row.style.setProperty('--card-accent-2', pal.c2);
 
-    const plus = createElement('div', 'add-session-plus');
-    plus.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"></path>
-            <path d="M12 5v14"></path>
+    // Coluna 1 — serviço: ícone + nome + domínio.
+    const service = createElement('div', 'session-row-service');
+    const icon = document.createElement('img');
+    icon.className = 'session-card-icon';
+    icon.alt = session.name;
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
+
+    const serviceText = createElement('div', 'session-card-header-text');
+    serviceText.appendChild(createElement('p', 'session-card-name', session.name));
+    serviceText.appendChild(createElement('p', 'session-card-domain', sessionDomain(session)));
+    service.appendChild(icon);
+    service.appendChild(serviceText);
+
+    // Coluna 2 — status: pacote ativo/pausado.
+    const isInactive = pkg && pkg.isActive === false;
+    const status = createElement('div', 'session-card-status' + (isInactive ? ' is-inactive' : ''));
+    status.appendChild(createElement('span', 'session-card-status-dot'));
+    status.appendChild(createElement('span', 'session-card-status-text', isInactive ? 'Pausada' : 'Ativa'));
+
+    // Coluna 3 — usando agora: avatares + rótulo, preenchidos por
+    // loadPackageStats (updateSessionUsingNow). Nasce sem ninguém.
+    const members = createElement('div', 'session-card-members is-empty');
+    members.appendChild(createElement('div', 'session-card-avatars'));
+    members.appendChild(createElement('span', 'session-card-members-label', 'ninguém usando agora'));
+
+    // Coluna 4 — tempo de uso hoje + badge de comparação com o costume.
+    // Sem a barra do card: na lista o número e o badge já contam a mesma coisa.
+    // Quem escreve os dois é applySessionUsageBar.
+    const usage = createElement('div', 'session-card-usage');
+    const usageValue = createElement('span', 'usage-time-text', '0s');
+    const usageRatio = createElement('span', 'session-card-usage-ratio is-hidden');
+    usage.appendChild(usageValue);
+    usage.appendChild(usageRatio);
+
+    // Coluna 5 — ações.
+    const actions = createElement('div', 'session-row-actions');
+    const optionsBtn = createElement('button', 'session-options-btn', '⋯');
+    optionsBtn.type = 'button';
+    optionsBtn.title = 'Ações da sessão';
+    actions.appendChild(optionsBtn);
+    actions.appendChild(createSessionOptionsMenu());
+
+    row.appendChild(service);
+    row.appendChild(status);
+    row.appendChild(members);
+    row.appendChild(usage);
+    row.appendChild(actions);
+
+    return row;
+}
+
+// Card de sessão de quem recebeu o acesso ("Meus acessos"). O membro quer
+// entrar no serviço: o card diz qual é e abre. Barra de uso, "usando agora" e
+// contagem de online eram do dono — aqui só faziam volume.
+function createSessionCardElement(session, pkg) {
+    const card = createElement('div', 'session-card access-card');
+    card.dataset.sessionId = session.id;
+
+    // Ícone em bolha na cor do serviço.
+    const pal = paletteFromSession(session);
+
+    const head = createElement('div', 'access-card-head');
+    const icon = document.createElement('img');
+    icon.className = 'session-card-icon';
+    icon.alt = session.name;
+    // backgroundColor, não o atalho background: o atalho zeraria o
+    // background-image do placeholder de carregamento do favicon.
+    icon.style.backgroundColor = pal.glow(0.1);
+    icon.style.borderColor = pal.glow(0.3);
+    AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
+
+    const text = createElement('div', 'session-card-header-text');
+    text.appendChild(createElement('h3', 'session-card-name', session.name));
+    text.appendChild(createElement('p', 'session-card-domain', sessionDomain(session)));
+    head.appendChild(icon);
+    head.appendChild(text);
+
+    const actions = createElement('div', 'access-card-actions');
+    const connectBtn = createElement('button', 'connect-session-btn');
+    connectBtn.type = 'button';
+    connectBtn.innerHTML = `
+        <span>Conectar</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6"></path>
+            <path d="M10 14 21 3"></path>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
         </svg>
     `;
+    // "Ver detalhes" ainda não abre nada: o membro não tem tela de detalhes de
+    // sessão (o histórico por usuário é dado do dono). Entra pela silhueta do
+    // design; a ação vem depois. Classe própria justamente para não cair em
+    // nenhum listener de `.details-btn` existente.
+    const detailsBtn = createElement('button', 'access-details-btn', 'Ver detalhes');
+    detailsBtn.type = 'button';
 
-    const title = createElement('h3', 'add-session-title', 'Adicionar sessão');
-    const subtitle = createElement('p', 'add-session-subtitle', 'Capture um serviço para compartilhar com o time');
+    actions.appendChild(connectBtn);
+    actions.appendChild(detailsBtn);
 
-    content.appendChild(plus);
-    content.appendChild(title);
-    content.appendChild(subtitle);
-    card.appendChild(content);
-
-    return card;
-}
-
-// Gera o elemento DOM de uma sessão como card de grid (para access view)
-function createSessionCardElement(session, pkg) {
-    const { card, footer } = buildSessionCardBase(session, pkg, false);
-
-    const connectBtn = createElement('button', 'connect-session-btn', 'Conectar');
-    footer.appendChild(connectBtn);
+    card.appendChild(head);
+    card.appendChild(actions);
 
     return card;
 }
@@ -1117,20 +1069,24 @@ async function renderPackageDetails(pkg, isCollection = true) {
     if (isInactive) {
         activePreset.classList.add('package-inactive');
 
-        // Access view: banner de alerta full-width
+        // Access view: banner de alerta full-width, logo abaixo do header do
+        // pacote — é ele quem explica por que os cards estão apagados.
         if (!isCollection) {
+            const ownerName = (pkg.owner && pkg.owner.name) || 'o dono';
             const alertNote = createElement('div', 'inactive-alert-note');
             alertNote.innerHTML = `
                 <div class="inactive-alert-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                        <circle cx="12" cy="12" r="10"/>
                         <path d="M12 9v4"/>
                         <path d="M12 17h.01"/>
                     </svg>
                 </div>
-                <span>Seu acesso a este pacote está pausado temporariamente.</span>
+                <span>Este pacote está <strong>inativo</strong>. Você continua vendo as sessões, mas não consegue
+                    conectar até que ${escapeHtml(ownerName)} reative o pacote.</span>
             `;
-            activePreset.insertBefore(alertNote, activePreset.firstChild);
+            const header = activePreset.querySelector('.package-info-header');
+            activePreset.insertBefore(alertNote, header ? header.nextSibling : activePreset.firstChild);
         }
     } else {
         activePreset.classList.remove('package-inactive');
@@ -1151,7 +1107,12 @@ async function renderPackageDetails(pkg, isCollection = true) {
     resetSessionSearch();
 
     // Contador de pessoas do pacote (top bar da coleção, ao lado de "Compartilhar")
-    if (isCollection) updatePackagePeopleCounter(pkg);
+    if (isCollection) {
+        updatePackagePeopleCounter(pkg);
+        // O "Adicionar sessão" da top bar captura para o pacote aberto.
+        const addSessionBtn = document.getElementById('topbar-add-session-btn');
+        if (addSessionBtn) addSessionBtn.dataset.packageId = pkg.id;
+    }
 
     // Header da aba "Meus acessos": estética neutra focada em quem compartilhou.
     if (!isCollection) {
@@ -1172,29 +1133,20 @@ async function renderPackageDetails(pkg, isCollection = true) {
     // Renderiza sessões
     const sessionsPanelContainer = activePreset.querySelector(".sessions-panel-container");
 
-    // Na collection (dono) o card "Adicionar sessão" mora sempre no grid, então a seção nunca
-    // fica vazia — mostramos o content-state mesmo sem sessões. Na access view mantém o vazio.
-    if (isCollection || pkg.sessions.length > 0) {
-        setElementState(sessionsPanelContainer, "content");
-    } else {
-        setElementState(sessionsPanelContainer, "empty");
-    }
+    // Sem sessões a seção mostra o vazio nas duas views — o "Adicionar sessão"
+    // saiu do grid e virou ação da top bar, então não há mais um tile segurando
+    // o content-state da coleção.
+    setElementState(sessionsPanelContainer, pkg.sessions.length > 0 ? "content" : "empty");
 
-    // Seleciona container correto: grid para ambas as views
-    const sessionsContainer = activePreset.querySelector('.sessions-panel .sessions-grid');
+    // Container das sessões: lista na coleção (dono), grid de cards nos acessos.
+    const sessionsContainer = activePreset.querySelector(SESSIONS_CONTAINER_SELECTOR);
 
     if (sessionsContainer && pkg.sessions) {
         sessionsContainer.innerHTML = '';
-        // Dono: card de adicionar como primeiro item, sempre presente.
-        if (isCollection) {
-            sessionsContainer.appendChild(createAddSessionCardElement(pkg));
-        }
         pkg.sessions.forEach(session => {
             const sessionElement = createSessionElement(session, isCollection, pkg);
             sessionsContainer.appendChild(sessionElement);
         });
-        // Recolhe a grade para uma linha; mostra o botão "Ver todas" se transbordar.
-        setupSessionsExpansion(sessionsContainer);
     }
 
     // Se inativo na access view: desabilita botões de conectar
@@ -1303,43 +1255,46 @@ function accessAvatar(name, url, className) {
     return `<span class="${className} ph-avatar" style="background:linear-gradient(150deg, ${c1}, ${c2})"><span class="ph-avatar-initial">${escapeHtml(initial)}</span>${img}</span>`;
 }
 
-// Monta o header de um pacote na aba "Meus acessos". Os valores assíncronos
-// (online / entrou em) são preenchidos depois por loadAccessOverview.
+// Monta o header de um pacote na aba "Meus acessos": identidade do pacote e
+// nada além dela — nome, quantas sessões, quem compartilhou, desde quando, e a
+// pilha de ícones dos serviços. "N online" saiu junto com o resto do ruído.
+// "Entrou em" é preenchido depois por loadAccessOverview.
+const ACCESS_IDENTITY_ICONS = 3;
+
 function renderAccessHeader(pkg, activePreset) {
     const header = activePreset.querySelector('.package-info-header');
     if (!header) return;
 
-    header.className = 'package-info-header is-direct';
-
-    const name = escapeHtml(pkg.name || '');
-    const onlineTag = `<span class="ph-online"><span class="ph-online-dot"></span><span class="online-count-value">0 online</span></span>`;
-    const joinedItem = `<span class="ph-meta-item">${ACCESS_ICONS.calendar} Entrou em <strong class="joined-at-value">—</strong></span>`;
-
+    const sessions = pkg.sessions || [];
     const owner = pkg.owner || {};
-    const sharedBy = `
-        <span class="ph-meta-item ph-shared-by">Compartilhado por
-            <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
-        </span>`;
+    const count = sessions.length;
+
+    // z-index decrescente: o primeiro ícone fica por cima da pilha.
+    const identityIcons = sessions.slice(0, ACCESS_IDENTITY_ICONS)
+        .map((session, i) => `<img class="ph-identity-icon" alt="" title="${escapeHtml(session.name || '')}" style="z-index:${sessions.length - i}">`)
+        .join('');
+    const rest = count - ACCESS_IDENTITY_ICONS;
+    const restPill = rest > 0 ? `<span class="ph-identity-rest">+${rest}</span>` : '';
 
     header.innerHTML = `
-        <div class="ph-direct-band">
-            ${ACCESS_ICONS.link}
-            <span>Acesso compartilhado diretamente com você.</span>
+        <h1 class="ph-title">${escapeHtml(pkg.name || '')}</h1>
+        <div class="ph-meta">
+            <span class="ph-meta-item">${count} ${count === 1 ? 'sessão' : 'sessões'}</span>
+            <span class="ph-meta-sep" aria-hidden="true">·</span>
+            <span class="ph-meta-item ph-shared-by">Compartilhado por
+                <span class="ph-shared-who">${accessAvatar(owner.name, owner.picture, 'ph-shared-avatar')}<strong>${escapeHtml(owner.name || '—')}</strong></span>
+            </span>
+            <span class="ph-meta-sep" aria-hidden="true">·</span>
+            <span class="ph-meta-item">Entrou em <strong class="joined-at-value">—</strong></span>
         </div>
-        <div class="ph-hero">
-            <div class="ph-hero-top">
-                <div class="ph-hero-title">
-                    <span class="ph-pkg-icon ph-pkg-icon--muted">${ACCESS_ICONS.package}</span>
-                    <h2>${name}</h2>
-                </div>
-                ${onlineTag}
-            </div>
-            <div class="ph-meta">
-                ${sharedBy}
-                ${joinedItem}
-            </div>
-        </div>
+        <div class="ph-identity">${identityIcons}${restPill}</div>
     `;
+
+    // Favicons reais dos serviços (mesma cadeia dos cards).
+    header.querySelectorAll('.ph-identity-icon').forEach((icon, i) => {
+        const session = sessions[i];
+        AuthPackFavicon.apply(icon, { icon: session.icon, url: session.url });
+    });
 }
 
 // Seleciona um pacote
@@ -1477,55 +1432,26 @@ function reloadPackagesSelect(isAccess = false) {
     }
 }
 
+// O header do acesso mostra desde quando o membro entrou no pacote — o único
+// dado do overview que sobrou depois que "online" e "seu costume" saíram.
 async function loadAccessOverview(pkg, activePreset) {
     try {
         const fetchOverview = await fetchManager.getPackageAccessOverview({ id: pkg.id });
 
         if (!fetchOverview.ok) return;
 
-        const { totalOnline, sessionsOnline, myAccessHistory, joinedAt } = fetchOverview.result.data;
+        const { joinedAt } = fetchOverview.result.data;
 
         // Verifica se ainda é o pacote selecionado
         const contentCard = document.querySelector('#package-details');
         if (contentCard.dataset.packageId !== pkg.id) return;
 
-        const dateFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-
-        // Atualiza "Entrou em"
         const joinedAtEl = activePreset.querySelector('.package-info-header .joined-at-value');
-        if (joinedAtEl && joinedAt) {
-            const joinDate = new Date(joinedAt);
-            joinedAtEl.textContent = joinDate.toLocaleDateString('pt-BR', dateFormatOptions);
-        } else if (joinedAtEl) {
-            joinedAtEl.textContent = '—';
-        }
+        if (!joinedAtEl) return;
 
-        // Atualiza contagem online no header
-        const onlineCountEl = activePreset.querySelector('.package-info-header .online-count-value');
-        if (onlineCountEl) {
-            onlineCountEl.textContent = `${totalOnline} online`;
-        }
-
-        // Atualiza badges + rodapé "usando agora" + barra de uso em cada session
-        // card. O access view só recebe a contagem online (sem dados de avatar),
-        // então o rótulo é atualizado pelo count.
-        // O histórico é só o do próprio membro, então a barra compara o uso de
-        // hoje com o costume dele — não com o dos outros.
-        const myHistory = processRawAccessHistory(myAccessHistory || []);
-
-        const sessionCards = activePreset.querySelectorAll('.session-card');
-        sessionCards.forEach(card => {
-            const sessionId = card.dataset.sessionId;
-
-            if (sessionsOnline) {
-                const count = sessionsOnline[sessionId] || 0;
-                const badge = card.querySelector('.online-count-num');
-                if (badge) badge.textContent = count;
-                updateSessionUsingNow(card, [], count);
-            }
-
-            applySessionUsageBar(card, getSessionUsageComparison(sessionId, myHistory), 'access');
-        });
+        joinedAtEl.textContent = joinedAt
+            ? new Date(joinedAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+            : '—';
     } catch (err) {
         console.error('Error loading access overview:', err);
     }
@@ -1678,12 +1604,6 @@ async function loadPackageStats(pkg, period) {
         onlineSub.textContent = "";
     }
 
-    // Atualiza contagem online no header
-    const onlineCountEl = contentPreset.querySelector('.package-info-header .online-count-value');
-    if (onlineCountEl) {
-        onlineCountEl.textContent = `${pkg.stats.totalUsersOnline} online`;
-    }
-
     const packageStatsContainer = contentPreset.querySelector(".package-stats-container");
     if (packageStatsContainer) setElementState(packageStatsContainer, "content");
 
@@ -1710,20 +1630,10 @@ async function loadPackageStats(pkg, period) {
         // Uso de hoje comparado ao costume da própria sessão: cada serviço tem
         // um ritmo natural (uma ferramenta de trabalho x um streaming), então
         // comparar sessões entre si não diria nada.
-        applySessionUsageBar(
-            card,
-            getSessionUsageComparison(sessionId, pkg.stats.accessHistory),
-            'collection'
-        );
+        applySessionUsageBar(card, getSessionUsageComparison(sessionId, pkg.stats.accessHistory));
 
-        // Atualiza badge de online count
+        // Coluna "usando agora": avatares dos usuários online desta sessão.
         const onlineCount = pkg.stats.sessionsOnline[sessionId] || 0;
-        const onlineCountNum = card.querySelector('.online-count-num');
-        if (onlineCountNum) {
-            onlineCountNum.textContent = onlineCount;
-        }
-
-        // Rodapé "usando agora": avatares dos usuários online desta sessão.
         const onlineUserIds = (pkg.stats.sessionsOnlineUsers &&
             pkg.stats.sessionsOnlineUsers[sessionId]) || [];
         const onlineUsers = onlineUserIds
@@ -2957,81 +2867,33 @@ function updatePackagePeopleCounter(pkg) {
 // BUSCA DE SESSÕES (top bar)
 // ============================================================================
 
-// Grid de sessões do preset atualmente visível (collection ou access).
-function getActiveSessionsGrid() {
+// Container das sessões do preset atualmente visível: lista (dono) ou grid de
+// cards (acessos). As duas formas vivem lado a lado, então todo mundo que
+// procura "as sessões na tela" passa por aqui.
+const SESSIONS_CONTAINER_SELECTOR = '.sessions-panel .sessions-list, .sessions-panel .sessions-grid';
+
+// Campos de busca de sessão: um por seção do dashboard.
+const SESSION_SEARCH_INPUT_IDS = ['session-search', 'access-session-search'];
+
+// O mesmo, ancorado no detalhe do pacote (fora dele existem outros presets).
+const PACKAGE_SESSIONS_CONTAINER_SELECTOR =
+    '#package-details .sessions-panel .sessions-list, #package-details .sessions-panel .sessions-grid';
+
+function getActiveSessionsContainer() {
     const details = document.querySelector('#package-details');
     if (!details) return null;
     const preset = details.classList.contains('access-state')
         ? details.querySelector('.preset-access')
         : details.querySelector('.preset-collection');
-    return preset ? preset.querySelector('.sessions-panel .sessions-grid') : null;
-}
-
-// Filtra os cards de sessão do pacote selecionado por nome/domínio.
-// Controla a "linha recolhível" de sessões: por padrão a grade mostra só a
-// primeira linha; se houver quebra (mais cards do que cabem), exibe um botão que
-// expande com altura máxima + rolagem. O botão é criado uma vez por painel.
-function setupSessionsExpansion(grid) {
-    if (!grid) return;
-    const panel = grid.closest('.sessions-panel');
-    if (!panel) return;
-
-    let toggle = panel.querySelector('.sessions-toggle');
-    if (!toggle) {
-        toggle = createElement('button', 'sessions-toggle');
-        toggle.type = 'button';
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.innerHTML = `
-            <span class="sessions-toggle-label">Ver todas</span>
-            <svg class="sessions-toggle-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6"></path>
-            </svg>`;
-        toggle.addEventListener('click', () => {
-            const expanded = !grid.classList.contains('is-expanded');
-            grid.classList.toggle('is-expanded', expanded);
-            grid.classList.toggle('is-collapsed', !expanded);
-            toggle.classList.toggle('is-expanded', expanded);
-            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-            toggle.querySelector('.sessions-toggle-label').textContent = expanded ? 'Ver menos' : 'Ver todas';
-            // Ao recolher ("Ver menos"), volta a rolagem da grade para o topo
-            // com scroll suave em vez de snap instantâneo.
-            if (!expanded) grid.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        panel.appendChild(toggle);
-    }
-
-    // Reset ao (re)renderizar o pacote.
-    grid.classList.remove('is-collapsed', 'is-expanded');
-    grid.style.removeProperty('--sessions-row-h');
-    toggle.classList.remove('is-expanded');
-    toggle.setAttribute('aria-expanded', 'false');
-    toggle.querySelector('.sessions-toggle-label').textContent = 'Ver todas';
-    toggle.hidden = true;
-
-    // Mede após o layout para saber se a grade quebra em mais de uma linha.
-    requestAnimationFrame(() => {
-        const cards = Array.from(grid.querySelectorAll('.session-card'))
-            .filter(c => c.style.display !== 'none');
-        if (cards.length === 0) { toggle.hidden = true; return; }
-
-        const firstTop = cards[0].offsetTop;
-        const firstRow = cards.filter(c => c.offsetTop === firstTop);
-        const overflows = cards.length > firstRow.length;
-        if (!overflows) { toggle.hidden = true; return; }
-
-        const rowH = Math.max(...firstRow.map(c => c.offsetHeight));
-        grid.style.setProperty('--sessions-row-h', rowH + 'px');
-        grid.classList.add('is-collapsed');
-        toggle.hidden = false;
-    });
+    return preset ? preset.querySelector(SESSIONS_CONTAINER_SELECTOR) : null;
 }
 
 function filterSessionCards(query) {
     const q = (query || '').trim().toLowerCase();
-    const grid = getActiveSessionsGrid();
-    if (!grid) return;
+    const container = getActiveSessionsContainer();
+    if (!container) return;
 
-    const cards = grid.querySelectorAll('.session-card');
+    const cards = container.querySelectorAll('.session-card');
     let visible = 0;
     cards.forEach(card => {
         const name = (card.querySelector('.session-card-name')?.textContent || '').toLowerCase();
@@ -3041,38 +2903,32 @@ function filterSessionCards(query) {
         if (match) visible++;
     });
 
-    let empty = grid.querySelector('.sessions-search-empty');
+    let empty = container.querySelector('.sessions-search-empty');
     if (q && visible === 0 && cards.length) {
         if (!empty) {
             empty = createElement('div', 'sessions-search-empty');
             empty.innerHTML = '<div class="sessions-search-empty-title">Nenhuma sessão encontrada</div>' +
                 '<div class="sessions-search-empty-text">Tente outro termo de busca.</div>';
-            grid.appendChild(empty);
+            container.appendChild(empty);
         }
         empty.style.display = '';
     } else if (empty) {
         empty.style.display = 'none';
     }
 
-    // Durante a busca, remove o recolhimento para revelar todas as correspondências;
-    // ao limpar, recalcula (recolhe de novo se transbordar).
-    const panel = grid.closest('.sessions-panel');
-    const toggle = panel && panel.querySelector('.sessions-toggle');
-    if (q) {
-        grid.classList.remove('is-collapsed', 'is-expanded');
-        if (toggle) toggle.hidden = true;
-    } else {
-        setupSessionsExpansion(grid);
-    }
+    // O resultado começa do topo — buscar não deve deixar a lista rolada no meio.
+    container.scrollTop = 0;
 }
 
 // Limpa a busca (ao trocar de pacote/seção).
 function resetSessionSearch() {
-    const input = document.getElementById('session-search');
-    if (input) input.value = '';
-    document.querySelectorAll('#package-details .sessions-grid').forEach(grid => {
-        grid.querySelectorAll('.session-card').forEach(c => { c.style.display = ''; });
-        const empty = grid.querySelector('.sessions-search-empty');
+    SESSION_SEARCH_INPUT_IDS.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
+    document.querySelectorAll(PACKAGE_SESSIONS_CONTAINER_SELECTOR).forEach(container => {
+        container.querySelectorAll('.session-card').forEach(c => { c.style.display = ''; });
+        const empty = container.querySelector('.sessions-search-empty');
         if (empty) empty.style.display = 'none';
     });
 }
@@ -3270,11 +3126,12 @@ async function init() {
         });
     });
 
-    // Busca de sessões do pacote selecionado
-    const searchInput = document.getElementById('session-search');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => filterSessionCards(e.target.value));
-    }
+    // Busca de sessões do pacote selecionado. Cada seção tem a sua: a coleção
+    // busca pela top bar, os acessos pelo campo ao lado de "Minhas sessões".
+    SESSION_SEARCH_INPUT_IDS.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.addEventListener('input', (e) => filterSessionCards(e.target.value));
+    });
 
     // Botão "Compartilhar" da top bar: abre o modal para o pacote selecionado.
     const topbarShareBtn = document.getElementById('topbar-share-btn');
@@ -3302,9 +3159,38 @@ function setDashSection(section) {
     document.querySelectorAll('.access-tab').forEach(t => t.classList.toggle('active', isAccess));
 }
 
+// Fim do carregamento inicial: tira os skeletons de boot e devolve as áreas
+// reais. Roda mesmo se o init() falhar — skeleton eterno é pior que tela vazia.
+function clearBootSkeletons() {
+    delete document.body.dataset.dashBoot;
+}
+
+// O guia abre logo de cara, sobre o dashboard já carregado, e só para de
+// aparecer quando o usuário fecha ou conclui (ver onboardingCarousel.js).
+function openOnboardingIfPending() {
+    if (window.AuthPackOnboarding && !AuthPackOnboarding.isSeen()) {
+        AuthPackOnboarding.open();
+    }
+}
+
 // Executa ao carregar o DOM
+async function bootDashboard() {
+    try {
+        await init();
+    } catch (err) {
+        // Dashboard quebrado não ganha guia por cima — mas os skeletons saem
+        // do mesmo jeito, no finally.
+        console.error('Falha ao carregar o dashboard:', err);
+        return;
+    } finally {
+        clearBootSkeletons();
+    }
+
+    openOnboardingIfPending();
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', bootDashboard);
 } else {
-    init();
+    bootDashboard();
 }
