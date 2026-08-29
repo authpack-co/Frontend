@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { timeAgo } from '../../lib/usage.js';
 
 /**
  * Pessoas com acesso ao pacote.
@@ -6,7 +7,7 @@ import { Link } from 'react-router';
  * O criador vem sempre no topo: a ordem do JSON_ARRAYAGG do backend não é
  * garantida. "sem acesso" marca quem passou do limite de pessoas do plano.
  */
-export default function PeoplePanel({ pkg, suspendedKeys }) {
+export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, statsReady }) {
     const users = pkg.users || [];
 
     if (users.length === 0) {
@@ -41,6 +42,8 @@ export default function PeoplePanel({ pkg, suspendedKeys }) {
                                 user={user}
                                 pkg={pkg}
                                 suspended={suspendedKeys.has(`${pkg.id}:${user.id}`)}
+                                lastUsage={lastUsageByUser?.[user.id]}
+                                statsReady={statsReady}
                             />
                         ))}
                     </div>
@@ -50,9 +53,19 @@ export default function PeoplePanel({ pkg, suspendedKeys }) {
     );
 }
 
-function UserRow({ user, pkg, suspended }) {
+function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
+    const seen = lastUsage ? timeAgo(lastUsage) : null;
+    // "agora mesmo" é o que acende a linha como online.
+    const online = seen === 'agora mesmo';
+
+    const className = [
+        'list-item user',
+        suspended ? 'suspended' : '',
+        online ? 'online' : '',
+    ].filter(Boolean).join(' ');
+
     return (
-        <div className={`list-item user${suspended ? ' suspended' : ''}`} data-user-id={user.id}>
+        <div className={className} data-user-id={user.id}>
             <div className="item-info">
                 <div className="profile-picture">
                     {user.picture && <img src={user.picture} alt="" />}
@@ -71,8 +84,13 @@ function UserRow({ user, pkg, suspended }) {
                 </Link>
             </div>
 
-            {/* O "visto por último" vem das estatísticas do pacote, ainda não migradas. */}
-            <div className="item-details"></div>
+            <div className="item-details">
+                {/* Enquanto as estatísticas não chegam, a linha fica sem rótulo:
+                    "Nunca usou" seria uma afirmação sobre um dado que ainda não veio. */}
+                <span className="last-seen-at">
+                    {!statsReady ? '' : (seen || 'Nunca usou')}
+                </span>
+            </div>
         </div>
     );
 }

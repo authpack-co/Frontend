@@ -68,6 +68,9 @@ export const api = {
     getCollectionPackages: () => request('/api/packages/created'),
     getAccessPackages: () => request('/api/packages/acquired'),
 
+    // ── Estatísticas ──────────────────────────────────────────────────────
+    getPackageOverviewStats: (packageId) => request(`/api/stats/package/overview/${packageId}`),
+
     // ── Assinatura ────────────────────────────────────────────────────────
     getBilling: () => request('/api/subscription/billing'),
     createBillingPortal: () => request('/api/subscription/portal', { method: 'POST' }),

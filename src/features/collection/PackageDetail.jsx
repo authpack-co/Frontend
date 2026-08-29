@@ -1,22 +1,17 @@
 import { useMemo, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router';
 import { getSuspendedMembershipKeys, usePackage, usePackages } from '../../lib/packages.jsx';
+import { usePackageStats } from '../../lib/packageStats.js';
+import PackageUsagePanel from './PackageUsagePanel.jsx';
 import PeoplePanel from './PeoplePanel.jsx';
 import SessionsTable from './SessionsTable.jsx';
 
-/**
- * Tela do pacote na coleção (visão do dono).
- *
- * O que ainda não está aqui, e por quê: o gráfico de uso, o "usando agora" e o
- * tempo de uso por sessão vêm todos do mesmo pipeline de estatísticas
- * (getPackageOverviewStats + o processamento de accessHistory), que é a
- * próxima fatia. Preferi deixar as colunas em "—" a mostrar zero: zero é uma
- * afirmação, e não temos o dado.
- */
+/** Tela do pacote na coleção (visão do dono). */
 export default function PackageDetail() {
     const { packageId } = useParams();
     const { pkg, notFound } = usePackage(packageId);
     const { collection, userInfo } = usePackages();
+    const { stats, status: statsStatus } = usePackageStats(pkg ? packageId : null);
     const [search, setSearch] = useState('');
 
     const suspendedKeys = useMemo(
@@ -85,12 +80,14 @@ export default function PackageDetail() {
                             <div className="card-content custom-scrollbar">
                                 <div className="collection-content-layout">
                                     <div className="collection-chart-users-row">
-                                        {/* A coluna do gráfico volta com o pipeline de
-                                            estatísticas; até lá as pessoas ocupam a linha. */}
+                                        <PackageUsagePanel stats={stats} status={statsStatus} />
+
                                         <div className="collection-users-col">
                                             <PeoplePanel
                                                 pkg={pkg}
                                                 suspendedKeys={suspendedKeys}
+                                                lastUsageByUser={stats?.lastUsageByUser}
+                                                statsReady={statsStatus === 'ready'}
                                             />
                                         </div>
                                     </div>
@@ -99,6 +96,8 @@ export default function PackageDetail() {
                                         pkg={pkg}
                                         sessions={sessions}
                                         search={search}
+                                        stats={stats}
+                                        statsStatus={statsStatus}
                                     />
                                 </div>
                             </div>
