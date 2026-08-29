@@ -427,3 +427,193 @@ export function normalizeLastUsage(usersLastUsage) {
     });
     return result;
 }
+
+// ─── Recortes por sessão e por pessoa ─────────────────────────────────────
+//
+// As telas de detalhe olham o mesmo histórico do pacote por uma fresta: só os
+// acessos de uma sessão, ou só os de uma pessoa. Daí um filtro genérico em vez
+// de duas famílias paralelas de funções, como havia no painel antigo.
+
+/** Mantém a forma "dia → acessos", com só os acessos que passam no filtro. */
+export function filterAccessHistory(accessHistory, matches) {
+    const result = {};
+
+    Object.entries(accessHistory || {}).forEach(([day, accesses]) => {
+        const kept = accesses.filter(matches);
+        if (kept.length > 0) result[day] = kept;
+    });
+
+    return result;
+}
+
+export const bySession = (sessionId) => (access) => access.sessionId === sessionId;
+export const byUser = (userId) => (access) => access.userId === userId;
+
+/**
+ * Tempo total no recorte.
+ *
+ * hours === -1 é o marcador herdado de "nenhum acesso encontrado", diferente
+ * de "acessos com duração zero". Quem formata trata os dois como 0s.
+ */
+export function getTotalUsage(accessHistory) {
+    let totalSeconds = 0;
+    let found = false;
+
+    Object.values(accessHistory || {}).flat().forEach((access) => {
+        found = true;
+        if (access.usageTimeSeconds > 0) totalSeconds += access.usageTimeSeconds;
+    });
+
+    if (!found) return { seconds: 0, hours: -1 };
+
+    return { seconds: totalSeconds, hours: parseFloat((totalSeconds / 3600).toFixed(4)) };
+}
+
+export function getDistinctUsers(accessHistory) {
+    const users = new Set();
+    Object.values(accessHistory || {}).flat().forEach((access) => users.add(access.userId));
+    return users.size;
+}
+
+/**
+ * Uso por dia de uma sessão: horas, pessoas e pico — mesma conta do pacote,
+ * só que sobre o recorte da sessão.
+ */
+export function getSessionHistoryUsage(accessHistory) {
+    return getPackageHistoryUsage(accessHistory);
+}
+
+/**
+ * Uso por dia de uma pessoa: só horas.
+ *
+ * Sem pessoas nem pico de propósito — numa tela que já é sobre uma pessoa,
+ * "1 usuário" em todo ponto não diria nada.
+ */
+export function getUserHistoryUsage(accessHistory) {
+    const dailyData = {};
+
+    Object.values(accessHistory || {}).flat().forEach((access) => {
+        const day = dateKey(new Date(access.localDateTime));
+        dailyData[day] = dailyData[day] || 0;
+        if (access.usageTimeSeconds > 0) dailyData[day] += access.usageTimeSeconds;
+    });
+
+    const result = {};
+    Object.entries(dailyData).forEach(([day, seconds]) => {
+        result[day] = { hours: parseFloat((seconds / 3600).toFixed(4)) };
+    });
+
+    return result;
+}
+
+/**
+ * Uso de hoje por hora, dentro de um recorte.
+ *
+ * Diferente do gráfico do pacote, aqui o tempo é repartido entre as horas que
+ * o acesso atravessa: numa tela de detalhe, uma sessão das 9h às 12h precisa
+ * aparecer nas três colunas, e não inteira na primeira.
+ */
+export function getDailyUsage(accessHistory, currentDate = new Date(), { countUsers = true } = {}) {
+    const todayAccesses = (accessHistory || {})[dateKey(currentDate)];
+    if (!todayAccesses) return {};
+
+    const hourlyData = {};
+    const ensureHour = (key) => {
+        hourlyData[key] = hourlyData[key] || { totalSeconds: 0, users: new Set() };
+        return hourlyData[key];
+    };
+
+    const dayStart = new Date(
+        currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0, 0
+    );
+    const dayEnd = new Date(
+        currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 23, 59, 59, 999
+    );
+
+    todayAccesses.forEach((access) => {
+        const { userId, usageTimeSeconds = 0 } = access;
+        const start = new Date(access.localDateTime);
+
+        // Duração zero marca presença naquela hora, sem somar tempo.
+        if (usageTimeSeconds === 0) {
+            ensureHour(`${pad(start.getHours())}:00`).users.add(userId);
+            return;
+        }
+
+        const end = new Date(start.getTime() + usageTimeSeconds * 1000);
+        const effectiveStart = start < dayStart ? dayStart : start;
+        const effectiveEnd = end > dayEnd ? dayEnd : end;
+        if (effectiveStart >= effectiveEnd) return;
+
+        let cursor = new Date(effectiveStart);
+        cursor.setMinutes(0, 0, 0);
+
+        while (cursor < effectiveEnd) {
+            const nextHour = new Date(cursor.getTime() + 3600000);
+            const sliceEnd = nextHour < effectiveEnd ? nextHour : effectiveEnd;
+            const seconds = (sliceEnd.getTime()
+                - Math.max(cursor.getTime(), effectiveStart.getTime())) / 1000;
+
+            const hour = ensureHour(`${pad(cursor.getHours())}:00`);
+            hour.totalSeconds += seconds;
+            hour.users.add(userId);
+
+            cursor = nextHour;
+        }
+    });
+
+    const result = {};
+    Object.entries(hourlyData).forEach(([hour, data]) => {
+        result[hour] = {
+            hours: parseFloat((data.totalSeconds / 3600).toFixed(4)),
+            ...(countUsers ? { users: data.users.size } : {}),
+        };
+    });
+
+    return result;
+}
+
+/**
+ * Linhas do histórico de uso, da mais recente para a mais antiga.
+ *
+ * `resolve` decide o que a coluna do meio mostra — a sessão na tela de uma
+ * pessoa, a pessoa na tela de uma sessão. Devolver null descarta a linha:
+ * acesso de alguém que saiu do pacote não tem o que exibir ali.
+ */
+export function toAccessRows(accessHistory, resolve) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const rows = [];
+
+    Object.values(accessHistory || {}).flat().forEach((access) => {
+        const subject = resolve(access);
+        if (!subject) return;
+
+        const at = new Date(access.localDateTime);
+        const atDay = new Date(at.getFullYear(), at.getMonth(), at.getDate());
+        const time = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+
+        let when;
+        if (atDay.getTime() === today.getTime()) when = `Hoje às ${time}`;
+        else if (atDay.getTime() === yesterday.getTime()) when = `Ontem às ${time}`;
+        else {
+            const year = String(at.getFullYear()).slice(-2);
+            when = `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${year} às ${time}`;
+        }
+
+        rows.push({
+            id: access.accessId,
+            when,
+            subject,
+            // Direto dos segundos do registro: passar por horas arredondaria e
+            // daria um tempo diferente do que o card e o gráfico mostram.
+            usage: formatDuration(access.usageTimeSeconds),
+            timestamp: at.getTime(),
+        });
+    });
+
+    return rows.sort((a, b) => b.timestamp - a.timestamp);
+}

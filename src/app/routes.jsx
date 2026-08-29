@@ -4,6 +4,8 @@ import CollectionPage from '../features/collection/CollectionPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
+import SessionDetail from '../features/collection/SessionDetail.jsx';
+import UserDetail from '../features/collection/UserDetail.jsx';
 import AccountView from '../features/settings/AccountView.jsx';
 import BillingView from '../features/settings/BillingView.jsx';
 import SettingsPage from '../features/settings/SettingsPage.jsx';
@@ -35,8 +37,8 @@ export default function AppRoutes() {
                     <Route path="people" element={<Placeholder name="Pessoas do pacote" from="#packagePeopleModal" />} />
                     <Route path="sessions/new" element={<Placeholder name="Adicionar sessão" from="#addSessionModal" />} />
                 </Route>
-                <Route path="/collection/:packageId/session/:sessionId" element={<Placeholder name="Sessão" from=".preset-session-overview" />} />
-                <Route path="/collection/:packageId/user/:userId" element={<Placeholder name="Pessoa" from=".preset-user-overview" />} />
+                <Route path="/collection/:packageId/session/:sessionId" element={<SessionDetail />} />
+                <Route path="/collection/:packageId/user/:userId" element={<UserDetail />} />
 
                 {/* ── Meus acessos (pacotes que compartilharam comigo) ───── */}
                 <Route path="/shared" element={<SharedPage />} />
