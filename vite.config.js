@@ -13,6 +13,32 @@ export const APP_ROUTE_PREFIXES = ['collection', 'shared', 'settings', 'upgrade'
 const isAppRoute = (pathname) =>
     APP_ROUTE_PREFIXES.some((p) => pathname === `/${p}` || pathname.startsWith(`/${p}/`));
 
+// Em dev, página e API precisam dividir o host.
+//
+// O cookie de sessão é SameSite=Lax e nasce em 127.0.0.1 (host do callback do
+// Google e da API). Para o navegador, localhost e 127.0.0.1 são hosts
+// diferentes: abrir o site em localhost torna toda chamada cross-site, o
+// cookie não é anexado, e tudo responde 401 com a sessão válida — sem nenhum
+// sinal de que o problema é o endereço. Em vez de documentar a armadilha,
+// o dev server tira ela do caminho.
+const DEV_HOST = '127.0.0.1';
+
+function forceDevHost() {
+    return {
+        name: 'authpack-force-dev-host',
+        configureServer(server) {
+            server.middlewares.use((req, res, next) => {
+                const host = req.headers.host || '';
+                if (!host.startsWith('localhost:')) return next();
+
+                const port = host.split(':')[1];
+                res.writeHead(302, { Location: `http://${DEV_HOST}:${port}${req.url}` });
+                res.end();
+            });
+        },
+    };
+}
+
 /**
  * Faz o dev server se comportar como o site em produção.
  *
@@ -57,9 +83,9 @@ function hybridSiteRouting() {
 export default defineConfig({
     // 'mpa' porque a raiz do site não é o app: index.html é a landing estática.
     appType: 'mpa',
-    server: { port: 5173, strictPort: true },
+    server: { host: DEV_HOST, port: 5173, strictPort: true },
     publicDir: PUBLIC_DIR,
-    plugins: [react(), hybridSiteRouting()],
+    plugins: [react(), forceDevHost(), hybridSiteRouting()],
     build: {
         outDir: 'dist',
         emptyOutDir: true,
