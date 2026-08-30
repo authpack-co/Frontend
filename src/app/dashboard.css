@@ -1358,7 +1358,11 @@ span.coming-soon {
     transform: translateY(-20px);
 }
 
-.package-options button {
+/* "Compartilhar" virou <a> — é o que dá URL ao modal — e deixou de casar com
+   uma regra que só falava de <button>. O tamanho da fonte é resolvido em
+   base.css, junto com os outros controles que viraram link. */
+.package-options button,
+.package-options a {
     display: flex;
     gap: 0.5rem;
     width: 100%;
@@ -1369,7 +1373,8 @@ span.coming-soon {
     cursor: pointer;
 }
 
-.package-options button:hover {
+.package-options button:hover,
+.package-options a:hover {
     background: var(--ap-bg-hover);
 }
 

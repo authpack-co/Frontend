@@ -137,3 +137,16 @@ a {
     text-decoration: none;
 }
 
+/* E nasce maior. <button> recebe do agente do usuário um font-size próprio
+   (13.3333px) que o CSS do painel nunca declarou — nenhuma regra falava de
+   tamanho nesses controles, porque não precisava. O link não herda isso: cai
+   nos 16px do corpo e cresce junto em altura. Era visível no menu ⋯ do
+   pacote, onde "Compartilhar" ficou ao lado de três irmãos <button>, e valia
+   igual para os botões da top bar, sem vizinho com que comparar.
+   :where() não soma especificidade, então quem já declara tamanho
+   (.btn-small, .nav-item, .access-details-btn) continua mandando. */
+:where(a.btn, a.nav-item, .package-options a, .session-options a) {
+    font-family: inherit;
+    font-size: 13.3333px;
+}
+

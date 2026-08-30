@@ -9,6 +9,7 @@ import {
     RenamePackageModal,
 } from '../features/collection/PackageModals.jsx';
 import SharedPeopleModal from '../features/collection/SharedPeopleModal.jsx';
+import UpdatePackageModal from '../features/collection/capture/UpdatePackageModal.jsx';
 import PlansModal from '../features/plans/PlansModal.jsx';
 import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import useUpgradeParam from '../features/plans/useUpgradeParam.js';
@@ -230,7 +231,7 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
     // Solicitação esperando resposta — só na coleção, onde há o que aprovar.
     const pending = !isAccess && Number(pkg.pendingRequests || 0) > 0;
 
-    // 'rename' | 'delete' | 'abort' | null
+    // 'update' | 'rename' | 'delete' | 'abort' | null
     const [action, setAction] = useState(null);
     const close = () => setAction(null);
 
@@ -274,6 +275,18 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
                     </button>
                 ) : (
                     <>
+                        {/* Recaptura o pacote inteiro: mesmo motor do "Adicionar
+                            sessão", com uma etapa a mais para escolher quais
+                            sessões entram no lote. */}
+                        <button className="update-package-btn" type="button" onClick={() => { closeMenu(); setAction('update'); }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                <path d="M21 3v5h-5" />
+                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                <path d="M8 16H3v5" />
+                            </svg>
+                            <span>Atualizar</span>
+                        </button>
                         <Link className="share-package-btn" to={`/collection/${pkg.id}/share`} onClick={closeMenu}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2v13" />
@@ -301,6 +314,7 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
                 ))}
             </OptionsMenu>
 
+            {action === 'update' && <UpdatePackageModal pkg={pkg} onClose={close} />}
             {action === 'rename' && <RenamePackageModal pkg={pkg} open onClose={close} />}
             {action === 'delete' && <DeletePackageModal pkg={pkg} open onClose={close} />}
             {action === 'abort' && <AbortAccessModal pkg={pkg} open onClose={close} />}
