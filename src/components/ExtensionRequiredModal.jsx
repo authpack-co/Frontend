@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import useModalTransition from './useModalTransition.js';
 import { isExtensionInstalled, WEBSTORE_URL } from '../lib/extension.js';
 
 /**
@@ -17,14 +18,17 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
         if (!open) { setFailed(false); setChecking(false); }
     }, [open]);
 
-    useEffect(() => {
-        if (!open) return undefined;
-        const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
-        document.addEventListener('keydown', onKeyDown);
-        return () => document.removeEventListener('keydown', onKeyDown);
-    }, [open, onClose]);
+    const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose);
 
-    if (!open) return null;
+    useEffect(() => {
+        if (!mounted) return undefined;
+        const onKeyDown = (event) => { if (event.key === 'Escape') requestClose(); };
+        // Captura: o overlay abaixo barra a propagação do keydown.
+        document.addEventListener('keydown', onKeyDown, true);
+        return () => document.removeEventListener('keydown', onKeyDown, true);
+    }, [mounted, requestClose]);
+
+    if (!mounted) return null;
 
     function handleRecheck() {
         setChecking(true);
@@ -43,17 +47,18 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
     // subiria para a linha.
     return createPortal(
         <div
-            className="modal-overlay show"
+            ref={overlayRef}
+            className={`modal-overlay${visible ? ' show' : ''}`}
             onClick={(event) => {
                 // O React propaga pela árvore de componentes mesmo com portal:
                 // sem parar aqui, o clique volta para a linha que abriu isto.
                 event.stopPropagation();
-                if (event.target === event.currentTarget) onClose();
+                if (event.target === event.currentTarget) requestClose();
             }}
             onKeyDown={(event) => event.stopPropagation()}
         >
             <div className="modal ext-card" role="dialog" aria-modal="true" aria-label="Extensão necessária">
-                <button className="ext-card-close" type="button" aria-label="Fechar" onClick={onClose}>
+                <button className="ext-card-close" type="button" aria-label="Fechar" onClick={requestClose}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 6L6 18" />
                         <path d="M6 6l12 12" />

@@ -67,9 +67,9 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
             bodyClassName="pc-body"
             footerClassName="pc-footer"
             closable={!busy}
-            footer={(
+            footer={(requestClose) => (
                 <>
-                    <button className="pc-btn pc-btn--ghost" type="button" onClick={onClose} disabled={busy}>
+                    <button className="pc-btn pc-btn--ghost" type="button" onClick={requestClose} disabled={busy}>
                         Voltar
                     </button>
                     <button className="pc-btn pc-btn--primary" type="button" onClick={handleConfirm} disabled={busy}>

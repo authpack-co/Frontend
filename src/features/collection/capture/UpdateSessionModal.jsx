@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import useModalTransition from '../../../components/useModalTransition.js';
 import { usePackages } from '../../../lib/packages.jsx';
 import CaptureProgress, { progressFooterStatus } from './CaptureProgress.jsx';
 import useCapture from './useCapture.js';
@@ -20,6 +21,8 @@ export default function UpdateSessionModal({ pkg, session, onClose }) {
     // Disparo idempotente: em desenvolvimento o StrictMode monta o efeito duas
     // vezes, e sem esta trava a extensão abriria duas abas do mesmo serviço.
     const started = useRef(false);
+
+    const { visible, overlayRef, requestClose } = useModalTransition(true, onClose);
 
     useEffect(() => {
         if (started.current) return;
@@ -44,7 +47,8 @@ export default function UpdateSessionModal({ pkg, session, onClose }) {
 
     return createPortal(
         <div
-            className="modal-overlay show"
+            ref={overlayRef}
+            className={`modal-overlay${visible ? ' show' : ''}`}
             id="addSessionModal"
             data-mode="update"
             data-phase="progress"
@@ -91,7 +95,7 @@ export default function UpdateSessionModal({ pkg, session, onClose }) {
                             className="btn btn-secondary as-close"
                             type="button"
                             disabled={!capture.batchDone}
-                            onClick={onClose}
+                            onClick={requestClose}
                         >
                             Fechar
                         </button>

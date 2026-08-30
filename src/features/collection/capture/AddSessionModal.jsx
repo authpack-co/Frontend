@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
 import ExtensionRequiredModal from '../../../components/ExtensionRequiredModal.jsx';
+import useModalTransition from '../../../components/useModalTransition.js';
 import { isExtensionInstalled } from '../../../lib/extension.js';
 import { usePackage, usePackages } from '../../../lib/packages.jsx';
 import { CATALOG, keyOf, normalizeServiceInput } from './catalog.js';
@@ -38,7 +39,11 @@ export default function AddSessionModal() {
         onFinished: reload,
     });
 
-    const close = () => navigate(`/collection/${packageId}`);
+    const { visible, overlayRef, requestClose } = useModalTransition(
+        true,
+        () => navigate(`/collection/${packageId}`),
+    );
+    const close = requestClose;
 
     const suggestions = useMemo(() => {
         const query = search.trim().toLowerCase();
@@ -85,7 +90,8 @@ export default function AddSessionModal() {
 
     return createPortal(
         <div
-            className="modal-overlay show"
+            ref={overlayRef}
+            className={`modal-overlay${visible ? ' show' : ''}`}
             id="addSessionModal"
             data-mode="create"
             data-phase={capture.started ? 'progress' : 'select'}

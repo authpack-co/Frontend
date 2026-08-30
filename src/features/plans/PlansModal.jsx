@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import useModalTransition from '../../components/useModalTransition.js';
 import { useNotify } from '../../components/Notifications.jsx';
 import { api, ApiError } from '../../lib/api.js';
 import { usePackages } from '../../lib/packages.jsx';
@@ -67,6 +68,8 @@ export default function PlansModal({ open, onClose }) {
     const [preview, setPreview] = useState(null);
     const [busyTier, setBusyTier] = useState(null);
 
+    const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose);
+
     const currentPlan = userInfo?.plan;
 
     async function choose(tier) {
@@ -103,15 +106,16 @@ export default function PlansModal({ open, onClose }) {
         }
     }
 
-    if (!open) return null;
+    if (!mounted) return null;
 
     return createPortal(
         <div
-            className="modal-overlay show"
-            onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+            ref={overlayRef}
+            className={`modal-overlay${visible ? ' show' : ''}`}
+            onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
         >
         <div className="modal plans-modal" role="dialog" aria-modal="true">
-            <button className="close-btn plus-close-btn" type="button" aria-label="Fechar" onClick={onClose}>×</button>
+            <button className="close-btn plus-close-btn" type="button" aria-label="Fechar" onClick={requestClose}>×</button>
             <div className="plans-modal-header">
                 <span className="plans-eyebrow">Planos</span>
                 <h2>Escolha o tamanho do seu <span className="plus-highlight">compartilhamento</span></h2>

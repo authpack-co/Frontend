@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import useModalTransition from './useModalTransition.js';
 
 /**
  * Casca dos modais.
@@ -36,28 +37,31 @@ export default function Modal({
     closable = true,
     overlayProps = {},
 }) {
+    const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose);
+
     useEffect(() => {
-        if (!open || !closable) return undefined;
-        const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
+        if (!mounted || !closable) return undefined;
+        const onKeyDown = (event) => { if (event.key === 'Escape') requestClose(); };
         // Captura: o overlay abaixo barra a propagação do keydown, e o React
         // faz isso no evento nativo lá na raiz. Na bolha, o Escape digitado
         // com o foco dentro do modal nunca chegaria aqui.
         document.addEventListener('keydown', onKeyDown, true);
         return () => document.removeEventListener('keydown', onKeyDown, true);
-    }, [open, closable, onClose]);
+    }, [mounted, closable, requestClose]);
 
-    if (!open) return null;
+    if (!mounted) return null;
 
     return createPortal(
         <div
-            className="modal-overlay show"
+            ref={overlayRef}
+            className={`modal-overlay${visible ? ' show' : ''}`}
             // O portal tira o modal do DOM da linha, mas o React continua
             // propagando o evento pela árvore de componentes: sem parar aqui,
             // digitar espaço no input dispara o "abrir detalhes" da linha que
             // abriu o modal.
             onClick={(event) => {
                 event.stopPropagation();
-                if (closable && event.target === event.currentTarget) onClose();
+                if (closable && event.target === event.currentTarget) requestClose();
             }}
             onKeyDown={(event) => event.stopPropagation()}
             id={id}
@@ -67,7 +71,7 @@ export default function Modal({
                 <div className={`modal-header ${headerClassName}`.trim()}>
                     {header || <h2 className="modal-title">{title}</h2>}
                     {closable && (
-                        <button className="close-btn" type="button" aria-label="Fechar" onClick={onClose}>
+                        <button className="close-btn" type="button" aria-label="Fechar" onClick={requestClose}>
                             ×
                         </button>
                     )}
@@ -75,9 +79,18 @@ export default function Modal({
 
                 {aside}
 
-                <div className={`modal-body ${bodyClassName}`.trim()}>{children}</div>
+                {/* Corpo e rodapé podem vir como função para receber o
+                    `requestClose`: um botão "Cancelar" que chame o onClose
+                    direto pula a animação de saída. */}
+                <div className={`modal-body ${bodyClassName}`.trim()}>
+                    {typeof children === 'function' ? children(requestClose) : children}
+                </div>
 
-                {footer && <div className={`${footerBaseClass} ${footerClassName}`.trim()}>{footer}</div>}
+                {footer && (
+                    <div className={`${footerBaseClass} ${footerClassName}`.trim()}>
+                        {typeof footer === 'function' ? footer(requestClose) : footer}
+                    </div>
+                )}
             </div>
         </div>,
         document.body
@@ -96,9 +109,9 @@ export function ConfirmModal({ open, onClose, title, confirmLabel, danger = true
             onClose={onClose}
             title={title}
             closable={!busy}
-            footer={(
+            footer={(requestClose) => (
                 <>
-                    <button className="btn btn-secondary" type="button" onClick={onClose} disabled={busy}>
+                    <button className="btn btn-secondary" type="button" onClick={requestClose} disabled={busy}>
                         Cancelar
                     </button>
                     <button

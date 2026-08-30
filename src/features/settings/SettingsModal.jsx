@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import useModalTransition from '../../components/useModalTransition.js';
 import AccountView from './AccountView.jsx';
 import BillingView from './BillingView.jsx';
 import './settings.css';
@@ -13,10 +14,14 @@ import './settings.css';
 export default function SettingsModal({ open, onClose, onOpenPlans }) {
     const [view, setView] = useState('conta');
 
-    useEffect(() => {
-        if (!open) return undefined;
+    // Este overlay tem transição própria (0.2s), mais curta que a dos modais
+    // comuns — a saída precisa esperar exatamente ela.
+    const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose, 220);
 
-        const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
+    useEffect(() => {
+        if (!mounted) return undefined;
+
+        const onKeyDown = (event) => { if (event.key === 'Escape') requestClose(); };
         document.addEventListener('keydown', onKeyDown);
         document.body.style.overflow = 'hidden';
 
@@ -24,20 +29,21 @@ export default function SettingsModal({ open, onClose, onOpenPlans }) {
             document.removeEventListener('keydown', onKeyDown);
             document.body.style.overflow = '';
         };
-    }, [open, onClose]);
+    }, [mounted, requestClose]);
 
-    if (!open) return null;
+    if (!mounted) return null;
 
     return createPortal(
         <div
-            className="settings-overlay open"
-            onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+            ref={overlayRef}
+            className={`settings-overlay${visible ? ' open' : ''}`}
+            onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
         >
             <div className="settings-modal" role="dialog" aria-modal="true" aria-label="Configurações">
                 <aside className="settings-sidebar">
                     <div className="settings-sidebar-header">
                         <span className="settings-sidebar-title">Configurações</span>
-                        <button className="settings-close-btn" type="button" title="Fechar" onClick={onClose}>
+                        <button className="settings-close-btn" type="button" title="Fechar" onClick={requestClose}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                                 <line x1="18" y1="6" x2="6" y2="18" />
                                 <line x1="6" y1="6" x2="18" y2="18" />
