@@ -24,7 +24,7 @@ export default function AdminShell() {
         <div className={`admin-shell${navOpen ? ' nav-open' : ''}`}>
             <aside className="admin-sidebar">
                 <div className="admin-brand">
-                    <span className="admin-brand-mark">A</span>
+                    <span className="admin-brand-mark">N</span>
                     <span className="admin-brand-name">Niango <em>Admin</em></span>
                 </div>
 

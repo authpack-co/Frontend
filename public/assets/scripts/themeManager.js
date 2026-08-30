@@ -7,7 +7,7 @@
  * Usage:
  *   import { setTheme, toggleTheme, getTheme } from './themeManager.js';
  *   // or simply include as <script src="themeManager.js"></script>
- *   // and use window.AuthPackTheme.toggle(), etc.
+ *   // and use window.NiangoTheme.toggle(), etc.
  */
 
 (function () {
@@ -102,7 +102,7 @@
     }
 
     // ── Public API ──
-    window.AuthPackTheme = {
+    window.NiangoTheme = {
         get: getTheme,
         set: setTheme,
         toggle: toggleTheme

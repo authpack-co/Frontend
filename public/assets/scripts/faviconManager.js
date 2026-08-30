@@ -7,15 +7,15 @@
        3) ícone de fallback local (ou um fallback custom via onFinalError)
 
    Uso típico (elemento <img>):
-       AuthPackFavicon.apply(img, { icon: s.icon, url: s.url });
+       NiangoFavicon.apply(img, { icon: s.icon, url: s.url });
 
    Uso com fallback custom (ex.: inicial do nome em vez do PNG):
-       AuthPackFavicon.apply(img, {
+       NiangoFavicon.apply(img, {
            icon: s.icon, url: s.url,
            onFinalError: (el) => { el.remove(); av.textContent = 'A'; }
        });
 
-   Uso inline (templates de string), ver AuthPackFavicon.inlineError.
+   Uso inline (templates de string), ver NiangoFavicon.inlineError.
    ============================================================================ */
 (function (global) {
     'use strict';
@@ -116,9 +116,9 @@
     /**
      * Handler de erro para favicons criados via template de string.
      * O <img> deve trazer:
-     *   - data-fav-google="<url do Google S2>"  (use AuthPackFavicon.googleUrl)
+     *   - data-fav-google="<url do Google S2>"  (use NiangoFavicon.googleUrl)
      *   - data-fav-initial="<texto de fallback>" (ex.: inicial do nome)
-     * e chamar onerror="AuthPackFavicon.inlineError(this)".
+     * e chamar onerror="NiangoFavicon.inlineError(this)".
      *
      * Tenta o Google uma vez; depois substitui o conteúdo do pai pela inicial.
      */
@@ -134,7 +134,7 @@
         if (img.parentNode) img.parentNode.textContent = initial;
     }
 
-    global.AuthPackFavicon = {
+    global.NiangoFavicon = {
         FALLBACK_SRC,
         domain: faviconDomain,
         googleUrl: googleFaviconUrl,

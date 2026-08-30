@@ -55,7 +55,6 @@ button { font-family: inherit; cursor: pointer; }
     letter-spacing: -0.01em;
     color: var(--ap-text-primary);
 }
-.inv-brand-name span { color: var(--inv-accent); }
 
 .inv-main { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 28px 20px 56px; }
 

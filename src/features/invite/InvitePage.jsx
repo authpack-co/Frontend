@@ -136,7 +136,7 @@ export default function InvitePage() {
                 <header className="inv-topbar">
                     <Link className="inv-brand" to="/collection">
                         <img src="/assets/images/favicon-128x128.png" alt="Niango" />
-                        <span className="inv-brand-name">Auth<span>Pack</span></span>
+                        <span className="inv-brand-name">Niango</span>
                     </Link>
                 </header>
 
