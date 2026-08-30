@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthPack — Distribua acessos sem entregar senhas</title>
+    <meta name="description"
+        content="O AuthPack compartilha a sessão já autenticada, cifrada com AES individual por sessão. Quem recebe entra em um clique, sem saber a senha, e você revoga quando quiser.">
+    <meta name="keywords"
+        content="AuthPack, compartilhamento de acessos, pacotes de acesso, gerenciamento de acessos, distribuição de acessos digitais, compartilhar acesso sem senha">
+    <link rel="canonical" href="https://authpack.co/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#181d23">
+    <meta name="color-scheme" content="dark">
+
+    <!-- ===== Open Graph ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AuthPack">
+    <meta property="og:title" content="AuthPack — Distribua acessos sem entregar senhas">
+    <meta property="og:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique. Você revoga quando quiser.">
+    <meta property="og:url" content="https://authpack.co/">
+    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AuthPack — Distribua acessos sem entregar senhas">
+    <meta name="twitter:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique.">
+    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+
+    <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles/home.css">
+
+    <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
+    <style id="ap-block-style">
+        html { visibility: hidden !important; background: #181d23; }
+    </style>
+    <script>
+        (function () {
+            'use strict';
+            var persistMode = window.location.search.indexOf('persist=true') > -1;
+
+            function release() {
+                try {
+                    var blockStyle = document.getElementById('ap-block-style');
+                    if (blockStyle && blockStyle.parentNode) {
+                        blockStyle.parentNode.removeChild(blockStyle);
+                    }
+                    document.documentElement.style.visibility = '';
+                } catch (e) {}
+            }
+
+            if (persistMode) {
+                release();
+                return;
+            }
+
+            var isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+
+            fetch(serverURL + '/api/auth/', { credentials: 'include' })
+                .then(function (res) {
+                    if (res.ok) {
+                        window.location.replace('/collection');
+                    } else {
+                        release();
+                    }
+                })
+                .catch(function () {
+                    release();
+                });
+        })();
+    </script>
+
+    <!-- ===== Structured data: Organization + WebSite + SoftwareApplication + FAQ ===== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://authpack.co/#organization",
+          "name": "AuthPack",
+          "url": "https://authpack.co/",
+          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes e stacks.",
+          "email": "team@authpack.co",
+          "sameAs": [
+            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://authpack.co/#website",
+          "url": "https://authpack.co/",
+          "name": "AuthPack",
+          "description": "Distribuição controlada de acessos: compartilhe a sessão já autenticada, sem expor a credencial.",
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "inLanguage": "pt-BR"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://authpack.co/#software",
+          "name": "AuthPack",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Chrome, Edge, Brave, Arc",
+          "url": "https://authpack.co/",
+          "downloadUrl": "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm",
+          "description": "Organize acessos em pacotes e distribua para sua equipe em um clique, sem expor credenciais.",
+          "publisher": { "@id": "https://authpack.co/#organization" },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://authpack.co/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Vocês armazenam minhas senhas?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não. O AuthPack trabalha com a sessão já autenticada, cifrada com AES individual. A credencial original continua apenas com você." }
+            },
+            {
+              "@type": "Question",
+              "name": "Funciona com 2FA, SSO e magic links?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sim. Como o que é compartilhado é a sessão, e não a credencial, qualquer método de autenticação do serviço continua funcionando. Você passa pela verificação uma vez." }
+            },
+            {
+              "@type": "Question",
+              "name": "Como tiro o acesso de alguém?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Pelo painel, por pessoa, por pacote ou por sessão. A revogação encerra na hora a conexão de quem recebeu o acesso." }
+            },
+            {
+              "@type": "Question",
+              "name": "Isso viola os termos dos serviços?",
+              "acceptedAnswer": { "@type": "Answer", "text": "O AuthPack é indicado para acesso de equipe em planos que permitem múltiplos usuários e para uso pessoal entre dispositivos. Os termos de cada serviço continuam valendo." }
+            },
+            {
+              "@type": "Question",
+              "name": "Em quais navegadores funciona?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Chrome, Edge, Brave e Arc — qualquer navegador baseado em Chromium." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <!-- ========== NAV ==========
+         Ação principal do topo: Entrar. O "Adicionar ao Chrome" fica em
+         contorno, como ação secundária. -->
+    <nav class="nav">
+        <div class="container nav-inner">
+            <a href="/?persist=true" class="nav-logo" aria-label="AuthPack — início">
+                <img src="/assets/images/favicon-128x128.png" width="28" height="28" alt="">
+                <span class="wordmark"><span class="a">auth</span><span class="p">pack</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="#como">Como funciona</a>
+                <a href="#seguranca">Segurança</a>
+                <a href="#casos">Casos de uso</a>
+                <a href="/pages/pricing/">Preços</a>
+                <a href="/blog/">Blog</a>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-cta">
+                <!-- Visitante -->
+                <div class="nav-visitor">
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                        target="_blank" rel="noopener" class="btn btn-outline">Adicionar ao Chrome</a>
+                    <a href="/login" class="btn btn-primary">Entrar</a>
+                </div>
+                <!-- Logado (preenchido por home.js) -->
+                <div class="nav-user"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== HERO ========== -->
+    <header class="hero">
+        <div class="container">
+            <div class="hero-inner">
+                <div class="hero-copy">
+                    <span class="eyebrow">
+                        <span class="dot"></span>
+                        Extensão para Chrome, Edge e Arc
+                    </span>
+                    <h1 class="h1">Distribua acessos sem entregar senhas.</h1>
+                    <p class="lede">
+                        O AuthPack compartilha a sessão já autenticada, cifrada com AES individual por sessão.
+                        Quem recebe entra em um clique. Você revoga quando quiser.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                            target="_blank" rel="noopener" class="btn btn-primary btn-lg">Adicionar ao Chrome</a>
+                        <a href="#como" class="btn btn-soft btn-lg">Como funciona</a>
+                    </div>
+                    <div class="hero-meta">
+                        <span>Grátis para começar</span>
+                        <span class="sep"></span>
+                        <span>Sem cofre de senhas</span>
+                        <span class="sep"></span>
+                        <span>Revogação imediata</span>
+                    </div>
+                </div>
+
+                <div class="hero-media">
+                    <!-- Mockup do painel: barra lateral com os pacotes,
+                         topbar de busca + compartilhar, e a grade de cards de sessão. -->
+                    <figure class="figure figure--hero is-art">
+                        <svg viewBox="0 0 620 420" role="img"
+                            aria-label="Painel do AuthPack: barra lateral com os pacotes Engenharia, Design, Financeiro e Marketing, e uma grade de sessões compartilhadas com status e uso.">
+                            <defs>
+                                <clipPath id="apFrame"><rect width="620" height="420" rx="10" /></clipPath>
+                            </defs>
+                            <g clip-path="url(#apFrame)" font-family="Inter, sans-serif">
+                                <rect width="620" height="420" fill="#181d23" />
+
+                                <!-- ── Barra lateral ── -->
+                                <rect width="172" height="420" fill="#141619" />
+                                <path d="M172 0V420" stroke="#333840" />
+
+                                <rect x="12" y="14" width="22" height="22" rx="6" fill="#4184e4" />
+                                <text x="23" y="30" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">A</text>
+                                <text x="42" y="30" font-size="13" font-weight="600" fill="#e8e6e3">AuthPack</text>
+                                <path d="M0 50H172" stroke="#333840" />
+
+                                <rect x="8" y="60" width="156" height="26" rx="7" fill="#212830" />
+                                <text x="18" y="77" font-size="11" font-weight="600" fill="#e8e6e3">Minha coleção</text>
+                                <text x="18" y="104" font-size="11" fill="#9d9488">Meus acessos</text>
+
+                                <text x="12" y="133" font-size="8.5" letter-spacing="1" fill="#9d9488">PACOTES</text>
+                                <rect x="144" y="122" width="18" height="18" rx="5" fill="#1c1f20" stroke="#333840" />
+                                <text x="153" y="135" font-size="11" fill="#9d9488" text-anchor="middle">+</text>
+
+                                <rect x="8" y="144" width="156" height="30" rx="7" fill="#1c1f20" />
+                                <text x="18" y="163" font-size="11" font-weight="500" fill="#e8e6e3">Engenharia</text>
+                                <rect x="142" y="152" width="14" height="14" rx="3" fill="#0acf83" />
+
+                                <text x="18" y="196" font-size="11" fill="#d6d3cd">Design</text>
+                                <rect x="142" y="185" width="14" height="14" rx="3" fill="#5e6ad2" />
+
+                                <text x="18" y="229" font-size="11" fill="#d6d3cd">Financeiro</text>
+                                <rect x="142" y="218" width="14" height="14" rx="3" fill="#635bff" />
+
+                                <text x="18" y="262" font-size="11" fill="#d6d3cd">Marketing</text>
+                                <rect x="142" y="251" width="14" height="14" rx="3" fill="#f59e0b" />
+
+                                <rect x="8" y="290" width="156" height="70" rx="9" fill="#1c1f20" stroke="#333840" />
+                                <text x="18" y="310" font-size="10.5" font-weight="600" fill="#e8e6e3">AuthPack <tspan fill="#4184e4">Planos</tspan></text>
+                                <text x="18" y="325" font-size="8.5" fill="#9d9488">Compartilhe com muito</text>
+                                <text x="18" y="336" font-size="8.5" fill="#9d9488">mais pessoas.</text>
+                                <text x="18" y="352" font-size="9" fill="#4184e4">Fazer upgrade →</text>
+
+                                <path d="M0 374H172" stroke="#333840" />
+                                <circle cx="22" cy="394" r="11" fill="#4184e4" />
+                                <text x="22" y="397.5" font-size="8.5" font-weight="700" fill="#fff" text-anchor="middle">AR</text>
+                                <text x="40" y="392" font-size="10" font-weight="500" fill="#e8e6e3">Ana Ribeiro</text>
+                                <text x="40" y="403" font-size="8" fill="#9d9488">ana@empresa.com</text>
+
+                                <!-- ── Topbar ── -->
+                                <rect x="188" y="16" width="210" height="32" rx="7" fill="#0d1117" stroke="#333840" />
+                                <circle cx="204" cy="30" r="4.5" fill="none" stroke="#9d9488" stroke-width="1.4" />
+                                <path d="m207.5 33.5 3 3" stroke="#9d9488" stroke-width="1.4" stroke-linecap="round" />
+                                <text x="219" y="34" font-size="10.5" fill="#9d9488">Buscar sessões do pacote…</text>
+                                <text x="478" y="34" font-size="10" fill="#9d9488" text-anchor="end">12 / 20 pessoas</text>
+                                <rect x="490" y="16" width="114" height="32" rx="7" fill="#4184e4" />
+                                <path d="M508 24v9M504.5 27.5 508 24l3.5 3.5M502 31v5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5v-5"
+                                    stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                <text x="558" y="34" font-size="11" font-weight="600" fill="#fff" text-anchor="middle">Compartilhar</text>
+
+                                <!-- ── Painel do pacote ── -->
+                                <rect x="188" y="60" width="416" height="344" rx="12" fill="#141619" stroke="#333840" />
+                                <text x="204" y="92" font-size="17" font-weight="700" fill="#e8e6e3" font-family="Sora, Inter, sans-serif">Engenharia</text>
+                                <rect x="315" y="78" width="60" height="18" rx="9" fill="#1c1f20" stroke="#333840" />
+                                <text x="345" y="90" font-size="9" fill="#9d9488" text-anchor="middle">6 sessões</text>
+                                <text x="204" y="110" font-size="9.5" fill="#9d9488">Criado em 5 de abril de 2024</text>
+
+                                <!-- Card: Figma -->
+                                <g>
+                                    <rect x="204" y="122" width="185" height="130" rx="12" fill="#1c1f20" stroke="#333840" />
+                                    <rect x="218" y="136" width="24" height="24" rx="6" fill="#0acf83" />
+                                    <text x="230" y="152" font-size="11" font-weight="700" fill="#0b2c1e" text-anchor="middle">F</text>
+                                    <text x="250" y="148" font-size="12.5" font-weight="600" fill="#e8e6e3">Figma</text>
+                                    <text x="250" y="161" font-size="9" fill="#9d9488">figma.com</text>
+                                    <circle cx="222" cy="184" r="3" fill="#4ade80" />
+                                    <text x="231" y="187.5" font-size="10" fill="#d6d3cd">Ativa</text>
+                                    <text x="218" y="208" font-size="9" fill="#9d9488">Uso hoje</text>
+                                    <text x="375" y="208" font-size="9" fill="#d6d3cd" text-anchor="end">2h 10m</text>
+                                    <rect x="218" y="215" width="157" height="4" rx="2" fill="#262b31" />
+                                    <rect x="218" y="215" width="122" height="4" rx="2" fill="#0acf83" />
+                                    <circle cx="225" cy="236" r="7" fill="#4184e4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <circle cx="236" cy="236" r="7" fill="#7b57d4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <circle cx="247" cy="236" r="7" fill="#4ade80" stroke="#1c1f20" stroke-width="1.5" />
+                                    <text x="260" y="239" font-size="9" fill="#9d9488">3 usando agora</text>
+                                </g>
+
+                                <!-- Card: Notion -->
+                                <g>
+                                    <rect x="403" y="122" width="185" height="130" rx="12" fill="#1c1f20" stroke="#333840" />
+                                    <rect x="417" y="136" width="24" height="24" rx="6" fill="#e8e6e3" />
+                                    <text x="429" y="152" font-size="11" font-weight="700" fill="#141619" text-anchor="middle">N</text>
+                                    <text x="449" y="148" font-size="12.5" font-weight="600" fill="#e8e6e3">Notion</text>
+                                    <text x="449" y="161" font-size="9" fill="#9d9488">notion.so</text>
+                                    <circle cx="421" cy="184" r="3" fill="#4ade80" />
+                                    <text x="430" y="187.5" font-size="10" fill="#d6d3cd">Ativa</text>
+                                    <text x="417" y="208" font-size="9" fill="#9d9488">Uso hoje</text>
+                                    <text x="574" y="208" font-size="9" fill="#d6d3cd" text-anchor="end">1h 24m</text>
+                                    <rect x="417" y="215" width="157" height="4" rx="2" fill="#262b31" />
+                                    <rect x="417" y="215" width="85" height="4" rx="2" fill="#e8e6e3" />
+                                    <circle cx="424" cy="236" r="7" fill="#7b57d4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <circle cx="435" cy="236" r="7" fill="#4184e4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <text x="448" y="239" font-size="9" fill="#9d9488">2 usando agora</text>
+                                </g>
+
+                                <!-- Card: Linear -->
+                                <g>
+                                    <rect x="204" y="264" width="185" height="130" rx="12" fill="#1c1f20" stroke="#333840" />
+                                    <rect x="218" y="278" width="24" height="24" rx="6" fill="#5e6ad2" />
+                                    <text x="230" y="294" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">L</text>
+                                    <text x="250" y="290" font-size="12.5" font-weight="600" fill="#e8e6e3">Linear</text>
+                                    <text x="250" y="303" font-size="9" fill="#9d9488">linear.app</text>
+                                    <circle cx="222" cy="326" r="3" fill="#4ade80" />
+                                    <text x="231" y="329.5" font-size="10" fill="#d6d3cd">Ativa</text>
+                                    <text x="218" y="350" font-size="9" fill="#9d9488">Uso hoje</text>
+                                    <text x="375" y="350" font-size="9" fill="#d6d3cd" text-anchor="end">58m</text>
+                                    <rect x="218" y="357" width="157" height="4" rx="2" fill="#262b31" />
+                                    <rect x="218" y="357" width="64" height="4" rx="2" fill="#5e6ad2" />
+                                    <circle cx="225" cy="378" r="7" fill="#4ade80" stroke="#1c1f20" stroke-width="1.5" />
+                                    <circle cx="236" cy="378" r="7" fill="#4184e4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <text x="249" y="381" font-size="9" fill="#9d9488">2 usando agora</text>
+                                </g>
+
+                                <!-- Card: Stripe -->
+                                <g>
+                                    <rect x="403" y="264" width="185" height="130" rx="12" fill="#1c1f20" stroke="#333840" />
+                                    <rect x="417" y="278" width="24" height="24" rx="6" fill="#635bff" />
+                                    <text x="429" y="294" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">S</text>
+                                    <text x="449" y="290" font-size="12.5" font-weight="600" fill="#e8e6e3">Stripe</text>
+                                    <text x="449" y="303" font-size="9" fill="#9d9488">dashboard.stripe.com</text>
+                                    <circle cx="421" cy="326" r="3" fill="#4ade80" />
+                                    <text x="430" y="329.5" font-size="10" fill="#d6d3cd">Ativa</text>
+                                    <text x="417" y="350" font-size="9" fill="#9d9488">Uso hoje</text>
+                                    <text x="574" y="350" font-size="9" fill="#d6d3cd" text-anchor="end">42m</text>
+                                    <rect x="417" y="357" width="157" height="4" rx="2" fill="#262b31" />
+                                    <rect x="417" y="357" width="46" height="4" rx="2" fill="#635bff" />
+                                    <circle cx="424" cy="378" r="7" fill="#4184e4" stroke="#1c1f20" stroke-width="1.5" />
+                                    <text x="437" y="381" font-size="9" fill="#9d9488">1 usando agora</text>
+                                </g>
+                            </g>
+                            <rect x=".5" y=".5" width="619" height="419" rx="10" fill="none" stroke="#333840" />
+                        </svg>
+                    </figure>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ========== CASOS DE USO ========== -->
+        <section class="section" id="casos">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Existe um cenário para o seu caso.</h2>
+                    <p class="section-sub">Qualquer situação em que alguém precisa entrar em um serviço sem receber a
+                        credencial.</p>
+                </div>
+
+                <div class="grid-3">
+                    <a class="case-card" href="/blog/como-dar-acesso-ao-time-sem-senha/">
+                        <div class="figure figure--cover is-art">
+                            <svg viewBox="0 0 360 120" role="img"
+                                aria-label="Uma credencial trancada distribuída para três pessoas.">
+                                <rect x="20" y="38" width="76" height="44" rx="8" fill="#1c1f20" stroke="#333840" />
+                                <rect x="52" y="58" width="12" height="10" rx="2" fill="none" stroke="#4184e4" stroke-width="1.6" />
+                                <path d="M55 58v-3.5a3 3 0 0 1 6 0V58" fill="none" stroke="#4184e4" stroke-width="1.6" />
+                                <g fill="none" stroke="#4184e4" stroke-opacity=".5" stroke-width="1.5">
+                                    <path d="M96 60h90V33h90" />
+                                    <path d="M96 60h180" />
+                                    <path d="M96 60h90v27h90" />
+                                </g>
+                                <g fill="#1c1f20" stroke="#333840">
+                                    <rect x="276" y="20" width="64" height="26" rx="7" />
+                                    <rect x="276" y="47" width="64" height="26" rx="7" />
+                                    <rect x="276" y="74" width="64" height="26" rx="7" />
+                                </g>
+                                <circle cx="290" cy="33" r="7" fill="#4184e4" />
+                                <circle cx="290" cy="60" r="7" fill="#7b57d4" />
+                                <circle cx="290" cy="87" r="7" fill="#4ade80" />
+                                <g fill="#333840">
+                                    <rect x="303" y="31" width="26" height="4" rx="2" />
+                                    <rect x="303" y="58" width="26" height="4" rx="2" />
+                                    <rect x="303" y="85" width="26" height="4" rx="2" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="case-body">
+                            <h3>Equipes internas</h3>
+                            <p>Um pacote por time. Cada pessoa entra nas ferramentas que precisa, sem ninguém repassar
+                                senha no chat.</p>
+                            <span class="case-more">Ver cenário</span>
+                        </div>
+                    </a>
+
+                    <a class="case-card" href="/blog/como-compartilhar-um-pacote/">
+                        <div class="figure figure--cover is-art">
+                            <svg viewBox="0 0 360 120" role="img"
+                                aria-label="Linha do tempo: o acesso começa no início do contrato e termina no fim dele.">
+                                <g transform="translate(0 15)">
+                                <path d="M28 60h32" stroke="#333840" stroke-width="2" stroke-dasharray="4 4" />
+                                <path d="M60 60h160" stroke="#4184e4" stroke-width="2" />
+                                <path d="M220 60h112" stroke="#333840" stroke-width="2" stroke-dasharray="4 4" />
+                                <rect x="108" y="22" width="64" height="26" rx="7" fill="#1c1f20" stroke="#333840" />
+                                <circle cx="122" cy="35" r="7" fill="#4184e4" />
+                                <rect x="135" y="33" width="26" height="4" rx="2" fill="#333840" />
+                                <path d="M140 48v9" stroke="#333840" stroke-width="1.5" />
+                                <circle cx="60" cy="60" r="7" fill="#4184e4" />
+                                <circle cx="220" cy="60" r="7" fill="#12161b" stroke="#9d9488" stroke-width="1.5" stroke-dasharray="3 3" />
+                                <path d="M216.5 56.5 223.5 63.5M223.5 56.5 216.5 63.5" stroke="#9d9488" stroke-width="1.5" stroke-linecap="round" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="case-body">
+                            <h3>Freelancers e terceirização</h3>
+                            <p>Acesso pelo tempo do contrato. Quando o projeto termina, o acesso termina — sem trocar
+                                senha depois.</p>
+                            <span class="case-more">Ver cenário</span>
+                        </div>
+                    </a>
+
+                    <a class="case-card" href="/blog/como-usar-um-acesso-recebido/">
+                        <div class="figure figure--cover is-art">
+                            <svg viewBox="0 0 360 120" role="img"
+                                aria-label="Uma sessão ativa liberada por tempo determinado e depois encerrada.">
+                                <g transform="translate(10 0)">
+                                <circle cx="52" cy="60" r="14" fill="none" stroke="#333840" stroke-width="1.6" />
+                                <path d="M52 51v9h6" fill="none" stroke="#9d9488" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                                <rect x="100" y="42" width="90" height="36" rx="8" fill="#1c1f20" stroke="#333840" />
+                                <circle cx="114" cy="60" r="4" fill="#4ade80" />
+                                <rect x="126" y="52" width="48" height="4" rx="2" fill="#333840" />
+                                <rect x="126" y="62" width="32" height="4" rx="2" fill="#2a2f36" />
+                                <path d="M190 60h78" stroke="#4184e4" stroke-width="1.6" />
+                                <circle cx="229" cy="60" r="9" fill="#12161b" />
+                                <path d="m225.5 56.5 7 7M232.5 56.5l-7 7" stroke="#9d9488" stroke-width="1.6" stroke-linecap="round" />
+                                <circle cx="288" cy="60" r="14" fill="#1c1f20" stroke="#333840" />
+                                <circle cx="288" cy="56" r="4" fill="none" stroke="#9d9488" stroke-width="1.5" />
+                                <path d="M281.5 68a6.5 6.5 0 0 1 13 0" fill="none" stroke="#9d9488" stroke-width="1.5" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="case-body">
+                            <h3>Suporte e acesso temporário</h3>
+                            <p>Alguém precisa entrar agora para resolver um problema. Você libera a sessão e encerra
+                                depois.</p>
+                            <span class="case-more">Ver cenário</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== COMO FUNCIONA ========== -->
+        <section class="section" id="como">
+            <div class="container">
+                <div class="section-boxed">
+                    <div class="section-header">
+                        <h2 class="section-title">Três passos, nenhuma senha digitada.</h2>
+                        <p class="section-sub">O AuthPack opera sobre o que já existe no navegador: cookies, tokens,
+                            sessões. Nada de integração por API, nada de SSO para configurar.</p>
+                    </div>
+
+                    <div class="grid-3">
+                        <div class="step-card">
+                            <span class="step-num">Passo 01</span>
+                            <h3>Você já está logado</h3>
+                            <p>Acesse o serviço normalmente. A extensão reconhece a sessão ativa no seu navegador.</p>
+                        </div>
+                        <div class="step-card">
+                            <span class="step-num">Passo 02</span>
+                            <h3>Capture em um pacote</h3>
+                            <p>Um clique e a sessão entra no pacote escolhido, cifrada com uma chave AES própria.</p>
+                        </div>
+                        <div class="step-card">
+                            <span class="step-num">Passo 03</span>
+                            <h3>Distribua o acesso</h3>
+                            <p>Convide quem você autoriza. A pessoa abre o pacote e entra, sem saber a senha.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:32px">
+                        <a href="/blog/como-criar-seu-primeiro-pacote/" class="btn btn-soft">Ver o passo a passo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== SEGURANÇA ========== -->
+        <section class="section" id="seguranca">
+            <div class="container">
+                <div class="grid-2">
+                    <div class="prose-block">
+                        <h2 class="section-title">Uma chave por sessão, não uma senha por pessoa.</h2>
+                        <p>Cada sessão capturada é cifrada com criptografia AES individual. Nada é guardado em texto
+                            claro e nenhuma credencial trafega para quem recebe o acesso — o que circula é a sessão,
+                            sob controle de quem a criou.</p>
+                        <p>Isso muda o que acontece quando alguém sai do time: em vez de trocar a senha e reavisar todo
+                            mundo, você encerra um acesso.</p>
+                        <ul class="fact-list">
+                            <li>AES individual por sessão</li>
+                            <li>Credencial nunca exposta a quem recebe</li>
+                            <li>Revogação por pessoa, por pacote ou por sessão</li>
+                        </ul>
+                    </div>
+
+                    <!-- Mockup do popup da extensão (Extension/popup/): 350×450, cantos de
+                         20px, ancorado no canto superior direito da página (top 20 / right 50,
+                         como em content/injectPopup.js). -->
+                    <figure class="figure figure--tall is-art">
+                        <svg viewBox="0 0 580 473" preserveAspectRatio="xMaxYMid slice" role="img"
+                            aria-label="Popup da extensão AuthPack aberto sobre uma página: pacote Engenharia expandido com as sessões Figma e Linear, cada uma com o botão Conectar.">
+                            <defs>
+                                <clipPath id="apWin"><rect width="580" height="473" rx="8" /></clipPath>
+                                <linearGradient id="apAva" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#ff8a65" />
+                                    <stop offset="1" stop-color="#f06292" />
+                                </linearGradient>
+                                <filter id="apShadow" x="-30%" y="-30%" width="180%" height="180%">
+                                    <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity=".55" />
+                                </filter>
+                            </defs>
+
+                            <g clip-path="url(#apWin)" font-family="Inter, sans-serif">
+                                <rect width="580" height="473" fill="#0e1114" />
+
+                                <!-- ── Janela do navegador ── -->
+                                <rect width="580" height="32" fill="#1a1d21" />
+                                <circle cx="16" cy="16" r="4" fill="#ff5f57" />
+                                <circle cx="30" cy="16" r="4" fill="#febc2e" />
+                                <circle cx="44" cy="16" r="4" fill="#28c840" />
+                                <rect x="62" y="6" width="120" height="22" rx="6" fill="#0e1114" />
+                                <text x="74" y="21" font-size="8.5" fill="#9d9488">Painel · Serviço</text>
+                                <rect x="196" y="8" width="200" height="18" rx="9" fill="#0d1117" stroke="#262b31" />
+                                <text x="208" y="21" font-size="8.5" fill="#9d9488">app.servico.com</text>
+                                <path d="M0 32h580" stroke="#262b31" />
+
+                                <!-- ── Página por baixo ── -->
+                                <rect x="24" y="52" width="176" height="12" rx="4" fill="#1c1f20" />
+                                <rect x="24" y="74" width="112" height="8" rx="4" fill="#171a1e" />
+                                <rect x="24" y="104" width="196" height="86" rx="8" fill="#15181c" />
+                                <rect x="24" y="204" width="196" height="86" rx="8" fill="#15181c" />
+                                <rect x="24" y="304" width="196" height="86" rx="8" fill="#15181c" />
+                                <rect x="40" y="122" width="84" height="8" rx="4" fill="#1f2429" />
+                                <rect x="40" y="140" width="140" height="6" rx="3" fill="#191d21" />
+                                <rect x="40" y="154" width="118" height="6" rx="3" fill="#191d21" />
+                                <rect x="40" y="222" width="96" height="8" rx="4" fill="#1f2429" />
+                                <rect x="40" y="240" width="140" height="6" rx="3" fill="#191d21" />
+                                <rect x="40" y="254" width="104" height="6" rx="3" fill="#191d21" />
+                                <rect x="40" y="322" width="72" height="8" rx="4" fill="#1f2429" />
+                                <rect x="40" y="340" width="140" height="6" rx="3" fill="#191d21" />
+
+                                <!-- ── Popup da extensão (coordenadas reais, 350×450) ── -->
+                                <g transform="translate(228 50) scale(.88)" filter="url(#apShadow)">
+                                    <rect width="350" height="450" rx="20" fill="#1c1c1e" stroke="#fff" stroke-opacity=".2" />
+
+                                    <!-- Cabeçalho: perfil + marca -->
+                                    <circle cx="37" cy="33" r="19" fill="url(#apAva)" stroke="#fff" stroke-opacity=".18" stroke-width="1.5" />
+                                    <text x="37" y="38" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">AR</text>
+                                    <circle cx="50" cy="46" r="6" fill="#fff" fill-opacity=".4" stroke="#1c1c1e" stroke-width="2" />
+                                    <text x="66" y="28" font-size="11" font-weight="500" fill="#fff" fill-opacity=".55">Olá,</text>
+                                    <text x="66" y="46" font-size="14" font-weight="600" fill="#fff">Ana</text>
+                                    <rect x="99" y="34" width="42" height="16" rx="8" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".12" />
+                                    <text x="120" y="45" font-size="9" font-weight="700" letter-spacing=".4" fill="#fff" fill-opacity=".7" text-anchor="middle">FREE</text>
+                                    <rect x="306" y="20" width="26" height="26" rx="6" fill="#4184e4" />
+                                    <text x="319" y="38" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">A</text>
+                                    <path d="M0 64h350" stroke="#fff" stroke-opacity=".07" />
+
+                                    <!-- Controle segmentado -->
+                                    <rect x="18" y="78" width="314" height="32" rx="10" fill="#fff" fill-opacity=".06" stroke="#fff" stroke-opacity=".1" />
+                                    <rect x="21" y="81" width="154" height="26" rx="7" fill="#fff" fill-opacity=".12" />
+                                    <path d="M44 89h4.6l1.4 1.6H57a1.4 1.4 0 0 1 1.4 1.4v6a1.4 1.4 0 0 1-1.4 1.4H44a1.4 1.4 0 0 1-1.4-1.4v-7.6A1.4 1.4 0 0 1 44 89Z"
+                                        fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" />
+                                    <text x="66" y="99" font-size="12.5" font-weight="600" fill="#fff">Minha coleção</text>
+                                    <rect x="205" y="89" width="12" height="10" rx="1.6" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" />
+                                    <path d="m213 96 6 2.3-2.3.7-.7 2.3z" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round" />
+                                    <text x="225" y="99" font-size="12.5" font-weight="600" fill="#fff" fill-opacity=".55">Meus acessos</text>
+
+                                    <!-- Cabeçalho da coleção -->
+                                    <text x="18" y="140" font-size="15" font-weight="600" fill="#fff">Pacotes criados</text>
+                                    <circle cx="23" cy="152" r="2.6" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" />
+                                    <path d="M19 159a4 4 0 0 1 8 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" />
+                                    <text x="32" y="159" font-size="11" fill="#fff" fill-opacity=".5"><tspan font-weight="700">8</tspan> / 20 pessoas</text>
+                                    <rect x="268" y="126" width="64" height="28" rx="8" fill="#fff" fill-opacity=".08" stroke="#fff" stroke-opacity=".15" />
+                                    <text x="300" y="145" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">+ Novo</text>
+
+                                    <!-- Pacote 1 — expandido -->
+                                    <rect x="18" y="166" width="314" height="196" rx="12" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".1" />
+                                    <rect x="30" y="180" width="35" height="35" rx="8" fill="#fb923c" fill-opacity=".8" />
+                                    <text x="47.5" y="204" font-size="17" font-weight="600" fill="#fff" text-anchor="middle">E</text>
+                                    <text x="77" y="192" font-size="12" fill="#fff" fill-opacity=".6">criado há 2 meses</text>
+                                    <text x="77" y="209" font-size="14" font-weight="500" fill="#fff">Engenharia</text>
+                                    <text x="313" y="187" font-size="13" font-weight="700" fill="#fff" fill-opacity=".8" text-anchor="middle">...</text>
+                                    <path d="m308 203 5 5 5-5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+
+                                    <path d="M18 228h314v122a12 12 0 0 1-12 12H30a12 12 0 0 1-12-12z" fill="#000" fill-opacity=".2" />
+                                    <path d="M18 228h314" stroke="#fff" stroke-opacity=".1" />
+
+                                    <rect x="32" y="242" width="286" height="52" rx="12" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".1" />
+                                    <rect x="44" y="254" width="28" height="28" rx="4" fill="#0acf83" />
+                                    <text x="58" y="273" font-size="13" font-weight="700" fill="#0b2c1e" text-anchor="middle">F</text>
+                                    <text x="84" y="273" font-size="16" font-weight="500" fill="#fff">Figma</text>
+                                    <rect x="237" y="255" width="69" height="26" rx="8" fill="none" stroke="#fff" stroke-opacity=".15" />
+                                    <text x="271.5" y="272" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">Conectar</text>
+
+                                    <rect x="32" y="302" width="286" height="52" rx="12" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".1" />
+                                    <rect x="44" y="314" width="28" height="28" rx="4" fill="#5e6ad2" />
+                                    <text x="58" y="333" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">L</text>
+                                    <text x="84" y="333" font-size="16" font-weight="500" fill="#fff">Linear</text>
+                                    <rect x="237" y="315" width="69" height="26" rx="8" fill="none" stroke="#fff" stroke-opacity=".15" />
+                                    <text x="271.5" y="332" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">Conectar</text>
+
+                                    <!-- Pacote 2 — recolhido -->
+                                    <rect x="18" y="378" width="314" height="62" rx="12" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".1" />
+                                    <rect x="30" y="392" width="35" height="35" rx="8" fill="#667eea" />
+                                    <text x="47.5" y="416" font-size="17" font-weight="600" fill="#fff" text-anchor="middle">D</text>
+                                    <text x="77" y="404" font-size="12" fill="#fff" fill-opacity=".6">criado há 1 mês</text>
+                                    <text x="77" y="421" font-size="14" font-weight="500" fill="#fff">Design</text>
+                                    <text x="313" y="399" font-size="13" font-weight="700" fill="#fff" fill-opacity=".8" text-anchor="middle">...</text>
+                                    <path d="m311 411 5 5-5 5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                                </g>
+                            </g>
+                            <rect x=".5" y=".5" width="579" height="472" rx="8" fill="none" stroke="#333840" />
+                        </svg>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== LINHA DO TEMPO ========== -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Do login ao acesso encerrado.</h2>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-row">
+                        <span class="t-n">01</span>
+                        <h3>Você entra normalmente</h3>
+                        <p>Login, 2FA, SSO ou magic link — o fluxo do serviço não muda em nada.</p>
+                    </div>
+                    <div class="timeline-row">
+                        <span class="t-n">02</span>
+                        <h3>A extensão captura a sessão</h3>
+                        <p>Cookies e tokens da sessão ativa são lidos no navegador e agrupados em um pacote.</p>
+                    </div>
+                    <div class="timeline-row">
+                        <span class="t-n">03</span>
+                        <h3>A sessão é cifrada</h3>
+                        <p>Criptografia AES individual por sessão. Nada é guardado em texto claro.</p>
+                    </div>
+                    <div class="timeline-row">
+                        <span class="t-n">04</span>
+                        <h3>Você distribui para quem autoriza</h3>
+                        <p>A pessoa abre o pacote e conecta. Nenhuma credencial é exibida ou enviada.</p>
+                    </div>
+                    <div class="timeline-row">
+                        <span class="t-n">05</span>
+                        <h3>Você revoga quando quiser</h3>
+                        <p>Encerrar o acesso é uma ação no painel — sem trocar senha nem reavisar o time.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PERGUNTAS ========== -->
+        <section class="section" id="perguntas">
+            <div class="container">
+                <div class="grid-2" style="align-items:start">
+                    <div class="prose-block">
+                        <h2 class="section-title">Cofre de senhas resolve outro problema.</h2>
+                        <p>Um cofre guarda credenciais e ainda depende de alguém digitar, passar por 2FA e receber o
+                            código. O AuthPack entrega o acesso já autenticado — e o retira do mesmo jeito.</p>
+                        <div>
+                            <a href="/pages/pricing/" class="btn btn-primary">Ver planos</a>
+                        </div>
+                    </div>
+
+                    <div class="faq">
+                        <div class="faq-item open">
+                            <button class="faq-q" type="button" aria-expanded="true">
+                                Vocês armazenam minhas senhas?
+                                <span class="plus" aria-hidden="true">+</span>
+                            </button>
+                            <div class="faq-a">
+                                <div>
+                                    <p>Não. O AuthPack trabalha com a sessão já autenticada, cifrada com AES individual.
+                                        A credencial original continua apenas com você.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-q" type="button" aria-expanded="false">
+                                Funciona com 2FA, SSO e magic links?
+                                <span class="plus" aria-hidden="true">+</span>
+                            </button>
+                            <div class="faq-a">
+                                <div>
+                                    <p>Sim. Como o que é compartilhado é a sessão, e não a credencial, qualquer método de
+                                        autenticação do serviço continua funcionando. Você passa pela verificação uma
+                                        vez.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-q" type="button" aria-expanded="false">
+                                Como tiro o acesso de alguém?
+                                <span class="plus" aria-hidden="true">+</span>
+                            </button>
+                            <div class="faq-a">
+                                <div>
+                                    <p>Pelo painel, por pessoa, por pacote ou por sessão. A revogação encerra na hora a
+                                        conexão de quem recebeu o acesso.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-q" type="button" aria-expanded="false">
+                                Isso viola os termos dos serviços?
+                                <span class="plus" aria-hidden="true">+</span>
+                            </button>
+                            <div class="faq-a">
+                                <div>
+                                    <p>O AuthPack é indicado para acesso de equipe em planos que permitem múltiplos
+                                        usuários e para uso pessoal entre dispositivos. Os termos de cada serviço
+                                        continuam valendo.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-q" type="button" aria-expanded="false">
+                                Em quais navegadores funciona?
+                                <span class="plus" aria-hidden="true">+</span>
+                            </button>
+                            <div class="faq-a">
+                                <div>
+                                    <p>Chrome, Edge, Brave e Arc — qualquer navegador baseado em Chromium.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== O QUE MUDA NA PRÁTICA ========== -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header" style="max-width:none;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap">
+                    <h2 class="section-title">O que muda na prática.</h2>
+                    <a href="/pages/pricing/" style="font-size:16px;color:var(--ink-2)">Ver planos</a>
+                </div>
+
+                <div class="grid-3">
+                    <div class="value-card">
+                        <span class="value-num">01</span>
+                        <h3>Ninguém precisa saber a senha</h3>
+                        <p>O acesso é concedido pela sessão. A credencial permanece com quem a criou.</p>
+                        <span class="value-foot">Vale para serviços autenticados por sessão no navegador.</span>
+                    </div>
+                    <div class="value-card">
+                        <span class="value-num">02</span>
+                        <h3>2FA e SSO deixam de travar o time</h3>
+                        <p>Você passa pela verificação uma vez. Quem recebe o acesso entra sem repetir o processo.</p>
+                        <span class="value-foot">Sujeito aos termos de uso de cada serviço.</span>
+                    </div>
+                    <div class="value-card">
+                        <span class="value-num">03</span>
+                        <h3>Sair do time é uma ação, não um mutirão</h3>
+                        <p>Revogue o acesso e ele encerra na hora, sem trocar senha nem reavisar ninguém.</p>
+                        <span class="value-foot">A revogação encerra a sessão distribuída, não a sua.</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:24px">
+                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                        target="_blank" rel="noopener" class="btn btn-primary btn-lg">Adicionar ao Chrome</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/?persist=true" class="nav-logo">
+                        <img src="/assets/images/favicon-128x128.png" width="26" height="26" alt="">
+                        <span class="wordmark"><span class="a">auth</span><span class="p">pack</span></span>
+                    </a>
+                    <p>Distribuição controlada de acessos para times, agências e organizações.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="#como">Como funciona</a></li>
+                        <li><a href="#seguranca">Segurança</a></li>
+                        <li><a href="#casos">Casos de uso</a></li>
+                        <li><a href="/pages/pricing/">Preços</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Empresa</h5>
+                    <ul>
+                        <li><a href="/blog/">Blog</a></li>
+                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="/login">Entrar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Legal</h5>
+                    <ul>
+                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
+                        <li><a href="/pages/legal/terms/">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 AuthPack Inc.</span>
+                <span class="mono">status · operacional</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/assets/scripts/home.js" defer></script>
+</body>
+
+</html>
