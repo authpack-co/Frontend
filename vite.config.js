@@ -6,8 +6,8 @@ import react from '@vitejs/plugin-react';
 const PUBLIC_DIR = 'public';
 
 // Paths que pertencem ao app React. Tudo que não casa aqui continua sendo
-// arquivo estático de public/ (landing, blog, legal, pricing, login e o
-// dashboard antigo, enquanto ele não for migrado).
+// arquivo estático de public/ — a landing, o blog, e as páginas de conteúdo
+// (legal, preços), que existem para serem indexadas.
 export const APP_ROUTE_PREFIXES = ['collection', 'shared', 'admin', 'login', 'invite'];
 
 const isAppRoute = (pathname) =>

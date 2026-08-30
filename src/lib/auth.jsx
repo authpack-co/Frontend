@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { Navigate } from 'react-router';
 import { api, ApiError } from './api.js';
 
 /**
@@ -85,4 +86,22 @@ export function RequireAuth({ children }) {
             <div className="spinner large"></div>
         </div>
     );
+}
+
+/**
+ * Portão do painel admin: logado e com a role.
+ *
+ * Quem está logado mas não é admin vai para o painel comum, sem aviso — era
+ * o que o script bloqueante da página admin fazia. Isto é conveniência, não
+ * proteção: cada rota de /api/admin passa por requireAdmin no servidor, e
+ * mexer nesta checagem no navegador não abre nada.
+ */
+export function RequireAdmin({ children }) {
+    const { status, user } = useAuth();
+
+    if (status === 'authenticated' && user?.role !== 'admin') {
+        return <Navigate to="/collection" replace />;
+    }
+
+    return <RequireAuth>{children}</RequireAuth>;
 }

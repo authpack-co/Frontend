@@ -1,5 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router';
-import { RequireAuth } from '../lib/auth.jsx';
+import { RequireAdmin, RequireAuth } from '../lib/auth.jsx';
+import AdminShell from '../features/admin/AdminShell.jsx';
+import AdminsPage from '../features/admin/AdminsPage.jsx';
+import FinancePage from '../features/admin/FinancePage.jsx';
+import UsersPage from '../features/admin/UsersPage.jsx';
 import LoginPage from '../features/auth/LoginPage.jsx';
 import InvitePage from '../features/invite/InvitePage.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
@@ -53,13 +57,17 @@ export default function AppRoutes() {
                 <Route path="/shared/:packageId" element={<AccessDetail />} />
                 <Route path="/shared/:packageId/session/:sessionId" element={<AccessSessionDetail />} />
 
-                {/* ── Admin (hoje vive em hash: #financeiro, #usuarios…) ─── */}
-                <Route path="/admin" element={<Navigate to="/admin/finance" replace />} />
-                <Route path="/admin/finance" element={<Placeholder name="Admin · Financeiro" from="admin.js #financeiro" />} />
-                <Route path="/admin/users" element={<Placeholder name="Admin · Usuários" from="admin.js #usuarios" />} />
-                <Route path="/admin/admins" element={<Placeholder name="Admin · Administradores" from="admin.js #administradores" />} />
-
                 <Route path="*" element={<Placeholder name="404" />} />
+            </Route>
+
+            {/* ── Admin ───────────────────────────────────────────────────
+                Fora do AppShell de propósito: o painel admin tem casca
+                própria — sem coleção, sem pacotes —, como sempre teve. */}
+            <Route element={<RequireAdmin><AdminShell /></RequireAdmin>}>
+                <Route path="/admin" element={<Navigate to="/admin/finance" replace />} />
+                <Route path="/admin/finance" element={<FinancePage />} />
+                <Route path="/admin/users" element={<UsersPage />} />
+                <Route path="/admin/admins" element={<AdminsPage />} />
             </Route>
         </Routes>
     );

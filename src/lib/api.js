@@ -139,4 +139,33 @@ export const api = {
     getBilling: () => request('/api/subscription/billing'),
     createBillingPortal: () => request('/api/subscription/portal', { method: 'POST' }),
     cancelBilling: () => request('/api/subscription/cancel', { method: 'POST' }),
+
+    // ── Painel admin ──────────────────────────────────────────────────────
+    // O namespace inteiro é fechado por requireAuth + requireAdmin no
+    // servidor. Nada aqui depende da role do lado do cliente para ser seguro:
+    // esconder o menu é conveniência, o 403 é a garantia.
+    admin: {
+        financialSummary: () => request('/api/admin/financial/summary'),
+        financialByPeriod: ({ from, to, granularity }) => request(
+            `/api/admin/financial/by-period?${new URLSearchParams({ from, to, granularity })}`
+        ),
+
+        listUsers: ({ q, role, status } = {}) => {
+            const params = new URLSearchParams();
+            if (q) params.set('q', q);
+            if (role) params.set('role', role);
+            if (status) params.set('status', status);
+            return request(`/api/admin/users?${params}`);
+        },
+        getUser: (userId) => request(`/api/admin/users/${userId}`),
+        suspendUser: (userId, reason) => request(`/api/admin/users/${userId}/suspend`, {
+            method: 'PATCH',
+            body: JSON.stringify({ reason }),
+        }),
+        unsuspendUser: (userId) => request(`/api/admin/users/${userId}/unsuspend`, { method: 'PATCH' }),
+
+        listAdmins: () => request('/api/admin/admins'),
+        listAudit: (limit = 50) => request(`/api/admin/admins/audit?limit=${limit}`),
+        removeAdmin: (userId) => request(`/api/admin/admins/${userId}`, { method: 'DELETE' }),
+    },
 };

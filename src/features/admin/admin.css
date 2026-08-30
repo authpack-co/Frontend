@@ -1,21 +1,17 @@
 /* ============================================================================
-   AuthPack — Admin Panel
-   Self-contained layout built on the shared design tokens (theme-tokens.css),
-   so light/dark themes and brand colors stay consistent with the product.
+   AuthPack — Painel admin
+
+   Cópia literal do CSS do painel admin, com três blocos removidos: o reset
+   (*), o html/body e o h1,h2,h3 globais. O admin era um documento separado e
+   podia mandar no documento inteiro; aqui ele divide a folha com o resto do
+   app, e o reset já vem do base.css.
    ============================================================================ */
 
-* { box-sizing: border-box; }
-
-html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--ap-bg-page);
-    color: var(--ap-text-primary);
-    font-family: var(--ap-font-body);
-    -webkit-font-smoothing: antialiased;
-}
-
-h1, h2, h3 { font-family: var(--ap-font-heading); }
+/* Os títulos do painel usam a fonte de heading — escopado, e não global. */
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3,
+.admin-drawer h2 { font-family: var(--ap-font-heading); }
 
 .admin-shell {
     display: flex;
@@ -229,12 +225,18 @@ h1, h2, h3 { font-family: var(--ap-font-heading); }
 .admin-table tbody tr { border-bottom: 1px solid var(--ap-border); }
 .admin-table tbody tr:last-child { border-bottom: none; }
 .admin-table tbody tr:hover { background: var(--ap-bg-hover); }
+/* Era style="cursor:pointer" na linha montada em string. */
+.admin-row-clickable { cursor: pointer; }
 .admin-table .num { font-family: var(--ap-font-data); text-align: right; }
 
 .admin-user-cell { display: flex; align-items: center; gap: 10px; }
 .admin-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background: var(--ap-bg-muted); flex-shrink: 0; }
+/* A inicial que substitui a foto — eram estilos inline no painel antigo. */
+.admin-avatar--initial { display: grid; place-items: center; font-weight: 600; font-size: .8rem; }
 .admin-user-cell .nm { font-weight: 600; }
 .admin-user-cell .em { color: var(--ap-text-muted); font-size: 0.78rem; }
+/* Id do alvo no histórico: monoespaçado porque é identificador, não nome. */
+.admin-audit-target { font-family: var(--ap-font-data); font-size: .75rem; color: var(--ap-text-muted); }
 
 /* ── Badges ──────────────────────────────────────────────── */
 .admin-badge {
@@ -297,6 +299,9 @@ h1, h2, h3 { font-family: var(--ap-font-heading); }
 }
 .admin-drawer-body { padding: var(--ap-space-xl); }
 .admin-drawer-body h2 { margin: 0 0 4px; font-size: 1.2rem; }
+/* Eram estilos inline na string de HTML da gaveta. */
+.admin-drawer-email { color: var(--ap-text-muted); font-size: .85rem; }
+.admin-drawer-badges { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
 
 .admin-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ap-space-md); margin: var(--ap-space-lg) 0; }
 .admin-detail-item { background: var(--ap-bg-card-alt); border: 1px solid var(--ap-border); border-radius: var(--ap-radius-md); padding: 12px; }
@@ -305,3 +310,39 @@ h1, h2, h3 { font-family: var(--ap-font-heading); }
 .admin-drawer-actions { display: flex; flex-direction: column; gap: 8px; margin-top: var(--ap-space-lg); }
 .admin-drawer-section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--ap-text-muted); margin: var(--ap-space-lg) 0 8px; }
 
+
+/* ── Telas estreitas ──────────────────────────────────────────
+   O painel antigo já tinha o hambúrguer, o overlay e o `nav-open` no HTML e
+   no JS — só que nenhuma regra os implementava: a topbar ficava em
+   display:none para sempre e o conteúdo sumia sob a sidebar fixa. As regras
+   abaixo são o que faltava para o que já estava lá funcionar. */
+@media (max-width: 900px) {
+    /* A sidebar é fixa e sai do fluxo; o resto vira uma coluna para a topbar
+       ficar acima do conteúdo, e não ao lado dele. */
+    .admin-shell { flex-direction: column; }
+
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform .2s ease;
+    }
+
+    .admin-shell.nav-open .admin-sidebar { transform: none; }
+    .admin-shell.nav-open .admin-overlay { display: block; }
+
+    .admin-topbar { display: flex; }
+
+    .admin-main {
+        margin-left: 0;
+        padding: var(--ap-space-lg) var(--ap-space-md);
+    }
+
+    .admin-detail-grid { grid-template-columns: 1fr; }
+    .admin-drawer { width: 100%; }
+}
+
+/* As tabelas têm cinco colunas e não cabem numa tela estreita. Rolam dentro
+   da própria moldura — a página nunca rola de lado. */
+.admin-table-wrap {
+    overflow-x: auto;
+    border-radius: var(--ap-radius-lg);
+}
