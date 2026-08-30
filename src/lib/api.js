@@ -97,6 +97,9 @@ export const api = {
 
     // ── Pessoas do pacote ─────────────────────────────────────────────────
     getPackagePeople: (packageId) => request(`/api/packages/${packageId}/people`),
+    // Todas as pessoas, agrupadas por pacote — é o que o contador da sidebar
+    // abre. Vem do servidor porque a lista de pacotes não traz os membros.
+    getSharedPeople: () => request('/api/packages/people'),
     approvePackageRequest: (packageId, requestId) =>
         request(`/api/packages/${packageId}/requests/${requestId}/approve`, { method: 'POST' }),
     rejectPackageRequest: (packageId, requestId) =>

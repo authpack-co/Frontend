@@ -178,6 +178,9 @@ function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate, onS
                     menuClassName="session-options"
                     label="Ações da sessão"
                     glyph="⋯"
+                    // A lista rola dentro da moldura: o menu é fixo no
+                    // viewport para não ser cortado na última linha.
+                    anchorTo=".session-row"
                 >
                     {(closeMenu) => (
                         <>

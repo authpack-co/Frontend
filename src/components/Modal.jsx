@@ -22,6 +22,9 @@ export default function Modal({
     className = '',
     bodyClassName = '',
     footerClassName = '',
+    // Um punhado de rodapés herdados não é `.modal-footer` coisa nenhuma —
+    // têm classe própria e regras que não conversam com a base.
+    footerBaseClass = 'modal-footer',
     headerClassName = '',
     // Conteúdo do cabeçalho no lugar do título simples (o card de "usando
     // agora" põe o serviço inteiro ali).
@@ -36,8 +39,11 @@ export default function Modal({
     useEffect(() => {
         if (!open || !closable) return undefined;
         const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
-        document.addEventListener('keydown', onKeyDown);
-        return () => document.removeEventListener('keydown', onKeyDown);
+        // Captura: o overlay abaixo barra a propagação do keydown, e o React
+        // faz isso no evento nativo lá na raiz. Na bolha, o Escape digitado
+        // com o foco dentro do modal nunca chegaria aqui.
+        document.addEventListener('keydown', onKeyDown, true);
+        return () => document.removeEventListener('keydown', onKeyDown, true);
     }, [open, closable, onClose]);
 
     if (!open) return null;
@@ -71,7 +77,7 @@ export default function Modal({
 
                 <div className={`modal-body ${bodyClassName}`.trim()}>{children}</div>
 
-                {footer && <div className={`modal-footer ${footerClassName}`.trim()}>{footer}</div>}
+                {footer && <div className={`${footerBaseClass} ${footerClassName}`.trim()}>{footer}</div>}
             </div>
         </div>,
         document.body

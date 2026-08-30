@@ -8,6 +8,7 @@ import {
     DeletePackageModal,
     RenamePackageModal,
 } from '../features/collection/PackageModals.jsx';
+import SharedPeopleModal from '../features/collection/SharedPeopleModal.jsx';
 import PlansModal from '../features/plans/PlansModal.jsx';
 import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import useUpgradeParam from '../features/plans/useUpgradeParam.js';
@@ -44,7 +45,12 @@ export default function AppShell() {
 function Sidebar() {
     const { pathname } = useLocation();
     const isAccess = pathname === '/shared' || pathname.startsWith('/shared/');
+    // Dois nomes para a mesma seção, e eles não coincidem: o CSS herdado chama
+    // a seção de acessos de "access" (.preset-access, .preset-empty-access),
+    // enquanto a URL dela é /shared. Usar um no lugar do outro produzia links
+    // para /access/<id>, rota que não existe.
     const section = isAccess ? 'access' : 'collection';
+    const routeBase = isAccess ? 'shared' : 'collection';
 
     const { status, collection, access, userInfo } = usePackages();
     const packages = isAccess ? access : collection;
@@ -55,6 +61,7 @@ function Sidebar() {
     // Configurações e planos abrem por cima da tela, sem trocar de rota.
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [plansOpen, setPlansOpen] = useState(false);
+    const [peopleOpen, setPeopleOpen] = useState(false);
 
     // Chegando pelo upsell da página de preços, os planos já abrem.
     useUpgradeParam(() => setPlansOpen(true));
@@ -167,7 +174,7 @@ function Sidebar() {
                                     <SidebarPackage
                                         key={pkg.id}
                                         pkg={pkg}
-                                        section={section}
+                                        routeBase={routeBase}
                                         isAccess={isAccess}
                                     />
                                 ))}
@@ -190,6 +197,7 @@ function Sidebar() {
                 loading={status === 'loading'}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onOpenPlans={() => setPlansOpen(true)}
+                onOpenPeople={() => setPeopleOpen(true)}
             />
         </aside>
 
@@ -203,11 +211,20 @@ function Sidebar() {
                 onOpenPlans={() => { setSettingsOpen(false); setPlansOpen(true); }}
             />
             <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
+
+            <SharedPeopleModal
+                open={peopleOpen}
+                onClose={() => setPeopleOpen(false)}
+                userInfo={userInfo}
+                // Mesma troca de modal das configurações: a lista sai, os
+                // planos entram.
+                onOpenPlans={() => { setPeopleOpen(false); setPlansOpen(true); }}
+            />
         </>
     );
 }
 
-function SidebarPackage({ pkg, section, isAccess }) {
+function SidebarPackage({ pkg, routeBase, isAccess }) {
     const oldest = getOldestSession(pkg.sessions);
     const inactive = pkg.isActive === false;
     // Solicitação esperando resposta — só na coleção, onde há o que aprovar.
@@ -220,7 +237,7 @@ function SidebarPackage({ pkg, section, isAccess }) {
     // O item deixou de ser um link inteiro: ele hospeda o menu de ações e os
     // modais, e nada disso pode viver dentro de uma <a>. O link é a área
     // principal; a seleção é calculada aqui em vez de vir do NavLink.
-    const selected = useMatch({ path: `/${section}/${pkg.id}`, end: false });
+    const selected = useMatch({ path: `/${routeBase}/${pkg.id}`, end: false });
 
     return (
         <div
@@ -231,7 +248,7 @@ function SidebarPackage({ pkg, section, isAccess }) {
             ].filter(Boolean).join(' ')}
             title={pending ? 'Alguém pediu acesso' : undefined}
         >
-            <Link className="sidebar-pkg-main" to={`/${section}/${pkg.id}`}>
+            <Link className="sidebar-pkg-main" to={`/${routeBase}/${pkg.id}`}>
                 <div className="access-title">{pkg.name}</div>
                 <div className="icon-stack sidebar-pkg-logos">
                     {oldest && (
@@ -301,7 +318,7 @@ function SidebarPackage({ pkg, section, isAccess }) {
     );
 }
 
-function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans }) {
+function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenPeople }) {
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
         || (userInfo?.plan && userInfo.plan !== 'free');
 
@@ -319,7 +336,7 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans }) {
 
             {loading
                 ? <div className="sk-block sk-plan-people"></div>
-                : <PeopleCounter userInfo={userInfo} />}
+                : <PeopleCounter userInfo={userInfo} onOpen={onOpenPeople} />}
 
             <ProfileMenu
                 userInfo={userInfo}
@@ -334,8 +351,11 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans }) {
 /**
  * Pessoas com quem o usuário compartilha, contra o limite do plano — o único
  * limitador: pacotes e sessões são ilimitados.
+ *
+ * O pill é clicável: o número diz que o limite está perto, a lista diz quem
+ * está ocupando as vagas.
  */
-function PeopleCounter({ userInfo }) {
+function PeopleCounter({ userInfo, onOpen }) {
     const used = Math.max(0, Number(userInfo?.peopleUsed || 0));
     const limit = userInfo?.peopleLimit; // null/undefined = ilimitado
     const unlimited = limit == null;
@@ -348,7 +368,18 @@ function PeopleCounter({ userInfo }) {
 
     return (
         <div className="sidebar-plan-people">
-            <span className={className}>
+            <span
+                className={className}
+                role="button"
+                tabIndex={0}
+                onClick={onOpen}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onOpen();
+                    }
+                }}
+            >
                 <svg className="people-counter__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
@@ -364,7 +395,7 @@ function PeopleCounter({ userInfo }) {
                     </svg>
                     <span className="people-counter__tip">
                         Pessoas com quem você compartilha acesso nos seus pacotes. Esse é o limite
-                        do seu plano — pacotes e sessões são ilimitados.
+                        do seu plano — pacotes e sessões são ilimitados. Clique para ver a lista.
                     </span>
                 </span>
             </span>
