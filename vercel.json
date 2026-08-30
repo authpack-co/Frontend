@@ -7,9 +7,8 @@
     { "source": "/collection", "destination": "/app.html" },
     { "source": "/shared/:path*", "destination": "/app.html" },
     { "source": "/shared", "destination": "/app.html" },
-    { "source": "/settings/:path*", "destination": "/app.html" },
-    { "source": "/settings", "destination": "/app.html" },
-    { "source": "/upgrade", "destination": "/app.html" },
+    { "source": "/login", "destination": "/app.html" },
+    { "source": "/invite/:path*", "destination": "/app.html" },
     { "source": "/admin/:path*", "destination": "/app.html" },
     { "source": "/admin", "destination": "/app.html" }
   ]

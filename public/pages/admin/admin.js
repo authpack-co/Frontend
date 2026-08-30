@@ -151,7 +151,7 @@ window.AP = (function () {
         // Logout.
         document.getElementById('admin-logout')?.addEventListener('click', async () => {
             await api('/api/auth/logout', { method: 'POST' });
-            window.location.replace('/pages/login/');
+            window.location.replace('/login');
         });
 
         const initial = (location.hash || '').replace('#', '');

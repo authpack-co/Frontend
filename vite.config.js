@@ -8,7 +8,7 @@ const PUBLIC_DIR = 'public';
 // Paths que pertencem ao app React. Tudo que não casa aqui continua sendo
 // arquivo estático de public/ (landing, blog, legal, pricing, login e o
 // dashboard antigo, enquanto ele não for migrado).
-export const APP_ROUTE_PREFIXES = ['collection', 'shared', 'settings', 'upgrade', 'admin'];
+export const APP_ROUTE_PREFIXES = ['collection', 'shared', 'admin', 'login', 'invite'];
 
 const isAppRoute = (pathname) =>
     APP_ROUTE_PREFIXES.some((p) => pathname === `/${p}` || pathname.startsWith(`/${p}/`));

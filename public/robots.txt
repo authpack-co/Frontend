@@ -6,7 +6,7 @@ Allow: /
 Disallow: /collection
 Disallow: /shared
 Disallow: /admin
-Disallow: /pages/package-invite/
+Disallow: /invite/
 
 # ── Crawlers de IA explicitamente bem-vindos (descoberta da ferramenta) ──
 User-agent: GPTBot

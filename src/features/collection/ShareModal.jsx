@@ -5,13 +5,10 @@ import { useNotify } from '../../components/Notifications.jsx';
 import { api } from '../../lib/api.js';
 import { usePackage, usePackages } from '../../lib/packages.jsx';
 
-/**
- * Link de convite. A página que o recebe ainda é a estática
- * /pages/package-invite/ — quando ela virar rota, muda só aqui.
- */
+/** Link de convite: a chave é o próprio endereço. */
 function inviteUrl(key) {
     if (!key) return '';
-    return `${window.location.origin}/pages/package-invite/?key=${encodeURIComponent(key)}`;
+    return `${window.location.origin}/invite/${encodeURIComponent(key)}`;
 }
 
 /**

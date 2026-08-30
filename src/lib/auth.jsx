@@ -10,11 +10,10 @@ import { api, ApiError } from './api.js';
  * ?redirect= de volta —, mas a espera é um estado de carregamento, não um
  * documento invisível.
  *
- * O login ainda é a página estática /pages/login/; quando ela virar rota,
- * muda só o LOGIN_URL.
+ * O login é a rota /login, pública — RequireAuth não a cobre.
  */
 
-const LOGIN_URL = '/pages/login/';
+const LOGIN_URL = '/login';
 
 const AuthContext = createContext(null);
 

@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router';
 import { RequireAuth } from '../lib/auth.jsx';
+import LoginPage from '../features/auth/LoginPage.jsx';
+import InvitePage from '../features/invite/InvitePage.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
@@ -30,6 +32,10 @@ import Placeholder from './Placeholder.jsx';
 export default function AppRoutes() {
     return (
         <Routes>
+            {/* Públicas: quem chega aqui pode não ter conta ainda. */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/invite/:key" element={<InvitePage />} />
+
             <Route element={<RequireAuth><AppShell /></RequireAuth>}>
                 {/* ── Minha coleção (pacotes que eu criei) ───────────────── */}
                 <Route path="/collection" element={<CollectionPage />} />

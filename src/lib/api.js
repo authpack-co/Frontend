@@ -10,7 +10,7 @@
  *    tinha que lembrar de checar.
  */
 
-const API_URL = import.meta.env.VITE_API_URL
+export const API_URL = import.meta.env.VITE_API_URL
     || (import.meta.env.DEV ? 'http://127.0.0.1:3000' : 'https://api.authpack.co');
 
 export class ApiError extends Error {
@@ -84,6 +84,16 @@ export const api = {
 
     // Sai de um pacote que compartilharam com você.
     abortPackageAccess: (packageId) => request(`/api/packages/access/${packageId}`, { method: 'DELETE' }),
+
+    // ── Convite ───────────────────────────────────────────────────────────
+    // O preview é público: quem abre o link vê o que tem dentro antes de
+    // decidir pedir acesso. O status só faz sentido logado.
+    getInvitePreview: (key) => request(`/api/packages/invite/${encodeURIComponent(key)}`),
+    getInviteStatus: (key) => request(`/api/packages/invite/${encodeURIComponent(key)}/status`),
+    requestPackageAccess: (key) => request(
+        `/api/packages/invite/${encodeURIComponent(key)}/request`,
+        { method: 'POST' }
+    ),
 
     // ── Pessoas do pacote ─────────────────────────────────────────────────
     getPackagePeople: (packageId) => request(`/api/packages/${packageId}/people`),
