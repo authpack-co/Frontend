@@ -1,5 +1,5 @@
 /**
- * AuthPack Landing Page — Interactions
+ * Niango Landing Page — Interactions
  * Smooth scroll + fade-in on scroll (IntersectionObserver)
  */
 (function () {

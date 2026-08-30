@@ -1,4 +1,4 @@
-# AuthPack — robots.txt
+# Niango — robots.txt
 # Conteúdo público é livre para indexação. Páginas de aplicação são bloqueadas.
 
 User-agent: *

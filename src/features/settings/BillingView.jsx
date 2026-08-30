@@ -124,7 +124,7 @@ function PlanSummary({ billing, role }) {
         );
     }
 
-    const planLabel = `AuthPack ${plan.charAt(0).toUpperCase()}${plan.slice(1)}`;
+    const planLabel = `Niango ${plan.charAt(0).toUpperCase()}${plan.slice(1)}`;
     // Plano pago sem subscription = cortesia/trial (sem cobrança).
     const isTrial = !sub;
     const priceCents = sub?.unit_amount != null
@@ -149,7 +149,7 @@ function PlanSummary({ billing, role }) {
         note = 'Assinatura cancelada — não será renovada. O acesso Plus permanece até o fim do período pago.';
     } else if (sub.pending_plan) {
         // Downgrade agendado: o plano maior continua valendo até a data.
-        const pendingLabel = `AuthPack ${sub.pending_plan.charAt(0).toUpperCase()}${sub.pending_plan.slice(1)}`;
+        const pendingLabel = `Niango ${sub.pending_plan.charAt(0).toUpperCase()}${sub.pending_plan.slice(1)}`;
         badge = { text: 'Mudança agendada', kind: 'trial' };
         if (sub.pending_change_at) renew = `Muda em ${formatDate(sub.pending_change_at)}`;
         note = `Seu plano muda para ${pendingLabel} em ${formatDate(sub.pending_change_at)}. `

@@ -1,5 +1,5 @@
 /**
- * AuthPack — Shared Footer & Navbar Auth State
+ * Niango — Shared Footer & Navbar Auth State
  * Injects the footer and resolves visitor/logged-in states.
  */
 (function () {
@@ -8,7 +8,7 @@
     // ── Footer ───────────────────────────────────────────────────────────────
     var FOOTER_HTML =
         '<footer class="ap-footer">' +
-            '© 2026 AuthPack Inc.  ·  ' +
+            '© 2026 Niango Inc.  ·  ' +
             '<a href="/pages/legal/privacy/">Privacidade</a>  ·  ' +
             '<a href="/pages/legal/terms/">Termos</a>  ·  ' +
             '<a href="mailto:team@authpack.co">Suporte</a>' +

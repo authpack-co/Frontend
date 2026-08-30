@@ -1,5 +1,5 @@
 /**
- * AuthPack — Site público (landing / blog / preços)
+ * Niango — Site público (landing / blog / preços)
  * Navbar ciente de autenticação · accordion do FAQ · scroll suave.
  */
 (function () {

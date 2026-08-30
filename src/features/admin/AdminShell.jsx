@@ -25,7 +25,7 @@ export default function AdminShell() {
             <aside className="admin-sidebar">
                 <div className="admin-brand">
                     <span className="admin-brand-mark">A</span>
-                    <span className="admin-brand-name">AuthPack <em>Admin</em></span>
+                    <span className="admin-brand-name">Niango <em>Admin</em></span>
                 </div>
 
                 <nav className="admin-nav">
@@ -84,7 +84,7 @@ export default function AdminShell() {
                         <line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                <span className="admin-brand-name">AuthPack <em>Admin</em></span>
+                <span className="admin-brand-name">Niango <em>Admin</em></span>
             </header>
             <div className="admin-overlay" onClick={() => setNavOpen(false)}></div>
 

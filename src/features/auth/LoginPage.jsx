@@ -34,9 +34,9 @@ export default function LoginPage() {
         <main className="login-main">
             <div className="login-card">
                 <div className="login-logo">
-                    <img src="/assets/images/favicon-128x128.png" alt="AuthPack" />
+                    <img src="/assets/images/favicon-128x128.png" alt="Niango" />
                 </div>
-                <h1 className="login-title">Bem-vindo ao AuthPack</h1>
+                <h1 className="login-title">Bem-vindo ao Niango</h1>
                 <p className="login-subtitle">Seu gerenciador de sessões.</p>
 
                 <div className="login-divider-container">

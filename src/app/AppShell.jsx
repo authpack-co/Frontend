@@ -105,8 +105,8 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <img src="/assets/images/favicon-128x128.png" alt="AuthPack" />
-                <span className="sidebar-brand-name">AuthPack</span>
+                <img src="/assets/images/favicon-128x128.png" alt="Niango" />
+                <span className="sidebar-brand-name">Niango</span>
             </div>
 
             <nav className="sidebar-nav">
@@ -340,7 +340,7 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenP
         <div className="sidebar-footer">
             {!loading && !hasPlusBenefits && (
                 <div className="sidebar-upgrade-card">
-                    <div className="sidebar-upgrade-title">AuthPack <span>Planos</span></div>
+                    <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
                     <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
                     <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
                         Fazer upgrade &rarr;

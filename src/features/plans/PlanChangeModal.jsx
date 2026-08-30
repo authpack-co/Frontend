@@ -84,7 +84,7 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
                 <div className="pc-transition">
                     <div className="pc-plan">
                         <span className="pc-plan-label">Atual</span>
-                        <span className="pc-plan-name">AuthPack {from}</span>
+                        <span className="pc-plan-name">Niango {from}</span>
                         <span className="pc-plan-people">{PLAN_PEOPLE[preview.currentTier] || ''}</span>
                     </div>
                     <svg className="pc-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -92,7 +92,7 @@ export default function PlanChangeModal({ plan, preview, onClose }) {
                     </svg>
                     <div className="pc-plan pc-plan--target">
                         <span className="pc-plan-label">{copy.targetLabel}</span>
-                        <span className="pc-plan-name">AuthPack {copy.targetName}</span>
+                        <span className="pc-plan-name">Niango {copy.targetName}</span>
                         <span className="pc-plan-people">{copy.targetPeople}</span>
                     </div>
                 </div>

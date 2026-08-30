@@ -1,5 +1,5 @@
 /**
- * AuthPack Theme Manager
+ * Niango Theme Manager
  * 
  * Controls theme switching between 'light' and 'dark' (default).
  * Theme preference is persisted in localStorage.

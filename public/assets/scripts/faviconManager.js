@@ -1,5 +1,5 @@
 /* ============================================================================
-   AuthPack — Favicon de serviços (cadeia de fallback global)
+   Niango — Favicon de serviços (cadeia de fallback global)
 
    Regra única da aplicação para QUALQUER favicon de serviço:
        1) favicon original (vindo da sessão)

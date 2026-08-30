@@ -1,5 +1,5 @@
 /**
- * AuthPack — Blog listing search & filter.
+ * Niango — Blog listing search & filter.
  *
  * Works purely on the static post cards already present in the HTML, so the
  * content stays fully crawlable for search engines and AI crawlers. JS only

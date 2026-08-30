@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  AuthPack sitemap.
+  Niango sitemap.
   Ao publicar um novo artigo no blog, adicione um bloco <url> apontando para
   https://authpack.co/blog/<slug>/ com a data <lastmod> da publicação.
 -->
