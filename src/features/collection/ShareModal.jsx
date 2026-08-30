@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import Modal from '../../components/Modal.jsx';
+import Modal, { FormNote } from '../../components/Modal.jsx';
 import { useNotify } from '../../components/Notifications.jsx';
 import { api } from '../../lib/api.js';
 import { usePackage, usePackages } from '../../lib/packages.jsx';
@@ -127,9 +127,9 @@ export default function ShareModal() {
                     </button>
                 </div>
 
-                <p className="share-hint">
+                <FormNote>
                     Compartilhe com quem precisa entrar. Você aprova cada pedido.
-                </p>
+                </FormNote>
             </div>
         </Modal>
     );

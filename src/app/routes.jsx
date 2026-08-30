@@ -4,6 +4,7 @@ import LoginPage from '../features/auth/LoginPage.jsx';
 import InvitePage from '../features/invite/InvitePage.jsx';
 import CollectionPage from '../features/collection/CollectionPage.jsx';
 import AccessDetail from '../features/shared/AccessDetail.jsx';
+import AccessSessionDetail from '../features/shared/AccessSessionDetail.jsx';
 import SharedPage from '../features/shared/SharedPage.jsx';
 import PackageDetail from '../features/collection/PackageDetail.jsx';
 import AddSessionModal from '../features/collection/capture/AddSessionModal.jsx';
@@ -50,7 +51,7 @@ export default function AppRoutes() {
                 {/* ── Meus acessos (pacotes que compartilharam comigo) ───── */}
                 <Route path="/shared" element={<SharedPage />} />
                 <Route path="/shared/:packageId" element={<AccessDetail />} />
-                <Route path="/shared/:packageId/session/:sessionId" element={<Placeholder name="Sessão (acesso)" from=".preset-session-overview" />} />
+                <Route path="/shared/:packageId/session/:sessionId" element={<AccessSessionDetail />} />
 
                 {/* ── Admin (hoje vive em hash: #financeiro, #usuarios…) ─── */}
                 <Route path="/admin" element={<Navigate to="/admin/finance" replace />} />

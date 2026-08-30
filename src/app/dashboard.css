@@ -1004,14 +1004,16 @@ span.coming-soon {
     overflow: hidden;
 }
 
-#package-details .preset-collection .screen-section.secondary .header-top {
+/* O breadcrumb do overview nasceu só na coleção; a tela de detalhe de sessão
+   agora existe também para quem recebeu o pacote, e é a mesma casca. */
+#package-details :is(.preset-collection, .preset-access) .screen-section.secondary .header-top {
     display: flex;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--ap-border);
 }
 
 /* Breadcrumb do overview (Pacote › Sessão / Usuário) */
-#package-details .preset-collection .screen-section.secondary .header-top h2 {
+#package-details :is(.preset-collection, .preset-access) .screen-section.secondary .header-top h2 {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1019,12 +1021,12 @@ span.coming-soon {
     min-width: 0;
 }
 
-.preset-collection .screen-section.secondary .header-top .header-title {
+:is(.preset-collection, .preset-access) .screen-section.secondary .header-top .header-title {
     color: var(--ap-text-muted);
     font-weight: 600;
 }
 
-.preset-collection .screen-section.secondary .header-top .breadcrumb-sep {
+:is(.preset-collection, .preset-access) .screen-section.secondary .header-top .breadcrumb-sep {
     display: inline-flex;
     align-items: center;
     color: var(--ap-text-muted);
@@ -1032,7 +1034,7 @@ span.coming-soon {
     flex-shrink: 0;
 }
 
-.preset-collection .screen-section.secondary .header-top .header-subtitle {
+:is(.preset-collection, .preset-access) .screen-section.secondary .header-top .header-subtitle {
     color: var(--ap-text-primary);
     font-weight: 700;
     min-width: 0;
@@ -3037,6 +3039,15 @@ span.coming-soon {
     margin-bottom: 10px;
 }
 
+/* No card do membro o lugar dos avatares é de quem compartilhou: ele não vê
+   quem mais está no pacote. */
+.service-shared-by {
+    margin: 0;
+    color: var(--ap-text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .service-users-list {
     display: flex;
     align-items: center;
@@ -4164,11 +4175,11 @@ textarea:focus-visible {
     transition: transform 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-.share-hint {
-    margin: 1px 0 0;
-    font-size: 0.79rem;
-    line-height: 1.5;
-    color: var(--ap-text-secondary);
+/* A ajuda é a mesma tira de dica dos modais de pacote (.form-note). Aqui ela
+   pede um respiro a mais que o gap da coluna: é uma caixa, não uma linha de
+   texto. */
+.share-modal .share-field .form-note {
+    margin-top: 4px;
 }
 
 /* O código é a saída alternativa: vai para o rodapé, atrás de uma linha, para
@@ -6389,7 +6400,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 
 .preset-access.package-inactive .access-card { opacity: .62; }
 
-/* Ação secundária do card, sem moldura — hoje ainda não abre nada. */
+/* Ação secundária do card, sem moldura: leva ao uso do próprio membro. */
 .access-details-btn {
     flex-shrink: 0;
     display: inline-flex;

@@ -54,3 +54,40 @@ export function usePackageStats(packageId) {
 
     return { ...state, reload: load };
 }
+
+/**
+ * Estatísticas de um pacote recebido, do ponto de vista de quem recebeu.
+ *
+ * Outra rota e outro escopo: /package/access-overview/:id responde a membro
+ * (a de cima é só do dono, 403 para o resto) e o histórico que ela devolve é
+ * o do próprio usuário — não há como um membro ver o uso dos outros, nem
+ * aqui nem no servidor.
+ *
+ * O formato do histórico é o mesmo, então o pipeline de usage.js vale igual.
+ */
+export function useAccessStats(packageId) {
+    const [state, setState] = useState({ status: 'loading', joinedAt: null, accessHistory: {} });
+
+    const load = useCallback(async () => {
+        if (!packageId) return;
+
+        setState({ status: 'loading', joinedAt: null, accessHistory: {} });
+
+        try {
+            const data = await api.getPackageAccessOverview(packageId);
+
+            setState({
+                status: 'ready',
+                joinedAt: data?.joinedAt || null,
+                accessHistory: processRawAccessHistory(data?.myAccessHistory),
+            });
+        } catch (err) {
+            console.error('[Stats] getPackageAccessOverview error:', err);
+            setState({ status: 'error', joinedAt: null, accessHistory: {}, error: err });
+        }
+    }, [packageId]);
+
+    useEffect(() => { load(); }, [load]);
+
+    return { ...state, reload: load };
+}

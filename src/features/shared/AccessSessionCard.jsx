@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import { paletteFromSession } from '../../lib/palette.js';
 
@@ -5,10 +6,11 @@ import { paletteFromSession } from '../../lib/palette.js';
  * Card de sessão de quem recebeu o acesso.
  *
  * Deliberadamente mais simples que a linha do dono: o membro quer entrar no
- * serviço. Barra de uso, "usando agora" e contagem de online são perguntas de
- * quem administra o pacote — aqui só fariam volume.
+ * serviço. "Usando agora" e a contagem de online são perguntas de quem
+ * administra o pacote — aqui só fariam volume. "Ver detalhes" leva ao uso do
+ * próprio membro, que é o que ele tem para ver.
  */
-export default function AccessSessionCard({ session, inactive, onConnect }) {
+export default function AccessSessionCard({ session, packageId, inactive, onConnect }) {
     const palette = paletteFromSession(session);
     const domain = faviconDomain(session.url) || session.url || '';
 
@@ -44,6 +46,12 @@ export default function AccessSessionCard({ session, inactive, onConnect }) {
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                     </svg>
                 </button>
+                <Link
+                    className="access-details-btn"
+                    to={`/shared/${packageId}/session/${session.id}`}
+                >
+                    Ver detalhes
+                </Link>
             </div>
         </div>
     );

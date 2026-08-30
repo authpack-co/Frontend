@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import useConnectSession from '../../components/useConnectSession.jsx';
-import { api } from '../../lib/api.js';
+import { useAccessStats } from '../../lib/packageStats.js';
 import { usePackage } from '../../lib/packages.jsx';
 import AccessSessionCard from './AccessSessionCard.jsx';
 
@@ -22,20 +22,7 @@ export default function AccessDetail() {
     const { connect, gate } = useConnectSession(pkg, { isAcquired: true });
 
     const [search, setSearch] = useState('');
-    const [joinedAt, setJoinedAt] = useState(null);
-
-    useEffect(() => {
-        if (!pkg) return undefined;
-
-        let alive = true;
-        setJoinedAt(null);
-
-        api.getPackageAccessOverview(packageId)
-            .then((data) => { if (alive) setJoinedAt(data?.joinedAt || null); })
-            .catch((err) => console.error('[Access] getPackageAccessOverview error:', err));
-
-        return () => { alive = false; };
-    }, [pkg, packageId]);
+    const { joinedAt } = useAccessStats(pkg ? packageId : null);
 
     if (notFound) return <AccessNotFound />;
     if (!pkg) return null;
@@ -120,6 +107,7 @@ export default function AccessDetail() {
                                                 <AccessSessionCard
                                                     key={session.id}
                                                     session={session}
+                                                    packageId={pkg.id}
                                                     inactive={inactive}
                                                     onConnect={connect}
                                                 />
