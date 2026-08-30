@@ -28,17 +28,17 @@ A plataforma é neutra e flexível, usada em cenários que vão de grupos de ami
 
 ## Páginas
 
-- [Página inicial](https://authpack.co/): visão geral da plataforma Niango.
-- [Como funciona](https://authpack.co/#como): captura, organização e distribuição de acessos.
-- [Para equipes](https://authpack.co/#equipes): uso do Niango em times e organizações.
-- [Extensão na Chrome Web Store](https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm): instalação oficial.
+- [Página inicial](https://niango.io/): visão geral da plataforma Niango.
+- [Como funciona](https://niango.io/#como): captura, organização e distribuição de acessos.
+- [Para equipes](https://niango.io/#equipes): uso do Niango em times e organizações.
+- [Extensão na Chrome Web Store](https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm): instalação oficial.
 
 ## Blog
 
-- [Blog Niango](https://authpack.co/blog/): guias sobre compartilhamento e distribuição de acessos, pacotes, stacks e segurança.
-- [O que é o Niango?](https://authpack.co/blog/o-que-e-o-authpack/): visão geral da plataforma, conceitos de pacotes e stacks, arquitetura e casos de uso.
-- [Como compartilhar acesso sem compartilhar a senha](https://authpack.co/blog/como-compartilhar-acesso-sem-senha/): guia comparando cofres de senha, acesso multiusuário e compartilhamento de sessão.
+- [Blog Niango](https://niango.io/blog/): guias sobre compartilhamento e distribuição de acessos, pacotes, stacks e segurança.
+- [O que é o Niango?](https://niango.io/blog/o-que-e-o-niango/): visão geral da plataforma, conceitos de pacotes e stacks, arquitetura e casos de uso.
+- [Como compartilhar acesso sem compartilhar a senha](https://niango.io/blog/como-compartilhar-acesso-sem-senha/): guia comparando cofres de senha, acesso multiusuário e compartilhamento de sessão.
 
 ## Contato
 
-- E-mail: team@authpack.co
+- E-mail: team@niango.io

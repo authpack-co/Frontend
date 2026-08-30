@@ -9,7 +9,7 @@ import { useCallback, useState } from 'react';
  * app.html: aqui só ficam a leitura e a troca.
  */
 
-const STORAGE_KEY = 'authpack-theme';
+const STORAGE_KEY = 'niango-theme';
 const THEMES = ['light', 'dark'];
 const DEFAULT_THEME = 'dark';
 

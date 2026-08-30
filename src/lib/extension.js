@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
 /**
- * A extensão marca a página com data-authpack-active="1" quando está instalada.
+ * A extensão marca a página com data-niango-active="1" quando está instalada.
  * Como ela não guarda credencial própria (usa o mesmo cookie do site),
  * "instalada" e "na conta certa" são a mesma pergunta.
  */
 
-const FLAG_ATTRIBUTE = 'data-authpack-active';
+const FLAG_ATTRIBUTE = 'data-niango-active';
 
 export const WEBSTORE_URL =
-    'https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm';
+    'https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm';
 
 export function isExtensionInstalled() {
     return document.documentElement.getAttribute(FLAG_ATTRIBUTE) === '1';
@@ -31,8 +31,8 @@ export function isExtensionInstalled() {
  */
 export function connectSession({ session, pkg, isAcquired }) {
     window.postMessage({
-        source: 'authpack-page',
-        type: 'authpack:connect',
+        source: 'niango-page',
+        type: 'niango:connect',
         session: {
             id: session.id,
             packageId: pkg.id,
@@ -53,8 +53,8 @@ export function useConnectResult(onFailure) {
     useEffect(() => {
         function handleMessage(event) {
             if (event.source !== window) return;
-            if (event.data?.source !== 'authpack-extension') return;
-            if (event.data.type !== 'authpack:connectResult') return;
+            if (event.data?.source !== 'niango-extension') return;
+            if (event.data.type !== 'niango:connectResult') return;
             if (event.data.ok) return;
 
             onFailure(event.data.code);

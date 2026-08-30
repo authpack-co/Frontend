@@ -2,12 +2,12 @@
 <!--
   Niango sitemap.
   Ao publicar um novo artigo no blog, adicione um bloco <url> apontando para
-  https://authpack.co/blog/<slug>/ com a data <lastmod> da publicação.
+  https://niango.io/blog/<slug>/ com a data <lastmod> da publicação.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://authpack.co/</loc>
+    <loc>https://niango.io/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -16,7 +16,7 @@
 
 
   <url>
-    <loc>https://authpack.co/pages/promo-plus/</loc>
+    <loc>https://niango.io/pages/promo-plus/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -24,21 +24,21 @@
 
   <!-- ===== Blog ===== -->
   <url>
-    <loc>https://authpack.co/blog/</loc>
+    <loc>https://niango.io/blog/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/o-que-e-o-authpack/</loc>
+    <loc>https://niango.io/blog/o-que-e-o-niango/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-adicionar-sessao-a-um-pacote/</loc>
+    <loc>https://niango.io/blog/como-adicionar-sessao-a-um-pacote/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -47,63 +47,63 @@
 
 
   <url>
-    <loc>https://authpack.co/blog/como-criar-seu-primeiro-pacote/</loc>
+    <loc>https://niango.io/blog/como-criar-seu-primeiro-pacote/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-compartilhar-um-pacote/</loc>
+    <loc>https://niango.io/blog/como-compartilhar-um-pacote/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-usar-um-acesso-recebido/</loc>
+    <loc>https://niango.io/blog/como-usar-um-acesso-recebido/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-dar-acesso-ao-time-sem-senha/</loc>
+    <loc>https://niango.io/blog/como-dar-acesso-ao-time-sem-senha/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/compartilhar-acessos-em-hackathons/</loc>
+    <loc>https://niango.io/blog/compartilhar-acessos-em-hackathons/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/riscos-de-enviar-senha-por-mensagem/</loc>
+    <loc>https://niango.io/blog/riscos-de-enviar-senha-por-mensagem/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/</loc>
+    <loc>https://niango.io/blog/gerenciador-de-senhas-vs-compartilhamento-de-sessoes/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-revogar-um-acesso-compartilhado/</loc>
+    <loc>https://niango.io/blog/como-revogar-um-acesso-compartilhado/</loc>
     <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/blog/como-compartilhar-acesso-sem-senha/</loc>
+    <loc>https://niango.io/blog/como-compartilhar-acesso-sem-senha/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -111,7 +111,7 @@
 
   <!-- ===== Pricing ===== -->
   <url>
-    <loc>https://authpack.co/pages/pricing/</loc>
+    <loc>https://niango.io/pages/pricing/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -119,14 +119,14 @@
 
   <!-- ===== Legal ===== -->
   <url>
-    <loc>https://authpack.co/pages/legal/privacy/</loc>
+    <loc>https://niango.io/pages/legal/privacy/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://authpack.co/pages/legal/terms/</loc>
+    <loc>https://niango.io/pages/legal/terms/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

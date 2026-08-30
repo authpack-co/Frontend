@@ -25,7 +25,7 @@ const DEV_HOST = '127.0.0.1';
 
 function forceDevHost() {
     return {
-        name: 'authpack-force-dev-host',
+        name: 'niango-force-dev-host',
         configureServer(server) {
             server.middlewares.use((req, res, next) => {
                 const host = req.headers.host || '';
@@ -54,7 +54,7 @@ function forceDevHost() {
  */
 function hybridSiteRouting() {
     return {
-        name: 'authpack-hybrid-site-routing',
+        name: 'niango-hybrid-site-routing',
         configureServer(server) {
             const publicRoot = path.resolve(server.config.root, PUBLIC_DIR);
 

@@ -9,7 +9,7 @@
         content="O Niango compartilha a sessão já autenticada, cifrada com AES individual por sessão. Quem recebe entra em um clique, sem saber a senha, e você revoga quando quiser.">
     <meta name="keywords"
         content="Niango, compartilhamento de acessos, pacotes de acesso, gerenciamento de acessos, distribuição de acessos digitais, compartilhar acesso sem senha">
-    <link rel="canonical" href="https://authpack.co/">
+    <link rel="canonical" href="https://niango.io/">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#181d23">
     <meta name="color-scheme" content="dark">
@@ -19,15 +19,15 @@
     <meta property="og:site_name" content="Niango">
     <meta property="og:title" content="Niango — Distribua acessos sem entregar senhas">
     <meta property="og:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique. Você revoga quando quiser.">
-    <meta property="og:url" content="https://authpack.co/">
-    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:url" content="https://niango.io/">
+    <meta property="og:image" content="https://niango.io/assets/images/landing-image-neutral.png">
     <meta property="og:locale" content="pt_BR">
 
     <!-- ===== Twitter ===== -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Niango — Distribua acessos sem entregar senhas">
     <meta name="twitter:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique.">
-    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta name="twitter:image" content="https://niango.io/assets/images/landing-image-neutral.png">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
 
@@ -63,7 +63,7 @@
             }
 
             var isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.niango.io';
 
             fetch(serverURL + '/api/auth/', { credentials: 'include' })
                 .then(function (res) {
@@ -86,40 +86,40 @@
       "@graph": [
         {
           "@type": "Organization",
-          "@id": "https://authpack.co/#organization",
+          "@id": "https://niango.io/#organization",
           "name": "Niango",
-          "url": "https://authpack.co/",
-          "logo": "https://authpack.co/assets/images/favicon-128x128.png",
+          "url": "https://niango.io/",
+          "logo": "https://niango.io/assets/images/favicon-128x128.png",
           "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes e stacks.",
-          "email": "team@authpack.co",
+          "email": "team@niango.io",
           "sameAs": [
-            "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+            "https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
           ]
         },
         {
           "@type": "WebSite",
-          "@id": "https://authpack.co/#website",
-          "url": "https://authpack.co/",
+          "@id": "https://niango.io/#website",
+          "url": "https://niango.io/",
           "name": "Niango",
           "description": "Distribuição controlada de acessos: compartilhe a sessão já autenticada, sem expor a credencial.",
-          "publisher": { "@id": "https://authpack.co/#organization" },
+          "publisher": { "@id": "https://niango.io/#organization" },
           "inLanguage": "pt-BR"
         },
         {
           "@type": "SoftwareApplication",
-          "@id": "https://authpack.co/#software",
+          "@id": "https://niango.io/#software",
           "name": "Niango",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Chrome, Edge, Brave, Arc",
-          "url": "https://authpack.co/",
-          "downloadUrl": "https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm",
+          "url": "https://niango.io/",
+          "downloadUrl": "https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm",
           "description": "Organize acessos em pacotes e distribua para sua equipe em um clique, sem expor credenciais.",
-          "publisher": { "@id": "https://authpack.co/#organization" },
+          "publisher": { "@id": "https://niango.io/#organization" },
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
         },
         {
           "@type": "FAQPage",
-          "@id": "https://authpack.co/#faq",
+          "@id": "https://niango.io/#faq",
           "mainEntity": [
             {
               "@type": "Question",
@@ -174,7 +174,7 @@
             <div class="nav-cta">
                 <!-- Visitante -->
                 <div class="nav-visitor">
-                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
                         target="_blank" rel="noopener" class="btn btn-outline">Adicionar ao Chrome</a>
                     <a href="/login" class="btn btn-primary">Entrar</a>
                 </div>
@@ -199,7 +199,7 @@
                         Quem recebe entra em um clique. Você revoga quando quiser.
                     </p>
                     <div class="hero-actions">
-                        <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                        <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
                             target="_blank" rel="noopener" class="btn btn-primary btn-lg">Adicionar ao Chrome</a>
                         <a href="#como" class="btn btn-soft btn-lg">Como funciona</a>
                     </div>
@@ -789,7 +789,7 @@
                 </div>
 
                 <div style="margin-top:24px">
-                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm"
+                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
                         target="_blank" rel="noopener" class="btn btn-primary btn-lg">Adicionar ao Chrome</a>
                 </div>
             </div>
@@ -820,7 +820,7 @@
                     <h5>Empresa</h5>
                     <ul>
                         <li><a href="/blog/">Blog</a></li>
-                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="mailto:team@niango.io">Contato</a></li>
                         <li><a href="/login">Entrar</a></li>
                     </ul>
                 </div>

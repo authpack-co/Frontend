@@ -11,7 +11,7 @@
             '© 2026 Niango Inc.  ·  ' +
             '<a href="/pages/legal/privacy/">Privacidade</a>  ·  ' +
             '<a href="/pages/legal/terms/">Termos</a>  ·  ' +
-            '<a href="mailto:team@authpack.co">Suporte</a>' +
+            '<a href="mailto:team@niango.io">Suporte</a>' +
         '</footer>';
 
     var placeholder = document.getElementById('ap-footer');
@@ -19,7 +19,7 @@
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     var isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-    var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+    var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.niango.io';
 
     fetch(serverURL + '/api/users/info', { credentials: 'include' })
         .then(function (res) { return res.ok ? res.json() : null; })

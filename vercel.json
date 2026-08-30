@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/blog/o-que-e-o-authpack", "destination": "/blog/o-que-e-o-niango/", "permanent": true },
+    { "source": "/blog/o-que-e-o-authpack/", "destination": "/blog/o-que-e-o-niango/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/collection/:path*", "destination": "/app.html" },
     { "source": "/collection", "destination": "/app.html" },

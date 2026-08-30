@@ -11,7 +11,7 @@
         content="Conheça os planos do Niango. Pacotes e sessões ilimitados em todos os planos — o único limite é com quantas pessoas você compartilha acesso. Free (10), Plus (25), Business (75) e Enterprise.">
     <meta name="keywords" content="niango preços, planos niango, niango plus, niango business, compartilhar acessos">
     <meta name="author" content="Equipe Niango">
-    <link rel="canonical" href="https://authpack.co/pages/pricing/">
+    <link rel="canonical" href="https://niango.io/pages/pricing/">
     <meta name="robots" content="index, follow, max-image-preview:large">
 
     <!-- ===== Open Graph ===== -->
@@ -20,15 +20,15 @@
     <meta property="og:title" content="Planos e preços — Niango">
     <meta property="og:description"
         content="Pacotes e sessões ilimitados em todos os planos. O único limite é com quantas pessoas você compartilha acesso.">
-    <meta property="og:url" content="https://authpack.co/pages/pricing/">
-    <meta property="og:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta property="og:url" content="https://niango.io/pages/pricing/">
+    <meta property="og:image" content="https://niango.io/assets/images/landing-image-neutral.png">
     <meta property="og:locale" content="pt_BR">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Planos e preços — Niango">
     <meta name="twitter:description"
         content="Pacotes e sessões ilimitados. O único limite é com quantas pessoas você compartilha acesso.">
-    <meta name="twitter:image" content="https://authpack.co/assets/images/landing-image-neutral.png">
+    <meta name="twitter:image" content="https://niango.io/assets/images/landing-image-neutral.png">
 
     <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
 
@@ -43,7 +43,7 @@
     <script>
         (function () {
             try {
-                var t = localStorage.getItem('authpack-theme');
+                var t = localStorage.getItem('niango-theme');
                 if (t !== 'light') document.documentElement.setAttribute('data-theme', 'dark');
             } catch (e) {}
         })();
@@ -141,7 +141,7 @@
             <div class="nav-spacer"></div>
             <div class="nav-cta">
                 <div class="nav-visitor">
-                    <a href="https://chromewebstore.google.com/detail/authpack-studio/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-outline">Adicionar ao Chrome</a>
+                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-outline">Adicionar ao Chrome</a>
                     <a href="/login" class="btn btn-primary">Entrar</a>
                 </div>
                 <div class="nav-user"></div>
@@ -214,7 +214,7 @@
                         <li>Condições sob medida</li>
                         <li>Suporte dedicado</li>
                     </ul>
-                    <div class="pr-cta"><a href="mailto:team@authpack.co?subject=Plano%20Enterprise" class="btn btn-outline">Falar com vendas</a></div>
+                    <div class="pr-cta"><a href="mailto:team@niango.io?subject=Plano%20Enterprise" class="btn btn-outline">Falar com vendas</a></div>
                 </div>
             </div>
 
@@ -244,7 +244,7 @@
                 <div class="footer-col">
                     <h5>Empresa</h5>
                     <ul>
-                        <li><a href="mailto:team@authpack.co">Contato</a></li>
+                        <li><a href="mailto:team@niango.io">Contato</a></li>
                         <li><a href="/login">Entrar</a></li>
                     </ul>
                 </div>
@@ -267,7 +267,7 @@
     <script>
         (function () {
             var isDev = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
-            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+            var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.niango.io';
             function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
             fetch(serverURL + '/api/users/info', { credentials: 'include' })
                 .then(function (r) { return r.ok ? r.json() : null; })

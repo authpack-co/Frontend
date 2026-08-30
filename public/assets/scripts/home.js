@@ -7,7 +7,7 @@
 
     // ── Navbar: estado logado ──────────────────────────────────────────────────
     var isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-    var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+    var serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.niango.io';
 
     fetch(serverURL + '/api/users/info', { credentials: 'include' })
         .then(function (res) { return res.ok ? res.json() : null; })

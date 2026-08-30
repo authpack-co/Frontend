@@ -13,7 +13,7 @@
 (function () {
     'use strict';
 
-    const STORAGE_KEY = 'authpack-theme';
+    const STORAGE_KEY = 'niango-theme';
     const THEMES = ['light', 'dark'];
     const DEFAULT_THEME = 'dark';
 

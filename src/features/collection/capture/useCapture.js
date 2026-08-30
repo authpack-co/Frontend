@@ -9,10 +9,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * serviço no mesmo pacote têm a mesma URL e se cruzariam.
  *
  * Protocolo (content/bridge.js na extensão):
- *   page → authpack:captureRun      { packageId, mode, targets }
- *   page ← authpack:captureStage    { ref, current:{ stage } }
- *   page ← authpack:captureProgress { ref, current:{ status, session } }
- *   page ← authpack:captureDone     { mode, total, ok, saved, failed }
+ *   page → niango:captureRun      { packageId, mode, targets }
+ *   page ← niango:captureStage    { ref, current:{ stage } }
+ *   page ← niango:captureProgress { ref, current:{ status, session } }
+ *   page ← niango:captureDone     { mode, total, ok, saved, failed }
  */
 
 // Marcos de progresso — DEVEM casar com a extensão (content/connectHold.js):
@@ -121,8 +121,8 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
 
     const post = useCallback((targets) => {
         window.postMessage({
-            source: 'authpack-page',
-            type: 'authpack:captureRun',
+            source: 'niango-page',
+            type: 'niango:captureRun',
             packageId,
             mode,
             targets,
@@ -147,13 +147,13 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         function onMessage(event) {
             if (event.origin !== window.location.origin) return;
             const data = event.data;
-            if (data?.source !== 'authpack-extension') return;
+            if (data?.source !== 'niango-extension') return;
 
-            if (data.type === 'authpack:captureStage') {
+            if (data.type === 'niango:captureStage') {
                 handleStage(data.ref, data.current?.stage);
-            } else if (data.type === 'authpack:captureProgress') {
+            } else if (data.type === 'niango:captureProgress') {
                 applyResult(data.ref, data.current?.status === 'ok');
-            } else if (data.type === 'authpack:captureDone') {
+            } else if (data.type === 'niango:captureDone') {
                 window.removeEventListener('message', onMessage);
                 listenerRef.current = null;
                 stopAll();
@@ -208,10 +208,10 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         function onMessage(event) {
             if (event.origin !== window.location.origin) return;
             const data = event.data;
-            if (data?.source !== 'authpack-extension' || data.ref !== ref) return;
+            if (data?.source !== 'niango-extension' || data.ref !== ref) return;
 
-            if (data.type === 'authpack:captureStage') handleStage(ref, data.current?.stage);
-            else if (data.type === 'authpack:captureProgress') finish(data.current?.status === 'ok');
+            if (data.type === 'niango:captureStage') handleStage(ref, data.current?.stage);
+            else if (data.type === 'niango:captureProgress') finish(data.current?.status === 'ok');
         }
 
         const timer = setTimeout(() => finish(false), ITEM_TIMEOUT_MS);

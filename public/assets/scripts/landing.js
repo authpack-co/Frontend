@@ -14,7 +14,7 @@
     const persistMode = new URLSearchParams(window.location.search).get('persist') === 'true';
 
     const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-    const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.authpack.co';
+    const serverURL = isDev ? 'http://127.0.0.1:3000' : 'https://api.niango.io';
 
     fetch(serverURL + '/api/users/info', { credentials: 'include' })
         .then(function (res) {

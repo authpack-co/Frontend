@@ -55,7 +55,7 @@ const PLANS = [
             'Suporte dedicado',
         ],
         // Enterprise não é assinável online: é conversa.
-        contact: 'mailto:team@authpack.co?subject=Plano%20Enterprise',
+        contact: 'mailto:team@niango.io?subject=Plano%20Enterprise',
         cta: 'Falar com vendas',
     },
 ];

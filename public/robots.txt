@@ -33,4 +33,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://authpack.co/sitemap.xml
+Sitemap: https://niango.io/sitemap.xml
