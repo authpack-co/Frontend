@@ -55,6 +55,13 @@
        da marca. No claro os dois tons escurecem para manter contraste. */
     --ap-plus-gradient: linear-gradient(135deg, #d97706, #c2410c);
 
+    /* ── Seleção (neutra) ──
+       Item ativo/selecionado se distingue por superfície e peso, não por
+       matiz: um segundo tom brigaria com o laranja e recriaria o cansaço.
+       O acento fica para ação (CTA, foco, progresso), não para estado. */
+    --ap-selected-bg: #edece9;
+    --ap-selected-border: #cfcdc8;
+
     /* ── Success ── */
     --ap-success: #16a34a;
     --ap-success-light: #f0fdf4;
@@ -156,6 +163,10 @@
     --ap-accent-subtle: rgba(249, 115, 22, 0.08);
     --ap-accent-rgb: 249, 115, 22;
     --ap-plus-gradient: linear-gradient(135deg, #fbbf24, #f97316);
+
+    /* ── Seleção (neutra) ── */
+    --ap-selected-bg: #26272a;
+    --ap-selected-border: #45464a;
 
     /* ── Success ── */
     --ap-success: #4ade80;

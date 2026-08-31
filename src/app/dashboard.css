@@ -588,8 +588,8 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 
 /* Sidebar Upgrade Card */
 .sidebar-upgrade-card {
-    background: var(--ap-accent-subtle);
-    border: 1px solid var(--ap-accent-muted);
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
     padding: 13px 14px;
     margin-bottom: 6px;
@@ -608,7 +608,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .sidebar-upgrade-title span {
-    color: var(--ap-accent-strong);
+    color: var(--ap-text-primary);
 }
 
 .sidebar-upgrade-desc {
@@ -800,9 +800,9 @@ span.coming-soon {
 }
 
 .ext-card-badge--accent {
-    background: var(--ap-accent-subtle);
-    border-color: var(--ap-accent-muted);
-    color: var(--ap-accent);
+    background: var(--ap-bg-muted);
+    border-color: var(--ap-border);
+    color: var(--ap-text-secondary);
 }
 
 .ext-card-badge--warning {
@@ -2640,16 +2640,16 @@ span.coming-soon {
 }
 
 .notification.success {
-    border-left: 4px solid var(--ap-accent);
+    border-left: 4px solid var(--ap-success);
 }
 
 .notification.success .notification-icon {
-    background: color-mix(in srgb, var(--ap-accent) 20%, transparent);
-    color: var(--ap-accent);
+    background: color-mix(in srgb, var(--ap-success) 20%, transparent);
+    color: var(--ap-success);
 }
 
 .notification.success .notification-icon svg {
-    stroke: var(--ap-accent);
+    stroke: var(--ap-success);
 }
 
 .notification.error {
@@ -3642,8 +3642,8 @@ span.coming-soon {
 }
 
 .pc-plan--target {
-    border-color: var(--ap-accent-muted);
-    background: var(--ap-accent-subtle);
+    border-color: var(--ap-selected-border);
+    background: var(--ap-selected-bg);
 }
 
 .pc-plan-label {
@@ -4601,7 +4601,7 @@ textarea:focus-visible {
 .up-head-icon {
     flex: none; width: 38px; height: 38px; border-radius: var(--ap-radius-md);
     display: grid; place-items: center;
-    background: var(--ap-accent-muted); color: var(--ap-accent);
+    background: var(--ap-bg-muted); color: var(--ap-text-secondary);
 }
 .up-pkg-name {
     margin: 3px 0 0; font-size: 13px; color: var(--ap-text-secondary);
@@ -4744,7 +4744,7 @@ textarea:focus-visible {
 .us-toggle-all {
     background: none; border: none; padding: 0;
     font-family: inherit; font-size: 12.5px; font-weight: 600;
-    color: var(--ap-accent); cursor: pointer;
+    color: var(--ap-text-secondary); cursor: pointer;
 }
 
 .us-toggle-all:hover { text-decoration: underline; }
@@ -4761,7 +4761,7 @@ textarea:focus-visible {
 
 .us-item:hover { border-color: var(--ap-border-hover); background: var(--ap-bg-hover); }
 
-.us-item.is-selected { border-color: var(--ap-accent); background: var(--ap-accent-subtle); }
+.us-item.is-selected { border-color: var(--ap-accent); background: var(--ap-selected-bg); }
 
 .us-item-icon {
     width: 26px; height: 26px; flex-shrink: 0; object-fit: contain;
@@ -4849,7 +4849,7 @@ textarea:focus-visible {
 .as-dropdown-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ap-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .as-dropdown-btn {
     flex: none; padding: 6px 12px; font-size: 12.5px; font-weight: 600;
-    border-radius: 6px; background: var(--ap-accent-muted); color: var(--ap-accent);
+    border-radius: 6px; background: var(--ap-bg-muted); color: var(--ap-text-primary);
     border: none; cursor: pointer; transition: all 0.15s ease;
 }
 .as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
@@ -4890,7 +4890,7 @@ textarea:focus-visible {
     transition: all 0.2s ease;
 }
 .as-popular-card:hover { border-color: var(--ap-border-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-.as-popular-card.is-selected { border-color: var(--ap-accent); background: var(--ap-accent-muted); }
+.as-popular-card.is-selected { border-color: var(--ap-accent); background: var(--ap-selected-bg); }
 .as-popular-card .as-service-icon { width: 32px; height: 32px; border-radius: 6px; }
 .as-popular-card .as-service-name { font-size: 13.5px; font-weight: 600; color: var(--ap-text-primary); text-align: center; flex: none; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -4898,10 +4898,10 @@ textarea:focus-visible {
 .as-view-all-btn {
     display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
     border-radius: 20px; font-size: 13px; font-weight: 600;
-    color: var(--ap-accent); border: 1px solid var(--ap-accent-muted);
+    color: var(--ap-text-secondary); border: 1px solid var(--ap-border);
     background: transparent; transition: all 0.15s ease; cursor: pointer;
 }
-.as-view-all-btn:hover { background: var(--ap-accent-muted); border-color: var(--ap-accent); }
+.as-view-all-btn:hover { background: var(--ap-bg-hover); color: var(--ap-text-primary); border-color: var(--ap-border-hover); }
 .as-view-popular.hidden { display: none; }
 .as-view-all-sections.hidden { display: none; }
 
@@ -4923,8 +4923,8 @@ textarea:focus-visible {
 }
 .as-category:hover { border-color: var(--ap-border-hover); color: var(--ap-text-secondary); }
 .as-category.is-active {
-    background: var(--ap-accent-light); color: var(--ap-accent-strong);
-    border-color: var(--ap-accent-muted);
+    background: var(--ap-selected-bg); color: var(--ap-text-primary);
+    border-color: var(--ap-selected-border);
 }
 
 .as-section-label {
@@ -4944,7 +4944,7 @@ textarea:focus-visible {
     transition: border-color .2s ease, background .2s ease;
 }
 .as-service:hover { border-color: var(--ap-border-hover); }
-.as-service.is-selected { border-color: var(--ap-accent); background: var(--ap-accent-muted); }
+.as-service.is-selected { border-color: var(--ap-accent); background: var(--ap-selected-bg); }
 .as-service-icon {
     flex: none; width: 24px; height: 24px; border-radius: var(--ap-radius-sm);
     object-fit: contain; background: var(--ap-bg-muted);
@@ -5035,9 +5035,9 @@ textarea:focus-visible {
 }
 
 .sidebar-section-toggle.active {
-    color: var(--ap-accent-strong);
-    background: var(--ap-accent-subtle);
-    border-color: var(--ap-accent-muted);
+    color: var(--ap-text-primary);
+    background: var(--ap-selected-bg);
+    border-color: var(--ap-selected-border);
 }
 
 .sidebar-packages-heading {
@@ -5086,8 +5086,8 @@ textarea:focus-visible {
 }
 
 #packages-list .access-item.sidebar-pkg-item.selected {
-    background: var(--ap-accent-subtle);
-    border-color: var(--ap-accent-muted);
+    background: var(--ap-selected-bg);
+    border-color: var(--ap-selected-border);
 }
 
 .sidebar-pkg-main {
@@ -5201,9 +5201,9 @@ textarea:focus-visible {
 }
 
 .sidebar-add-pkg:hover {
-    background: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
-    border-color: var(--ap-accent-muted);
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
+    border-color: var(--ap-border-hover);
 }
 
 /* ---- Limite de pessoas do plano (rodapé da sidebar) ---- */
@@ -6136,9 +6136,11 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 /* Todas as sessões ficam na lista; o que passa da altura vira rolagem dentro
    da moldura, com o cabeçalho de colunas parado acima. A barra fica sempre à
    vista (o .custom-scrollbar do dashboard só aparece no hover) para a rolagem
-   ser visível antes de o cursor chegar lá. */
+   ser visível antes de o cursor chegar lá.
+   A altura é propositalmente quebrada no meio de uma linha: mostra ~3 sessões
+   inteiras e deixa a quarta cortada, que é o que avisa que há mais abaixo. */
 .sessions-list {
-    max-height: min(58vh, 560px);
+    max-height: 250px;
     overflow-y: auto;
     scrollbar-gutter: stable;
     border-radius: 0 0 13px 13px;

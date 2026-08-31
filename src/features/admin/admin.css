@@ -74,7 +74,7 @@
 }
 .admin-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
 .admin-nav-item:hover:not([disabled]) { background: var(--ap-bg-hover); color: var(--ap-text-primary); }
-.admin-nav-item.active { background: var(--ap-accent-subtle); color: var(--ap-accent-strong); }
+.admin-nav-item.active { background: var(--ap-selected-bg); color: var(--ap-text-primary); }
 .admin-nav-item[disabled] { opacity: .5; cursor: not-allowed; }
 .admin-nav-item--danger:hover:not([disabled]) { background: var(--ap-danger-light); color: var(--ap-danger-text); }
 .admin-soon {
