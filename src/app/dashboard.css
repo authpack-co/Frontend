@@ -468,7 +468,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .profile-picture.plus-avatar {
     outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
-    box-shadow: 0 0 8px rgba(79, 125, 243, 0.5);
+    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
 }
 
 /* Plus plan - badge tag */
@@ -1098,7 +1098,7 @@ span.coming-soon {
 
 .card-tab:hover {
     opacity: 0.85;
-    border-bottom: 2px solid rgba(65, 132, 228, 0.4);
+    border-bottom: 2px solid rgba(var(--ap-accent-rgb), 0.4);
 }
 
 .card-content {
@@ -1444,9 +1444,9 @@ span.coming-soon {
     color: #22c55e;
 }
 
-.stat-metric-icon.blue {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+.stat-metric-icon.accent {
+    background: var(--ap-accent-light);
+    color: var(--ap-accent-strong);
 }
 
 .stat-metric-icon svg {
@@ -1584,7 +1584,7 @@ span.coming-soon {
     color: var(--ap-text-muted);
     font-weight: 400;
     font-size: 14px;
-    border: 1px solid rgba(229, 231, 235, 0.8);
+    border: 1px solid var(--ap-border);
     backdrop-filter: blur(4px);
 }
 
@@ -3373,19 +3373,20 @@ span.coming-soon {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--ap-warning);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 2px 8px rgba(var(--ap-warning-rgb), 0.45);
     animation: inactiveBadgePulse 2s ease-in-out infinite;
 }
 
 .access-item .inactive-badge svg {
     width: 14px;
     height: 14px;
-    stroke: #111827;
+    /* O selo é amarelo nos dois temas: a tinta do ícone é fixa e escura. */
+    stroke: #1a1a1c;
     stroke-width: 2.5;
 }
 
@@ -3393,11 +3394,11 @@ span.coming-soon {
 
     0%,
     100% {
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        box-shadow: 0 2px 8px rgba(var(--ap-warning-rgb), 0.45);
     }
 
     50% {
-        box-shadow: 0 2px 14px rgba(245, 158, 11, 0.7);
+        box-shadow: 0 2px 14px rgba(var(--ap-warning-rgb), 0.7);
     }
 }
 
@@ -3442,8 +3443,8 @@ span.coming-soon {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.25);
+    background: rgba(var(--ap-warning-rgb), 0.08);
+    border: 1px solid rgba(var(--ap-warning-rgb), 0.25);
     border-radius: var(--ap-radius-md);
     margin-bottom: 16px;
     font-size: 13px;
@@ -3459,15 +3460,15 @@ span.coming-soon {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(var(--ap-warning-rgb), 0.15);
 }
 
 .inactive-alert-icon svg {
-    stroke: #f59e0b;
+    stroke: var(--ap-warning);
 }
 
 .inactive-alert-note strong {
-    color: #f59e0b;
+    color: var(--ap-warning-text);
 }
 
 /* Pacote inativo: as sessões apagam. Na coleção o dono continua podendo
@@ -3488,9 +3489,9 @@ span.coming-soon {
    Plus Package Aesthetic (Minha coleção)
    ============================================ */
 
-/* Pick de pacote Plus — borda e brilho azul */
+/* Pick de pacote Plus — borda e brilho no acento da marca */
 .access-item.plus-pick {
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2), 0 4px 16px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 0 1px rgba(var(--ap-accent-rgb), 0.22), 0 4px 16px rgba(var(--ap-accent-rgb), 0.12);
 }
 
 /* Badge absoluto no canto superior direito do card-header */
@@ -3514,23 +3515,23 @@ span.coming-soon {
 }
 
 .package-status-badge.status-badge--plus {
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    color: #a5b4fc;
+    background: rgba(var(--ap-accent-rgb), 0.12);
+    border: 1px solid rgba(var(--ap-accent-rgb), 0.3);
+    color: var(--ap-accent-strong);
 }
 
 .package-status-badge.status-badge--plus svg {
-    color: #818cf8;
+    color: var(--ap-accent);
 }
 
 .package-status-badge.status-badge--warning {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #bd9e37;
+    background: var(--ap-warning-light);
+    border: 1px solid var(--ap-warning-border);
+    color: var(--ap-warning-text);
 }
 
 .package-status-badge.status-badge--warning svg {
-    stroke: #f59e0b;
+    stroke: var(--ap-warning);
 }
 
 /* Info icon + tooltip no warning badge */
@@ -3550,7 +3551,7 @@ span.coming-soon {
 }
 
 .status-badge-info svg {
-    stroke: #fcd34d;
+    stroke: var(--ap-warning);
 }
 
 .status-badge-tooltip {
@@ -3558,7 +3559,7 @@ span.coming-soon {
     top: calc(100% + 6px);
     right: 0;
     background: var(--ap-bg-card-alt);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(var(--ap-warning-rgb), 0.3);
     color: var(--ap-text-primary);
     font-size: 12px;
     font-weight: 400;
@@ -3938,13 +3939,13 @@ span.coming-soon {
 
 /* Exatamente no limite (X = limite): âmbar (atenção). */
 .people-counter.at-limit {
-    color: #bd9e37;
-    background: rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.25);
+    color: var(--ap-warning-text);
+    background: rgba(var(--ap-warning-rgb), 0.08);
+    border-color: rgba(var(--ap-warning-rgb), 0.25);
 }
 
 .people-counter.at-limit .people-counter__text strong {
-    color: #d8b84a;
+    color: var(--ap-warning);
 }
 
 /* Excedendo (X > limite): vermelho — pessoas além do limite estão sem acesso. */
@@ -3987,7 +3988,7 @@ select:focus-visible,
 textarea:focus-visible {
     outline: none;
     border-color: var(--ap-accent);
-    box-shadow: 0 0 0 3px rgba(65, 132, 228, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--ap-accent-rgb), 0.15);
 }
 
 /* ============================================
@@ -4453,14 +4454,14 @@ textarea:focus-visible {
 }
 
 .pkg-person-btn--primary {
-    background: var(--ap-accent, #2563eb);
+    background: var(--ap-accent, #f97316);
     border-color: transparent;
     color: #fff;
     font-weight: 600;
 }
 
 .pkg-person-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover, #1d4ed8);
+    background: var(--ap-accent-hover, #ea6a0c);
     color: #fff;
     filter: brightness(1.05);
 }
@@ -7249,12 +7250,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     background:
         linear-gradient(var(--ap-bg-card), var(--ap-bg-card)) padding-box,
         linear-gradient(150deg, var(--ap-accent), var(--ap-accent-strong)) border-box;
-    box-shadow: 0 14px 34px -20px rgba(37, 99, 235, 0.55);
+    box-shadow: 0 14px 34px -20px rgba(var(--ap-accent-rgb), 0.45);
 }
 
 .plan-card--featured:hover {
     border-color: transparent;
-    box-shadow: 0 18px 40px -20px rgba(37, 99, 235, 0.6);
+    box-shadow: 0 18px 40px -20px rgba(var(--ap-accent-rgb), 0.5);
 }
 
 /* Selo do card em destaque e do plano atual: mesma pílula, cores distintas. */
@@ -7275,7 +7276,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 .plan-badge {
     background: var(--ap-accent-strong);
     color: #fff;
-    box-shadow: 0 4px 10px -4px rgba(37, 99, 235, 0.7);
+    box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
 }
 
 /* ── Cabeçalho ── */
@@ -7553,7 +7554,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .plus-highlight {
-    background: linear-gradient(135deg, #7c3aed, #28b0d9);
+    background: var(--ap-plus-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -7648,12 +7649,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(96, 165, 250, 0.3);
+    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
 }
 
 .plus-cta-btn:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
+    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
     transform: translateY(-1px);
 }
 

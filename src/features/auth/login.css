@@ -100,13 +100,13 @@
     cursor: pointer;
     width: 100%;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(79, 125, 243, 0.3);
+    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
 }
 
 .btn-google:hover {
     background-color: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(79, 125, 243, 0.4);
+    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
 }
 
 .btn-google svg {

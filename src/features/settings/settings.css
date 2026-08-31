@@ -296,12 +296,12 @@
 }
 
 .settings-card-icon--star {
-    background: #fffbeb;
-    color: #f59e0b;
+    background: var(--ap-warning-light);
+    color: var(--ap-warning-text);
 }
 
 [data-theme="dark"] .settings-card-icon--star {
-    background: rgba(251, 191, 36, 0.1);
+    background: var(--ap-warning-light);
 }
 
 .settings-card-title {

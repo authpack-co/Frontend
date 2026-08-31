@@ -275,7 +275,7 @@ a { text-decoration: none; color: inherit; }
     background: var(--ap-accent-muted);
     border-color: var(--ap-accent);
     transform: translateY(-1px);
-    box-shadow: 0 3px 12px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 3px 12px rgba(var(--ap-accent-rgb), 0.15);
 }
 
 /* ============================================

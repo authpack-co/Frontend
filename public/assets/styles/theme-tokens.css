@@ -13,40 +13,47 @@
    ============================================ */
 :root {
     /* ── Backgrounds ── */
-    --ap-bg-page: #f4f6f9;
+    --ap-bg-page: #f7f7f6;
     --ap-bg-card: #ffffff;
-    --ap-bg-card-alt: #f9fafb;
-    --ap-bg-input: #f3f4f6;
-    --ap-bg-hover: #f0f1f3;
-    --ap-bg-muted: #e5e7eb;
+    --ap-bg-card-alt: #fafaf9;
+    --ap-bg-input: #f4f4f3;
+    --ap-bg-hover: #f1f1ef;
+    --ap-bg-muted: #e7e6e3;
     --ap-bg-overlay: rgba(0, 0, 0, 0.3);
     --ap-bg-header: rgba(255, 255, 255, 0.88);
     --ap-bg-sidebar: #ffffff;
     --ap-bg-dropdown: #ffffff;
     --ap-bg-modal: #ffffff;
-    --ap-bg-skeleton-from: rgba(229, 231, 235, 0.7);
-    --ap-bg-skeleton-via: rgba(209, 213, 219, 0.9);
+    --ap-bg-skeleton-from: rgba(231, 230, 227, 0.7);
+    --ap-bg-skeleton-via: rgba(213, 211, 206, 0.9);
 
     /* ── Text ── */
-    --ap-text-primary: #111827;
-    --ap-text-secondary: #374151;
-    --ap-text-muted: #6b7280;
-    --ap-text-placeholder: #9ca3af;
+    --ap-text-primary: #1a1a1c;
+    --ap-text-secondary: #44444a;
+    --ap-text-muted: #71717a;
+    --ap-text-placeholder: #a1a1aa;
     --ap-text-inverse: #ffffff;
 
     /* ── Borders ── */
-    --ap-border: #e5e7eb;
-    --ap-border-hover: #d1d5db;
-    --ap-border-focus: #60a5fa;
-    --ap-border-muted: #d1d5db;
+    --ap-border: #e6e5e2;
+    --ap-border-hover: #d5d3ce;
+    --ap-border-focus: #f97316;
+    --ap-border-muted: #d5d3ce;
 
-    /* ── Accent (Blue — Shazam-style) ── */
-    --ap-accent: #60a5fa;
-    --ap-accent-hover: #4f90e8;
-    --ap-accent-light: #eff6ff;
-    --ap-accent-muted: #dbeafe;
-    --ap-accent-strong: #2563eb;
-    --ap-accent-subtle: rgba(37, 99, 235, 0.08);
+    /* ── Accent (Laranja — cor da marca) ──
+       Reservado a ações primárias, estado ativo/selecionado e foco.
+       O que é decorativo usa a escala neutra acima. */
+    --ap-accent: #f97316;
+    --ap-accent-hover: #ea6a0c;
+    --ap-accent-light: #fff7ed;
+    --ap-accent-muted: #fed7aa;
+    --ap-accent-strong: #c2410c;
+    --ap-accent-subtle: rgba(234, 88, 12, 0.08);
+    /* Canal RGB do acento — para glows e anéis: rgba(var(--ap-accent-rgb), .3) */
+    --ap-accent-rgb: 249, 115, 22;
+    /* Plus (tier premium): âmbar → laranja, "dourado" sem sair da família
+       da marca. No claro os dois tons escurecem para manter contraste. */
+    --ap-plus-gradient: linear-gradient(135deg, #d97706, #c2410c);
 
     /* ── Success ── */
     --ap-success: #16a34a;
@@ -54,11 +61,14 @@
     --ap-success-border: #bbf7d0;
     --ap-success-text: #15803d;
 
-    /* ── Warning ── */
-    --ap-warning: #d97706;
-    --ap-warning-light: #fffbeb;
-    --ap-warning-border: #fde68a;
-    --ap-warning-text: #b45309;
+    /* ── Warning ──
+       Puxado para o amarelo (e não para o âmbar) para não colidir
+       com o laranja da marca. */
+    --ap-warning: #ca8a04;
+    --ap-warning-light: #fefce8;
+    --ap-warning-border: #fde047;
+    --ap-warning-text: #a16207;
+    --ap-warning-rgb: 202, 138, 4;
 
     /* ── Danger / Error ── */
     --ap-danger: #dc2626;
@@ -73,9 +83,9 @@
     --ap-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
 
     /* ── Scrollbar ── */
-    --ap-scrollbar-thumb: #d1d5db;
-    --ap-scrollbar-track: #f3f4f6;
-    --ap-scrollbar-thumb-hover: #9ca3af;
+    --ap-scrollbar-thumb: #d5d3ce;
+    --ap-scrollbar-track: #f4f4f3;
+    --ap-scrollbar-thumb-hover: #a1a1aa;
 
     /* ── Shared (non-theme) ── */
     --ap-font-body: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
@@ -110,40 +120,42 @@
    ============================================ */
 :root[data-theme="dark"] {
     /* ── Backgrounds ── */
-    --ap-bg-page: #181d23;
-    --ap-bg-card: #141619;
-    --ap-bg-card-alt: #1c1f20;
-    --ap-bg-input: #0d1117;
-    --ap-bg-hover: #212830;
-    --ap-bg-muted: #26292b;
+    --ap-bg-page: #17181a;
+    --ap-bg-card: #131416;
+    --ap-bg-card-alt: #1b1c1e;
+    --ap-bg-input: #0f1011;
+    --ap-bg-hover: #232426;
+    --ap-bg-muted: #26272a;
     --ap-bg-overlay: rgba(0, 0, 0, 0.65);
-    --ap-bg-header: rgba(20, 22, 25, 0.85);
-    --ap-bg-sidebar: #141619;
-    --ap-bg-dropdown: #1c1f20;
-    --ap-bg-modal: #181d23;
-    --ap-bg-skeleton-from: rgba(40, 44, 48, 0.7);
-    --ap-bg-skeleton-via: rgba(50, 55, 60, 0.9);
+    --ap-bg-header: rgba(19, 20, 22, 0.85);
+    --ap-bg-sidebar: #131416;
+    --ap-bg-dropdown: #1b1c1e;
+    --ap-bg-modal: #17181a;
+    --ap-bg-skeleton-from: rgba(42, 42, 44, 0.7);
+    --ap-bg-skeleton-via: rgba(54, 54, 56, 0.9);
 
     /* ── Text ── */
     --ap-text-primary: #e8e6e3;
     --ap-text-secondary: #d6d3cd;
     --ap-text-muted: #9d9488;
-    --ap-text-placeholder: #8e9091;
-    --ap-text-inverse: #111827;
+    --ap-text-placeholder: #8f8d8a;
+    --ap-text-inverse: #17181a;
 
     /* ── Borders ── */
-    --ap-border: #333840;
-    --ap-border-hover: #3b3f42;
-    --ap-border-focus: #4184e4;
+    --ap-border: #2e2f33;
+    --ap-border-hover: #3a3b3f;
+    --ap-border-focus: #f97316;
     --ap-border-muted: #6d655a;
 
-    /* ── Accent ── */
-    --ap-accent: #4184e4;
-    --ap-accent-hover: #54a1e4;
-    --ap-accent-light: rgba(24, 83, 153, 0.1);
-    --ap-accent-muted: rgba(65, 132, 228, 0.15);
-    --ap-accent-strong: #60a5fa;
-    --ap-accent-subtle: rgba(24, 83, 153, 0.1);
+    /* ── Accent (Laranja — cor da marca) ── */
+    --ap-accent: #f97316;
+    --ap-accent-hover: #fb8f3f;
+    --ap-accent-light: rgba(249, 115, 22, 0.10);
+    --ap-accent-muted: rgba(249, 115, 22, 0.18);
+    --ap-accent-strong: #fb923c;
+    --ap-accent-subtle: rgba(249, 115, 22, 0.08);
+    --ap-accent-rgb: 249, 115, 22;
+    --ap-plus-gradient: linear-gradient(135deg, #fbbf24, #f97316);
 
     /* ── Success ── */
     --ap-success: #4ade80;
@@ -151,16 +163,20 @@
     --ap-success-border: rgba(76, 175, 80, 0.3);
     --ap-success-text: #4ade80;
 
-    /* ── Warning ── */
-    --ap-warning: #fbbf24;
-    --ap-warning-light: rgba(245, 158, 11, 0.1);
-    --ap-warning-border: rgba(245, 158, 11, 0.3);
-    --ap-warning-text: #fbbf24;
+    /* ── Warning ──
+       Amarelo, para não colidir com o laranja da marca. */
+    --ap-warning: #facc15;
+    --ap-warning-light: rgba(250, 204, 21, 0.1);
+    --ap-warning-border: rgba(250, 204, 21, 0.28);
+    --ap-warning-text: #facc15;
+    --ap-warning-rgb: 250, 204, 21;
 
-    /* ── Danger / Error ── */
-    --ap-danger: #f54e42;
+    /* ── Danger / Error ──
+       Vermelho puro: o antigo #f54e42 puxava para o laranja e passaria
+       a competir com o acento da marca. */
+    --ap-danger: #ef4444;
     --ap-danger-light: rgba(169, 20, 9, 0.2);
-    --ap-danger-border: rgba(245, 78, 66, 0.3);
+    --ap-danger-border: rgba(239, 68, 68, 0.3);
     --ap-danger-text: #f87171;
 
     /* ── Shadows ── */
@@ -170,9 +186,9 @@
     --ap-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
 
     /* ── Scrollbar ── */
-    --ap-scrollbar-thumb: #3b3f42;
-    --ap-scrollbar-track: #26292b;
-    --ap-scrollbar-thumb-hover: #333840;
+    --ap-scrollbar-thumb: #3a3b3f;
+    --ap-scrollbar-track: #26272a;
+    --ap-scrollbar-thumb-hover: #4a4b4f;
 }
 
 

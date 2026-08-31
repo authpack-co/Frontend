@@ -22,7 +22,7 @@ export default function RevenueChart({ rows }) {
         if (!canvas) return undefined;
 
         const accent = getComputedStyle(document.documentElement)
-            .getPropertyValue('--ap-accent-strong').trim() || '#2563eb';
+            .getPropertyValue('--ap-accent-strong').trim() || '#f97316';
 
         const chart = new Chart(canvas, {
             type: 'bar',

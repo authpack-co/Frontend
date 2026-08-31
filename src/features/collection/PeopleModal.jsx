@@ -7,8 +7,8 @@ import { formatDayStamp, initials } from '../../lib/format.js';
 import { usePackage, usePackages } from '../../lib/packages.jsx';
 
 const PALETTES = [
-    ['#60a5fa', '#2563eb'], ['#34d399', '#059669'], ['#f59e0b', '#b45309'],
-    ['#a78bfa', '#7c3aed'], ['#f472b6', '#be185d'], ['#22d3ee', '#0e7490'],
+    ['#fb923c', '#ea580c'], ['#34d399', '#059669'], ['#a78bfa', '#7c3aed'],
+    ['#f472b6', '#be185d'], ['#22d3ee', '#0e7490'], ['#a8a29e', '#57534e'],
 ];
 
 function paletteFor(name) {
