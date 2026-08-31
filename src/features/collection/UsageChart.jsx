@@ -50,6 +50,8 @@ export default function UsageChart({ data, isDaily }) {
 
         const styles = getComputedStyle(document.documentElement);
         const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+        const accent = token('--ap-accent', '#f97316');
+        const accentRgb = token('--ap-accent-rgb', '249, 115, 22');
 
         const chart = new Chart(canvas.getContext('2d'), {
             type: 'line',
@@ -57,22 +59,22 @@ export default function UsageChart({ data, isDaily }) {
                 labels: displayLabels,
                 datasets: [{
                     data: values,
-                    borderColor: '#4184e4',
+                    borderColor: accent,
                     backgroundColor(context) {
                         const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 180);
-                        gradient.addColorStop(0, 'rgba(65, 132, 228, 0.3)');
-                        gradient.addColorStop(1, 'rgba(65, 132, 228, 0)');
+                        gradient.addColorStop(0, `rgba(${accentRgb}, 0.28)`);
+                        gradient.addColorStop(1, `rgba(${accentRgb}, 0)`);
                         return gradient;
                     },
                     borderWidth: 2,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
-                    pointBackgroundColor: '#4184e4',
+                    pointBackgroundColor: accent,
                     pointBorderColor: token('--ap-bg-card', '#ffffff'),
                     pointBorderWidth: 2,
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#58a6ff',
+                    pointHoverBackgroundColor: token('--ap-accent-strong', '#fb923c'),
                     pointHoverBorderWidth: 2,
                 }],
             },
@@ -84,10 +86,10 @@ export default function UsageChart({ data, isDaily }) {
                     legend: { display: false },
                     tooltip: {
                         backgroundColor: token('--ap-bg-card', '#ffffff'),
-                        borderColor: token('--ap-border', '#e5e7eb'),
+                        borderColor: token('--ap-border', '#e6e5e2'),
                         borderWidth: 1,
-                        titleColor: token('--ap-text-primary', '#111827'),
-                        bodyColor: token('--ap-text-secondary', '#374151'),
+                        titleColor: token('--ap-text-primary', '#1a1a1c'),
+                        bodyColor: token('--ap-text-secondary', '#44444a'),
                         padding: 12,
                         displayColors: false,
                         callbacks: {
@@ -122,7 +124,7 @@ export default function UsageChart({ data, isDaily }) {
                         // Sem uso nenhum o eixo precisa de um teto, senão o
                         // Chart.js inventa uma escala de 0 a 1 "unidades".
                         max: maxValue === 0 ? 1 : maxValue * 1.2,
-                        grid: { color: token('--ap-border', '#e5e7eb') },
+                        grid: { color: token('--ap-border', '#e6e5e2') },
                         ticks: {
                             color: token('--ap-text-muted', '#6b7280'),
                             callback: (value) => formatHours(value),

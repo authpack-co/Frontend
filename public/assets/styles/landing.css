@@ -89,7 +89,7 @@ img {
 .lp-btn-primary:hover {
     background: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(79, 125, 243, 0.25);
+    box-shadow: 0 4px 16px rgba(var(--ap-accent-rgb), 0.25);
 }
 
 .lp-btn-secondary {

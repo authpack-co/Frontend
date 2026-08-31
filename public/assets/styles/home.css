@@ -10,10 +10,10 @@
 
 :root {
   /* ── Superfícies ── */
-  --bg: #181d23;          /* página            (= --ap-bg-page)     */
-  --card: #141619;        /* card              (= --ap-bg-card)     */
-  --bg-warm: #1c1f20;     /* card alternativo  (= --ap-bg-card-alt) */
-  --hover: #212830;       /* hover             (= --ap-bg-hover)    */
+  --bg: #17181a;          /* página            (= --ap-bg-page)     */
+  --card: #131416;        /* card              (= --ap-bg-card)     */
+  --bg-warm: #1b1c1e;     /* card alternativo  (= --ap-bg-card-alt) */
+  --hover: #232426;       /* hover             (= --ap-bg-hover)    */
 
   /* ── Texto ── */
   --ink: #e8e6e3;
@@ -21,23 +21,24 @@
   --ink-3: #9d9488;
 
   /* ── Bordas ── */
-  --line: #333840;
-  --line-2: #3b3f42;
+  --line: #2e2f33;
+  --line-2: #3a3b3f;
 
-  /* ── Acento ── */
-  --blue: #4184e4;
-  --blue-deep: #54a1e4;
-  --blue-soft: rgba(65, 132, 228, 0.15);
+  /* ── Acento (laranja da marca) ──
+     Os nomes --blue* são históricos: blog.css e a página de preços
+     dependem deles. Só o valor mudou (azul → laranja). */
+  --blue: #f97316;
+  --blue-deep: #fb923c;
+  --blue-soft: rgba(249, 115, 22, 0.15);
+  --blue-rgb: 249, 115, 22;
   --mint: #4ade80;
-  --skyblue: #8fb7f0;
-  --purple: #9b7ae8;
-  --purple-deep: #a68cf0;
+  --accent-soft: #fbb072;
 
-  /* Mantidos por compatibilidade (blog/pricing). Quase planos de propósito:
-     o gradiente forte não combina com a leitura sóbria do tema escuro. */
-  --grad-brand: linear-gradient(92deg, #4184e4 0%, #54a1e4 100%);
-  --grad-soft: linear-gradient(180deg, rgba(65, 132, 228, 0.08), rgba(65, 132, 228, 0.02));
-  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #8fb7f0 100%);
+  /* Gradientes. O acento entra em dose pequena — o laranja cansa quando
+     cobre superfície grande, então aqui ele só tinge o fundo. */
+  --grad-brand: linear-gradient(92deg, #f97316 0%, #fb923c 100%);
+  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.02));
+  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #fbb072 100%);
 
   /* ── Sombras ── */
   --sh-1: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -284,7 +285,7 @@ body.user-logged-in .nav-user { display: flex; }
 /* Arte vetorial embutida (mockups da extensão e do painel, desenhados a partir
    do código real). Substitui a hachura por uma superfície chapada e deixa o
    bloco seguir a proporção do desenho em vez de uma altura fixa. */
-.figure.is-art { background: #12161b; }
+.figure.is-art { background: #131416; }
 .figure.is-art svg { display: block; width: 100%; height: 100%; }
 .figure--hero.is-art { height: auto; aspect-ratio: 620 / 420; }
 .figure--tall.is-art { height: auto; aspect-ratio: 580 / 473; }

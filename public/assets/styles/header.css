@@ -187,9 +187,9 @@ body.user-logged-in .nav-user {
 
 /* Plus avatar glow */
 .nav-profile-picture.plus-avatar {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
 }
 
 /* Plus badge */
@@ -203,9 +203,9 @@ body.user-logged-in .nav-user {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #93c5fd;
+    color: var(--ap-accent-strong);
     background: var(--ap-bg-card);
-    border: 1px solid rgba(59, 130, 246, 0.35);
+    border: 1px solid rgba(var(--ap-accent-rgb), 0.35);
     border-radius: 4px;
     padding: 2px 6px;
     line-height: 1;
@@ -215,9 +215,9 @@ body.user-logged-in .nav-user {
 }
 
 .navbar.navbar-light .nav-plus-badge {
-    background: #eff6ff;
-    color: #2563eb;
-    border-color: #bfdbfe;
+    background: var(--ap-accent-light);
+    color: var(--ap-accent-strong);
+    border-color: var(--ap-accent-muted);
     box-shadow: none;
 }
 
@@ -268,7 +268,7 @@ body.user-logged-in .nav-user {
 .nav-btn-primary:hover {
     background: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(79, 125, 243, 0.25);
+    box-shadow: 0 4px 16px rgba(var(--ap-accent-rgb), 0.25);
 }
 
 .navbar.navbar-light .nav-btn-primary {
@@ -280,7 +280,7 @@ body.user-logged-in .nav-user {
 
 .navbar.navbar-light .nav-btn-primary:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 2px 8px rgba(var(--ap-accent-rgb), 0.35);
 }
 
 /* Hidden helper */
@@ -323,7 +323,7 @@ body.user-logged-in .nav-user {
 }
 
 .ap-footer a:hover {
-    color: #374151;
+    color: var(--ap-text-secondary);
 }
 
 /* Dark page variant */

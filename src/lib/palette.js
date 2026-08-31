@@ -5,7 +5,7 @@
  */
 
 // Accent do tema — só quando a sessão não traz cor.
-const NEUTRAL_RGB = [96, 165, 250];
+const NEUTRAL_RGB = [249, 115, 22];
 
 const clamp255 = (value) => Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
 
