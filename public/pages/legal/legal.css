@@ -160,9 +160,11 @@ a { text-decoration: none; color: inherit; }
     background: var(--ap-bg-hover);
 }
 
+/* Item de navegação selecionado: neutro, como no painel. O acento marca
+   ação, não posição na lista. */
 .legal-toc-link.active {
-    color: var(--ap-accent);
-    background: var(--ap-accent-light);
+    color: var(--ap-text-primary);
+    background: var(--ap-selected-bg);
 }
 
 /* ============================================

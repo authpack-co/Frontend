@@ -285,8 +285,8 @@
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: var(--ap-accent-light);
-    color: var(--ap-accent);
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-secondary);
     flex-shrink: 0;
 }
 
@@ -535,9 +535,9 @@
 }
 
 .bl-status-badge--open {
-    background: var(--ap-accent-light);
-    color: var(--ap-accent);
-    border: 1px solid var(--ap-accent-muted);
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-secondary);
+    border: 1px solid var(--ap-border);
 }
 
 .bl-status-badge--overdue {
@@ -584,9 +584,9 @@
 }
 
 .bl-period-row--open .bl-period-icon {
-    background: var(--ap-accent-light);
-    border-color: var(--ap-accent-muted);
-    color: var(--ap-accent);
+    background: var(--ap-bg-muted);
+    border-color: var(--ap-border);
+    color: var(--ap-text-secondary);
 }
 
 .bl-period-row--overdue .bl-period-icon {
