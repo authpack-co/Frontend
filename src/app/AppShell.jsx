@@ -180,7 +180,7 @@ function Sidebar() {
 
                     {status !== 'loading' && packages.length > 0 && (
                         <div className={`preset-${section}`}>
-                            <div className="access-grid sidebar-pkg-list custom-scrollbar">
+                            <div className="access-grid sidebar-pkg-list">
                                 {packages.map((pkg) => (
                                     <SidebarPackage
                                         key={pkg.id}
@@ -363,24 +363,27 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenP
         <div className="sidebar-footer">
             {!loading && !hasPlusBenefits && (
                 <div className={`sidebar-upgrade-card${collapsed ? ' is-collapsed' : ''}`}>
-                    <div className="sidebar-upgrade-head">
+                    {/* O corpo empilha quando aberto e vira uma linha só quando
+                        minimizado; o botão é irmão dele para ficar sempre na
+                        ponta direita, nos dois estados. */}
+                    <div className="sidebar-upgrade-body">
                         <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
-                        <button
-                            className="sidebar-upgrade-toggle"
-                            type="button"
-                            aria-expanded={!collapsed}
-                            title={collapsed ? 'Expandir' : 'Minimizar'}
-                            aria-label={collapsed ? 'Expandir Niango Planos' : 'Minimizar Niango Planos'}
-                            onClick={() => setCollapsed((value) => !value)}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m6 9 6 6 6-6" />
-                            </svg>
+                        <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
+                        <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
+                            Fazer upgrade<span className="sidebar-upgrade-arrow"> &rarr;</span>
                         </button>
                     </div>
-                    <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
-                    <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
-                        Fazer upgrade &rarr;
+                    <button
+                        className="sidebar-upgrade-toggle"
+                        type="button"
+                        aria-expanded={!collapsed}
+                        title={collapsed ? 'Expandir' : 'Minimizar'}
+                        aria-label={collapsed ? 'Expandir Niango Planos' : 'Minimizar Niango Planos'}
+                        onClick={() => setCollapsed((value) => !value)}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m6 9 6 6 6-6" />
+                        </svg>
                     </button>
                 </div>
             )}

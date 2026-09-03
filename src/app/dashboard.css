@@ -277,18 +277,18 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
+    background: var(--ap-scrollbar-track);
     border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
+    background: var(--ap-scrollbar-thumb);
     border-radius: 3px;
     border: 1px solid var(--ap-border);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
+    background: var(--ap-scrollbar-thumb-hover);
 }
 
 /* ============================================
@@ -598,8 +598,16 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     flex: none;
 }
 
-/* Sidebar Upgrade Card */
+/* ============================================
+   Sidebar Upgrade Card
+   ============================================ */
+
+/* Linha: corpo à esquerda, botão de minimizar sempre na ponta direita —
+   nos dois estados. */
 .sidebar-upgrade-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
     background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border);
     border-radius: var(--ap-radius-lg);
@@ -611,12 +619,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     display: none;
 }
 
-.sidebar-upgrade-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 3px;
+.sidebar-upgrade-body {
+    flex: 1;
+    min-width: 0;
 }
 
 .sidebar-upgrade-title {
@@ -624,34 +629,8 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--ap-text-primary);
-    min-width: 0;
+    margin-bottom: 3px;
 }
-
-.sidebar-upgrade-toggle {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    border-radius: var(--ap-radius-sm);
-    background: transparent;
-    color: var(--ap-text-muted);
-    cursor: pointer;
-    transition: background .15s ease, color .15s ease;
-}
-
-.sidebar-upgrade-toggle:hover {
-    background: var(--ap-bg-hover);
-    color: var(--ap-text-primary);
-}
-
-.sidebar-upgrade-toggle svg { transition: transform .2s ease; }
-
-/* Minimizado sobra o essencial: o nome e a ação. */
-.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-desc { display: none; }
-.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle svg { transform: rotate(180deg); }
 
 .sidebar-upgrade-title span {
     color: var(--ap-text-primary);
@@ -684,6 +663,78 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     opacity: 0.8;
     transform: none !important;
 }
+
+.sidebar-upgrade-toggle {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: var(--ap-radius-sm);
+    background: transparent;
+    color: var(--ap-text-muted);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.sidebar-upgrade-toggle:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
+}
+
+.sidebar-upgrade-toggle svg { transition: transform .2s ease; }
+
+/* ── Minimizado ──
+   Nome e ação lado a lado numa linha só: o objetivo do estado é devolver
+   altura para a lista de pacotes, e empilhá-los desperdiçaria isso.
+   As medidas são apertadas de propósito — numa coluna de 248px a linha tem
+   ~200px úteis, e os dois rótulos mais o botão cabem com ~6px de folga. Por
+   isso o título trunca em vez de colidir, caso a fonte de sistema renderize
+   mais largo que a do projeto. */
+.sidebar-upgrade-card.is-collapsed {
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px 6px 8px;
+}
+
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-body {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-desc { display: none; }
+
+/* A seta sai junto com a descrição: a linha não tem os ~14px dela. */
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-arrow { display: none; }
+
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Menor que o nome: a hierarquia é nome primeiro, ação em seguida. */
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-link {
+    flex: none;
+    margin-left: auto;
+    font-size: 10.5px !important;
+    white-space: nowrap;
+}
+
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle {
+    width: 18px;
+    height: 18px;
+}
+
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle svg { transform: rotate(180deg); }
+
 
 .plus-subscribe-btn {
     display: flex;
@@ -5100,12 +5151,34 @@ textarea:focus-visible {
    abaixo do conteúdo — sem ele a lista empurra o rodapé para fora da tela. */
 #packages-list {
     display: block;
-    flex: 1;
+    flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     /* Espaço para a barra, para os itens não pularem quando ela aparece. */
     scrollbar-gutter: stable;
+    /* Propriedade padrão (Firefox e Chromium atual). Onde ela vale, é ela que
+       desenha a barra; as regras -webkit- abaixo cobrem Safari e Chromium
+       antigo. As duas pintam o mesmo polegar fino. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ap-scrollbar-thumb) transparent;
+}
+
+/* A barra fica visível sempre que houver o que rolar. O `::-webkit-scrollbar`
+   global do painel zera a largura de todas as barras e o `.custom-scrollbar`
+   só a devolve no hover — aqui a rolagem precisa se anunciar antes de o
+   cursor chegar na coluna. O seletor de id vence aquele reset. */
+#packages-list::-webkit-scrollbar { width: 6px; }
+
+#packages-list::-webkit-scrollbar-track { background: transparent; }
+
+#packages-list::-webkit-scrollbar-thumb {
+    background: var(--ap-scrollbar-thumb);
+    border-radius: var(--ap-radius-full);
+}
+
+#packages-list::-webkit-scrollbar-thumb:hover {
+    background: var(--ap-scrollbar-thumb-hover);
 }
 
 #packages-list .sidebar-pkg-list {
@@ -5134,6 +5207,21 @@ textarea:focus-visible {
     justify-content: space-between;
     gap: 8px;
     text-align: left;
+}
+
+/* O link cobre a linha toda, padding incluído: clicar na borda do item
+   selecionava nada, porque só o miolo era <a>. */
+#packages-list .sidebar-pkg-main::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+/* O ⋯ fica acima dessa camada para continuar clicável. */
+#packages-list .sidebar-pkg-item > span:last-child {
+    position: relative;
+    z-index: 1;
 }
 
 #packages-list .access-item.sidebar-pkg-item:hover {
@@ -5750,11 +5838,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 
 .sessions-search-empty-text { font-size: 13px; }
 
-/* Sidebar em coluna com lista rolável e rodapé fixo */
+/* Sidebar em coluna com lista rolável e rodapé fixo — a estrutura em si está
+   definida junto do resto da sidebar; aqui fica só a largura do desktop. */
 .navigation-sidebar { width: 248px; }
 .page-content { margin-left: 248px; }
-.sidebar-nav { display: flex; flex-direction: column; min-height: 0; }
-#packages-list { flex: 0 1 auto; }
 
 @media (max-width: 1199px) {
     .page-content { margin-left: 0; }
