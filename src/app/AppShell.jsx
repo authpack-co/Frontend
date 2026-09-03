@@ -166,7 +166,7 @@ function Sidebar() {
                     )}
                 </div>
 
-                <div id="packages-list" className={`${listState}-state`}>
+                <div id="packages-list" className={`${listState}-state custom-scrollbar`}>
                     {status === 'loading' && (
                         <div className="preset-loading">
                             <div className="sidebar-pkg-list">
