@@ -549,8 +549,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     top: 0;
     left: 0;
     z-index: 100;
-    overflow-y: auto;
-    overflow-x: hidden;
+    /* A coluna inteira não rola: marca, seções e rodapé ficam parados e quem
+       rola é só a lista de pacotes (#packages-list). */
+    overflow: hidden;
 }
 
 /* Sidebar Brand */
@@ -582,8 +583,19 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 /* Sidebar Nav */
 .sidebar-nav {
     flex: 1;
+    min-height: 0;
     padding: 10px 8px;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Só a lista de pacotes encolhe. Sem isto, numa janela baixa o flex espremeria
+   também a navegação e o cabeçalho "Pacotes". */
+.sidebar-role-nav,
+.sidebar-sections,
+.sidebar-packages-head {
+    flex: none;
 }
 
 /* Sidebar Upgrade Card */
@@ -599,13 +611,47 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     display: none;
 }
 
+.sidebar-upgrade-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+}
+
 .sidebar-upgrade-title {
     font-size: 13px;
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--ap-text-primary);
-    margin-bottom: 3px;
+    min-width: 0;
 }
+
+.sidebar-upgrade-toggle {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: var(--ap-radius-sm);
+    background: transparent;
+    color: var(--ap-text-muted);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.sidebar-upgrade-toggle:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
+}
+
+.sidebar-upgrade-toggle svg { transition: transform .2s ease; }
+
+/* Minimizado sobra o essencial: o nome e a ação. */
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-desc { display: none; }
+.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle svg { transform: rotate(180deg); }
 
 .sidebar-upgrade-title span {
     color: var(--ap-text-primary);
@@ -5050,7 +5096,17 @@ textarea:focus-visible {
 }
 
 /* ---- Sidebar: lista de pacotes ---- */
-#packages-list { display: block; }
+/* Única área rolável da sidebar. O min-height:0 é o que deixa o flex encolher
+   abaixo do conteúdo — sem ele a lista empurra o rodapé para fora da tela. */
+#packages-list {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Espaço para a barra, para os itens não pularem quando ela aparece. */
+    scrollbar-gutter: stable;
+}
 
 #packages-list .sidebar-pkg-list {
     display: flex;
@@ -5135,6 +5191,22 @@ textarea:focus-visible {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Posicionado em coordenadas de viewport pelo OptionsMenu (anchorTo) para
+   escapar do recorte de #packages-list. Fora do fluxo ele também deixa de
+   inflar a área rolável enquanto está escondido. */
+.sidebar-pkg-item .package-options {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: auto;
+    width: 138px;
+    max-height: none;
+    background: var(--ap-bg-modal);
+    /* O `transition: all` do menu animaria o top/left escrito pelo JS, fazendo
+       o menu atravessar a tela. Anima só a entrada. */
+    transition: opacity .2s ease, visibility .2s ease, transform .2s ease;
 }
 
 /* Botão de opções (⋯) da linha de pacote */
