@@ -167,6 +167,11 @@ body.user-logged-in .nav-user { display: flex; }
   transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 
+/* Marca dentro do botão (Chrome). Herda currentColor, então sai branca no
+   botão laranja e no tom do texto no contorno. */
+.btn-icon { flex: none; width: 18px; height: 18px; }
+.btn-lg .btn-icon { width: 20px; height: 20px; }
+
 /* Ação principal */
 .btn-primary { background: var(--blue); color: #fff; }
 .btn-primary:hover { background: var(--blue-deep); }

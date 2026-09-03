@@ -81,10 +81,25 @@ export default function UsageChart({ data, isDaily }) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
+                // Duração zero em vez de `animation: false`: o desenho continua
+                // aparecendo pronto, mas o `false` desligava junto a animação
+                // do tooltip, que pulava de um ponto ao outro sem transição.
+                animation: { duration: 0 },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        // O tooltip anima por conta própria; sem isto ele herda
+                        // os 400ms padrão, lentos demais para o ponteiro.
+                        animation: { duration: 260, easing: 'easeOutQuart' },
+                        animations: {
+                            numbers: {
+                                type: 'number',
+                                properties: ['x', 'y', 'width', 'height', 'caretX', 'caretY'],
+                                duration: 260,
+                                easing: 'easeOutQuart',
+                            },
+                            opacity: { type: 'number', duration: 180, easing: 'linear' },
+                        },
                         backgroundColor: token('--ap-bg-card', '#ffffff'),
                         borderColor: token('--ap-border', '#e6e5e2'),
                         borderWidth: 1,

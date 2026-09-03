@@ -22,6 +22,16 @@ import './dashboard.css';
 // Papéis com benefício ilimitado (espelha PLUS_BENEFIT_ROLES no backend).
 const PLUS_BENEFIT_ROLES = ['admin'];
 
+const UPGRADE_COLLAPSED_KEY = 'niango-upgrade-collapsed';
+
+function readUpgradeCollapsed() {
+    try {
+        return localStorage.getItem(UPGRADE_COLLAPSED_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Casca do app: sidebar fixa + área de conteúdo.
  *
@@ -260,7 +270,9 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
                 </div>
             </Link>
 
-            <OptionsMenu label="Ações do pacote">
+            {/* A lista de pacotes rola: o menu é fixo no viewport para não
+                ser cortado no último item. */}
+            <OptionsMenu label="Ações do pacote" anchorTo=".sidebar-pkg-item">
                 {(closeMenu) => (isAccess ? (
                     <button
                         className="abort-package-access-btn"
@@ -336,11 +348,36 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenP
     const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
         || (userInfo?.plan && userInfo.plan !== 'free');
 
+    // Quem minimizou o banner não quer vê-lo aberto de novo a cada visita.
+    const [collapsed, setCollapsed] = useState(readUpgradeCollapsed);
+    useEffect(() => {
+        try {
+            localStorage.setItem(UPGRADE_COLLAPSED_KEY, collapsed ? '1' : '0');
+        } catch {
+            // Navegador sem storage (aba anônima, cookies bloqueados): o estado
+            // vale só para esta sessão, e o banner segue funcionando.
+        }
+    }, [collapsed]);
+
     return (
         <div className="sidebar-footer">
             {!loading && !hasPlusBenefits && (
-                <div className="sidebar-upgrade-card">
-                    <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
+                <div className={`sidebar-upgrade-card${collapsed ? ' is-collapsed' : ''}`}>
+                    <div className="sidebar-upgrade-head">
+                        <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
+                        <button
+                            className="sidebar-upgrade-toggle"
+                            type="button"
+                            aria-expanded={!collapsed}
+                            title={collapsed ? 'Expandir' : 'Minimizar'}
+                            aria-label={collapsed ? 'Expandir Niango Planos' : 'Minimizar Niango Planos'}
+                            onClick={() => setCollapsed((value) => !value)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                    </div>
                     <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
                     <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
                         Fazer upgrade &rarr;

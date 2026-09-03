@@ -3,7 +3,8 @@ import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/auth.jsx';
 import { useExtensionStatus } from '../../lib/extension.js';
 import { formatDate } from '../../lib/format.js';
-import { GoogleIcon, PuzzleIcon, StarIcon } from './icons.jsx';
+import { PuzzleIcon, StarIcon } from './icons.jsx';
+import { GoogleIcon } from '../../components/BrandIcons.jsx';
 
 // Papéis que já têm o benefício sem assinar.
 const PLUS_BENEFIT_ROLES = ['admin'];
