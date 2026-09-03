@@ -5148,37 +5148,17 @@ textarea:focus-visible {
 
 /* ---- Sidebar: lista de pacotes ---- */
 /* Única área rolável da sidebar. O min-height:0 é o que deixa o flex encolher
-   abaixo do conteúdo — sem ele a lista empurra o rodapé para fora da tela. */
+   abaixo do conteúdo — sem ele a lista empurra o rodapé para fora da tela.
+   A barra é a do `.custom-scrollbar` (a classe vem do JSX): aparece no hover
+   e some quando o cursor sai, para a coluna não carregar uma barra fixa. Por
+   isso nada de largura ou de `scrollbar-gutter` aqui — qualquer um dos dois
+   deixaria a barra permanente. */
 #packages-list {
     display: block;
     flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    /* Espaço para a barra, para os itens não pularem quando ela aparece. */
-    scrollbar-gutter: stable;
-    /* Propriedade padrão (Firefox e Chromium atual). Onde ela vale, é ela que
-       desenha a barra; as regras -webkit- abaixo cobrem Safari e Chromium
-       antigo. As duas pintam o mesmo polegar fino. */
-    scrollbar-width: thin;
-    scrollbar-color: var(--ap-scrollbar-thumb) transparent;
-}
-
-/* A barra fica visível sempre que houver o que rolar. O `::-webkit-scrollbar`
-   global do painel zera a largura de todas as barras e o `.custom-scrollbar`
-   só a devolve no hover — aqui a rolagem precisa se anunciar antes de o
-   cursor chegar na coluna. O seletor de id vence aquele reset. */
-#packages-list::-webkit-scrollbar { width: 6px; }
-
-#packages-list::-webkit-scrollbar-track { background: transparent; }
-
-#packages-list::-webkit-scrollbar-thumb {
-    background: var(--ap-scrollbar-thumb);
-    border-radius: var(--ap-radius-full);
-}
-
-#packages-list::-webkit-scrollbar-thumb:hover {
-    background: var(--ap-scrollbar-thumb-hover);
 }
 
 #packages-list .sidebar-pkg-list {
