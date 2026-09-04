@@ -1440,8 +1440,8 @@ span.coming-soon {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    /* Acima das pilhas de logos (.stack-icon) dos cards vizinhos, que recebem
-       z-index inline de até 10 — senão elas sobrepõem este menu. */
+    /* Acima do conteúdo dos cards vizinhos, que recebe z-index inline de até
+       10 — senão eles sobrepõem este menu. */
     z-index: 50;
     overflow: hidden;
     transform: translateY(0);
@@ -1473,24 +1473,6 @@ span.coming-soon {
 .package-options button:hover,
 .package-options a:hover {
     background: var(--ap-bg-hover);
-}
-
-/* ============================================
-   Icon Stack Component
-   ============================================ */
-.icon-stack {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    height: 48px;
-    top: 0;
-    left: 0;
-}
-
-#packages-list .icon-stack {
-    justify-content: flex-start;
-    height: auto;
 }
 
 /* ============================================
@@ -1604,74 +1586,6 @@ span.coming-soon {
         gap: var(--ap-space-sm);
         padding: 0 0 var(--ap-space-md) 0;
     }
-}
-
-.stack-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 8px;
-    background: var(--ap-bg-page);
-    border: 2px solid var(--ap-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: transform 0.2s ease, z-index 0.2s ease;
-    overflow: hidden;
-}
-
-#packages-list .stack-icon {
-    width: 24px;
-    height: 24px;
-}
-
-.stack-icon:nth-child(1) {
-    z-index: 3;
-}
-
-.stack-icon:nth-child(1) img {
-    opacity: 1;
-}
-
-.stack-icon:nth-child(2) {
-    z-index: 2;
-    margin-left: -12px;
-}
-
-#packages-list .stack-icon:nth-child(2) {
-    margin-left: -8px;
-}
-
-.stack-icon:nth-child(2) img {
-    opacity: 0.7;
-}
-
-#packages-list .stack-icon:nth-child(2) img {
-    opacity: 0.9;
-}
-
-.stack-icon:nth-child(3) {
-    z-index: 1;
-    margin-left: -12px;
-}
-
-#packages-list .stack-icon:nth-child(3) {
-    margin-left: -8px;
-}
-
-.stack-icon:nth-child(3) img {
-    opacity: 0.4;
-}
-
-#packages-list .stack-icon:nth-child(3) img {
-    opacity: 0.8;
-}
-
-.stack-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
 .plus-icon {
@@ -1801,77 +1715,19 @@ span.coming-soon {
     object-fit: contain;
 }
 
+/* A linha de pessoa deixou de ter estado "expandido": os botões de remover e
+   de detalhes ficam sempre à vista, e o "visto por último" mora embaixo do
+   nome. O que restava aqui era a coreografia de hover que escondia os três —
+   ela sumiu junto. O visual da linha está em .collection-users-col. */
 .user {
     position: relative;
-    cursor: pointer;
     transition: all 0.2s;
-}
-
-.user.expanded {
-    padding-bottom: 70px;
 }
 
 .user-id {
     color: var(--ap-text-muted);
     font-size: 14px;
     transition: all 0.3s ease;
-}
-
-.user .management-actions {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform: translateY(-10px);
-    opacity: 0;
-    transition: all 0.3s;
-}
-
-.user.expanded .management-actions {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.user .details-btn {
-    position: absolute;
-    top: 13px;
-    right: 22px;
-    opacity: 0;
-    transform: translateX(10px);
-    transition: all 0.3s ease;
-}
-
-/* Ao passar o mouse no usuário */
-.user:hover button.details-btn {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.user.expanded button.details-btn {
-    visibility: visible;
-    opacity: 1;
-    transform: translateY(40px);
-}
-
-.user .item-details {
-    position: absolute;
-    font-size: 10pt;
-    top: 3px;
-    right: 5px;
-    padding: 0 0 0 0.5rem;
-    transition: all 0.3s ease;
-    color: var(--ap-text-muted);
-    background: var(--ap-bg-page);
-}
-
-.user:hover .item-details {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.user.expanded .item-details {
-    opacity: 0;
-    visibility: hidden;
 }
 
 /* Sessions */
@@ -2125,12 +1981,17 @@ span.coming-soon {
     gap: 1.5rem;
 }
 
-/* Chart + Users row — altura fixa de 260px em ambas as colunas */
+/* Gráfico + pessoas lado a lado, os dois exatamente da mesma altura: é uma
+   variável só, e as duas colunas a seguem — foi a divergência entre a altura
+   da coluna do gráfico e a da lista que deixava um painel mais alto que o
+   outro. As colunas ficam quase iguais porque a lista de pessoas passou a
+   carregar dois botões por linha. */
 .collection-chart-users-row {
+    --collection-panel-h: 232px;
     display: grid;
-    grid-template-columns: 2fr 1.5fr;
-    grid-template-rows: 260px;
-    gap: 1.5rem;
+    grid-template-columns: 1fr 1.05fr;
+    grid-template-rows: var(--collection-panel-h);
+    gap: 1.25rem;
     align-items: stretch;
 }
 
@@ -2139,7 +2000,7 @@ span.coming-soon {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    height: 260px;
+    height: var(--collection-panel-h);
     overflow: hidden;
 }
 
@@ -2152,9 +2013,27 @@ span.coming-soon {
     min-height: 0;
 }
 
+/* Sem moldura interna: o card já é a moldura, e a que existia aqui roubava
+   altura do desenho justamente onde o painel encolheu. */
+.collection-chart-col .chart-wrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+}
+
 .collection-chart-col .chart-header {
     margin-bottom: 0;
     flex-shrink: 0;
+    gap: 12px;
+}
+
+.collection-chart-col .chart-title {
+    font-size: 14.5px;
+}
+
+.collection-chart-col .chart-subtitle {
+    font-size: 12px;
 }
 
 .collection-chart-col .chart-wrapper {
@@ -2183,8 +2062,7 @@ span.coming-soon {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    height: 260px;
-    /* sem overflow:hidden → permite que itens expandidos empurrem a scrollable-list */
+    height: var(--collection-panel-h);
 }
 
 .collection-users-col .users-panel-container {
@@ -2214,14 +2092,13 @@ span.coming-soon {
 }
 
 .collection-users-col .panel-title {
-    font-size: 12px;
+    font-size: 14.5px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ap-text-muted);
-    padding-bottom: 8px;
+    letter-spacing: normal;
+    color: var(--ap-text-secondary);
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--ap-border);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     flex-shrink: 0;
 }
 
@@ -2237,7 +2114,11 @@ span.coming-soon {
     border-radius: 0;
 }
 
-/* ── Compact user list items (within collection-users-col) ── */
+/* ── Linhas da lista de pessoas ──
+   Cada linha é: avatar, nome (com as tags) sobre o "visto por último", e à
+   direita os dois botões — remover e "Ver detalhes". Eles ficam sempre à
+   vista: escondê-los atrás do hover deixava a coluna sem nenhuma pista de que
+   dava para agir sobre a pessoa, e não havia como alcançá-los no toque. */
 .collection-users-col .list-item {
     display: flex;
     align-items: center;
@@ -2248,19 +2129,15 @@ span.coming-soon {
        sem isso o flexbox comprime as linhas em vez de rolar. */
     flex-shrink: 0;
     border-bottom: none;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: background 0.15s ease, opacity 0.15s ease;
-    cursor: pointer;
+    cursor: default;
     position: relative;
 }
 
 /* Usuário suspenso (acima do limite do plano do dono): esmaecido. */
 .collection-users-col .list-item.suspended {
     opacity: 0.5;
-}
-
-.collection-users-col .list-item.suspended .item-details {
-    display: none;
 }
 
 .collection-users-col .suspended-tag {
@@ -2280,115 +2157,120 @@ span.coming-soon {
 }
 
 .collection-users-col .item-info {
-    gap: 8px;
+    gap: 10px;
     flex: 1;
     min-width: 0;
 }
 
-.collection-users-col .item-icon img,
-.collection-users-col .item-icon svg {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
+/* Coluna de texto: nome em cima, "visto por último" embaixo. */
+.collection-users-col .item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
-.collection-users-col .item-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1.5px solid var(--ap-border);
-    flex-shrink: 0;
-    overflow: hidden;
-    background: var(--ap-bg-page);
+.collection-users-col .item-name-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--ap-text-muted);
+    gap: 6px;
+    min-width: 0;
+}
+
+.collection-users-col .profile-picture {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    flex-shrink: 0;
 }
 
 .collection-users-col .item-name {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 13.5px;
+    font-weight: 600;
     color: var(--ap-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px;
+    max-width: 140px;
 }
 
-.collection-users-col .user-id {
+.collection-users-col .creator-tag {
+    font-size: 9.5px;
+    padding: 2px 5px;
+    background: transparent;
+}
+
+.collection-users-col .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* ── "Visto por último" ──
+   Fica embaixo do nome, em fluxo normal: com os botões ocupando a direita em
+   definitivo, não há mais canto livre para ele flutuar. */
+.collection-users-col .user .item-details {
+    position: static;
+    transform: none;
     font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
     color: var(--ap-text-muted);
+    background: none;
+    padding: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.collection-users-col .item-actions {
-    /*  Flex container apenas para segurar espaço do details-btn no estado normal.
-        SEM position:relative — positioning absoluto dos filhos é relativo ao .user */
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
+/* Suspenso não tem "visto por último" a mostrar, mas o espaço da linha
+   continua reservado para as linhas não dançarem de altura. */
+.collection-users-col .list-item.suspended .item-details {
+    visibility: hidden;
 }
 
-/* ── Status label em repouso (visto por último / Nunca usou) ──
-   .item-details é filho direto de .user e fica no lado direito via absolute.
-   O .user já tem position:relative (definido em .list-item). */
-.collection-users-col .user .item-details {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--ap-text-muted);
-    background: none;
+/* ── Botões da linha ── */
+.collection-users-col .user .management-actions {
+    display: flex;
+    align-items: center;
+}
+
+.collection-users-col .user .remove-user-access-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
     padding: 0;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.15s ease, visibility 0.15s ease;
-    z-index: 1;
+    border-radius: 8px;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    color: var(--ap-text-muted);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-/* Some no hover e quando expandido */
-.collection-users-col .user:hover .item-details,
-.collection-users-col .user.expanded .item-details {
-    opacity: 0;
-    visibility: hidden;
+.collection-users-col .user .remove-user-access-btn:hover {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #e06a6a;
 }
 
-/* ── "Ver detalhes" — invisível por padrão, surge no hover ── */
 .collection-users-col .user .details-btn {
-    /* normal flow no item-actions */
-    position: static;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(4px);
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    background: var(--ap-bg-page);
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--ap-bg-card);
     color: var(--ap-text-secondary);
     border: 1px solid var(--ap-border);
     cursor: pointer;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
-    transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease,
-        background 0.15s ease, border-color 0.15s ease;
     white-space: nowrap;
-}
-
-.collection-users-col .user:hover .details-btn {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .collection-users-col .user .details-btn:hover {
@@ -2397,73 +2279,16 @@ span.coming-soon {
     color: var(--ap-text-primary);
 }
 
-/* ── Indicador online no avatar ── */
+/* ── Indicador online, preso ao avatar ──
+   O .item-info é o elemento posicionado, e o avatar é o primeiro filho dele:
+   as coordenadas abaixo colam a bolinha no canto do círculo de 32px. */
 .collection-users-col .user.online .item-info::after {
-    left: 20px;
-    width: 8px;
-    height: 8px;
-    border: 1.5px solid var(--ap-bg-card);
-}
-
-/* ══════════════════════════════════════════
-   EXPAND — estado expandido do usuário
-   ══════════════════════════════════════════
-   O .user tem position:relative (herdado de .list-item).
-   Ambos os botões ficam absolute em relação a ele:
-     • management-actions → canto SUPERIOR DIREITO
-     • details-btn        → canto INFERIOR DIREITO              */
-
-.collection-users-col .user {
-    transition: background 0.2s ease, padding-bottom 0.25s ease;
-}
-
-.collection-users-col .user.expanded {
-    padding-bottom: 42px;
-    background: var(--ap-bg-hover);
-}
-
-/* Esconde o botão inline de detalhes quando expandido
-   (ele reaparece posicionado no canto inferior direito) */
-.collection-users-col .user.expanded .item-actions .details-btn {
-    position: absolute;
-    /* canto INFERIOR DIREITO do .user */
-    bottom: 8px;
-    right: 8px;
-    top: auto;
-    left: auto;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(6px);
-    animation: compactDetailsBtnIn 0.22s ease 0.08s forwards;
-}
-
-@keyframes compactDetailsBtnIn {
-    to {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-}
-
-/* Remover usuário — canto SUPERIOR DIREITO do .user */
-.collection-users-col .user .management-actions {
-    display: flex;
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    align-items: center;
-    gap: 6px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-4px);
-    transition: opacity 0.22s ease 0.06s, visibility 0.22s ease 0.06s, transform 0.22s ease 0.06s;
-    z-index: 2;
-}
-
-.collection-users-col .user.expanded .management-actions {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+    top: 22px;
+    bottom: auto;
+    left: 22px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--ap-bg-card);
 }
 
 @media (max-width: 900px) {
@@ -5217,8 +5042,6 @@ textarea:focus-visible {
 .sidebar-pkg-main {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
     min-width: 0;
     flex: 1;
 }
@@ -5237,29 +5060,6 @@ textarea:focus-visible {
 }
 
 #packages-list .sidebar-pkg-item.selected .access-title { color: var(--ap-text-primary); }
-
-/* Pilha de logos com fade (opacidade inline no <img>) */
-#packages-list .sidebar-pkg-logos {
-    height: auto;
-    flex-shrink: 0;
-    justify-content: flex-end;
-}
-
-#packages-list .sidebar-pkg-logos .stack-icon {
-    width: 20px;
-    height: 20px;
-    border: 1px solid var(--ap-border);
-    box-shadow: none;
-    background: var(--ap-bg-card);
-}
-
-#packages-list .sidebar-pkg-logos .stack-icon:not(:first-child) { margin-left: -6px; }
-
-#packages-list .sidebar-pkg-logos .stack-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
 
 /* Posicionado em coordenadas de viewport pelo OptionsMenu (anchorTo) para
    escapar do recorte de #packages-list. Fora do fluxo ele também deixa de
@@ -5649,7 +5449,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     .empty-screen-activate input { width: 100%; }
 }
 
-/* ---- #package-details: reordenação (sessões em cima, gráfico + pessoas, métricas embaixo) ---- */
+/* ---- #package-details: reordenação (gráfico + pessoas em cima, sessões, métricas embaixo) ---- */
 #package-details .preset-collection .screen-section.primary > .preset-content {
     display: flex;
     flex-direction: column;
@@ -5664,9 +5464,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 #package-details .preset-collection .screen-section.primary .preset-content > .card-content { order: 1; }
 #package-details .preset-collection .screen-section.primary .preset-content > .card-header > .package-stats-container { order: 2; }
 
-/* Reordena dentro do card-content: sessões acima do gráfico */
-.collection-content-layout .sessions-panel-container { order: 1; }
-.collection-content-layout .collection-chart-users-row { order: 2; }
+/* Dentro do card-content: os dois painéis de resumo abrem a tela e a lista de
+   sessões vem abaixo deles — a mesma ordem em que o JSX os escreve. */
+.collection-content-layout .collection-chart-users-row { order: 1; }
+.collection-content-layout .sessions-panel-container { order: 2; }
 
 /* Título do pacote + contagem de sessões */
 #package-details .preset-collection .screen-section.primary .header-top {
@@ -5853,7 +5654,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 #package-details .sessions-panel .panel-title {
-    font-size: 15px;
+    font-size: 14.5px;
     color: var(--ap-text-secondary);
 }
 
@@ -5874,16 +5675,14 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 
-/* Gráfico e "Pessoas com acesso": cada um é um card próprio, mais alto */
-.collection-chart-users-row { grid-template-rows: 320px; }
-.collection-chart-col { height: 320px; }
-
+/* Gráfico e "Pessoas com acesso": cada um é um card próprio. A altura sai da
+   --collection-panel-h da linha, para os dois terminarem no mesmo ponto. */
 .collection-chart-col .usage-chart-container,
 .collection-users-col .users-panel {
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
-    border-radius: 18px;
-    padding: 22px;
+    border-radius: 16px;
+    padding: 16px 18px;
 }
 
 .collection-users-col .users-panel {

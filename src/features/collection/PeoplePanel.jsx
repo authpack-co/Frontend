@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import PersonAvatar from '../../components/PersonAvatar.jsx';
 import { timeAgo } from '../../lib/usage.js';
 import { RemoveUserModal } from './SessionModals.jsx';
 
@@ -70,12 +71,23 @@ function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
     return (
         <div className={className} data-user-id={user.id}>
             <div className="item-info">
-                <div className="profile-picture">
-                    {user.picture && <img src={user.picture} alt="" />}
+                <PersonAvatar className="profile-picture" name={user.name} picture={user.picture} />
+
+                <div className="item-text">
+                    <div className="item-name-row">
+                        <div className="item-name" title={user.name}>{user.name}</div>
+                        {user.isCreator && <span className="creator-tag">Criador</span>}
+                        {suspended && <span className="suspended-tag">sem acesso</span>}
+                    </div>
+
+                    {/* Enquanto as estatísticas não chegam, a linha fica sem rótulo:
+                        "Nunca usou" seria uma afirmação sobre um dado que ainda não veio. */}
+                    <div className="item-details">
+                        <span className="last-seen-at">
+                            {!statsReady ? '' : (seen || 'Nunca usou')}
+                        </span>
+                    </div>
                 </div>
-                <div className="item-name">{user.name}</div>
-                {user.isCreator && <span className="creator-tag">Criador</span>}
-                {suspended && <span className="suspended-tag">sem acesso</span>}
             </div>
 
             <div className="item-actions">
@@ -85,11 +97,11 @@ function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
                         <button
                             className="remove-user-access-btn actionBtn"
                             type="button"
-                            title="Remover"
+                            title="Remover acesso"
                             aria-label={`Remover ${user.name}`}
                             onClick={() => setRemoving(true)}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                                 <circle cx="9" cy="7" r="4" />
                                 <line x1="22" x2="16" y1="11" y2="11" />
@@ -109,14 +121,6 @@ function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
             {removing && (
                 <RemoveUserModal pkg={pkg} user={user} open onClose={() => setRemoving(false)} />
             )}
-
-            <div className="item-details">
-                {/* Enquanto as estatísticas não chegam, a linha fica sem rótulo:
-                    "Nunca usou" seria uma afirmação sobre um dado que ainda não veio. */}
-                <span className="last-seen-at">
-                    {!statsReady ? '' : (seen || 'Nunca usou')}
-                </span>
-            </div>
         </div>
     );
 }
