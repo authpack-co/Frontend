@@ -105,11 +105,3 @@ export function getSuspendedMembershipKeys(collection, peopleLimit) {
 
     return keys;
 }
-
-/** A sessão mais antiga representa o pacote na sidebar. */
-export function getOldestSession(sessions) {
-    return (sessions || []).reduce((oldest, session) => {
-        if (!oldest) return session;
-        return new Date(session.createdAt) < new Date(oldest.createdAt) ? session : oldest;
-    }, null);
-}

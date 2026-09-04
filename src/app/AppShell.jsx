@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
-import ServiceIcon from '../components/ServiceIcon.jsx';
 import {
     AbortAccessModal,
     CreatePackageModal,
@@ -15,7 +14,7 @@ import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import useUpgradeParam from '../features/plans/useUpgradeParam.js';
 import SettingsModal from '../features/settings/SettingsModal.jsx';
 import { useAuth } from '../lib/auth.jsx';
-import { getOldestSession, PackagesProvider, usePackages } from '../lib/packages.jsx';
+import { PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
 import './dashboard.css';
 
@@ -236,7 +235,6 @@ function Sidebar() {
 }
 
 function SidebarPackage({ pkg, routeBase, isAccess }) {
-    const oldest = getOldestSession(pkg.sessions);
     const inactive = pkg.isActive === false;
     // Solicitação esperando resposta — só na coleção, onde há o que aprovar.
     const pending = !isAccess && Number(pkg.pendingRequests || 0) > 0;
@@ -261,13 +259,6 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
         >
             <Link className="sidebar-pkg-main" to={`/${routeBase}/${pkg.id}`}>
                 <div className="access-title">{pkg.name}</div>
-                <div className="icon-stack sidebar-pkg-logos">
-                    {oldest && (
-                        <div className="stack-icon">
-                            <ServiceIcon icon={oldest.icon} url={oldest.url} name={oldest.name} />
-                        </div>
-                    )}
-                </div>
             </Link>
 
             {/* A lista de pacotes rola: o menu é fixo no viewport para não

@@ -11,6 +11,38 @@ import {
 import { useEffect, useRef } from 'react';
 import { formatHours } from '../../lib/usage.js';
 
+/**
+ * Rótulo do eixo X na visão por período.
+ *
+ * Numa semana o dia da semana ("Seg", "Ter") diz mais do que a data: é assim
+ * que se enxerga que o uso cai no fim de semana. Acima de uma semana o nome
+ * repetiria a cada sete colunas e deixaria de identificar a coluna, então a
+ * partir daí volta a ser "DD/MM".
+ */
+const WEEKDAY_LABEL_LIMIT = 7;
+
+function periodLabels(keys) {
+    const short = keys.length <= WEEKDAY_LABEL_LIMIT;
+
+    return keys.map((key) => {
+        const [day, month, year] = key.split('/');
+        if (!month) return key;
+
+        if (short && year) {
+            const date = new Date(Number(year), Number(month) - 1, Number(day));
+            if (!Number.isNaN(date.getTime())) {
+                // pt-BR devolve "seg." — sem o ponto e com maiúscula vira "Seg".
+                const weekday = date.toLocaleDateString('pt-BR', { weekday: 'short' })
+                    .replace('.', '');
+                return weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            }
+        }
+
+        // O ano não cabe e não acrescenta nada num gráfico de 30 dias.
+        return `${day}/${month}`;
+    });
+}
+
 Chart.register(
     CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip
 );
@@ -36,12 +68,7 @@ export default function UsageChart({ data, isDaily }) {
 
         const labels = Object.keys(data);
 
-        // Na visão por período o rótulo é "DD/MM" — o ano não cabe e não
-        // acrescenta nada num gráfico de 30 dias.
-        const displayLabels = isDaily ? labels : labels.map((label) => {
-            const parts = label.split('/');
-            return parts.length === 3 ? `${parts[0]}/${parts[1]}` : label;
-        });
+        const displayLabels = isDaily ? labels : periodLabels(labels);
 
         // "Sem registro" chega como -1 em dados antigos; no gráfico isso é 0,
         // para o ponto ficar na linha de base e não abaixo dela.
