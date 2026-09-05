@@ -80,6 +80,7 @@ export default function UpdatePackageModal({ pkg, onClose }) {
             id="addSessionModal"
             data-mode="update"
             data-phase={capture.started ? 'progress' : 'select'}
+            data-result={capture.result || undefined}
             onClick={(event) => {
                 event.stopPropagation();
                 // Durante a captura o clique fora não fecha: as abas estão

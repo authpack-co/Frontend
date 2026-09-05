@@ -235,6 +235,15 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         rows: list,
         started: rows !== null,
         batchDone,
+        // O CSS do modal pendura o resultado num atributo: é `[data-result]`
+        // que revela o "tentar de novo" das linhas em erro, e o
+        // `[data-result="success"]` que pinta a barra de verde.
+        // 'success' exige o lote inteiro resolvido: no meio de um retry o
+        // failed cai para zero com a linha ainda pendente, e a barra ficaria
+        // verde antes da hora.
+        result: batchDone
+            ? (failed === 0 && resolved === total ? 'success' : 'partial')
+            : null,
         // A barra PRINCIPAL avança só quando uma sessão é resolvida; o
         // progresso de carregamento vive nas barras de cada linha.
         summary: { total, resolved, ok, failed },

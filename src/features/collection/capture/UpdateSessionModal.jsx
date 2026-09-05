@@ -52,6 +52,7 @@ export default function UpdateSessionModal({ pkg, session, onClose }) {
             id="addSessionModal"
             data-mode="update"
             data-phase="progress"
+            data-result={capture.result || undefined}
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
         >

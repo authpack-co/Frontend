@@ -119,6 +119,7 @@ export default function AddSessionModal() {
             id="addSessionModal"
             data-mode="create"
             data-phase={capture.started ? 'progress' : 'select'}
+            data-result={capture.result || undefined}
             onClick={(event) => {
                 event.stopPropagation();
                 // Durante a captura o clique fora não fecha: as abas estão
