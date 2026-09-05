@@ -11,6 +11,29 @@ import { api } from './api.js';
 
 const PackagesContext = createContext(null);
 
+/**
+ * Sessões em ordem alfabética.
+ *
+ * O backend agrega as sessões sem ORDER BY, então a ordem que chega é a que o
+ * banco achou mais barata: quase alfabética, com as recém-criadas caindo no
+ * topo. Ordenar aqui deixa a lista sempre no mesmo lugar — inclusive uma
+ * sessão nova, que entra onde o nome dela manda.
+ *
+ * `numeric` para "Conta 2" vir antes de "Conta 10", e `sensitivity: 'base'`
+ * para acento e caixa não separarem nomes parecidos.
+ */
+function byName(sessions) {
+    return [...(sessions || [])].sort((a, b) => (a.name || '').localeCompare(
+        b.name || '',
+        'pt-BR',
+        { numeric: true, sensitivity: 'base' }
+    ));
+}
+
+function withSortedSessions(packages) {
+    return (packages || []).map((pkg) => ({ ...pkg, sessions: byName(pkg.sessions) }));
+}
+
 export function PackagesProvider({ children }) {
     const [state, setState] = useState({
         status: 'loading',
@@ -29,8 +52,8 @@ export function PackagesProvider({ children }) {
 
             setState({
                 status: 'ready',
-                collection: collection || [],
-                access: access || [],
+                collection: withSortedSessions(collection),
+                access: withSortedSessions(access),
                 userInfo,
             });
         } catch (err) {

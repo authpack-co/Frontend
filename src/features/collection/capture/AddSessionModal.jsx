@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
 import ExtensionRequiredModal from '../../../components/ExtensionRequiredModal.jsx';
@@ -39,10 +39,29 @@ export default function AddSessionModal() {
         onFinished: reload,
     });
 
-    const { visible, overlayRef, requestClose } = useModalTransition(
-        true,
-        () => navigate(`/collection/${packageId}`),
-    );
+    // Quem já estava no pacote quando o modal abriu. A lista é alfabética, e
+    // uma sessão nova pode nascer no meio dela — comparar antes e depois é o
+    // que diz qual foi, para a tela rolar até ela.
+    const knownIds = useRef(null);
+    const sessionsRef = useRef([]);
+    sessionsRef.current = pkg?.sessions || [];
+
+    useEffect(() => {
+        if (pkg && !knownIds.current) {
+            knownIds.current = new Set((pkg.sessions || []).map((session) => session.id));
+        }
+    }, [pkg]);
+
+    const { visible, overlayRef, requestClose } = useModalTransition(true, () => {
+        const known = knownIds.current || new Set();
+        const added = sessionsRef.current
+            .filter((session) => !known.has(session.id))
+            .map((session) => session.id);
+
+        navigate(`/collection/${packageId}`, {
+            state: added.length ? { focusSessions: added } : null,
+        });
+    });
     const close = requestClose;
 
     const suggestions = useMemo(() => {

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import OptionsMenu from '../../components/OptionsMenu.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import useConnectSession from '../../components/useConnectSession.jsx';
@@ -19,6 +19,45 @@ function sessionDomain(session) {
     return faviconDomain(session.url) || session.url || '';
 }
 
+/**
+ * Rola até a sessão recém-criada.
+ *
+ * Numa lista alfabética a sessão nova não aparece onde a pessoa está olhando —
+ * ela entra onde o nome dela manda, às vezes bem abaixo do fim da tela. O
+ * modal de captura diz quais entraram (state.focusSessions da navegação) e a
+ * lista leva a última delas até a vista.
+ *
+ * `block: 'nearest'` faz a rolagem só acontecer quando é preciso: sessão que
+ * já está visível não tira a lista do lugar. E o state é limpo depois, para
+ * voltar a esta rota pelo histórico não rolar de novo.
+ */
+function useScrollToNewSessions(sessions) {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const focus = location.state?.focusSessions;
+    // Marca o lote já rolado (e não um "já rolei uma vez"): a lista continua
+    // montada por trás do modal, então dá para adicionar duas vezes seguidas.
+    const handled = useRef(null);
+    const batch = focus?.length ? focus.join(',') : null;
+
+    useEffect(() => {
+        if (!batch || handled.current === batch) return;
+        handled.current = batch;
+
+        const rows = focus
+            .map((id) => document.querySelector(`[data-session-id="${id}"]`))
+            .filter(Boolean);
+        if (rows.length === 0) return;
+
+        // Com várias sessões de uma vez, a mais abaixo é a que garante que o
+        // lote inteiro passou pela vista.
+        const last = rows.sort((a, b) => a.offsetTop - b.offsetTop).pop();
+        last.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        navigate(location.pathname, { replace: true, state: null });
+    }, [batch, focus, location.pathname, navigate, sessions]);
+}
+
 export default function SessionsTable({ pkg, sessions, search, stats, statsStatus }) {
     const query = (search || '').trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
@@ -27,6 +66,8 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     // qualquer re-render da lista enquanto as abas abrem.
     const [updating, setUpdating] = useState(null);
     const [usingNow, setUsingNow] = useState(null);
+
+    useScrollToNewSessions(sessions);
 
     const visible = sessions.filter((session) => {
         if (!query) return true;
