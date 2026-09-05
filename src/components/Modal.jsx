@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import useAutoFocusField from './useAutoFocusField.js';
 import useModalTransition from './useModalTransition.js';
 
 /**
@@ -38,6 +39,9 @@ export default function Modal({
     overlayProps = {},
 }) {
     const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose);
+    // Quem tem campo de texto abre com o cursor nele — vale para todos os
+    // modais desta casca de uma vez.
+    const boxRef = useAutoFocusField(visible);
 
     useEffect(() => {
         if (!mounted || !closable) return undefined;
@@ -67,7 +71,7 @@ export default function Modal({
             id={id}
             {...overlayProps}
         >
-            <div className={`modal ${className}`.trim()} role="dialog" aria-modal="true">
+            <div ref={boxRef} className={`modal ${className}`.trim()} role="dialog" aria-modal="true">
                 <div className={`modal-header ${headerClassName}`.trim()}>
                     {header || <h2 className="modal-title">{title}</h2>}
                     {closable && (
@@ -146,7 +150,6 @@ export function NameFormModal({
                     placeholder={placeholder}
                     maxLength={50}
                     value={value}
-                    autoFocus
                     onChange={(event) => onChange(event.target.value)}
                     onKeyDown={(event) => { if (event.key === 'Enter') onSubmit(); }}
                 />

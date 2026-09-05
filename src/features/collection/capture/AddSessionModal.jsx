@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router';
 import ExtensionRequiredModal from '../../../components/ExtensionRequiredModal.jsx';
+import useAutoFocusField from '../../../components/useAutoFocusField.js';
 import useModalTransition from '../../../components/useModalTransition.js';
 import { isExtensionInstalled } from '../../../lib/extension.js';
 import { usePackage, usePackages } from '../../../lib/packages.jsx';
@@ -63,6 +64,10 @@ export default function AddSessionModal() {
         });
     });
     const close = requestClose;
+    // Este modal não usa a casca <Modal>, então pede o foco por conta: o
+    // campo de busca é a primeira coisa que a pessoa vai usar aqui. O `pkg`
+    // entra na conta porque sem ele o corpo do modal ainda nem existe.
+    const boxRef = useAutoFocusField(visible && !!pkg);
 
     const suggestions = useMemo(() => {
         const query = search.trim().toLowerCase();
@@ -122,7 +127,7 @@ export default function AddSessionModal() {
             }}
             onKeyDown={(event) => event.stopPropagation()}
         >
-            <div className="modal as-modal" role="dialog" aria-modal="true">
+            <div ref={boxRef} className="modal as-modal" role="dialog" aria-modal="true">
                 <div className="modal-header">
                     <div className="up-head">
                         <span className="up-head-icon">

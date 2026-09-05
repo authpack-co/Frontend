@@ -133,7 +133,6 @@ export default function UserDrawer({ userId, onClose, onChanged }) {
                         placeholder="Motivo (opcional)"
                         maxLength={255}
                         value={reason}
-                        autoFocus
                         onChange={(event) => setReason(event.target.value)}
                     />
                 </div>
