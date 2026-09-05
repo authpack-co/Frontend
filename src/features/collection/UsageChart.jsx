@@ -43,15 +43,61 @@ function periodLabels(keys) {
     });
 }
 
+/**
+ * Rótulo do eixo X na visão de hoje: "08:00" vira "08h".
+ *
+ * O eixo ficou deitado, sem rotação, então cada rótulo tem que caber em pouca
+ * largura — o ":00" repetido seria a mesma informação ocupando o dobro dela.
+ */
+function hourLabels(keys) {
+    return keys.map((key) => `${key.split(':')[0]}h`);
+}
+
+/**
+ * Escreve o valor do ponto mais alto acima dele.
+ *
+ * É a única leitura numérica do gráfico: o eixo Y não é desenhado, porque numa
+ * faixa dessa altura os números laterais custam largura e não respondem nada
+ * que o tooltip não responda melhor. O pico, sim, é o que se procura de
+ * relance — e ele fica escrito.
+ */
+const peakLabelPlugin = {
+    id: 'usagePeakLabel',
+    afterDatasetsDraw(chart, _args, options) {
+        const { index, text, color, font } = options || {};
+        if (index == null || index < 0 || !text) return;
+
+        const point = chart.getDatasetMeta(0).data[index];
+        if (!point) return;
+
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = font;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+
+        // No primeiro e no último ponto o texto sairia do canvas; encostar na
+        // borda é melhor do que sair pela metade.
+        const half = ctx.measureText(text).width / 2 + 2;
+        const x = Math.min(Math.max(point.x, chartArea.left + half), chartArea.right - half);
+
+        ctx.fillText(text, x, point.y - 12);
+        ctx.restore();
+    },
+};
+
 Chart.register(
-    CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip
+    CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip,
+    peakLabelPlugin
 );
 
 /**
  * Gráfico de uso do pacote.
  *
  * Duas visões, decididas por `isDaily`: horas por dia num período, ou horas
- * por hora no dia de hoje.
+ * por hora no dia de hoje. Fora o que o eixo X escreve — dias da semana, horas
+ * ou datas —, o desenho é o mesmo nas duas.
  *
  * Uma diferença deliberada em relação ao painel antigo: lá o tooltip era um
  * <div> montado à mão fora do canvas, com HTML próprio e rolagem. Aqui é o
@@ -68,17 +114,21 @@ export default function UsageChart({ data, isDaily }) {
 
         const labels = Object.keys(data);
 
-        const displayLabels = isDaily ? labels : periodLabels(labels);
+        const displayLabels = isDaily ? hourLabels(labels) : periodLabels(labels);
 
         // "Sem registro" chega como -1 em dados antigos; no gráfico isso é 0,
         // para o ponto ficar na linha de base e não abaixo dela.
         const values = labels.map((label) => Math.max(0, data[label].hours || 0));
         const maxValue = values.length ? Math.max(...values) : 0;
+        const peakIndex = maxValue > 0 ? values.indexOf(maxValue) : -1;
 
         const styles = getComputedStyle(document.documentElement);
         const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
         const accent = token('--ap-accent', '#f97316');
         const accentRgb = token('--ap-accent-rgb', '249, 115, 22');
+        const cardBg = token('--ap-bg-card', '#131416');
+        const border = token('--ap-border', '#2e2f33');
+        const fontBody = token('--ap-font-body', 'system-ui, sans-serif');
 
         const chart = new Chart(canvas.getContext('2d'), {
             type: 'line',
@@ -87,22 +137,35 @@ export default function UsageChart({ data, isDaily }) {
                 datasets: [{
                     data: values,
                     borderColor: accent,
+                    // O degradê acompanha a altura real da área do desenho: com
+                    // uma altura fixa ele terminava fora do gráfico e a mancha
+                    // chegava chapada na linha de base, em vez de sumir nela.
                     backgroundColor(context) {
-                        const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 180);
-                        gradient.addColorStop(0, `rgba(${accentRgb}, 0.28)`);
+                        const { ctx, chartArea } = context.chart;
+                        if (!chartArea) return `rgba(${accentRgb}, 0.16)`;
+
+                        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                        gradient.addColorStop(0, `rgba(${accentRgb}, 0.26)`);
                         gradient.addColorStop(1, `rgba(${accentRgb}, 0)`);
                         return gradient;
                     },
                     borderWidth: 2,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: accent,
-                    pointBorderColor: token('--ap-bg-card', '#ffffff'),
+                    tension: 0.35,
+                    // Pontos vazados, e o do pico um pouco maior: a linha passa
+                    // por dentro deles em vez de virar uma fileira de bolinhas
+                    // cheias disputando com ela. Num mês inteiro eles encostam
+                    // uns nos outros, então encolhem.
+                    pointRadius: (context) => (
+                        context.dataIndex === peakIndex ? 5 : (values.length > 14 ? 2.5 : 3.5)
+                    ),
+                    pointBackgroundColor: cardBg,
+                    pointBorderColor: accent,
                     pointBorderWidth: 2,
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: token('--ap-accent-strong', '#fb923c'),
-                    pointHoverBorderWidth: 2,
+                    pointHoverBackgroundColor: cardBg,
+                    pointHoverBorderColor: token('--ap-accent-strong', '#fb923c'),
+                    pointHoverBorderWidth: 2.5,
                 }],
             },
             options: {
@@ -112,8 +175,17 @@ export default function UsageChart({ data, isDaily }) {
                 // aparecendo pronto, mas o `false` desligava junto a animação
                 // do tooltip, que pulava de um ponto ao outro sem transição.
                 animation: { duration: 0 },
+                // Espaço em cima para o número do pico, e nas laterais para o
+                // primeiro e o último ponto não encostarem na borda.
+                layout: { padding: { top: 22, left: 6, right: 6 } },
                 plugins: {
                     legend: { display: false },
+                    usagePeakLabel: {
+                        index: peakIndex,
+                        text: peakIndex >= 0 ? formatHours(maxValue) : '',
+                        color: accent,
+                        font: `600 12px ${fontBody}`,
+                    },
                     tooltip: {
                         // O tooltip anima por conta própria; sem isto ele herda
                         // os 400ms padrão, lentos demais para o ponteiro.
@@ -127,11 +199,11 @@ export default function UsageChart({ data, isDaily }) {
                             },
                             opacity: { type: 'number', duration: 180, easing: 'linear' },
                         },
-                        backgroundColor: token('--ap-bg-card', '#ffffff'),
-                        borderColor: token('--ap-border', '#e6e5e2'),
+                        backgroundColor: cardBg,
+                        borderColor: border,
                         borderWidth: 1,
-                        titleColor: token('--ap-text-primary', '#1a1a1c'),
-                        bodyColor: token('--ap-text-secondary', '#44444a'),
+                        titleColor: token('--ap-text-primary', '#e8e6e3'),
+                        bodyColor: token('--ap-text-secondary', '#d6d3cd'),
                         padding: 12,
                         displayColors: false,
                         callbacks: {
@@ -154,23 +226,31 @@ export default function UsageChart({ data, isDaily }) {
                 scales: {
                     x: {
                         grid: { display: false },
+                        border: { color: border },
                         ticks: {
-                            color: token('--ap-text-muted', '#6b7280'),
+                            color: token('--ap-text-muted', '#9d9488'),
                             font: { size: 11 },
-                            maxRotation: isDaily ? 45 : 0,
-                            minRotation: isDaily ? 45 : 0,
+                            padding: 8,
+                            // Rótulos sempre deitados: no mês (e num dia longo)
+                            // o Chart.js pula os que não couberem, o que lê
+                            // melhor do que trinta datas inclinadas.
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: true,
+                            autoSkipPadding: 12,
                         },
                     },
                     y: {
                         beginAtZero: true,
                         // Sem uso nenhum o eixo precisa de um teto, senão o
                         // Chart.js inventa uma escala de 0 a 1 "unidades".
-                        max: maxValue === 0 ? 1 : maxValue * 1.2,
-                        grid: { color: token('--ap-border', '#e6e5e2') },
-                        ticks: {
-                            color: token('--ap-text-muted', '#6b7280'),
-                            callback: (value) => formatHours(value),
-                        },
+                        max: maxValue === 0 ? 1 : maxValue * 1.15,
+                        // Nada de números laterais: sobram só as linhas de
+                        // apoio, e mesmo elas fracas o bastante para não
+                        // disputar com o traço do uso.
+                        border: { display: false },
+                        grid: { color: border, drawTicks: false },
+                        ticks: { display: false, maxTicksLimit: 4 },
                     },
                 },
                 interaction: { intersect: false, mode: 'index' },
