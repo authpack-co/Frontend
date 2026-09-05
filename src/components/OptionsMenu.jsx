@@ -68,7 +68,13 @@ export default function OptionsMenu({
 
     useLayoutEffect(() => {
         if (!anchorTo) return;
-        if (!open) { setFixedAt(null); return; }
+
+        // Fechando, as coordenadas ficam onde estão. Limpá-las devolvia o menu
+        // ao `top: 0; left: 0` do CSS — e, como o sumiço é uma transição de
+        // opacidade, ele aparecia no canto da tela por essa fração de segundo
+        // antes de apagar. Elas são recalculadas na próxima abertura, antes do
+        // paint, então guardar o valor velho não custa nada.
+        if (!open) return;
 
         const row = wrapperRef.current?.closest(anchorTo);
         const menu = menuRef.current;
