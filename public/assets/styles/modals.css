@@ -126,7 +126,7 @@
 }
 
 .form-input:focus {
-    border-color: var(--ap-accent);
+    border-color: var(--ap-border-focus);
 }
 
 .form-input.readonly {

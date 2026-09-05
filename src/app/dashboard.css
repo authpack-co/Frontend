@@ -3905,12 +3905,14 @@ button:focus-visible,
     border-radius: var(--ap-radius-md);
 }
 
+/* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
+   clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
+   laranja de acessibilidade continua nos controles que não são de digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
     outline: none;
-    border-color: var(--ap-accent);
-    box-shadow: 0 0 0 3px rgba(var(--ap-accent-rgb), 0.15);
+    border-color: var(--ap-border-focus);
 }
 
 /* ============================================
@@ -5213,7 +5215,7 @@ textarea:focus-visible {
 }
 
 .topbar-search input::placeholder { color: var(--ap-text-placeholder); }
-.topbar-search input:focus { border-color: var(--ap-accent); }
+.topbar-search input:focus { border-color: var(--ap-border-focus); }
 
 .topbar-actions {
     display: flex;
@@ -6256,7 +6258,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .access-search input::placeholder { color: var(--ap-text-placeholder); }
-.access-search input:focus { border-color: var(--ap-border-muted); }
+.access-search input:focus { border-color: var(--ap-border-focus); }
 
 /* Em "Meus acessos" a busca mora ao lado do título e não há mais o campo de
    chave, então a top bar não teria o que mostrar. */
@@ -6590,7 +6592,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .form-input:focus {
-    border-color: var(--ap-accent);
+    border-color: var(--ap-border-focus);
 }
 
 .form-input.readonly {

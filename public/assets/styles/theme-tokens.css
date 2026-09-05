@@ -37,7 +37,10 @@
     /* ── Borders ── */
     --ap-border: #e6e5e2;
     --ap-border-hover: #d5d3ce;
-    --ap-border-focus: #f97316;
+    /* Foco de campo é neutro: o laranja da marca fica para ação primária e
+       estado selecionado. Um tom acima da borda de repouso — o bastante para
+       dizer onde se está digitando. */
+    --ap-border-focus: #71717a;
     --ap-border-muted: #d5d3ce;
 
     /* ── Accent (Laranja — cor da marca) ──
@@ -151,7 +154,7 @@
     /* ── Borders ── */
     --ap-border: #2e2f33;
     --ap-border-hover: #3a3b3f;
-    --ap-border-focus: #f97316;
+    --ap-border-focus: #9d9488;
     --ap-border-muted: #6d655a;
 
     /* ── Accent (Laranja — cor da marca) ── */
