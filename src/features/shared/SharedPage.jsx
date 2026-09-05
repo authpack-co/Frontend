@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Navigate } from 'react-router';
-import { useNotify } from '../../components/Notifications.jsx';
-import { api, ApiError } from '../../lib/api.js';
 import { usePackages } from '../../lib/packages.jsx';
+import useActivateAccess from './useActivateAccess.js';
 
 /**
  * /shared sem pacote escolhido: abre o primeiro acesso, ou mostra a porta de
@@ -17,51 +15,8 @@ export default function SharedPage() {
     return <EmptyAccess />;
 }
 
-// A chave é um UUID v4 — validar aqui evita uma ida ao servidor para um
-// código obviamente colado errado.
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 function EmptyAccess() {
-    const notify = useNotify();
-    const { reload } = usePackages();
-
-    const [key, setKey] = useState('');
-    const [error, setError] = useState('');
-    const [sending, setSending] = useState(false);
-
-    async function handleActivate() {
-        const trimmed = key.trim();
-
-        if (!trimmed) return setError('A chave não pode estar vazia.');
-        if (!UUID_V4.test(trimmed)) return setError('Chave inválida.');
-        if (sending) return undefined;
-
-        setError('');
-        setSending(true);
-
-        try {
-            const data = await api.usePackageKey(trimmed) || {};
-            const packageName = data.package?.name || 'pacote';
-            const ownerName = data.owner?.name || 'o dono';
-
-            // O pacote não entra em "Meus acessos" agora — só quando o dono
-            // aprovar. Por isso a mensagem fala de espera, não de acesso pronto.
-            notify('success', data.alreadyPending
-                ? `Seu pedido para "${packageName}" continua com ${ownerName}.`
-                : `Pedido enviado. ${ownerName} precisa aprovar para você usar "${packageName}".`);
-
-            setKey('');
-            reload();
-        } catch (err) {
-            notify('error', err instanceof ApiError
-                ? err.message
-                : 'Não foi possível solicitar o acesso.');
-        } finally {
-            setSending(false);
-        }
-
-        return undefined;
-    }
+    const { key, changeKey, error, sending, activate } = useActivateAccess();
 
     return (
         <div className="main-onboarding" id="main-onboarding">
@@ -102,13 +57,13 @@ function EmptyAccess() {
                             type="text"
                             placeholder="Cole sua chave de acesso"
                             value={key}
-                            onChange={(event) => { setKey(event.target.value); setError(''); }}
-                            onKeyDown={(event) => { if (event.key === 'Enter') handleActivate(); }}
+                            onChange={(event) => changeKey(event.target.value)}
+                            onKeyDown={(event) => { if (event.key === 'Enter') activate(); }}
                         />
                         <button
                             className="btn btn-primary activate-access-btn confirm-btn"
                             type="button"
-                            onClick={handleActivate}
+                            onClick={activate}
                             disabled={sending}
                         >
                             {sending ? <div className="spinner"></div> : 'Ativar acesso'}

@@ -13,6 +13,7 @@ import PlansModal from '../features/plans/PlansModal.jsx';
 import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import useUpgradeParam from '../features/plans/useUpgradeParam.js';
 import SettingsModal from '../features/settings/SettingsModal.jsx';
+import ActivateAccessModal from '../features/shared/ActivateAccessModal.jsx';
 import { useAuth } from '../lib/auth.jsx';
 import { PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
@@ -68,6 +69,7 @@ function Sidebar() {
     // Abaixo de 1199px a sidebar sai da tela e volta pelo hambúrguer.
     const [menuOpen, setMenuOpen] = useState(false);
     const [creating, setCreating] = useState(false);
+    const [activating, setActivating] = useState(false);
     // Configurações e planos abrem por cima da tela, sem trocar de rota.
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [plansOpen, setPlansOpen] = useState(false);
@@ -149,7 +151,23 @@ function Sidebar() {
 
                 <div className="sidebar-packages-head">
                     <span className="sidebar-packages-heading">Pacotes</span>
-                    {!isAccess && (
+                    {/* Cada seção tem o seu jeito de ganhar um pacote: na
+                        coleção se cria, nos acessos se ativa uma chave. */}
+                    {isAccess ? (
+                        <button
+                            className="sidebar-add-pkg"
+                            type="button"
+                            title="Ativar pacote por chave"
+                            aria-label="Ativar pacote por chave"
+                            onClick={() => setActivating(true)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="7.5" cy="15.5" r="5.5" />
+                                <path d="m21 2-9.6 9.6" />
+                                <path d="m15.5 7.5 3 3L22 7l-3-3" />
+                            </svg>
+                        </button>
+                    ) : (
                         <button
                             className="sidebar-add-pkg"
                             type="button"
@@ -212,6 +230,7 @@ function Sidebar() {
         </aside>
 
             <CreatePackageModal open={creating} onClose={() => setCreating(false)} />
+            <ActivateAccessModal open={activating} onClose={() => setActivating(false)} />
 
             <SettingsModal
                 open={settingsOpen}

@@ -140,6 +140,9 @@ export function ConfirmModal({ open, onClose, title, confirmLabel, danger = true
  */
 export function NameFormModal({
     open, onClose, title, value, onChange, onSubmit, busy, error, note, placeholder,
+    // O "Ok" cabe em criar e renomear, onde o título já disse tudo. Onde a
+    // ação tem nome próprio ("Ativar"), o botão diz o que faz.
+    submitLabel = 'Ok', maxLength = 50,
 }) {
     return (
         <Modal open={open} onClose={onClose} title={title} closable={!busy}>
@@ -148,13 +151,13 @@ export function NameFormModal({
                     type="text"
                     className="form-input"
                     placeholder={placeholder}
-                    maxLength={50}
+                    maxLength={maxLength}
                     value={value}
                     onChange={(event) => onChange(event.target.value)}
                     onKeyDown={(event) => { if (event.key === 'Enter') onSubmit(); }}
                 />
                 <button className="btn btn-primary btn-small" type="button" onClick={onSubmit} disabled={busy}>
-                    {busy ? <div className="spinner"></div> : 'Ok'}
+                    {busy ? <div className="spinner"></div> : submitLabel}
                 </button>
             </div>
 
