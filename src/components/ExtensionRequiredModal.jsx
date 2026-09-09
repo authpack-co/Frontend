@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import useModalTransition from './useModalTransition.js';
-import { isExtensionInstalled, WEBSTORE_URL } from '../lib/extension.js';
-import { GoogleIcon } from './BrandIcons.jsx';
+import { WEBSTORE_URL } from '../lib/extension.js';
 
 /**
  * Portão de conectar: sem a extensão instalada neste navegador não há como
  * abrir uma sessão, porque quem escreve os cookies na aba é ela.
  *
- * "Já instalei" reconfere na hora — instalar não recarrega a página, então
- * sem esse botão a pessoa ficaria olhando para um card que já não vale.
+ * "Já instalei" recarrega a página. Instalar a extensão não recarrega nada, e
+ * é no boot que ela marca o documento — reconferir sem recarregar dava o
+ * veredito certo umas vezes e um "ainda não detectamos" injusto nas outras.
  */
-export default function ExtensionRequiredModal({ open, onClose, onReady }) {
-    const [checking, setChecking] = useState(false);
-    const [failed, setFailed] = useState(false);
+export default function ExtensionRequiredModal({ open, onClose }) {
+    const [reloading, setReloading] = useState(false);
 
     useEffect(() => {
-        if (!open) { setFailed(false); setChecking(false); }
+        if (!open) setReloading(false);
     }, [open]);
 
     const { mounted, visible, overlayRef, requestClose } = useModalTransition(open, onClose);
@@ -31,17 +30,11 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
 
     if (!mounted) return null;
 
-    function handleRecheck() {
-        setChecking(true);
-        setFailed(false);
-
-        // Um instante de espera para a extensão recém-instalada marcar a
-        // página; sem isso o "Já instalei" responde antes dela.
-        setTimeout(() => {
-            setChecking(false);
-            if (isExtensionInstalled()) onReady();
-            else setFailed(true);
-        }, 400);
+    function handleReload() {
+        // O spinner fica no lugar do rótulo até a página sair: recarregar leva
+        // um instante, e sem ele o clique não produz sinal nenhum.
+        setReloading(true);
+        window.location.reload();
     }
 
     // Pelo portal: aberto de dentro de uma lista clicável, o clique dele
@@ -75,7 +68,7 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
                     <div className="ext-card-heading">
                         <h3 className="ext-card-title">Extensão necessária</h3>
                         <p className="ext-card-subtitle">
-                            Conectar a uma sessão acontece dentro do navegador — quem faz esse
+                            Conectar a uma sessão acontece dentro do navegador, e quem faz esse
                             trabalho é a extensão do Niango.
                         </p>
                     </div>
@@ -92,13 +85,6 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
                     <li className="ext-step">
                         <span className="ext-step-num">2</span>
                         <div className="ext-step-text">
-                            <strong>Confirme sua conta</strong>
-                            <span>A ativação abre sozinha logo após a instalação.</span>
-                        </div>
-                    </li>
-                    <li className="ext-step">
-                        <span className="ext-step-num">3</span>
-                        <div className="ext-step-text">
                             <strong>Volte e conecte</strong>
                             <span>Suas sessões passam a abrir com um clique.</span>
                         </div>
@@ -108,25 +94,24 @@ export default function ExtensionRequiredModal({ open, onClose, onReady }) {
                 <div className="ext-card-foot">
                     <button
                         type="button"
-                        className={`ext-btn ext-btn--ghost${checking ? ' is-loading' : ''}`}
-                        onClick={handleRecheck}
-                        disabled={checking}
+                        className={`ext-btn ext-btn--ghost${reloading ? ' is-loading' : ''}`}
+                        onClick={handleReload}
+                        disabled={reloading}
                     >
                         <span className="ext-btn-label">Já instalei</span>
                         <span className="ext-btn-spinner"><span className="spinner"></span></span>
                     </button>
-                    <a className="ext-btn ext-btn--primary" href={WEBSTORE_URL}>
-                        <GoogleIcon size={16} />
+                    {/* A loja é o destino, mas o ícone fala da ação: um "G" ali
+                        sugeria entrar com o Google, que é outra coisa. */}
+                    <a className="ext-btn ext-btn--primary" href={WEBSTORE_URL} target="_blank" rel="noreferrer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 3v12" />
+                            <path d="m7 10 5 5 5-5" />
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        </svg>
                         Instalar extensão
                     </a>
                 </div>
-
-                {failed && (
-                    <p className="ext-card-note">
-                        Ainda não detectamos a extensão neste navegador. Se você acabou de
-                        instalar, recarregue a página.
-                    </p>
-                )}
             </div>
         </div>,
         document.body

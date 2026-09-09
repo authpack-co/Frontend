@@ -200,7 +200,6 @@ export default function UpdatePackageModal({ pkg, onClose }) {
             <ExtensionRequiredModal
                 open={gateOpen}
                 onClose={() => setGateOpen(false)}
-                onReady={() => { setGateOpen(false); handleConfirm(); }}
             />
         </div>,
         document.body

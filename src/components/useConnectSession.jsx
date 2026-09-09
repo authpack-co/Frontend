@@ -28,7 +28,7 @@ const CONNECT_TIMEOUT_MS = 15000;
  */
 export default function useConnectSession(pkg, { isAcquired }) {
     const notify = useNotify();
-    const [pending, setPending] = useState(null);
+    const [gateOpen, setGateOpen] = useState(false);
     const [connectingId, setConnectingId] = useState(null);
     const timeoutRef = useRef(null);
 
@@ -89,21 +89,19 @@ export default function useConnectSession(pkg, { isAcquired }) {
     const connect = useCallback((session) => {
         // Sem extensão não há conexão: quem escreve os cookies na aba é ela.
         if (!isExtensionInstalled()) {
-            setPending(session);
+            setGateOpen(true);
             return;
         }
         start(session);
     }, [start]);
 
+    // O portão não retoma o connect: instalar a extensão é coisa de outro
+    // boot da página, e "Já instalei" recarrega. Depois disso a pessoa clica
+    // em Conectar de novo, com a extensão no lugar.
     const gate = (
         <ExtensionRequiredModal
-            open={pending !== null}
-            onClose={() => setPending(null)}
-            onReady={() => {
-                const session = pending;
-                setPending(null);
-                if (session) start(session);
-            }}
+            open={gateOpen}
+            onClose={() => setGateOpen(false)}
         />
     );
 

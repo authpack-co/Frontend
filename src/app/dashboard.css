@@ -604,6 +604,67 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 
 /* Linha: corpo à esquerda, botão de minimizar sempre na ponta direita —
    nos dois estados. */
+/* ── Card de "instalar extensão" ──
+   Divide a vaga com o card de planos, e a toma enquanto a extensão falta:
+   sem ela conectar não funciona, e isso é mais urgente que assinar. Daí a
+   moldura no acento — o card de planos é um convite, este é um aviso. */
+.sidebar-ext-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--ap-accent-subtle);
+    border: 1px solid var(--ap-accent-muted);
+    border-radius: var(--ap-radius-lg);
+    padding: 13px 14px;
+    margin-bottom: 6px;
+    transition: background .16s ease, border-color .16s ease;
+}
+
+.sidebar-ext-card:hover {
+    background: var(--ap-accent-light);
+    border-color: var(--ap-accent);
+}
+
+.sidebar-ext-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--ap-radius-sm);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-accent-muted);
+    color: var(--ap-accent-strong);
+}
+
+.sidebar-ext-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-ext-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ap-text-primary);
+    margin-bottom: 3px;
+}
+
+.sidebar-ext-desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ap-text-muted);
+    margin-bottom: 8px;
+}
+
+.sidebar-ext-link {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-accent-strong);
+}
+
 .sidebar-upgrade-card {
     display: flex;
     align-items: flex-start;
@@ -902,12 +963,6 @@ span.coming-soon {
     color: var(--ap-text-secondary);
 }
 
-.ext-card-badge--warning {
-    background: var(--ap-warning-light);
-    border-color: var(--ap-warning-border);
-    color: var(--ap-warning-text);
-}
-
 .ext-card-heading {
     min-width: 0;
     padding-right: 20px;
@@ -1005,6 +1060,9 @@ span.coming-soon {
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 600;
+    /* Altura fixa: com o rótulo quebrando em duas linhas o texto vazava do
+       botão. */
+    white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -1047,19 +1105,6 @@ span.coming-soon {
     display: inline-flex;
 }
 
-.ext-card-note {
-    margin: 0;
-    padding: 0 24px 16px;
-    background: var(--ap-bg-card-alt);
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: var(--ap-warning-text);
-}
-
-.ext-card-note[hidden] {
-    display: none;
-}
-
 @media (max-width: 520px) {
     .ext-card-head {
         padding: 20px 20px 16px;
@@ -1074,10 +1119,6 @@ span.coming-soon {
     .ext-card-foot {
         flex-direction: column-reverse;
         padding: 16px 20px;
-    }
-
-    .ext-card-note {
-        padding: 0 20px 16px;
     }
 }
 

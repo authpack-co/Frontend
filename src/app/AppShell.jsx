@@ -15,6 +15,7 @@ import useUpgradeParam from '../features/plans/useUpgradeParam.js';
 import SettingsModal from '../features/settings/SettingsModal.jsx';
 import ActivateAccessModal from '../features/shared/ActivateAccessModal.jsx';
 import { useAuth } from '../lib/auth.jsx';
+import { useExtensionStatus, WEBSTORE_URL } from '../lib/extension.js';
 import { PackagesProvider, usePackages } from '../lib/packages.jsx';
 import { useTheme } from '../lib/theme.js';
 import './dashboard.css';
@@ -354,10 +355,50 @@ function SidebarPackage({ pkg, routeBase, isAccess }) {
     );
 }
 
-function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenPeople }) {
-    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
-        || (userInfo?.plan && userInfo.plan !== 'free');
+/**
+ * A vaga acima do contador de pessoas.
+ *
+ * Sem a extensão nada de conectar funciona, e isso importa mais do que
+ * qualquer convite a assinar — então, enquanto ela falta, é o card dela que
+ * ocupa o lugar do "fazer upgrade". Instalada, o rodapé volta ao normal.
+ *
+ * Em 'checking' a vaga fica vazia: mostrar "instale a extensão" para quem já
+ * a tem, mesmo por um piscar, é pior do que esperar o veredito.
+ */
+function FooterCard({ loading, hasPlusBenefits, onOpenPlans }) {
+    const extension = useExtensionStatus();
 
+    if (extension === 'checking') return null;
+    if (extension === 'missing') return <SidebarExtensionCard />;
+    if (loading || hasPlusBenefits) return null;
+
+    return <SidebarUpgradeCard onOpenPlans={onOpenPlans} />;
+}
+
+function SidebarExtensionCard() {
+    return (
+        <a
+            className="sidebar-ext-card"
+            href={WEBSTORE_URL}
+            target="_blank"
+            rel="noreferrer"
+            title="Instalar a extensão do Niango na Chrome Web Store"
+        >
+            <span className="sidebar-ext-icon" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15.5 3.5a2.5 2.5 0 0 0-5 0V6H7a1 1 0 0 0-1 1v3.5H3.5a2.5 2.5 0 0 0 0 5H6V19a1 1 0 0 0 1 1h3.5v-2.5a2.5 2.5 0 0 1 5 0V20H19a1 1 0 0 0 1-1v-3.5h-2.5a2.5 2.5 0 0 1 0-5H20V7a1 1 0 0 0-1-1h-3.5Z" />
+                </svg>
+            </span>
+            <span className="sidebar-ext-body">
+                <span className="sidebar-ext-title">Extensão não detectada</span>
+                <span className="sidebar-ext-desc">Sem ela não dá para conectar às sessões.</span>
+                <span className="sidebar-ext-link">Instalar extensão<span> &rarr;</span></span>
+            </span>
+        </a>
+    );
+}
+
+function SidebarUpgradeCard({ onOpenPlans }) {
     // Quem minimizou o banner não quer vê-lo aberto de novo a cada visita.
     const [collapsed, setCollapsed] = useState(readUpgradeCollapsed);
     useEffect(() => {
@@ -370,33 +411,44 @@ function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenP
     }, [collapsed]);
 
     return (
+        <div className={`sidebar-upgrade-card${collapsed ? ' is-collapsed' : ''}`}>
+            {/* O corpo empilha quando aberto e vira uma linha só quando
+                minimizado; o botão é irmão dele para ficar sempre na ponta
+                direita, nos dois estados. */}
+            <div className="sidebar-upgrade-body">
+                <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
+                <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
+                <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
+                    Fazer upgrade<span className="sidebar-upgrade-arrow"> &rarr;</span>
+                </button>
+            </div>
+            <button
+                className="sidebar-upgrade-toggle"
+                type="button"
+                aria-expanded={!collapsed}
+                title={collapsed ? 'Expandir' : 'Minimizar'}
+                aria-label={collapsed ? 'Expandir Niango Planos' : 'Minimizar Niango Planos'}
+                onClick={() => setCollapsed((value) => !value)}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m6 9 6 6 6-6" />
+                </svg>
+            </button>
+        </div>
+    );
+}
+
+function SidebarFooter({ userInfo, loading, onOpenSettings, onOpenPlans, onOpenPeople }) {
+    const hasPlusBenefits = PLUS_BENEFIT_ROLES.includes(userInfo?.role)
+        || (userInfo?.plan && userInfo.plan !== 'free');
+
+    return (
         <div className="sidebar-footer">
-            {!loading && !hasPlusBenefits && (
-                <div className={`sidebar-upgrade-card${collapsed ? ' is-collapsed' : ''}`}>
-                    {/* O corpo empilha quando aberto e vira uma linha só quando
-                        minimizado; o botão é irmão dele para ficar sempre na
-                        ponta direita, nos dois estados. */}
-                    <div className="sidebar-upgrade-body">
-                        <div className="sidebar-upgrade-title">Niango <span>Planos</span></div>
-                        <p className="sidebar-upgrade-desc">Compartilhe com muito mais pessoas.</p>
-                        <button className="plus-subscribe-btn sidebar-upgrade-link" type="button" onClick={onOpenPlans}>
-                            Fazer upgrade<span className="sidebar-upgrade-arrow"> &rarr;</span>
-                        </button>
-                    </div>
-                    <button
-                        className="sidebar-upgrade-toggle"
-                        type="button"
-                        aria-expanded={!collapsed}
-                        title={collapsed ? 'Expandir' : 'Minimizar'}
-                        aria-label={collapsed ? 'Expandir Niango Planos' : 'Minimizar Niango Planos'}
-                        onClick={() => setCollapsed((value) => !value)}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="m6 9 6 6 6-6" />
-                        </svg>
-                    </button>
-                </div>
-            )}
+            <FooterCard
+                loading={loading}
+                hasPlusBenefits={hasPlusBenefits}
+                onOpenPlans={onOpenPlans}
+            />
 
             {loading
                 ? <div className="sk-block sk-plan-people"></div>
