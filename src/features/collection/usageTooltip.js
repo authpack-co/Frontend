@@ -114,11 +114,36 @@ export function createUsageTooltip({ labels, data, getSessions }) {
     document.body.appendChild(node);
 
     let inside = false;
+    let shown = false;
     let hideTimer = null;
 
     const hide = () => {
         node.style.opacity = '0';
         node.style.pointerEvents = 'none';
+        shown = false;
+    };
+
+    /**
+     * Move o tooltip.
+     *
+     * Andando de um ponto ao outro ele desliza — é o que o tooltip do canvas
+     * fazia, e sem isso a caixa pisca de lugar em lugar. Mas aparecer é outra
+     * coisa: sem desligar a transição no primeiro posicionamento, ele entraria
+     * deslizando desde onde estava da última vez, atravessando o gráfico.
+     */
+    const placeAt = (x, y) => {
+        if (!shown) node.style.transition = 'none';
+
+        node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+
+        if (!shown) {
+            // Lê o layout para o navegador aplicar a posição antes de a
+            // transição voltar; sem isto as duas mudanças entram no mesmo
+            // quadro e a transição pega a posição nova mesmo assim.
+            void node.offsetWidth;
+            node.style.transition = '';
+            shown = true;
+        }
     };
 
     node.addEventListener('mouseenter', () => {
@@ -151,7 +176,6 @@ export function createUsageTooltip({ labels, data, getSessions }) {
             rows: rowsFor(getSessions(), point.sessions || {}),
         });
 
-        node.style.opacity = '1';
         node.style.pointerEvents = 'auto';
 
         // Medidas só depois do conteúdo: a altura muda com o número de linhas.
@@ -168,8 +192,8 @@ export function createUsageTooltip({ labels, data, getSessions }) {
         let top = box.top + tooltip.caretY - height - CARET_GAP;
         if (top < MARGIN) top = box.top + tooltip.caretY + CARET_GAP;
 
-        node.style.left = `${Math.round(left)}px`;
-        node.style.top = `${Math.round(top)}px`;
+        placeAt(left, top);
+        node.style.opacity = '1';
     }
 
     return {

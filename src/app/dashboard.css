@@ -7626,6 +7626,10 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 
 .uc-tip {
     position: fixed;
+    /* Posicionado por transform, e não por left/top: é o transform que desliza
+       de um ponto ao outro sem o navegador refazer o layout a cada quadro. */
+    top: 0;
+    left: 0;
     z-index: 1200;
     width: 224px;
     padding: 10px 12px;
@@ -7635,7 +7639,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     box-shadow: var(--ap-shadow-lg, 0 14px 34px rgba(0, 0, 0, 0.35));
     font-family: var(--ap-font-body);
     opacity: 0;
-    transition: opacity 0.16s ease;
+    transition: opacity 0.16s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .uc-tip-head {
