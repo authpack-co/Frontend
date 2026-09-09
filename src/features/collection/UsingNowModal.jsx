@@ -1,31 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Modal from '../../components/Modal.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import { makeUserLookup } from '../../lib/packageStats.js';
-import { buildUsingNowData, formatDuration } from '../../lib/usage.js';
+import { formatDuration, getUsingNow } from '../../lib/usage.js';
+
+/** "14:32" — a hora em que a pessoa conectou. */
+function clock(date) {
+    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
 
 /**
  * Quem está usando a sessão neste momento.
  *
- * O rodapé da linha diz QUANTOS estão online; este card diz QUEM são, há
- * quanto tempo cada um está conectado e quanto já usou hoje nesta sessão.
- * Tudo sai do histórico que o pacote já carregou.
+ * O rodapé da linha diz QUANTOS estão online; este card diz QUEM são, desde
+ * que horas e há quanto tempo. Nada além disso: quem usou hoje e já saiu é
+ * pergunta do histórico, e estava aqui só engordando o card.
  *
- * O tempo corre sozinho: "ativo há" conta desde a conexão, então o card
- * recalcula a cada segundo em vez de congelar no instante em que abriu.
+ * Os tempos são lidos uma vez, quando o card abre. A versão anterior recontava
+ * tudo a cada segundo, e o resultado era um painel inteiro piscando para
+ * mostrar que "12min" virou "12min".
  */
 export default function UsingNowModal({ pkg, session, accessHistory, historyUsers, onClose }) {
-    const [now, setNow] = useState(() => new Date());
+    const [openedAt] = useState(() => new Date());
 
-    useEffect(() => {
-        const timer = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    const data = buildUsingNowData(session.id, accessHistory, now);
+    const rows = getUsingNow(session.id, accessHistory, openedAt);
     const domain = faviconDomain(session.url) || session.url || '';
 
-    const people = data.online.length;
+    const people = rows.length;
     const peopleLabel = people === 0
         ? 'ninguém usando agora'
         : (people === 1 ? '1 pessoa usando agora' : `${people} pessoas usando agora`);
@@ -43,7 +44,6 @@ export default function UsingNowModal({ pkg, session, accessHistory, historyUser
             className="un-modal"
             headerClassName="un-header"
             bodyClassName="un-body"
-            footerClassName="un-footer"
             // O cabeçalho é o serviço inteiro: ícone, nome e o resumo de quem
             // está usando. O nome é o próprio título do modal.
             header={(
@@ -55,85 +55,54 @@ export default function UsingNowModal({ pkg, session, accessHistory, historyUser
                     </div>
                 </div>
             )}
-            footer={(
-                <span className="un-total-label">
-                    Hoje nesta sessão · <strong className="un-total">{formatDuration(data.todayTotalSeconds)}</strong>
-                </span>
-            )}
         >
-            <>
-                {people > 0 ? (
-                    <div className="data-table un-table">
-                        <div className="table-header">
-                            <div className="table-col">Usuário</div>
-                            <div className="table-col">Ativo há</div>
-                            <div className="table-col">Hoje</div>
-                        </div>
-                        <div className="table-body un-list custom-scrollbar">
-                            {data.online.map((row) => {
-                                const user = userOf(row.userId);
-                                return (
-                                    <div className="table-row un-row" key={row.userId}>
-                                        <div className="table-col un-user">
-                                            <Avatar user={user} />
-                                            <div className="un-user-text">
-                                                <span className="un-user-name">{user.name || 'Usuário'}</span>
-                                                {user.email && <span className="un-user-email">{user.email}</span>}
-                                            </div>
-                                            {/* Mesma pessoa com dois acessos vivos: uma linha
-                                                só, com a contagem ao lado do nome. */}
-                                            {row.devices > 1 && (
-                                                <span className="un-connections" title={`${row.devices} acessos simultâneos`}>
-                                                    ×{row.devices}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="table-col un-active">{formatDuration(row.activeSeconds)}</div>
-                                        <div className="table-col un-today">{formatDuration(row.todaySeconds)}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="un-empty">
-                        <h3 className="un-empty-title">Ninguém está usando agora</h3>
-                        <p className="un-empty-text">Quem estava conectado saiu nos últimos instantes.</p>
-                    </div>
-                )}
+            {people > 0 ? (
+                <ul className="un-list custom-scrollbar">
+                    {rows.map((row) => {
+                        const user = userOf(row.userId);
 
-                {data.past.length > 0 && (
-                    <div className="un-past">
-                        <div className="un-past-title">Usaram hoje e já saíram</div>
-                        <div className="un-past-list">
-                            {data.past.map((row) => {
-                                const user = userOf(row.userId);
-                                const left = row.leftAt
-                                    ? `Saiu às ${row.leftAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
-                                    : undefined;
+                        return (
+                            <li className="un-row" key={row.userId}>
+                                <Avatar user={user} />
 
-                                return (
-                                    <div className="un-chip" key={row.userId} title={left}>
-                                        <Avatar user={user} className="un-avatar un-avatar-sm" />
-                                        <span className="un-chip-name">{user.name || 'Usuário'}</span>
-                                        <span className="un-chip-time">{formatDuration(row.todaySeconds)}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-            </>
+                                <div className="un-row-text">
+                                    <span className="un-row-name">{user.name || 'Usuário'}</span>
+                                    <span className="un-row-since">
+                                        Conectou às {clock(row.since)}
+                                        {/* Mesma pessoa com dois acessos vivos: uma
+                                            linha só, com a contagem aqui. */}
+                                        {row.devices > 1 && ` · ${row.devices} acessos`}
+                                    </span>
+                                </div>
+
+                                <span className="un-row-time" title="Tempo de atividade">
+                                    <span className="un-live-dot" aria-hidden="true"></span>
+                                    {formatDuration(row.activeSeconds)}
+                                </span>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : (
+                <div className="un-empty">
+                    <h3 className="un-empty-title">Ninguém está usando agora</h3>
+                    <p className="un-empty-text">Quem estava conectado saiu nos últimos instantes.</p>
+                </div>
+            )}
         </Modal>
     );
 }
 
-function Avatar({ user, className = 'un-avatar' }) {
+function Avatar({ user }) {
     return (
-        <span className={className}>
+        <span className="un-avatar">
             {user.picture
                 ? <img src={user.picture} alt={user.name || ''} />
-                : (user.name || '?').trim().charAt(0).toUpperCase()}
+                : (
+                    <span className="un-avatar-fallback">
+                        {(user.name || '?').trim().charAt(0).toUpperCase()}
+                    </span>
+                )}
         </span>
     );
 }

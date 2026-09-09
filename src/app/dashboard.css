@@ -5732,11 +5732,15 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 
 /* ── Modal ──
    `.modal.un-modal` porque modals.css carrega depois deste arquivo: sem os dois
-   nomes, o max-width de 400px do .modal base ganharia por ordem. */
+   nomes, o max-width de 400px do .modal base ganharia por ordem.
+
+   O card responde uma pergunta só: quem está nesta sessão agora. Cada pessoa
+   é uma linha com dois números pequenos — desde que horas e há quanto tempo —,
+   e dois números não pedem tabela com cabeçalho nem rodapé de totais. */
 .modal.un-modal {
-    max-width: 540px;
+    max-width: 440px;
     width: 100%;
-    max-height: 84vh;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
     background: var(--ap-bg-card);
@@ -5749,6 +5753,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     gap: 12px;
     padding: 18px 52px 18px 20px;
     flex-shrink: 0;
+    border-bottom: 1px solid var(--ap-border);
 }
 
 .un-service {
@@ -5791,48 +5796,37 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 .un-modal .modal-body {
     flex: 1;
     min-height: 0;
-    gap: 18px;
-    padding: 18px 20px;
+    gap: 0;
+    /* Sem respiro lateral: os separadores das linhas atravessam o card de
+       ponta a ponta, na mesma medida da borda do cabeçalho. */
+    padding: 0;
     max-height: none;
     overflow-y: auto;
 }
 
-/* ── Tabela ── */
-.un-table { background: var(--ap-bg-card-alt); }
+/* ── Lista de quem está conectado ── */
+.un-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
 
-.un-table .table-header,
-.un-table .un-row {
-    grid-template-columns: minmax(0, 1fr) 92px 84px;
+.un-row {
+    display: flex;
     align-items: center;
-    padding: 11px 14px;
+    gap: 12px;
+    padding: 13px 20px;
 }
 
-.un-table .table-header {
-    background: transparent;
-}
-
-.un-table .table-header .table-col {
-    font-size: 10.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-
-.un-table .table-header .table-col:nth-child(n + 2),
-.un-table .un-row .table-col:nth-child(n + 2) {
-    justify-content: flex-end;
-}
-
-.un-list { max-height: 300px; }
-
-.un-user {
-    gap: 10px;
-    min-width: 0;
-}
+/* Separador só entre linhas: a primeira encosta no cabeçalho, que já tem a
+   sua própria borda. */
+.un-row + .un-row { border-top: 1px solid var(--ap-border-muted); }
 
 .un-avatar {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     flex-shrink: 0;
     border-radius: 50%;
     overflow: hidden;
@@ -5849,24 +5843,22 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     object-fit: cover;
 }
 
-.un-avatar-sm { width: 22px; height: 22px; }
-
 .un-avatar-fallback {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--ap-text-secondary);
     text-transform: uppercase;
 }
 
-.un-avatar-sm .un-avatar-fallback { font-size: 10px; }
-
-.un-user-text {
+.un-row-text {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    flex: 1;
     min-width: 0;
 }
 
-.un-user-name {
+.un-row-name {
     font-size: 13.5px;
     font-weight: 500;
     color: var(--ap-text-primary);
@@ -5875,41 +5867,37 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     text-overflow: ellipsis;
 }
 
-.un-user-email {
-    font-size: 11.5px;
+.un-row-since {
+    font-size: 12px;
     color: var(--ap-text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* Mesma pessoa com dois acessos vivos: uma linha só, com a contagem ao lado. */
-.un-connections {
-    flex-shrink: 0;
-    padding: 2px 7px;
-    border-radius: var(--ap-radius-full);
-    background: var(--ap-bg-muted);
-    color: var(--ap-text-secondary);
-    font-family: var(--ap-font-data);
-    font-size: 10.5px;
-    font-weight: 600;
-}
-
-.un-active,
-.un-today {
-    font-family: var(--ap-font-data);
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-}
-
 /* Verde pelos tokens: no tema claro o #4ade80 dos cards não teria contraste
    suficiente para texto pequeno. */
-.un-active { color: var(--ap-success-text); }
-.un-today { color: var(--ap-text-secondary); }
+.un-row-time {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--ap-font-data);
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ap-success-text);
+}
 
-/* ── Estado vazio (todo mundo saiu enquanto o card estava aberto) ── */
+.un-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ── Estado vazio (todo mundo saiu antes do card abrir) ── */
 .un-empty {
-    display: none;
     padding: 34px 20px;
     text-align: center;
 }
@@ -5927,85 +5915,8 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     color: var(--ap-text-muted);
 }
 
-.un-modal[data-state="empty"] .un-table { display: none; }
-.un-modal[data-state="empty"] .un-empty { display: block; }
-
-/* ── Quem usou hoje e já saiu ── */
-.un-past {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.un-past.is-hidden { display: none; }
-
-.un-past-title {
-    font-size: 10.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ap-text-muted);
-}
-
-.un-past-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.un-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px 4px 4px;
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-full);
-    background: var(--ap-bg-card-alt);
-}
-
-.un-chip-name {
-    font-size: 12.5px;
-    color: var(--ap-text-secondary);
-}
-
-.un-chip-time {
-    font-family: var(--ap-font-data);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ap-text-muted);
-}
-
-/* ── Rodapé ── */
-.un-modal .modal-footer {
-    flex-shrink: 0;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    border-top: 1px solid var(--ap-border);
-    background: var(--ap-bg-card-alt);
-}
-
-.un-total-label {
-    font-size: 12.5px;
-    color: var(--ap-text-muted);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.un-total-label strong {
-    color: var(--ap-text-secondary);
-    font-family: var(--ap-font-data);
-    font-weight: 600;
-}
-
 @media (max-width: 560px) {
     .modal.un-modal { max-width: 94vw; }
-    .un-table .table-header,
-    .un-table .un-row { grid-template-columns: minmax(0, 1fr) 76px 72px; }
-    .un-user-email { display: none; }
 }
 
 /* ============================================

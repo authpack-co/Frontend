@@ -619,84 +619,61 @@ export function toAccessRows(accessHistory, resolve) {
 }
 
 /**
- * Quem está usando uma sessão agora, e quem já usou hoje e saiu.
+ * Quem está usando uma sessão neste momento.
  *
  * O histórico chega fatiado por dia (a divisão da meia-noite), então as fatias
  * são reagrupadas por accessId antes de decidir quem está vivo — senão um
  * acesso que atravessou a meia-noite contaria como dois.
+ *
+ * De cada pessoa viva saem duas coisas, e só: desde quando está conectada e há
+ * quanto tempo isso dá. Mesma pessoa com dois acessos abertos é uma linha só,
+ * contada pelo mais antigo — é ele que responde "desde quando".
  */
-export function buildUsingNowData(sessionId, accessHistory, now = new Date()) {
-    const today = dateKey(now);
+export function getUsingNow(sessionId, accessHistory, now = new Date()) {
+    const accesses = new Map();  // accessId -> { userId, seconds, start }
 
-    const accesses = new Map();     // accessId -> { userId, seconds, start }
-    const todayByUser = new Map();  // userId -> segundos usados hoje nesta sessão
-
-    Object.entries(accessHistory || {}).forEach(([day, slices]) => {
+    Object.values(accessHistory || {}).forEach((slices) => {
         slices.forEach((slice) => {
             if (slice.sessionId !== sessionId) return;
 
-            const seconds = slice.usageTimeSeconds || 0;
             const start = new Date(slice.localDateTime);
+            const access = accesses.get(slice.accessId)
+                || { userId: slice.userId, seconds: 0, start };
 
-            const access = accesses.get(slice.accessId) || { userId: slice.userId, seconds: 0, start };
-            access.seconds += seconds;
+            access.seconds += slice.usageTimeSeconds || 0;
             if (start < access.start) access.start = start;
             accesses.set(slice.accessId, access);
-
-            if (day === today) {
-                todayByUser.set(slice.userId, (todayByUser.get(slice.userId) || 0) + seconds);
-            }
         });
     });
 
-    const onlineByUser = new Map();  // userId -> { devices, activeSeconds }
-    const leftAtByUser = new Map();  // userId -> fim do último acesso encerrado
+    const byUser = new Map();  // userId -> { devices, since }
 
     accesses.forEach((access) => {
         const end = new Date(access.start.getTime() + access.seconds * 1000);
         const sinceEnd = Math.floor((now.getTime() - end.getTime()) / 1000);
 
         // Mesma janela do badge de online, para as duas contagens baterem.
-        if (sinceEnd < ONLINE_WINDOW_SECONDS && sinceEnd >= 0) {
-            const live = onlineByUser.get(access.userId) || { devices: 0, activeSeconds: 0 };
-            live.devices += 1;
-            // O acesso está vivo, então "ativo há" conta desde a conexão — é
-            // isso que faz o tempo correr sozinho entre um refresh e outro.
-            // Com dois dispositivos vale o que está aberto há mais tempo.
-            live.activeSeconds = Math.max(
-                live.activeSeconds,
-                Math.floor((now.getTime() - access.start.getTime()) / 1000)
-            );
-            onlineByUser.set(access.userId, live);
-            return;
-        }
+        if (sinceEnd >= ONLINE_WINDOW_SECONDS || sinceEnd < 0) return;
 
-        const previous = leftAtByUser.get(access.userId);
-        if (!previous || end > previous) leftAtByUser.set(access.userId, end);
+        const live = byUser.get(access.userId) || { devices: 0, since: access.start };
+        live.devices += 1;
+        if (access.start < live.since) live.since = access.start;
+        byUser.set(access.userId, live);
     });
 
-    const online = [];
-    onlineByUser.forEach((live, userId) => {
-        online.push({
+    const rows = [];
+    byUser.forEach((live, userId) => {
+        rows.push({
             userId,
             devices: live.devices,
-            activeSeconds: live.activeSeconds,
-            todaySeconds: todayByUser.get(userId) || 0,
+            since: live.since,
+            activeSeconds: Math.max(
+                0,
+                Math.floor((now.getTime() - live.since.getTime()) / 1000)
+            ),
         });
     });
 
-    // Quem usou hoje e já saiu — o contexto que falta quando só uma pessoa
-    // está online no momento em que o card abre.
-    const past = [];
-    todayByUser.forEach((todaySeconds, userId) => {
-        if (onlineByUser.has(userId) || todaySeconds <= 0) return;
-        past.push({ userId, todaySeconds, leftAt: leftAtByUser.get(userId) || null });
-    });
-
-    online.sort((a, b) => b.activeSeconds - a.activeSeconds);
-    past.sort((a, b) => b.todaySeconds - a.todaySeconds);
-
-    const todayTotalSeconds = Array.from(todayByUser.values()).reduce((sum, s) => sum + s, 0);
-
-    return { online, past, todayTotalSeconds };
+    // Quem está há mais tempo no topo.
+    return rows.sort((a, b) => a.since - b.since);
 }
