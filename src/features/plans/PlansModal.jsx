@@ -13,47 +13,37 @@ import PlanChangeModal from './PlanChangeModal.jsx';
  * quantas pessoas você compartilha acesso, e é isso que os cards comparam.
  */
 
+// Cada card diz para quem o plano é, e não o que ele entrega. A lista de
+// benefícios repetia em três linhas o que o cabeçalho já diz numa ("pacotes e
+// sessões ilimitados em todos os planos; o limite é de pessoas"), e o número
+// de pessoas logo acima já é a diferença entre um plano e o outro. O que
+// faltava era a pergunta que a pessoa está de fato fazendo: qual é o meu.
 const PLANS = [
     {
         tier: 'plus',
         name: 'Plus',
-        tag: 'Times pequenos',
         price: 'R$ 39,90',
         period: '/mês',
         people: '25',
-        features: [
-            'Pacotes e sessões ilimitados',
-            'Extensão no navegador',
-            'Links únicos e revogação a qualquer momento',
-        ],
+        audience: 'Para equipes, times e grupos.',
         cta: 'Assinar Plus',
     },
     {
         tier: 'business',
         name: 'Business',
-        tag: 'Times e grupos',
         price: 'R$ 99,90',
         period: '/mês',
         people: '75',
         featured: 'Mais capacidade',
-        features: [
-            'Tudo do Plus',
-            'Triplo de pessoas pelo mesmo pacote de recursos',
-            'Suporte prioritário por e-mail',
-        ],
+        audience: 'Para empresas com equipes maiores e uso mais amplo.',
         cta: 'Assinar Business',
     },
     {
         tier: 'enterprise',
         name: 'Enterprise',
-        tag: 'Sob medida',
         price: 'Sob consulta',
         people: 'Ilimitado',
-        features: [
-            'Tudo do Business',
-            'Condições e faturamento sob medida',
-            'Suporte dedicado',
-        ],
+        audience: 'Para organizações que precisam de escala, condições e suporte próprios.',
         // Enterprise não é assinável online: é conversa.
         contact: 'mailto:team@niango.io?subject=Plano%20Enterprise',
         cta: 'Falar com vendas',
@@ -138,7 +128,6 @@ export default function PlansModal({ open, onClose }) {
 
                             <div className="plan-card-head">
                                 <span className="plan-name">{plan.name}</span>
-                                <span className="plan-tag">{plan.tag}</span>
                             </div>
 
                             <div className="plan-price">
@@ -151,9 +140,7 @@ export default function PlansModal({ open, onClose }) {
                                 <span className="plan-people-label">pessoas com acesso</span>
                             </div>
 
-                            <ul className="plan-feats">
-                                {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
-                            </ul>
+                            <p className="plan-for">{plan.audience}</p>
 
                             {plan.contact ? (
                                 <a className="plan-choose-btn plan-choose-btn--ghost" href={plan.contact}>

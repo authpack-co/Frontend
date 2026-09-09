@@ -7189,11 +7189,6 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     color: var(--ap-text-primary);
 }
 
-.plan-tag {
-    font-size: 12px;
-    color: var(--ap-text-muted);
-}
-
 /* ── Preço ── */
 .plan-price {
     display: flex;
@@ -7239,36 +7234,14 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     color: var(--ap-text-muted);
 }
 
-/* ── Benefícios ── */
-.plan-feats {
-    list-style: none;
-    padding: 16px 0 0;
+/* ── Para quem é ── */
+.plan-for {
     margin: 16px 0 22px;
+    padding: 16px 0 0;
     border-top: 1px solid var(--ap-border);
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-}
-
-.plan-feats li {
     font-size: 12.5px;
-    line-height: 1.45;
+    line-height: 1.5;
     color: var(--ap-text-secondary);
-    padding-left: 23px;
-    position: relative;
-}
-
-/* Check desenhado (máscara SVG) em vez de emoji — herda a cor do tema. */
-.plan-feats li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 2px;
-    width: 15px;
-    height: 15px;
-    background-color: var(--ap-accent-strong);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/13px 13px no-repeat;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/13px 13px no-repeat;
 }
 
 /* ── CTA ── */
@@ -7371,7 +7344,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
         font-size: 21px;
     }
 
-    .plan-feats {
+    .plan-for {
         margin-bottom: 18px;
     }
 

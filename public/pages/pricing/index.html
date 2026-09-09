@@ -108,15 +108,10 @@
         .pr-price-period { font-size: 14px; color: var(--ink-3); }
         .pr-people { font-size: 14px; color: var(--ink-2); font-weight: 600; }
         .pr-people b { color: var(--blue-deep); }
-        .pr-feats { list-style: none; padding: 0; margin: 2px 0 0; display: flex; flex-direction: column; gap: 9px; }
-        .pr-feats li { font-size: 13.5px; color: var(--ink-2); padding-left: 24px; position: relative; line-height: 1.4; }
-        .pr-feats li::before {
-            content: ""; position: absolute; left: 0; top: 2px;
-            width: 15px; height: 15px; border-radius: 50%;
-            background: rgba(232, 230, 227, 0.08);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23d6d3cd' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: center;
-        }
+        /* Para quem o plano é, no lugar da lista de benefícios: o cabeçalho
+           acima já diz que pacotes e sessões são ilimitados em todos, e a
+           linha de pessoas logo acima já é a diferença entre um e outro. */
+        .pr-for { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; margin: 2px 0 0; }
         .pr-cta { margin-top: auto; }
         .pr-cta .btn { width: 100%; justify-content: center; }
 
@@ -169,11 +164,7 @@
                     <div class="pr-name">Free</div>
                     <div class="pr-price"><span class="pr-price-value">R$ 0</span><span class="pr-price-period">/sempre</span></div>
                     <div class="pr-people">Até <b>10 pessoas</b></div>
-                    <ul class="pr-feats">
-                        <li>Pacotes e sessões ilimitados</li>
-                        <li>Compartilhe com até 10 pessoas</li>
-                        <li>Extensão no navegador</li>
-                    </ul>
+                    <p class="pr-for">Para uso pessoal ou um time pequeno.</p>
                     <div class="pr-cta"><a href="/collection" class="btn btn-outline">Começar grátis</a></div>
                 </div>
 
@@ -183,11 +174,7 @@
                     <div class="pr-name">Plus</div>
                     <div class="pr-price"><span class="pr-price-value">R$ 39,90</span><span class="pr-price-period">/mês</span></div>
                     <div class="pr-people">Até <b>25 pessoas</b></div>
-                    <ul class="pr-feats">
-                        <li>Tudo do Free</li>
-                        <li>Compartilhe com até 25 pessoas</li>
-                        <li>Ideal para times pequenos</li>
-                    </ul>
+                    <p class="pr-for">Para equipes, times e grupos.</p>
                     <div class="pr-cta"><a href="/collection?upgrade=plus" class="btn btn-grad">Assinar Plus</a></div>
                 </div>
 
@@ -196,11 +183,7 @@
                     <div class="pr-name">Business</div>
                     <div class="pr-price"><span class="pr-price-value">R$ 99,90</span><span class="pr-price-period">/mês</span></div>
                     <div class="pr-people">Até <b>75 pessoas</b></div>
-                    <ul class="pr-feats">
-                        <li>Tudo do Plus</li>
-                        <li>Compartilhe com até 75 pessoas</li>
-                        <li>Ideal para times e grupos</li>
-                    </ul>
+                    <p class="pr-for">Para empresas com equipes maiores e uso mais amplo.</p>
                     <div class="pr-cta"><a href="/collection?upgrade=plus" class="btn btn-outline">Assinar Business</a></div>
                 </div>
 
@@ -209,11 +192,7 @@
                     <div class="pr-name">Enterprise</div>
                     <div class="pr-price"><span class="pr-price-value">Sob consulta</span></div>
                     <div class="pr-people"><b>Pessoas ilimitadas</b></div>
-                    <ul class="pr-feats">
-                        <li>Tudo do Business</li>
-                        <li>Condições sob medida</li>
-                        <li>Suporte dedicado</li>
-                    </ul>
+                    <p class="pr-for">Para organizações que precisam de escala, condições e suporte próprios.</p>
                     <div class="pr-cta"><a href="mailto:team@niango.io?subject=Plano%20Enterprise" class="btn btn-outline">Falar com vendas</a></div>
                 </div>
             </div>
