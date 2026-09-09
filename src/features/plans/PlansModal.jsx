@@ -25,7 +25,7 @@ const PLANS = [
         price: 'R$ 39,90',
         period: '/mês',
         people: '25',
-        audience: 'Para equipes, times e grupos.',
+        audience: 'Para equipes, times e grupos que dividem os mesmos acessos.',
         cta: 'Assinar Plus',
     },
     {

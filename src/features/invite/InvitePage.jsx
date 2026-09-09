@@ -53,7 +53,7 @@ export default function InvitePage() {
                     if (!alive) return;
 
                     if (status?.hasAccess) {
-                        setState({ status: 'owned', pkg, owner });
+                        setState({ status: 'owned', pkg, owner, isOwner: !!status.isOwner });
                         return;
                     }
                     if (status?.request?.status === 'pending') {
@@ -77,14 +77,17 @@ export default function InvitePage() {
         return () => { alive = false; };
     }, [key]);
 
-    // Já tem acesso: não há o que pedir, o destino é o pacote.
+    // Já tem acesso: não há o que pedir, o destino é o pacote. Qual tela é o
+    // pacote depende de quem está olhando — o que a pessoa criou mora na
+    // coleção, o que recebeu mora em "meus acessos". Abrir o link do próprio
+    // pacote levava a /shared, onde ele não está.
+    const ownedTarget = state.status === 'owned' ? packageHome(state) : null;
+
     useEffect(() => {
-        if (state.status !== 'owned') return undefined;
-        const timer = setTimeout(() => {
-            navigate(state.pkg?.id ? `/shared/${state.pkg.id}` : '/shared');
-        }, OWNED_REDIRECT_MS);
+        if (!ownedTarget) return undefined;
+        const timer = setTimeout(() => navigate(ownedTarget), OWNED_REDIRECT_MS);
         return () => clearTimeout(timer);
-    }, [state, navigate]);
+    }, [ownedTarget, navigate]);
 
     async function requestAccess() {
         setSending(true);
@@ -105,7 +108,9 @@ export default function InvitePage() {
             // Rede de segurança do preview: quem chegou deslogado e logou no
             // meio do caminho só descobre a posse na resposta do pedido.
             if (data.alreadyOwns) {
-                setState((current) => ({ ...current, status: 'owned', pkg }));
+                setState((current) => ({
+                    ...current, status: 'owned', pkg, isOwner: !!data.isOwner,
+                }));
                 return;
             }
 
@@ -254,13 +259,16 @@ export default function InvitePage() {
                                     <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
                                 </svg>
                             </div>
-                            <h1 className="inv-title">Você já tem acesso</h1>
+                            <h1 className="inv-title">
+                                {state.isOwner ? 'Este pacote é seu' : 'Você já tem acesso'}
+                            </h1>
                             <p className="inv-desc">
-                                <strong>{state.pkg?.name || 'Este pacote'}</strong> já está na sua conta.
+                                <strong>{state.pkg?.name || 'Este pacote'}</strong>{' '}
+                                {state.isOwner
+                                    ? 'está na sua coleção. Este é o link que você compartilha.'
+                                    : 'já está na sua conta.'}
                             </p>
-                            <Cta to={state.pkg?.id ? `/shared/${state.pkg.id}` : '/shared'}>
-                                Abrir o pacote
-                            </Cta>
+                            <Cta to={ownedTarget || '/collection'}>Abrir o pacote</Cta>
                             <div className="inv-success-meta">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
@@ -273,6 +281,12 @@ export default function InvitePage() {
             </div>
         </>
     );
+}
+
+/** Onde este pacote mora para quem está olhando. */
+function packageHome({ pkg, isOwner }) {
+    if (!pkg?.id) return isOwner ? '/collection' : '/shared';
+    return isOwner ? `/collection/${pkg.id}` : `/shared/${pkg.id}`;
 }
 
 function Cta({ to, children }) {
