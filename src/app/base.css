@@ -137,6 +137,21 @@ a {
     text-decoration: none;
 }
 
+/* E nasce inline. <button class="btn"> ganha inline-block do agente do
+   usuário, e o CSS do painel conta com isso: o padding vertical do botão
+   empurra a linha, e uma margem superior afasta ele do que vem antes. Num
+   <a> nada disso vale — o padding vaza sem ocupar altura e o margin-top é
+   ignorado, o que colava o "Voltar para meus acessos" no parágrafo acima
+   dele, nas cinco telas de "não encontrado". Os <a class="btn"> que já
+   funcionam declaram display por conta própria, e :where() (especificidade
+   zero) não tira isso deles. */
+:where(a.btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
 /* E nasce maior. <button> recebe do agente do usuário um font-size próprio
    (13.3333px) que o CSS do painel nunca declarou — nenhuma regra falava de
    tamanho nesses controles, porque não precisava. O link não herda isso: cai
