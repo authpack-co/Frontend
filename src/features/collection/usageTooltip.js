@@ -129,34 +129,77 @@ export function createUsageTooltip({ labels, data, getSessions }) {
     let shown = false;
     let hideTimer = null;
 
+    // Onde o tooltip está preso: o canvas e o ponto dentro dele. Guardado
+    // porque a rolagem move o gráfico sem que o Chart.js diga nada, e é daqui
+    // que sai a posição nova.
+    let anchor = null;
+
     const hide = () => {
         node.style.opacity = '0';
         node.style.pointerEvents = 'none';
         shown = false;
+        anchor = null;
     };
 
     /**
-     * Move o tooltip.
+     * Some depois de um respiro, se nada o resgatar.
      *
-     * Andando de um ponto ao outro ele desliza — é o que o tooltip do canvas
-     * fazia, e sem isso a caixa pisca de lugar em lugar. Mas aparecer é outra
-     * coisa: sem desligar a transição no primeiro posicionamento, ele entraria
-     * deslizando desde onde estava da última vez, atravessando o gráfico.
+     * Os dois caminhos de saída passam por aqui — o ponteiro deixando o canvas
+     * e deixando o próprio tooltip — porque nenhum dos dois é necessariamente
+     * uma saída: sair do canvas pode ser entrar no tooltip, e sair do tooltip
+     * pode ser voltar ao ponto. Escondendo na hora, ir e voltar entre os dois
+     * faz a caixa piscar.
      */
-    const placeAt = (x, y) => {
-        if (!shown) node.style.transition = 'none';
+    const scheduleHide = () => {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => { if (!inside) hide(); }, HIDE_DELAY_MS);
+    };
 
+    /**
+     * Põe a caixa acima do ponto (ou abaixo, se não houver espaço em cima).
+     *
+     * `animate` liga a transição, que é o deslize de um ponto ao outro. Ela
+     * fica de fora ao aparecer — senão a caixa entraria em cena atravessando o
+     * gráfico desde onde parou da última vez — e ao acompanhar a rolagem, onde
+     * o deslize viraria arrasto.
+     */
+    const place = (animate) => {
+        if (!anchor) return;
+
+        const box = anchor.canvas.getBoundingClientRect();
+        const width = node.offsetWidth;
+        const height = node.offsetHeight;
+
+        const x = Math.min(
+            Math.max(box.left + anchor.caretX - width / 2, MARGIN),
+            window.innerWidth - width - MARGIN
+        );
+
+        let y = box.top + anchor.caretY - height - CARET_GAP;
+        if (y < MARGIN) y = box.top + anchor.caretY + CARET_GAP;
+
+        if (!animate) node.style.transition = 'none';
         node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
 
-        if (!shown) {
+        if (!animate) {
             // Lê o layout para o navegador aplicar a posição antes de a
             // transição voltar; sem isto as duas mudanças entram no mesmo
             // quadro e a transição pega a posição nova mesmo assim.
             void node.offsetWidth;
             node.style.transition = '';
-            shown = true;
         }
     };
+
+    /**
+     * A caixa é `fixed`, em coordenadas de viewport, e a rolagem não as move:
+     * o gráfico descia e o tooltip ficava parado no ar, às vezes longe dele.
+     * Recalcular pela moldura do canvas o mantém no ponto.
+     *
+     * Na captura porque o painel rola por dentro, e rolagem de contêiner não
+     * borbulha até a janela.
+     */
+    const onScroll = () => { if (shown) place(false); };
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
 
     node.addEventListener('mouseenter', () => {
         inside = true;
@@ -164,13 +207,12 @@ export function createUsageTooltip({ labels, data, getSessions }) {
     });
     node.addEventListener('mouseleave', () => {
         inside = false;
-        hide();
+        scheduleHide();
     });
 
     function external({ chart, tooltip }) {
         if (tooltip.opacity === 0) {
-            clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => { if (!inside) hide(); }, HIDE_DELAY_MS);
+            scheduleHide();
             return;
         }
 
@@ -189,29 +231,19 @@ export function createUsageTooltip({ labels, data, getSessions }) {
         });
 
         node.style.pointerEvents = 'auto';
+        anchor = { canvas: chart.canvas, caretX: tooltip.caretX, caretY: tooltip.caretY };
 
         // Medidas só depois do conteúdo: a altura muda com o número de linhas.
-        const box = chart.canvas.getBoundingClientRect();
-        const width = node.offsetWidth;
-        const height = node.offsetHeight;
-
-        const left = Math.min(
-            Math.max(box.left + tooltip.caretX - width / 2, MARGIN),
-            window.innerWidth - width - MARGIN
-        );
-
-        // Acima do ponto; sem espaço lá em cima, abaixo dele.
-        let top = box.top + tooltip.caretY - height - CARET_GAP;
-        if (top < MARGIN) top = box.top + tooltip.caretY + CARET_GAP;
-
-        placeAt(left, top);
+        place(shown);
         node.style.opacity = '1';
+        shown = true;
     }
 
     return {
         external,
         destroy() {
             clearTimeout(hideTimer);
+            window.removeEventListener('scroll', onScroll, { capture: true });
             node.remove();
         },
     };
