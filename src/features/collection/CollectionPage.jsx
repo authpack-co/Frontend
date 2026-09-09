@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router';
+import { useGuide } from '../onboarding/useGuide.jsx';
 import { usePackages } from '../../lib/packages.jsx';
 import { CreatePackageModal } from './PackageModals.jsx';
 
@@ -23,6 +24,7 @@ export default function CollectionPage() {
 
 function EmptyCollection() {
     const [creating, setCreating] = useState(false);
+    const guide = useGuide();
 
     return (
         <div className="main-onboarding" id="main-onboarding">
@@ -62,6 +64,14 @@ function EmptyCollection() {
                         <path d="M5 12h14" />
                     </svg>
                     Criar meu primeiro pacote
+                </button>
+
+                {/* A porta de volta para o guia: ele abre sozinho uma vez e
+                    some para sempre, e sem isto quem o dispensou no primeiro
+                    minuto não teria como revê-lo. A classe já existia no CSS,
+                    sem ninguém para usá-la — era esta a vaga. */}
+                <button className="empty-screen-link" type="button" onClick={() => guide.open('create')}>
+                    Ver como funciona
                 </button>
             </div>
 

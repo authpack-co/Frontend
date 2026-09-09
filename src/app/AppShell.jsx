@@ -12,6 +12,7 @@ import UpdatePackageModal from '../features/collection/capture/UpdatePackageModa
 import PlansModal from '../features/plans/PlansModal.jsx';
 import useCheckoutReturn from '../features/plans/useCheckoutReturn.js';
 import useUpgradeParam from '../features/plans/useUpgradeParam.js';
+import { GuideProvider } from '../features/onboarding/useGuide.jsx';
 import SettingsModal from '../features/settings/SettingsModal.jsx';
 import ActivateAccessModal from '../features/shared/ActivateAccessModal.jsx';
 import { useAuth } from '../lib/auth.jsx';
@@ -44,12 +45,16 @@ export default function AppShell() {
 
     return (
         <PackagesProvider>
-            <Sidebar />
-            <div className="page-content">
-                <main className="main-content">
-                    <Outlet />
-                </main>
-            </div>
+            {/* Dentro do provider de pacotes: o guia só abre depois que o
+                painel carregou, e é dali que ele sabe disso. */}
+            <GuideProvider>
+                <Sidebar />
+                <div className="page-content">
+                    <main className="main-content">
+                        <Outlet />
+                    </main>
+                </div>
+            </GuideProvider>
         </PackagesProvider>
     );
 }
