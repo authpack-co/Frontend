@@ -10,6 +10,7 @@ import {
 } from 'chart.js';
 import { useEffect, useRef } from 'react';
 import { formatHours } from '../../lib/usage.js';
+import { createUsageTooltip } from './usageTooltip.js';
 
 /**
  * Rótulo do eixo X na visão por período.
@@ -99,14 +100,18 @@ Chart.register(
  * por hora no dia de hoje. Fora o que o eixo X escreve — dias da semana, horas
  * ou datas —, o desenho é o mesmo nas duas.
  *
- * Uma diferença deliberada em relação ao painel antigo: lá o tooltip era um
- * <div> montado à mão fora do canvas, com HTML próprio e rolagem. Aqui é o
- * tooltip do Chart.js, pintado com os tokens do tema e com o mesmo conteúdo.
- * O que se perde é poder passar o mouse por dentro do tooltip — que existia
- * para listas longas, e o gráfico do pacote mostra três linhas curtas.
+ * O tooltip é HTML, e não o do canvas: ele reparte o ponto por sessão, em
+ * barras da cor de cada serviço, e uma lista dessas precisa de teto de altura
+ * e de rolagem — duas coisas que o canvas não dá. Ele vive em usageTooltip.js.
  */
-export default function UsageChart({ data, isDaily }) {
+export default function UsageChart({ data, isDaily, sessions }) {
     const canvasRef = useRef(null);
+
+    // Por ref, e não por dependência do efeito: a lista costuma ser um array
+    // novo a cada render (`[session]`), e como dependência ela remontaria o
+    // gráfico inteiro a cada render.
+    const sessionsRef = useRef(sessions);
+    sessionsRef.current = sessions;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -129,6 +134,12 @@ export default function UsageChart({ data, isDaily }) {
         const cardBg = token('--ap-bg-card', '#131416');
         const border = token('--ap-border', '#2e2f33');
         const fontBody = token('--ap-font-body', 'system-ui, sans-serif');
+
+        const tooltip = createUsageTooltip({
+            labels,
+            data,
+            getSessions: () => sessionsRef.current,
+        });
 
         const chart = new Chart(canvas.getContext('2d'), {
             type: 'line',
@@ -187,40 +198,10 @@ export default function UsageChart({ data, isDaily }) {
                         font: `600 12px ${fontBody}`,
                     },
                     tooltip: {
-                        // O tooltip anima por conta própria; sem isto ele herda
-                        // os 400ms padrão, lentos demais para o ponteiro.
-                        animation: { duration: 260, easing: 'easeOutQuart' },
-                        animations: {
-                            numbers: {
-                                type: 'number',
-                                properties: ['x', 'y', 'width', 'height', 'caretX', 'caretY'],
-                                duration: 260,
-                                easing: 'easeOutQuart',
-                            },
-                            opacity: { type: 'number', duration: 180, easing: 'linear' },
-                        },
-                        backgroundColor: cardBg,
-                        borderColor: border,
-                        borderWidth: 1,
-                        titleColor: token('--ap-text-primary', '#e8e6e3'),
-                        bodyColor: token('--ap-text-secondary', '#d6d3cd'),
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                            title: (items) => `${isDaily ? '🕐' : '📅'} ${labels[items[0].dataIndex]}`,
-                            label(item) {
-                                const point = data[labels[item.dataIndex]];
-                                const lines = [`${formatHours(point.hours)} de uso`];
-
-                                if (point.users != null) {
-                                    lines.push(`${point.users} usuários`);
-                                }
-                                if (point.peak) {
-                                    lines.push(`Pico: ${point.peak.count} às ${point.peak.hour}`);
-                                }
-                                return lines;
-                            },
-                        },
+                        // Desenhar no canvas fica desligado: quem pinta é o
+                        // elemento HTML abaixo.
+                        enabled: false,
+                        external: tooltip.external,
                     },
                 },
                 scales: {
@@ -257,7 +238,10 @@ export default function UsageChart({ data, isDaily }) {
             },
         });
 
-        return () => chart.destroy();
+        return () => {
+            chart.destroy();
+            tooltip.destroy();
+        };
     }, [data, isDaily]);
 
     return <canvas ref={canvasRef}></canvas>;

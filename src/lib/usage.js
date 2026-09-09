@@ -193,13 +193,13 @@ export function getPackageHistoryUsage(accessHistory) {
 
     const ensureDay = (key) => {
         if (!dailyData[key]) {
-            dailyData[key] = { totalSeconds: 0, users: new Set(), usersByHour: {} };
+            dailyData[key] = { totalSeconds: 0, users: new Set(), usersByHour: {}, sessions: {} };
         }
         return dailyData[key];
     };
 
     Object.values(accessHistory || {}).flat().forEach((access) => {
-        const { userId, usageTimeSeconds } = access;
+        const { userId, sessionId, usageTimeSeconds } = access;
         const start = new Date(access.localDateTime);
         const end = usageTimeSeconds > 0
             ? new Date(start.getTime() + usageTimeSeconds * 1000)
@@ -215,7 +215,9 @@ export function getPackageHistoryUsage(accessHistory) {
         });
 
         if (usageTimeSeconds > 0) {
-            ensureDay(dateKey(start)).totalSeconds += usageTimeSeconds;
+            const day = ensureDay(dateKey(start));
+            day.totalSeconds += usageTimeSeconds;
+            day.sessions[sessionId] = (day.sessions[sessionId] || 0) + usageTimeSeconds;
         }
     });
 
@@ -235,6 +237,9 @@ export function getPackageHistoryUsage(accessHistory) {
             hours: parseFloat((data.totalSeconds / 3600).toFixed(4)),
             users: data.users.size,
             peak: { hour: peakHour, count: peakCount },
+            // Segundos por sessão: é o que o tooltip do gráfico reparte em
+            // barras, e o que diz quais serviços fizeram aquele dia.
+            sessions: data.sessions,
         };
     });
 
@@ -249,7 +254,7 @@ export function getDailyPackageUsage(accessHistory, currentDate = new Date()) {
     const hourlyData = {};
 
     todayAccesses.forEach((access) => {
-        const { userId, usageTimeSeconds } = access;
+        const { userId, sessionId, usageTimeSeconds } = access;
         const start = new Date(access.localDateTime);
         const end = new Date(start.getTime() + usageTimeSeconds * 1000);
 
@@ -263,9 +268,10 @@ export function getDailyPackageUsage(accessHistory, currentDate = new Date()) {
                 .getTime() - start.getTime()) / 1000;
 
         const hourKey = `${pad(start.getHours())}:00`;
-        hourlyData[hourKey] = hourlyData[hourKey] || { totalSeconds: 0, users: new Set() };
+        hourlyData[hourKey] = hourlyData[hourKey] || { totalSeconds: 0, users: new Set(), sessions: {} };
         hourlyData[hourKey].totalSeconds += seconds;
         hourlyData[hourKey].users.add(userId);
+        hourlyData[hourKey].sessions[sessionId] = (hourlyData[hourKey].sessions[sessionId] || 0) + seconds;
     });
 
     const result = {};
@@ -273,6 +279,7 @@ export function getDailyPackageUsage(accessHistory, currentDate = new Date()) {
         result[hour] = {
             hours: parseFloat((data.totalSeconds / 3600).toFixed(4)),
             users: data.users.size,
+            sessions: data.sessions,
         };
     });
 
@@ -494,13 +501,21 @@ export function getUserHistoryUsage(accessHistory) {
 
     Object.values(accessHistory || {}).flat().forEach((access) => {
         const day = dateKey(new Date(access.localDateTime));
-        dailyData[day] = dailyData[day] || 0;
-        if (access.usageTimeSeconds > 0) dailyData[day] += access.usageTimeSeconds;
+        dailyData[day] = dailyData[day] || { seconds: 0, sessions: {} };
+
+        if (access.usageTimeSeconds > 0) {
+            dailyData[day].seconds += access.usageTimeSeconds;
+            dailyData[day].sessions[access.sessionId] =
+                (dailyData[day].sessions[access.sessionId] || 0) + access.usageTimeSeconds;
+        }
     });
 
     const result = {};
-    Object.entries(dailyData).forEach(([day, seconds]) => {
-        result[day] = { hours: parseFloat((seconds / 3600).toFixed(4)) };
+    Object.entries(dailyData).forEach(([day, data]) => {
+        result[day] = {
+            hours: parseFloat((data.seconds / 3600).toFixed(4)),
+            sessions: data.sessions,
+        };
     });
 
     return result;
@@ -519,7 +534,7 @@ export function getDailyUsage(accessHistory, currentDate = new Date(), { countUs
 
     const hourlyData = {};
     const ensureHour = (key) => {
-        hourlyData[key] = hourlyData[key] || { totalSeconds: 0, users: new Set() };
+        hourlyData[key] = hourlyData[key] || { totalSeconds: 0, users: new Set(), sessions: {} };
         return hourlyData[key];
     };
 
@@ -531,7 +546,7 @@ export function getDailyUsage(accessHistory, currentDate = new Date(), { countUs
     );
 
     todayAccesses.forEach((access) => {
-        const { userId, usageTimeSeconds = 0 } = access;
+        const { userId, sessionId, usageTimeSeconds = 0 } = access;
         const start = new Date(access.localDateTime);
 
         // Duração zero marca presença naquela hora, sem somar tempo.
@@ -557,6 +572,7 @@ export function getDailyUsage(accessHistory, currentDate = new Date(), { countUs
             const hour = ensureHour(`${pad(cursor.getHours())}:00`);
             hour.totalSeconds += seconds;
             hour.users.add(userId);
+            hour.sessions[sessionId] = (hour.sessions[sessionId] || 0) + seconds;
 
             cursor = nextHour;
         }
@@ -566,6 +582,7 @@ export function getDailyUsage(accessHistory, currentDate = new Date(), { countUs
     Object.entries(hourlyData).forEach(([hour, data]) => {
         result[hour] = {
             hours: parseFloat((data.totalSeconds / 3600).toFixed(4)),
+            sessions: data.sessions,
             ...(countUsers ? { users: data.users.size } : {}),
         };
     });

@@ -26,7 +26,9 @@ function emptyChartData(isDaily) {
  * Trocar de período não vai à rede: `dataFor` recorta o histórico que já está
  * na memória.
  */
-export default function UsagePanel({ title, subtitle, dataFor, status = 'ready', period, onPeriodChange }) {
+export default function UsagePanel({
+    title, subtitle, dataFor, sessions, status = 'ready', period, onPeriodChange,
+}) {
     const days = PERIOD_DAYS[period];
     const isDaily = days === 0;
 
@@ -42,7 +44,7 @@ export default function UsagePanel({ title, subtitle, dataFor, status = 'ready',
     } else {
         const raw = dataFor(days, isDaily) || {};
         const data = Object.keys(raw).length ? raw : emptyChartData(isDaily);
-        content = <UsageChart data={data} isDaily={isDaily} />;
+        content = <UsageChart data={data} isDaily={isDaily} sessions={sessions} />;
     }
 
     return (

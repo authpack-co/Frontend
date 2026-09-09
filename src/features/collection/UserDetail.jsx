@@ -97,6 +97,7 @@ export default function UserDetail() {
                                         title={title}
                                         subtitle="Tempo de uso por dia"
                                         status={status}
+                                        sessions={pkg.sessions}
                                         period={period}
                                         onPeriodChange={setPeriod}
                                         dataFor={(_days, isDaily) => (isDaily

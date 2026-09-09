@@ -4,7 +4,7 @@ import UsagePanel, { periodTitle } from './UsagePanel.jsx';
 
 const title = periodTitle('do pacote');
 
-export default function PackageUsagePanel({ stats, status }) {
+export default function PackageUsagePanel({ stats, status, sessions }) {
     // Na tela do pacote o período vale só para o gráfico: as colunas da lista
     // são sempre "hoje vs. costume", e não há card de estatística por período.
     const [period, setPeriod] = useState('7days');
@@ -15,6 +15,7 @@ export default function PackageUsagePanel({ stats, status }) {
                 title={title}
                 subtitle="Horas de uso por dia"
                 status={status}
+                sessions={sessions}
                 period={period}
                 onPeriodChange={setPeriod}
                 dataFor={(days, isDaily) => (isDaily

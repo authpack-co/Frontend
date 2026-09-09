@@ -102,7 +102,7 @@ export default function PackageDetail() {
                             <div className="card-content custom-scrollbar">
                                 <div className="collection-content-layout">
                                     <div className="collection-chart-users-row">
-                                        <PackageUsagePanel stats={stats} status={statsStatus} />
+                                        <PackageUsagePanel stats={stats} status={statsStatus} sessions={sessions} />
 
                                         <div className="collection-users-col">
                                             <PeoplePanel
