@@ -123,6 +123,7 @@ export const api = {
 
     // ── Estatísticas ──────────────────────────────────────────────────────
     getPackageOverviewStats: (packageId) => request(`/api/stats/package/overview/${packageId}`),
+    getPackageOnline: (packageId) => request(`/api/stats/package/online/${packageId}`),
     getPackageAccessOverview: (packageId) => request(`/api/stats/package/access-overview/${packageId}`),
 
     // ── Assinatura ────────────────────────────────────────────────────────

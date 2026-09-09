@@ -13,10 +13,6 @@ export const USAGE_BASELINE_DAYS = 30;
 // Faixa em que hoje conta como "no costume" — evita o badge piscando 96%/104%.
 export const USAGE_ON_PAR_TOLERANCE = 0.10;
 
-// Janela do heartbeat: um acesso conta como vivo enquanto o fim dele estiver a
-// menos disto de agora.
-export const ONLINE_WINDOW_SECONDS = 60;
-
 const pad = (value) => String(value).padStart(2, '0');
 
 // ─── Formatação ───────────────────────────────────────────────────────────
@@ -391,37 +387,6 @@ export function usageComparisonTitle({ state, value, baseline }) {
     return `Hoje: ${formatDuration(value)} · ${costume}`;
 }
 
-// ─── Quem está online ─────────────────────────────────────────────────────
-
-/**
- * Quem está usando cada sessão agora, pela janela do heartbeat.
- *
- * Deduplica por usuário: a mesma pessoa reconectando não conta duas vezes.
- */
-export function getOnlineBySession(accessHistory, now = new Date()) {
-    const usersBySession = {};
-
-    Object.values(accessHistory || {}).forEach((dayAccesses) => {
-        dayAccesses.forEach((access) => {
-            const start = new Date(access.localDateTime);
-            const end = new Date(start.getTime() + (access.usageTimeSeconds || 0) * 1000);
-            const secondsSinceEnd = Math.floor((now.getTime() - end.getTime()) / 1000);
-
-            if (secondsSinceEnd < ONLINE_WINDOW_SECONDS && secondsSinceEnd >= 0) {
-                usersBySession[access.sessionId] = usersBySession[access.sessionId] || new Set();
-                usersBySession[access.sessionId].add(access.userId);
-            }
-        });
-    });
-
-    const result = {};
-    Object.entries(usersBySession).forEach(([sessionId, users]) => {
-        result[sessionId] = Array.from(users);
-    });
-
-    return result;
-}
-
 /**
  * Última vez que cada pessoa usou o pacote, no formato que o timeAgo entende.
  * O backend manda "YYYY-MM-DD HH:mm:ss"; o T no meio é o que faz o Date
@@ -633,64 +598,4 @@ export function toAccessRows(accessHistory, resolve) {
     });
 
     return rows.sort((a, b) => b.timestamp - a.timestamp);
-}
-
-/**
- * Quem está usando uma sessão neste momento.
- *
- * O histórico chega fatiado por dia (a divisão da meia-noite), então as fatias
- * são reagrupadas por accessId antes de decidir quem está vivo — senão um
- * acesso que atravessou a meia-noite contaria como dois.
- *
- * De cada pessoa viva saem duas coisas, e só: desde quando está conectada e há
- * quanto tempo isso dá. Mesma pessoa com dois acessos abertos é uma linha só,
- * contada pelo mais antigo — é ele que responde "desde quando".
- */
-export function getUsingNow(sessionId, accessHistory, now = new Date()) {
-    const accesses = new Map();  // accessId -> { userId, seconds, start }
-
-    Object.values(accessHistory || {}).forEach((slices) => {
-        slices.forEach((slice) => {
-            if (slice.sessionId !== sessionId) return;
-
-            const start = new Date(slice.localDateTime);
-            const access = accesses.get(slice.accessId)
-                || { userId: slice.userId, seconds: 0, start };
-
-            access.seconds += slice.usageTimeSeconds || 0;
-            if (start < access.start) access.start = start;
-            accesses.set(slice.accessId, access);
-        });
-    });
-
-    const byUser = new Map();  // userId -> { devices, since }
-
-    accesses.forEach((access) => {
-        const end = new Date(access.start.getTime() + access.seconds * 1000);
-        const sinceEnd = Math.floor((now.getTime() - end.getTime()) / 1000);
-
-        // Mesma janela do badge de online, para as duas contagens baterem.
-        if (sinceEnd >= ONLINE_WINDOW_SECONDS || sinceEnd < 0) return;
-
-        const live = byUser.get(access.userId) || { devices: 0, since: access.start };
-        live.devices += 1;
-        if (access.start < live.since) live.since = access.start;
-        byUser.set(access.userId, live);
-    });
-
-    const rows = [];
-    byUser.forEach((live, userId) => {
-        rows.push({
-            userId,
-            devices: live.devices,
-            since: live.since,
-            activeSeconds: Math.max(
-                0,
-                Math.floor((now.getTime() - live.since.getTime()) / 1000)
-            ),
-        });
-    });
-
-    // Quem está há mais tempo no topo.
-    return rows.sort((a, b) => a.since - b.since);
 }

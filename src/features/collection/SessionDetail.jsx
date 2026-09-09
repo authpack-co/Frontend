@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import { usePackage } from '../../lib/packages.jsx';
-import { makeUserLookup, usePackageStats } from '../../lib/packageStats.js';
+import { makeUserLookup, usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
 import {
     bySession,
     filterAccessHistory,
@@ -25,6 +25,7 @@ export default function SessionDetail() {
     const { packageId, sessionId } = useParams();
     const { pkg, notFound } = usePackage(packageId);
     const { stats, status } = usePackageStats(pkg ? packageId : null);
+    const online = usePackageOnline(pkg ? packageId : null);
 
     const session = pkg?.sessions?.find((item) => item.id === sessionId) || null;
 
@@ -58,9 +59,8 @@ export default function SessionDetail() {
     if (!pkg || !session) return null;
 
     const backTo = `/collection/${pkg.id}`;
-    const onlineIds = stats?.onlineBySession?.[session.id] || [];
-    const onlineUsers = onlineIds
-        .map((id) => (pkg.users || []).find((user) => user.id === id))
+    const onlineUsers = (online.bySession[session.id] || [])
+        .map((row) => (pkg.users || []).find((user) => user.id === row.userId))
         .filter(Boolean);
 
     const total = getTotalUsage(scoped);

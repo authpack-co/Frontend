@@ -58,7 +58,7 @@ function useScrollToNewSessions(sessions) {
     }, [batch, focus, location.pathname, navigate, sessions]);
 }
 
-export default function SessionsTable({ pkg, sessions, search, stats, statsStatus }) {
+export default function SessionsTable({ pkg, sessions, search, stats, statsStatus, online }) {
     const query = (search || '').trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
     const { connect, connectingId, gate } = useConnectSession(pkg, { isAcquired: false });
@@ -114,6 +114,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                                     pkg={pkg}
                                     stats={stats}
                                     statsStatus={statsStatus}
+                                    onlineRows={online.bySession[session.id] || []}
                                     connecting={connectingId === session.id}
                                     onConnect={connect}
                                     onUpdate={setUpdating}
@@ -138,8 +139,8 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                 <UsingNowModal
                     pkg={pkg}
                     session={usingNow}
-                    accessHistory={stats?.accessHistory}
                     historyUsers={stats?.historyUsers}
+                    online={online}
                     onClose={() => setUsingNow(null)}
                 />
             )}
@@ -155,7 +156,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus, connecting, onConnect, onUpdate, onShowUsingNow }) {
+function SessionRow({ session, pkg, stats, statsStatus, onlineRows, connecting, onConnect, onUpdate, onShowUsingNow }) {
     const navigate = useNavigate();
     // 'rename' | 'delete' | null
     const [action, setAction] = useState(null);
@@ -165,9 +166,8 @@ function SessionRow({ session, pkg, stats, statsStatus, connecting, onConnect, o
     const palette = paletteFromSession(session);
 
     // Quem está online nesta sessão agora, com os dados de quem é.
-    const onlineIds = stats?.onlineBySession?.[session.id] || [];
-    const onlineUsers = onlineIds
-        .map((id) => (pkg.users || []).find((user) => user.id === id))
+    const onlineUsers = onlineRows
+        .map((row) => (pkg.users || []).find((user) => user.id === row.userId))
         .filter(Boolean);
 
     return (

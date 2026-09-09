@@ -1,29 +1,34 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Modal from '../../components/Modal.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import { makeUserLookup } from '../../lib/packageStats.js';
-import { formatDuration, getUsingNow } from '../../lib/usage.js';
+import { formatDuration } from '../../lib/usage.js';
 
-/** "14:32" — a hora em que a pessoa conectou. */
-function clock(date) {
-    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+/** "14:32" — a hora em que a pessoa conectou, contada de trás para frente. */
+function connectedAt(activeSeconds) {
+    return new Date(Date.now() - activeSeconds * 1000)
+        .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
 /**
  * Quem está usando a sessão neste momento.
  *
  * O rodapé da linha diz QUANTOS estão online; este card diz QUEM são, desde
- * que horas e há quanto tempo. Nada além disso: quem usou hoje e já saiu é
- * pergunta do histórico, e estava aqui só engordando o card.
+ * que horas e há quanto tempo.
  *
- * Os tempos são lidos uma vez, quando o card abre. A versão anterior recontava
- * tudo a cada segundo, e o resultado era um painel inteiro piscando para
- * mostrar que "12min" virou "12min".
+ * Os dados vêm da carga de "usando agora", que se repete sozinha, e o card
+ * pede uma volta dela ao abrir. Antes tudo isto saía do histórico de 30 dias,
+ * carregado uma vez: passado um minuto — que é a janela do heartbeat —, abrir
+ * o card dizia que ninguém estava usando, enquanto a linha atrás dele ainda
+ * dizia que sim. Os dados eram os mesmos dos dois lados; só o relógio com que
+ * o card os lia tinha andado.
  */
-export default function UsingNowModal({ pkg, session, accessHistory, historyUsers, onClose }) {
-    const [openedAt] = useState(() => new Date());
+export default function UsingNowModal({ pkg, session, historyUsers, online, onClose }) {
+    const { refresh } = online;
 
-    const rows = getUsingNow(session.id, accessHistory, openedAt);
+    useEffect(() => { refresh(); }, [refresh]);
+
+    const rows = online.bySession[session.id] || [];
     const domain = faviconDomain(session.url) || session.url || '';
 
     const people = rows.length;
@@ -68,7 +73,7 @@ export default function UsingNowModal({ pkg, session, accessHistory, historyUser
                                 <div className="un-row-text">
                                     <span className="un-row-name">{user.name || 'Usuário'}</span>
                                     <span className="un-row-since">
-                                        Conectou às {clock(row.since)}
+                                        Conectou às {connectedAt(row.activeSeconds)}
                                         {/* Mesma pessoa com dois acessos vivos: uma
                                             linha só, com a contagem aqui. */}
                                         {row.devices > 1 && ` · ${row.devices} acessos`}

@@ -10,7 +10,7 @@ import { RemoveUserModal } from './SessionModals.jsx';
  * O criador vem sempre no topo: a ordem do JSON_ARRAYAGG do backend não é
  * garantida. "sem acesso" marca quem passou do limite de pessoas do plano.
  */
-export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, statsReady }) {
+export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, onlineUserIds, statsReady }) {
     const users = pkg.users || [];
 
     if (users.length === 0) {
@@ -46,6 +46,7 @@ export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, stats
                                 pkg={pkg}
                                 suspended={suspendedKeys.has(`${pkg.id}:${user.id}`)}
                                 lastUsage={lastUsageByUser?.[user.id]}
+                                online={onlineUserIds?.has(user.id)}
                                 statsReady={statsReady}
                             />
                         ))}
@@ -56,11 +57,12 @@ export default function PeoplePanel({ pkg, suspendedKeys, lastUsageByUser, stats
     );
 }
 
-function UserRow({ user, pkg, suspended, lastUsage, statsReady }) {
+function UserRow({ user, pkg, suspended, lastUsage, online, statsReady }) {
     const [removing, setRemoving] = useState(false);
-    const seen = lastUsage ? timeAgo(lastUsage) : null;
-    // "agora mesmo" é o que acende a linha como online.
-    const online = seen === 'agora mesmo';
+    // O "há quanto tempo" é do último uso registrado, e envelhece junto com a
+    // carga: quem acender a linha por ele fica aceso para sempre. Quem está
+    // online vem da carga de "usando agora", que se repete.
+    const seen = online ? 'agora mesmo' : (lastUsage ? timeAgo(lastUsage) : null);
 
     const className = [
         'list-item user',

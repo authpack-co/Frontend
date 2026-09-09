@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from './api.js';
 import {
     getDailyPackageUsage,
-    getOnlineBySession,
     getPackageHistoryUsage,
     normalizeLastUsage,
     processRawAccessHistory,
@@ -40,7 +39,6 @@ export function usePackageStats(packageId) {
                     accessHistory,
                     historyUsage: getPackageHistoryUsage(accessHistory),
                     dailyUsage: getDailyPackageUsage(accessHistory),
-                    onlineBySession: getOnlineBySession(accessHistory),
                     lastUsageByUser: normalizeLastUsage(data.usersLastUsage),
                     historyUsers: indexById(data.historyUsers),
                 },
@@ -54,6 +52,70 @@ export function usePackageStats(packageId) {
     useEffect(() => { load(); }, [load]);
 
     return { ...state, reload: load };
+}
+
+// De quanto em quanto tempo "usando agora" é reconferido. A janela do
+// heartbeat é de 60s; metade disso mantém a tela dentro dela sem transformar
+// a página num pinga-pinga de requisições.
+const ONLINE_POLL_MS = 30000;
+
+/**
+ * Quem está usando cada sessão do pacote agora.
+ *
+ * Fora de usePackageStats porque envelhece: o resto daquela carga é histórico
+ * de 30 dias, que não muda enquanto a tela está aberta, e "agora" deixa de ser
+ * verdade em 60 segundos. Junto com ele, a tela dizia que ninguém estava
+ * usando um minuto depois de carregada — e voltava a dizer que sim ao dar F5.
+ *
+ * `refresh` existe para quem abre uma tela sobre estes dados (o card de
+ * "usando agora") não depender de onde o intervalo parou.
+ */
+export function usePackageOnline(packageId) {
+    const [bySession, setBySession] = useState({});
+
+    const load = useCallback(async () => {
+        if (!packageId) return;
+
+        try {
+            const data = await api.getPackageOnline(packageId);
+            const grouped = {};
+
+            (data?.online || []).forEach((row) => {
+                grouped[row.sessionId] = grouped[row.sessionId] || [];
+                grouped[row.sessionId].push(row);
+            });
+
+            // Quem está há mais tempo no topo, como na lista do card.
+            Object.values(grouped).forEach((rows) => {
+                rows.sort((a, b) => b.activeSeconds - a.activeSeconds);
+            });
+
+            setBySession(grouped);
+        } catch (err) {
+            // Uma falha aqui não apaga o que está na tela: o valor anterior
+            // erra por segundos, e uma lista vazia erraria por tudo.
+            console.error('[Stats] getPackageOnline error:', err);
+        }
+    }, [packageId]);
+
+    useEffect(() => {
+        setBySession({});
+        load();
+
+        const timer = setInterval(load, ONLINE_POLL_MS);
+        return () => clearInterval(timer);
+    }, [load]);
+
+    // Quem está online em alguma sessão do pacote, para a lista de pessoas.
+    const onlineUserIds = useMemo(() => {
+        const ids = new Set();
+        Object.values(bySession).forEach((rows) => {
+            rows.forEach((row) => ids.add(row.userId));
+        });
+        return ids;
+    }, [bySession]);
+
+    return { bySession, onlineUserIds, refresh: load };
 }
 
 /**

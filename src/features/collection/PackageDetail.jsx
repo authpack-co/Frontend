@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router';
 import { getSuspendedMembershipKeys, usePackage, usePackages } from '../../lib/packages.jsx';
-import { usePackageStats } from '../../lib/packageStats.js';
+import { usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
 import PackageUsagePanel from './PackageUsagePanel.jsx';
 import PeoplePanel from './PeoplePanel.jsx';
 import SessionsTable from './SessionsTable.jsx';
@@ -12,6 +12,9 @@ export default function PackageDetail() {
     const { pkg, notFound } = usePackage(packageId);
     const { collection, userInfo } = usePackages();
     const { stats, status: statsStatus } = usePackageStats(pkg ? packageId : null);
+    // "Usando agora" tem carga própria, que se repete: ela envelhece em 60s,
+    // e o resto das estatísticas não envelhece enquanto a tela está aberta.
+    const online = usePackageOnline(pkg ? packageId : null);
     const [search, setSearch] = useState('');
 
     const suspendedKeys = useMemo(
@@ -109,6 +112,7 @@ export default function PackageDetail() {
                                                 pkg={pkg}
                                                 suspendedKeys={suspendedKeys}
                                                 lastUsageByUser={stats?.lastUsageByUser}
+                                                onlineUserIds={online.onlineUserIds}
                                                 statsReady={statsStatus === 'ready'}
                                             />
                                         </div>
@@ -120,6 +124,7 @@ export default function PackageDetail() {
                                         search={search}
                                         stats={stats}
                                         statsStatus={statsStatus}
+                                        online={online}
                                     />
                                 </div>
                             </div>
