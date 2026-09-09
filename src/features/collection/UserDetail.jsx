@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import ServiceIcon from '../../components/ServiceIcon.jsx';
 import { usePackage } from '../../lib/packages.jsx';
-import { usePackageStats } from '../../lib/packageStats.js';
+import { makeUserLookup, usePackageStats } from '../../lib/packageStats.js';
 import {
     byUser,
     filterAccessHistory,
@@ -25,7 +25,11 @@ export default function UserDetail() {
     const { pkg, notFound } = usePackage(packageId);
     const { stats, status } = usePackageStats(pkg ? packageId : null);
 
-    const user = pkg?.users?.find((item) => item.id === userId) || null;
+    // Sair do pacote não apaga o que a pessoa usou: o tempo dela continua no
+    // gráfico do pacote, então esta tela continua existindo para ex-membros —
+    // com o histórico inteiro e um aviso de que o acesso acabou.
+    const users = makeUserLookup(pkg, stats?.historyUsers);
+    const user = pkg ? users.find(userId) : null;
 
     // O período recorta a tela inteira, como na tela da sessão.
     const [period, setPeriod] = useState('7days');
@@ -43,7 +47,11 @@ export default function UserDetail() {
         [scoped, pkg]
     );
 
-    if (notFound || (pkg && !user)) return <UserNotFound packageId={packageId} />;
+    // Ex-membro só aparece depois do histórico chegar: antes disso "não
+    // encontrada" seria um veredito sobre um dado que ainda não veio.
+    if (notFound || (pkg && !user && status !== 'loading')) {
+        return <UserNotFound packageId={packageId} />;
+    }
     if (!pkg || !user) return null;
 
     const total = getTotalUsage(scoped);
@@ -64,6 +72,12 @@ export default function UserDetail() {
                                     </div>
                                     <h4 className="profile-title">{user.name}</h4>
                                     <p className="profile-subtitle">{user.email}</p>
+                                    {user.removed && (
+                                        <p className="profile-removed-note">
+                                            Esta pessoa foi removida do pacote. O uso abaixo é o que
+                                            ficou registrado enquanto ela tinha acesso.
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="overview-stats">

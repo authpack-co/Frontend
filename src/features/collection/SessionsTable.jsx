@@ -61,7 +61,7 @@ function useScrollToNewSessions(sessions) {
 export default function SessionsTable({ pkg, sessions, search, stats, statsStatus }) {
     const query = (search || '').trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
-    const { connect, gate } = useConnectSession(pkg, { isAcquired: false });
+    const { connect, connectingId, gate } = useConnectSession(pkg, { isAcquired: false });
     // A recaptura mora aqui (e não na linha) para o progresso sobreviver a
     // qualquer re-render da lista enquanto as abas abrem.
     const [updating, setUpdating] = useState(null);
@@ -114,6 +114,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                                     pkg={pkg}
                                     stats={stats}
                                     statsStatus={statsStatus}
+                                    connecting={connectingId === session.id}
                                     onConnect={connect}
                                     onUpdate={setUpdating}
                                     onShowUsingNow={setUsingNow}
@@ -138,6 +139,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
                     pkg={pkg}
                     session={usingNow}
                     accessHistory={stats?.accessHistory}
+                    historyUsers={stats?.historyUsers}
                     onClose={() => setUsingNow(null)}
                 />
             )}
@@ -153,7 +155,7 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate, onShowUsingNow }) {
+function SessionRow({ session, pkg, stats, statsStatus, connecting, onConnect, onUpdate, onShowUsingNow }) {
     const navigate = useNavigate();
     // 'rename' | 'delete' | null
     const [action, setAction] = useState(null);
@@ -214,69 +216,86 @@ function SessionRow({ session, pkg, stats, statsStatus, onConnect, onUpdate, onS
             />
 
             <div className="session-row-actions">
-                <OptionsMenu
-                    buttonClassName="session-options-btn"
-                    menuClassName="session-options"
-                    label="Ações da sessão"
-                    glyph="⋯"
-                    // A lista rola dentro da moldura: o menu é fixo no
-                    // viewport para não ser cortado na última linha.
-                    anchorTo=".session-row"
-                >
-                    {(closeMenu) => (
-                        <>
-                            <button
-                                className="connect-session-btn"
-                                type="button"
-                                disabled={inactive}
-                                onClick={() => { closeMenu(); onConnect(session); }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
-                                </svg>
-                                <span>Conectar</span>
-                            </button>
-                            {/* Recaptura: mesmo motor do "Adicionar sessão",
-                                sem etapa de seleção. */}
-                            <button
-                                className="update-session-btn"
-                                type="button"
-                                onClick={() => { closeMenu(); onUpdate(session); }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                    <path d="M21 3v5h-5" />
-                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                    <path d="M8 16H3v5" />
-                                </svg>
-                                <span>Atualizar</span>
-                            </button>
-                            <button
-                                className="edit-session-btn"
-                                type="button"
-                                onClick={() => { closeMenu(); setAction('rename'); }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                    <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
-                                </svg>
-                                <span>Editar</span>
-                            </button>
-                            <button
-                                className="delete-session-btn"
-                                type="button"
-                                onClick={() => { closeMenu(); setAction('delete'); }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                </svg>
-                                <span>Excluir</span>
-                            </button>
-                        </>
-                    )}
-                </OptionsMenu>
+                {/* O menu fecha no clique em "Conectar", então o spinner não
+                    cabe no botão: ele toma o lugar do ⋯, que é o que sobra da
+                    linha depois que o menu some. A extensão ainda vai buscar os
+                    dados de autenticação, e sem sinal nenhum a linha fica igual
+                    à de antes do clique. */}
+                {connecting ? (
+                    <span
+                        className="session-connecting"
+                        role="status"
+                        title="Conectando à sessão…"
+                        aria-label="Conectando à sessão"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <span className="spinner" aria-hidden="true"></span>
+                    </span>
+                ) : (
+                    <OptionsMenu
+                        buttonClassName="session-options-btn"
+                        menuClassName="session-options"
+                        label="Ações da sessão"
+                        glyph="⋯"
+                        // A lista rola dentro da moldura: o menu é fixo no
+                        // viewport para não ser cortado na última linha.
+                        anchorTo=".session-row"
+                    >
+                        {(closeMenu) => (
+                            <>
+                                <button
+                                    className="connect-session-btn"
+                                    type="button"
+                                    disabled={inactive}
+                                    onClick={() => { closeMenu(); onConnect(session); }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+                                    </svg>
+                                    <span>Conectar</span>
+                                </button>
+                                {/* Recaptura: mesmo motor do "Adicionar sessão",
+                                    sem etapa de seleção. */}
+                                <button
+                                    className="update-session-btn"
+                                    type="button"
+                                    onClick={() => { closeMenu(); onUpdate(session); }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                        <path d="M21 3v5h-5" />
+                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                        <path d="M8 16H3v5" />
+                                    </svg>
+                                    <span>Atualizar</span>
+                                </button>
+                                <button
+                                    className="edit-session-btn"
+                                    type="button"
+                                    onClick={() => { closeMenu(); setAction('rename'); }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                                    </svg>
+                                    <span>Editar</span>
+                                </button>
+                                <button
+                                    className="delete-session-btn"
+                                    type="button"
+                                    onClick={() => { closeMenu(); setAction('delete'); }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    </svg>
+                                    <span>Excluir</span>
+                                </button>
+                            </>
+                        )}
+                    </OptionsMenu>
+                )}
             </div>
 
             {action === 'rename' && <RenameSessionModal session={session} open onClose={closeAction} />}

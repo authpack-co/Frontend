@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Modal from '../../components/Modal.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
+import { makeUserLookup } from '../../lib/packageStats.js';
 import { buildUsingNowData, formatDuration } from '../../lib/usage.js';
 
 /**
@@ -13,7 +14,7 @@ import { buildUsingNowData, formatDuration } from '../../lib/usage.js';
  * O tempo corre sozinho: "ativo há" conta desde a conexão, então o card
  * recalcula a cada segundo em vez de congelar no instante em que abriu.
  */
-export default function UsingNowModal({ pkg, session, accessHistory, onClose }) {
+export default function UsingNowModal({ pkg, session, accessHistory, historyUsers, onClose }) {
     const [now, setNow] = useState(() => new Date());
 
     useEffect(() => {
@@ -30,9 +31,9 @@ export default function UsingNowModal({ pkg, session, accessHistory, onClose }) 
         : (people === 1 ? '1 pessoa usando agora' : `${people} pessoas usando agora`);
 
     // A pessoa pode ter saído do pacote depois de usar: a linha continua
-    // valendo, só perde nome e avatar.
-    const userOf = (userId) => (pkg.users || []).find((user) => user.id === userId)
-        || { id: userId, name: 'Usuário removido', email: '', picture: '' };
+    // valendo, e o nome e o avatar vêm do histórico, que guarda também quem
+    // não é mais membro.
+    const userOf = makeUserLookup(pkg, historyUsers).resolve;
 
     return (
         <Modal

@@ -42,6 +42,7 @@ export function usePackageStats(packageId) {
                     dailyUsage: getDailyPackageUsage(accessHistory),
                     onlineBySession: getOnlineBySession(accessHistory),
                     lastUsageByUser: normalizeLastUsage(data.usersLastUsage),
+                    historyUsers: indexById(data.historyUsers),
                 },
             });
         } catch (err) {
@@ -53,6 +54,53 @@ export function usePackageStats(packageId) {
     useEffect(() => { load(); }, [load]);
 
     return { ...state, reload: load };
+}
+
+/**
+ * As pessoas que o histórico cita, por id — membros atuais e quem já saiu.
+ *
+ * Remover alguém do pacote não apaga as conexões dela, e o gráfico e os
+ * totais seguem contando esse tempo. O backend manda essa lista junto do
+ * histórico justamente para as linhas dessa pessoa continuarem tendo nome:
+ * sem ela, o total de cima deixava de bater com o histórico de baixo.
+ */
+function indexById(historyUsers) {
+    const result = {};
+    (historyUsers || []).forEach((user) => { result[user.id] = user; });
+    return result;
+}
+
+/**
+ * Quem é cada userId de um histórico de pacote.
+ *
+ * `find` devolve null para quem não dá para identificar — é o que separa
+ * "essa pessoa saiu do pacote" de "esse id não é deste pacote". `resolve`
+ * nunca devolve null: linha de histórico sem dono ainda é uso que aconteceu,
+ * e escondê-la faria o total mentir.
+ *
+ * Ex-membro sai marcado com `removed`, para a tela poder dizer isso.
+ */
+export function makeUserLookup(pkg, historyUsers) {
+    const members = pkg?.users || [];
+    const byId = historyUsers || {};
+
+    function find(userId) {
+        const member = members.find((user) => user.id === userId);
+        if (member) return member;
+
+        const fromHistory = byId[userId];
+        if (fromHistory) return { ...fromHistory, removed: !fromHistory.isMember };
+
+        return null;
+    }
+
+    return {
+        find,
+        resolve(userId) {
+            return find(userId)
+                || { id: userId, name: 'Usuário removido', email: '', picture: '', removed: true };
+        },
+    };
 }
 
 /**

@@ -10,7 +10,7 @@ import { paletteFromSession } from '../../lib/palette.js';
  * administra o pacote — aqui só fariam volume. "Ver detalhes" leva ao uso do
  * próprio membro, que é o que ele tem para ver.
  */
-export default function AccessSessionCard({ session, packageId, inactive, onConnect }) {
+export default function AccessSessionCard({ session, packageId, inactive, connecting, onConnect }) {
     const palette = paletteFromSession(session);
     const domain = faviconDomain(session.url) || session.url || '';
 
@@ -33,18 +33,29 @@ export default function AccessSessionCard({ session, packageId, inactive, onConn
             </div>
 
             <div className="access-card-actions">
+                {/* Conectar não é instantâneo: a extensão ainda vai buscar os
+                    dados de autenticação antes de abrir a aba. Sem o spinner o
+                    card fica idêntico ao de antes do clique, e a pessoa clica
+                    de novo. */}
                 <button
-                    className="connect-session-btn"
+                    className={`connect-session-btn${connecting ? ' is-connecting' : ''}`}
                     type="button"
-                    disabled={inactive}
+                    disabled={inactive || connecting}
+                    aria-busy={connecting || undefined}
                     onClick={() => onConnect(session)}
                 >
-                    <span>Conectar</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 3h6v6"></path>
-                        <path d="M10 14 21 3"></path>
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    </svg>
+                    <span className="connect-session-label">
+                        {connecting ? 'Conectando' : 'Conectar'}
+                    </span>
+                    {connecting ? (
+                        <span className="spinner connect-spinner" aria-hidden="true"></span>
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 3h6v6"></path>
+                            <path d="M10 14 21 3"></path>
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        </svg>
+                    )}
                 </button>
                 <Link
                     className="access-details-btn"

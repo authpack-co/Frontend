@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import { usePackage } from '../../lib/packages.jsx';
-import { usePackageStats } from '../../lib/packageStats.js';
+import { makeUserLookup, usePackageStats } from '../../lib/packageStats.js';
 import {
     bySession,
     filterAccessHistory,
@@ -41,9 +41,17 @@ export default function SessionDetail() {
 
     const scoped = useMemo(() => filterByLastDays(history, days), [history, days]);
 
+    // Inclusive quem já saiu do pacote: o tempo dessa pessoa continua nos
+    // cards e no gráfico acima, então a linha dela tem que continuar aqui —
+    // senão o total não bate com o histórico que o explica.
+    const users = makeUserLookup(pkg, stats?.historyUsers);
+
     const rows = useMemo(
-        () => toAccessRows(scoped, (access) => (pkg?.users || []).find((u) => u.id === access.userId)),
-        [scoped, pkg]
+        () => toAccessRows(scoped, (access) => users.resolve(access.userId)),
+        // `users` é recriado a cada render; o que muda o resultado é o pacote
+        // e o histórico que vieram com ele.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [scoped, pkg, stats?.historyUsers]
     );
 
     if (notFound || (pkg && !session)) return <SessionNotFound packageId={packageId} />;
@@ -145,6 +153,14 @@ export default function SessionDetail() {
                                             {user.picture && <img src={user.picture} alt="" />}
                                         </div>
                                         <span>{user.name}</span>
+                                        {user.removed && (
+                                            <span
+                                                className="removed-user-tag"
+                                                title="Esta pessoa não tem mais acesso ao pacote"
+                                            >
+                                                removido
+                                            </span>
+                                        )}
                                     </div>
                                 )}
                             />

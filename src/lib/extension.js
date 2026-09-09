@@ -46,23 +46,26 @@ export function connectSession({ session, pkg, isAcquired }) {
 }
 
 /**
- * A extensão devolve o desfecho do connect por postMessage. Sem ouvir isso,
- * uma falha dela não produziria sinal nenhum na tela.
+ * A extensão devolve o desfecho do connect por postMessage.
+ *
+ * O callback recebe os dois desfechos, e não só a falha: o sucesso é o que
+ * diz que a busca dos dados de autenticação terminou e a aba vai abrir — é
+ * ele que apaga o spinner do botão. Sem ouvir isto, uma falha da extensão
+ * também não produziria sinal nenhum na tela.
  */
-export function useConnectResult(onFailure) {
+export function useConnectResult(onResult) {
     useEffect(() => {
         function handleMessage(event) {
             if (event.source !== window) return;
             if (event.data?.source !== 'niango-extension') return;
             if (event.data.type !== 'niango:connectResult') return;
-            if (event.data.ok) return;
 
-            onFailure(event.data.code);
+            onResult({ ok: !!event.data.ok, code: event.data.code });
         }
 
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
-    }, [onFailure]);
+    }, [onResult]);
 }
 
 export function useExtensionStatus() {

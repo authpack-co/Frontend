@@ -7620,3 +7620,73 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
         display: none;
     }
 }
+
+/* ============================================
+   Histórico de quem saiu do pacote
+   ============================================
+
+   Remover alguém revoga o acesso, não o passado: o tempo dessa pessoa
+   continua nos gráficos e nos totais, então as linhas dela continuam no
+   histórico. Estas duas marcas são o que diz que ela não é mais membro — sem
+   elas a tela sugeriria um acesso que não existe mais. */
+
+.removed-user-tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+    background: var(--ap-bg-hover);
+    border: 1px solid var(--ap-border);
+    padding: 1px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.profile-removed-note {
+    margin: 10px 0 0;
+    max-width: 34ch;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ap-text-muted);
+}
+
+/* ============================================
+   Conectando: o intervalo entre o clique e a aba
+   ============================================
+
+   O clique em "Conectar" não abre nada na hora — a extensão ainda busca os
+   dados de autenticação, e só então a aba abre. Sem sinal desse intervalo a
+   tela fica idêntica à de antes do clique, e a pessoa clica de novo. */
+
+.access-card .connect-session-btn .connect-spinner {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+    border-color: var(--ap-border);
+    border-top-color: currentColor;
+}
+
+/* A largura é reservada pelo rótulo mais longo, para trocar "Conectar" por
+   "Conectando" não empurrar o "Ver detalhes" ao lado. */
+.access-card .connect-session-label {
+    min-width: 11ch;
+    text-align: center;
+}
+
+.access-card .connect-session-btn.is-connecting {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-muted);
+    color: var(--ap-text-primary);
+    cursor: progress;
+}
+
+/* Na lista do dono o menu ⋯ fecha junto com o clique, então o spinner ocupa o
+   lugar dele — e, ao contrário do ⋯, aparece sem depender do cursor. */
+.session-row .session-connecting {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    cursor: progress;
+}
