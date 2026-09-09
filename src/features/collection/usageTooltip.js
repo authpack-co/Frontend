@@ -1,4 +1,4 @@
-import { paletteFromSession } from '../../lib/palette.js';
+import { parseDarkPalette } from '../../lib/palette.js';
 import { formatDuration, formatHours } from '../../lib/usage.js';
 
 /**
@@ -34,6 +34,18 @@ function compactDuration(seconds) {
     return formatDuration(Math.round(seconds / 60) * 60);
 }
 
+/**
+ * A cor da barra: a do próprio serviço, tirada do ícone dele.
+ *
+ * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
+ * vai de cinza. O paletteFromSession cairia no acento do tema, e uma barra
+ * laranja no meio das outras afirmaria que a sessão é laranja.
+ */
+function barColor(session) {
+    const rgb = parseDarkPalette(session?.darkPalette);
+    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'var(--ap-text-muted)';
+}
+
 function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -52,7 +64,7 @@ function rowsFor(sessions, secondsById) {
     const rows = (sessions || []).map((session) => ({
         id: session.id,
         name: session.name || 'Sessão',
-        color: paletteFromSession(session).c1,
+        color: barColor(session),
         seconds: secondsById[session.id] || 0,
     }));
 

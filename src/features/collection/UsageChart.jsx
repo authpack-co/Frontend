@@ -9,6 +9,7 @@ import {
     Tooltip,
 } from 'chart.js';
 import { useEffect, useRef } from 'react';
+import { useAppliedTheme } from '../../lib/theme.js';
 import { formatHours } from '../../lib/usage.js';
 import { createUsageTooltip } from './usageTooltip.js';
 
@@ -112,6 +113,11 @@ export default function UsageChart({ data, isDaily, sessions }) {
     // gráfico inteiro a cada render.
     const sessionsRef = useRef(sessions);
     sessionsRef.current = sessions;
+
+    // O tema, sim, é dependência: as cores abaixo saem dos tokens uma vez, e o
+    // canvas não se repinta quando eles mudam. Sem isto, trocar de tema
+    // deixava as linhas do tema anterior sobre o fundo novo.
+    const theme = useAppliedTheme();
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -242,7 +248,7 @@ export default function UsageChart({ data, isDaily, sessions }) {
             chart.destroy();
             tooltip.destroy();
         };
-    }, [data, isDaily]);
+    }, [data, isDaily, theme]);
 
     return <canvas ref={canvasRef}></canvas>;
 }
