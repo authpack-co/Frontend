@@ -356,6 +356,165 @@ body.user-logged-in .nav-user { display: flex; }
 .case-card .case-more { margin-top: auto; font-size: 14px; color: var(--ink-3); }
 .case-card:hover .case-more { color: var(--blue); }
 
+/* ── Cenas dos casos de uso ──
+   Cada card abre com um desenho que encena o que o texto diz: o acesso saindo
+   do pacote para o time, o contrato que começa e acaba, o tempo que corre até
+   a sessão fechar. É a mesma peça o tempo todo em loop — nada aqui reage a
+   clique, então o desenho é decoração e o aria-label do <svg> é quem conta a
+   história para quem não vê.
+
+   Todas as trilhas usam pathLength="100": o traço percorre a mesma fração do
+   caminho independentemente do comprimento real dele, e um único par de
+   keyframes serve para linhas retas e para as que fazem curva. */
+
+.figure.is-art.case-figure {
+  background:
+    radial-gradient(90% 130% at 50% 0%, rgba(var(--blue-rgb), .055), transparent 60%),
+    var(--bg);
+}
+
+.cs-cap {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  fill: var(--ink-3);
+}
+
+/* ── Cena 1: um pacote, três pessoas ── */
+
+/* O traço entra pela esquerda e sai pela direita: dasharray de 8 sobre um
+   caminho de 100, e o offset leva o traço de antes do início até depois do
+   fim. */
+.cs--team .cs-flow path {
+  stroke-dasharray: 8 100;
+  animation: cs-travel 2.6s linear infinite;
+  animation-delay: var(--d, 0s);
+}
+
+/* O visto chega junto com o traço, e some no recomeço. */
+.cs--team .cs-check {
+  fill: none;
+  stroke: var(--mint);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: cs-check 2.6s ease-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+/* A moldura da pessoa acende no instante em que o acesso chega. */
+.cs--team .cs-member > rect {
+  animation: cs-lit 2.6s ease-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes cs-travel {
+  from { stroke-dashoffset: 8; }
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes cs-check {
+  0%, 66% { opacity: 0; transform: scale(.5); }
+  78%, 92% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes cs-lit {
+  0%, 66% { stroke: var(--line); }
+  78%, 92% { stroke: rgba(var(--blue-rgb), .55); }
+  100% { stroke: var(--line); }
+}
+
+/* ── Cena 2: o acesso dura o contrato ── */
+
+/* O trecho laranja cresce do início ao fim, fica, e sai junto com o reinício —
+   é o "acaba quando o projeto acaba" em uma passada só. */
+.cs--contract .cs-fill {
+  stroke-dasharray: 100;
+  animation: cs-contract 4.6s ease-in-out infinite;
+}
+
+.cs--contract .cs-rider {
+  animation: cs-ride 4.6s ease-in-out infinite;
+}
+
+.cs--contract .cs-end {
+  opacity: 0;
+  animation: cs-close 4.6s ease-in-out infinite;
+}
+
+@keyframes cs-contract {
+  0%, 5% { stroke-dashoffset: 100; opacity: 0; }
+  12% { opacity: 1; }
+  55%, 86% { stroke-dashoffset: 0; opacity: 1; }
+  95%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes cs-ride {
+  0%, 5% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  55% { transform: translateX(216px); opacity: 1; }
+  74%, 100% { transform: translateX(216px); opacity: 0; }
+}
+
+@keyframes cs-close {
+  0%, 56% { opacity: 0; }
+  66%, 88% { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+
+/* ── Cena 3: liberado agora, encerrado depois ── */
+
+/* O anel se esvazia: com pathLength 100 o offset é a fração de tempo que
+   ainda resta. */
+.cs--temp .cs-dial {
+  stroke-dasharray: 100;
+  animation: cs-dial 5s ease-in-out infinite;
+}
+
+.cs--temp .cs-wire {
+  stroke-dasharray: 10 100;
+  animation: cs-wire 5s linear infinite;
+}
+
+.cs--temp .cs-win { animation: cs-fade 5s ease-in-out infinite; }
+.cs--temp .cs-dot { animation: cs-live 5s ease-in-out infinite; }
+.cs--temp .cs-shut { stroke: var(--line-2); animation: cs-shut 5s ease-in-out infinite; }
+
+@keyframes cs-dial {
+  0%, 6% { stroke-dashoffset: 0; opacity: 1; }
+  62%, 88% { stroke-dashoffset: 100; opacity: 1; }
+  96%, 100% { stroke-dashoffset: 100; opacity: 0; }
+}
+
+@keyframes cs-wire {
+  0% { stroke-dashoffset: 10; opacity: 1; }
+  55% { stroke-dashoffset: -100; opacity: 1; }
+  56%, 100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes cs-fade {
+  0%, 62% { opacity: 1; }
+  74%, 92% { opacity: .38; }
+  100% { opacity: 1; }
+}
+
+@keyframes cs-live {
+  0%, 62% { fill: var(--mint); }
+  74%, 92% { fill: var(--ink-3); }
+  100% { fill: var(--mint); }
+}
+
+@keyframes cs-shut {
+  0%, 62% { stroke: var(--line-2); }
+  74%, 92% { stroke: var(--blue); }
+  100% { stroke: var(--line-2); }
+}
+
 /* Card de passo — dentro da seção em caixa */
 .step-card {
   background: var(--bg-warm);
