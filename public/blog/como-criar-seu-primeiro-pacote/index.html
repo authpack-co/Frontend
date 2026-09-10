@@ -53,6 +53,18 @@
     <link rel="stylesheet" href="/assets/styles/home.css">
     <link rel="stylesheet" href="/blog/blog.css">
 
+    <!-- Boot de tema: a preferência do painel (niango-theme) vale no site
+         inteiro, aplicada antes do primeiro paint. Claro = sem atributo. -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('niango-theme') !== 'light') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) { }
+        })();
+    </script>
+
     <!-- ===== Structured data: Article + HowTo + Breadcrumb + FAQ ===== -->
     <script type="application/ld+json">
     {

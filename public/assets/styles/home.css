@@ -1,58 +1,122 @@
 /* ============================================================================
    Niango — Public site (landing, blog, pricing)
 
-   Tema único: dark, alinhado ao dashboard (assets/styles/theme-tokens.css).
-   Não existe variante light — as páginas públicas não trocam de tema.
+   Dois temas, a mesma preferência do dashboard: a chave `niango-theme` do
+   localStorage (assets/scripts/themeManager.js). Claro é o estado sem
+   atributo; escuro entra por data-theme="dark" no <html> — igual ao app.
+   Quem escolhe o tema no painel encontra o site no mesmo tema.
 
-   As variáveis abaixo mantêm os nomes históricos (--ink, --line, --blue…)
-   porque blog.css e a página de preços dependem delas; só os valores mudaram.
+   Os valores espelham assets/styles/theme-tokens.css (--ap-*), mas os nomes
+   continuam os históricos (--ink, --line, --blue…) porque blog.css e a página
+   de preços dependem deles.
    ============================================================================ */
 
+/* ── Tema claro (padrão, como no dashboard) ── */
 :root {
   /* ── Superfícies ── */
-  --bg: #17181a;          /* página            (= --ap-bg-page)     */
-  --card: #131416;        /* card              (= --ap-bg-card)     */
-  --bg-warm: #1b1c1e;     /* card alternativo  (= --ap-bg-card-alt) */
-  --hover: #232426;       /* hover             (= --ap-bg-hover)    */
+  --bg: #f7f7f6;          /* página            (= --ap-bg-page)     */
+  --card: #ffffff;        /* card              (= --ap-bg-card)     */
+  --bg-warm: #fafaf9;     /* card alternativo  (= --ap-bg-card-alt) */
+  --hover: #f1f1ef;       /* hover             (= --ap-bg-hover)    */
+  --muted: #e7e6e3;       /* superfície inerte (= --ap-bg-muted)    */
 
   /* ── Texto ── */
-  --ink: #e8e6e3;
-  --ink-2: #d6d3cd;
-  --ink-3: #9d9488;
+  --ink: #1a1a1c;
+  --ink-2: #44444a;
+  --ink-3: #71717a;
 
   /* ── Bordas ── */
-  --line: #2e2f33;
-  --line-2: #3a3b3f;
+  --line: #e6e5e2;
+  --line-2: #d5d3ce;
 
   /* ── Acento (laranja da marca) ──
      Os nomes --blue* são históricos: blog.css e a página de preços
-     dependem deles. Só o valor mudou (azul → laranja). */
+     dependem deles. Só o valor mudou (azul → laranja).
+
+     --blue preenche (botão, ponto, anel de foco) e --accent-ink escreve:
+     no claro o laranja de preenchimento não tem contraste para texto
+     pequeno, então o texto usa o tom queimado. */
   --blue: #f97316;
-  --blue-deep: #fb923c;
-  --blue-soft: rgba(249, 115, 22, 0.15);
+  --blue-deep: #c2410c;
+  --accent-ink: #c2410c;
+  --blue-soft: rgba(249, 115, 22, 0.12);
   --blue-rgb: 249, 115, 22;
-  --mint: #4ade80;
-  --accent-soft: #fbb072;
+  --mint: #16a34a;
+  --accent-soft: #c2410c;
 
   /* Gradientes. O acento entra em dose pequena — o laranja cansa quando
      cobre superfície grande, então aqui ele só tinge o fundo. */
   --grad-brand: linear-gradient(92deg, #f97316 0%, #fb923c 100%);
-  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.02));
-  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #fbb072 100%);
+  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.06), rgba(249, 115, 22, 0.01));
+  --grad-text: linear-gradient(92deg, #1a1a1c 0%, #c2410c 100%);
 
   /* ── Sombras ── */
-  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --sh-2: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --sh-3: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --sh-1: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sh-2: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
+  --sh-3: 0 10px 24px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.06);
 
   /* Hachura usada nos placeholders de imagem */
-  --stripe: rgba(232, 230, 227, 0.05);
+  --stripe: rgba(26, 26, 28, 0.05);
+
+  /* ── Mockups (SVG inline na landing) ──
+     Tons que só aparecem nos desenhos: campos, a moldura do navegador e a
+     página simulada atrás do popup da extensão. O popup em si fica escuro
+     nos dois temas — é assim que a extensão aparece na tela. */
+  --art-inset: #ededea;      /* campo, pílula, canvas da página simulada */
+  --art-surface: #ffffff;    /* cartão dentro da página simulada         */
+  --art-chrome: #e9e8e4;     /* barra de título do navegador             */
+  --art-bar: #e7e6e2;        /* linha de texto (esqueleto)               */
+  --art-bar-2: #d8d6d1;      /* título (esqueleto)                       */
+  --art-placeholder: #a1a1aa; /* texto de campo vazio                    */
+  --art-selected-line: #cfcdc8; /* borda do item selecionado             */
 
   --radius: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
 
   --container: 1280px;
+
+  color-scheme: light;
+}
+
+/* ── Tema escuro ── */
+:root[data-theme="dark"] {
+  --bg: #17181a;
+  --card: #131416;
+  --bg-warm: #1b1c1e;
+  --hover: #232426;
+  --muted: #26272a;
+
+  --ink: #e8e6e3;
+  --ink-2: #d6d3cd;
+  --ink-3: #9d9488;
+
+  --line: #2e2f33;
+  --line-2: #3a3b3f;
+
+  --blue: #f97316;
+  --blue-deep: #fb923c;
+  --accent-ink: #f97316;
+  --blue-soft: rgba(249, 115, 22, 0.15);
+  --mint: #4ade80;
+  --accent-soft: #fbb072;
+
+  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.02));
+  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #fbb072 100%);
+
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --sh-2: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --sh-3: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --stripe: rgba(232, 230, 227, 0.05);
+
+  --art-inset: #0f1011;
+  --art-surface: #171719;
+  --art-chrome: #1a1d21;
+  --art-bar: #191a1c;
+  --art-bar-2: #212225;
+  --art-placeholder: #8f8d8a;
+  --art-selected-line: #45464a;
 
   color-scheme: dark;
 }
@@ -148,7 +212,7 @@ body.user-logged-in .nav-user { display: flex; }
 .nav-plus-badge {
   font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
   letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--blue); background: var(--blue-soft);
+  color: var(--accent-ink); background: var(--blue-soft);
   border-radius: 6px; padding: 3px 7px; line-height: 1.4;
 }
 
@@ -227,7 +291,7 @@ body.user-logged-in .nav-user { display: flex; }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mint); flex-shrink: 0; }
 .eyebrow .pill {
   display: inline-block; padding: 2px 8px; border-radius: 999px;
-  background: var(--blue-soft); color: var(--blue);
+  background: var(--blue-soft); color: var(--accent-ink);
   font-weight: 600; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
 }
 
@@ -241,7 +305,7 @@ body.user-logged-in .nav-user { display: flex; }
   text-wrap: pretty;
   max-width: 15ch;
 }
-.h1 .grad { color: var(--blue); }
+.h1 .grad { color: var(--accent-ink); }
 
 .lede {
   max-width: 60ch;
@@ -290,10 +354,48 @@ body.user-logged-in .nav-user { display: flex; }
 /* Arte vetorial embutida (mockups da extensão e do painel, desenhados a partir
    do código real). Substitui a hachura por uma superfície chapada e deixa o
    bloco seguir a proporção do desenho em vez de uma altura fixa. */
-.figure.is-art { background: #131416; }
+.figure.is-art { background: var(--card); }
 .figure.is-art svg { display: block; width: 100%; height: 100%; }
 .figure--hero.is-art { height: auto; aspect-ratio: 620 / 420; }
 .figure--tall.is-art { height: auto; aspect-ratio: 580 / 473; }
+
+/* Paleta dos mockups.
+   Os desenhos trazem a paleta escura direto no atributo (fill/stroke), o que
+   mantém a arte correta mesmo sem CSS. Aqui cada tom é religado ao token
+   equivalente: qualquer regra CSS vence um atributo de apresentação, então o
+   desenho passa a seguir o tema sem precisar tocar em centena de atributos.
+   Mudou um tom no SVG? Acrescente a linha correspondente aqui.
+
+   Fora da lista, de propósito: o laranja da marca e as cores dos serviços
+   (Figma, Linear, Stripe…), que não mudam com o tema; o disco da marca
+   (#1d1d1c + #fdfaf6), que é o símbolo e não uma superfície; e o painel do
+   popup da extensão (#1c1c1e + branco translúcido), escuro nos dois temas. */
+.figure.is-art svg [fill="#17181a"] { fill: var(--bg); }
+.figure.is-art svg [fill="#131416"] { fill: var(--card); }
+.figure.is-art svg [fill="#1b1c1e"] { fill: var(--bg-warm); }
+.figure.is-art svg [fill="#26272a"] { fill: var(--muted); }
+.figure.is-art svg [fill="#2e2f33"] { fill: var(--line); }
+.figure.is-art svg [fill="#3a3b3f"] { fill: var(--line-2); }
+.figure.is-art svg [fill="#e8e6e3"] { fill: var(--ink); }
+.figure.is-art svg [fill="#d6d3cd"] { fill: var(--ink-2); }
+.figure.is-art svg [fill="#9d9488"] { fill: var(--ink-3); }
+.figure.is-art svg [fill="#8f8d8a"] { fill: var(--art-placeholder); }
+.figure.is-art svg [fill="#0f1011"] { fill: var(--art-inset); }
+.figure.is-art svg [fill="#171719"] { fill: var(--art-surface); }
+.figure.is-art svg [fill="#1a1d21"] { fill: var(--art-chrome); }
+.figure.is-art svg [fill="#191a1c"] { fill: var(--art-bar); }
+.figure.is-art svg [fill="#212225"] { fill: var(--art-bar-2); }
+
+.figure.is-art svg [stroke="#17181a"] { stroke: var(--bg); }
+.figure.is-art svg [stroke="#131416"] { stroke: var(--card); }
+.figure.is-art svg [stroke="#1b1c1e"] { stroke: var(--bg-warm); }
+.figure.is-art svg [stroke="#26272a"] { stroke: var(--muted); }
+.figure.is-art svg [stroke="#2e2f33"] { stroke: var(--line); }
+.figure.is-art svg [stroke="#3a3b3f"] { stroke: var(--line-2); }
+.figure.is-art svg [stroke="#45464a"] { stroke: var(--art-selected-line); }
+.figure.is-art svg [stroke="#e8e6e3"] { stroke: var(--ink); }
+.figure.is-art svg [stroke="#d6d3cd"] { stroke: var(--ink-2); }
+.figure.is-art svg [stroke="#9d9488"] { stroke: var(--ink-3); }
 
 
 /* ============================================================================
@@ -354,7 +456,7 @@ body.user-logged-in .nav-user { display: flex; }
 .case-card h3 { font-size: 20px; line-height: 28px; font-weight: 600; }
 .case-card p { margin: 0; font-size: 16px; line-height: 24px; color: var(--ink-2); }
 .case-card .case-more { margin-top: auto; font-size: 14px; color: var(--ink-3); }
-.case-card:hover .case-more { color: var(--blue); }
+.case-card:hover .case-more { color: var(--accent-ink); }
 
 /* ── Cenas dos casos de uso ──
    Cada card abre com um desenho que encena o que o texto diz: o acesso saindo
@@ -542,7 +644,7 @@ body.user-logged-in .nav-user { display: flex; }
 }
 .value-card .value-num {
   width: 40px; height: 40px; border-radius: var(--radius);
-  background: var(--blue-soft); color: var(--blue);
+  background: var(--blue-soft); color: var(--accent-ink);
   display: grid; place-items: center;
   font-family: 'JetBrains Mono', monospace; font-size: 14px;
 }

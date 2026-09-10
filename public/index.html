@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,7 @@
     <link rel="canonical" href="https://niango.io/">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#17181a">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="light dark">
 
     <!-- ===== Open Graph ===== -->
     <meta property="og:type" content="website">
@@ -43,9 +43,24 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/assets/styles/home.css">
 
+    <!-- Mesmo boot de tema do app (app.html / assets/scripts/themeManager.js):
+         a preferência do painel vale aqui, e é aplicada antes do primeiro paint
+         para o site não piscar no tema errado. Claro = sem atributo. -->
+    <script>
+        (function () {
+            var dark = true;
+            try {
+                dark = localStorage.getItem('niango-theme') !== 'light';
+            } catch (e) { }
+            if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', dark ? '#17181a' : '#f7f7f6');
+        })();
+    </script>
+
     <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
     <style id="ap-block-style">
-        html { visibility: hidden !important; background: #17181a; }
+        html { visibility: hidden !important; background: var(--bg, #17181a); }
     </style>
     <script>
         (function () {
@@ -725,19 +740,19 @@
                                 <path d="M0 32h580" stroke="#26272a" />
 
                                 <!-- ── Página por baixo ── -->
-                                <rect x="24" y="52" width="176" height="12" rx="4" fill="#1b1c1e" />
+                                <rect x="24" y="52" width="176" height="12" rx="4" fill="#212225" />
                                 <rect x="24" y="74" width="112" height="8" rx="4" fill="#191a1c" />
                                 <rect x="24" y="104" width="196" height="86" rx="8" fill="#171719" />
                                 <rect x="24" y="204" width="196" height="86" rx="8" fill="#171719" />
                                 <rect x="24" y="304" width="196" height="86" rx="8" fill="#171719" />
                                 <rect x="40" y="122" width="84" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="140" width="140" height="6" rx="3" fill="#1b1c1e" />
-                                <rect x="40" y="154" width="118" height="6" rx="3" fill="#1b1c1e" />
+                                <rect x="40" y="140" width="140" height="6" rx="3" fill="#191a1c" />
+                                <rect x="40" y="154" width="118" height="6" rx="3" fill="#191a1c" />
                                 <rect x="40" y="222" width="96" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="240" width="140" height="6" rx="3" fill="#1b1c1e" />
-                                <rect x="40" y="254" width="104" height="6" rx="3" fill="#1b1c1e" />
+                                <rect x="40" y="240" width="140" height="6" rx="3" fill="#191a1c" />
+                                <rect x="40" y="254" width="104" height="6" rx="3" fill="#191a1c" />
                                 <rect x="40" y="322" width="72" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="340" width="140" height="6" rx="3" fill="#1b1c1e" />
+                                <rect x="40" y="340" width="140" height="6" rx="3" fill="#191a1c" />
 
                                 <!-- ── Popup da extensão (coordenadas reais, 350×450) ── -->
                                 <g transform="translate(228 50) scale(.88)" filter="url(#apShadow)">
