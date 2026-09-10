@@ -1,10 +1,9 @@
 /**
  * Marcas de terceiros em versão monocromática.
  *
- * As duas usam currentColor de propósito: os botões onde elas aparecem são
- * laranja com texto branco, então a marca sai branca sem precisar cravar a
- * cor — e no tile claro das configurações ela acompanha o texto do tema em
- * vez de sumir no fundo.
+ * As duas usam currentColor de propósito: no botão primário a legenda é o
+ * inverso do acento (off-white no claro, preto no escuro), e a marca segue
+ * junto sem cravar cor — no tile das configurações ela acompanha o texto.
  */
 
 /**

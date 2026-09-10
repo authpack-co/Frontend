@@ -468,7 +468,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .profile-picture.plus-avatar {
     outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
-    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 /* Plus plan - badge tag */
@@ -820,7 +820,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .plus-subscribe-btn svg {
-    color: #fbbf24;
+    color: var(--ap-accent-strong);
 }
 
 .nav-menu {
@@ -1070,7 +1070,7 @@ span.coming-soon {
 
 .ext-btn--primary {
     background: var(--ap-accent);
-    color: #ffffff;
+    color: var(--ap-text-inverse);
 }
 
 .ext-btn--primary:hover {
@@ -2481,7 +2481,7 @@ span.coming-soon {
 
 .btn-primary {
     background: var(--ap-accent);
-    color: #ffffff;
+    color: var(--ap-text-inverse);
     border-color: var(--ap-accent);
 }
 
@@ -3454,7 +3454,7 @@ span.coming-soon {
 
 /* Pick de pacote Plus — borda e brilho no acento da marca */
 .access-item.plus-pick {
-    box-shadow: 0 0 0 1px rgba(var(--ap-accent-rgb), 0.22), 0 4px 16px rgba(var(--ap-accent-rgb), 0.12);
+    box-shadow: 0 0 0 1px var(--ap-accent-muted), var(--ap-shadow-sm);
 }
 
 /* Badge absoluto no canto superior direito do card-header */
@@ -3947,8 +3947,9 @@ button:focus-visible,
 }
 
 /* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
-   clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
-   laranja de acessibilidade continua nos controles que não são de digitar. */
+   clique — então este é o foco que se vê no dia a dia, e ele é a borda um tom
+   acima. O anel de acessibilidade continua nos controles que não são de
+   digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -4419,16 +4420,15 @@ textarea:focus-visible {
 }
 
 .pkg-person-btn--primary {
-    background: var(--ap-accent, #f97316);
+    background: var(--ap-accent);
     border-color: transparent;
-    color: #fff;
+    color: var(--ap-text-inverse);
     font-weight: 600;
 }
 
 .pkg-person-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover, #ea6a0c);
-    color: #fff;
-    filter: brightness(1.05);
+    background: var(--ap-accent-hover);
+    color: var(--ap-text-inverse);
 }
 
 .pkg-person-btn--danger:hover:not(:disabled) {
@@ -4758,7 +4758,7 @@ textarea:focus-visible {
 }
 
 .us-item.is-selected .us-item-check {
-    background: var(--ap-accent); border-color: var(--ap-accent); color: #fff;
+    background: var(--ap-accent); border-color: var(--ap-accent); color: var(--ap-text-inverse);
 }
 
 .as-pkg-icon {
@@ -4817,7 +4817,7 @@ textarea:focus-visible {
     border-radius: 6px; background: var(--ap-bg-muted); color: var(--ap-text-primary);
     border: none; cursor: pointer; transition: all 0.15s ease;
 }
-.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
+.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: var(--ap-text-inverse); }
 .as-dropdown-item.is-selected .as-dropdown-btn { background: transparent; color: var(--ap-text-muted); padding: 6px; cursor: default; }
 
 .as-selected-section { margin-bottom: 24px; }
@@ -4921,7 +4921,7 @@ textarea:focus-visible {
 }
 .as-service-check {
     flex: none; width: 18px; height: 18px; border-radius: 50%;
-    display: grid; place-items: center; color: #fff; background: var(--ap-accent);
+    display: grid; place-items: center; color: var(--ap-text-inverse); background: var(--ap-accent);
     opacity: 0; transform: scale(.6); transition: all .18s ease;
 }
 .as-service.is-selected .as-service-check { opacity: 1; transform: scale(1); }
@@ -5405,7 +5405,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     height: 44px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-accent);
-    color: #fff;
+    color: var(--ap-text-inverse);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6727,13 +6727,16 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     left: 2px;
     width: 20px;
     height: 20px;
-    background-color: #fff;
+    background-color: #fdfaf6;
     border-radius: 50%;
     transition: transform 0.2s ease;
 }
 
+/* Sobre o trilho aceso o botão é o inverso do acento: no escuro o trilho é
+   off-white, e um botão branco desapareceria nele. */
 .toggle-switch.active .toggle-slider {
     transform: translateX(20px);
+    background-color: var(--ap-text-inverse);
 }
 
 /* Status Badge */
@@ -7144,12 +7147,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     background:
         linear-gradient(var(--ap-bg-card), var(--ap-bg-card)) padding-box,
         linear-gradient(150deg, var(--ap-accent), var(--ap-accent-strong)) border-box;
-    box-shadow: 0 14px 34px -20px rgba(var(--ap-accent-rgb), 0.45);
+    box-shadow: var(--ap-shadow-md);
 }
 
 .plan-card--featured:hover {
     border-color: transparent;
-    box-shadow: 0 18px 40px -20px rgba(var(--ap-accent-rgb), 0.5);
+    box-shadow: var(--ap-shadow-lg);
 }
 
 /* Selo do card em destaque e do plano atual: mesma pílula, cores distintas. */
@@ -7169,8 +7172,8 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 
 .plan-badge {
     background: var(--ap-accent-strong);
-    color: #fff;
-    box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
+    color: var(--ap-text-inverse);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 /* ── Cabeçalho ── */
@@ -7252,7 +7255,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border: 1px solid transparent;
     border-radius: var(--ap-radius-md);
     background: var(--ap-accent-strong);
-    color: #fff;
+    color: var(--ap-text-inverse);
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 600;
@@ -7507,7 +7510,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border: none;
     border-radius: 10px;
     background: var(--ap-accent);
-    color: #ffffff;
+    color: var(--ap-text-inverse);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -7516,12 +7519,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .plus-cta-btn:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
+    box-shadow: var(--ap-shadow-md);
     transform: translateY(-1px);
 }
 

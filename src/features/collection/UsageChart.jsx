@@ -135,8 +135,8 @@ export default function UsageChart({ data, isDaily, sessions }) {
 
         const styles = getComputedStyle(document.documentElement);
         const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
-        const accent = token('--ap-accent', '#f97316');
-        const accentRgb = token('--ap-accent-rgb', '249, 115, 22');
+        const accent = token('--ap-accent', '#fdfaf6');
+        const accentRgb = token('--ap-accent-rgb', '253, 250, 246');
         const cardBg = token('--ap-bg-card', '#131416');
         const border = token('--ap-border', '#2e2f33');
         const fontBody = token('--ap-font-body', 'system-ui, sans-serif');
@@ -181,7 +181,7 @@ export default function UsageChart({ data, isDaily, sessions }) {
                     pointBorderWidth: 2,
                     pointHoverRadius: 6,
                     pointHoverBackgroundColor: cardBg,
-                    pointHoverBorderColor: token('--ap-accent-strong', '#fb923c'),
+                    pointHoverBorderColor: token('--ap-accent-strong', '#ffffff'),
                     pointHoverBorderWidth: 2.5,
                 }],
             },

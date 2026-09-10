@@ -189,7 +189,7 @@ body.user-logged-in .nav-user {
 .nav-profile-picture.plus-avatar {
     outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
-    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px var(--ap-accent-muted);
 }
 
 /* Plus badge */
@@ -253,7 +253,7 @@ body.user-logged-in .nav-user {
     align-items: center;
     gap: 8px;
     background: var(--ap-accent);
-    color: #ffffff;
+    color: var(--ap-text-inverse);
     border: none;
     font-size: 15px;
     font-weight: 600;
@@ -268,7 +268,7 @@ body.user-logged-in .nav-user {
 .nav-btn-primary:hover {
     background: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(var(--ap-accent-rgb), 0.25);
+    box-shadow: var(--ap-shadow-md);
 }
 
 .navbar.navbar-light .nav-btn-primary {
@@ -280,7 +280,7 @@ body.user-logged-in .nav-user {
 
 .navbar.navbar-light .nav-btn-primary:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 2px 8px rgba(var(--ap-accent-rgb), 0.35);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 /* Hidden helper */

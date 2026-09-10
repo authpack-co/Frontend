@@ -91,7 +91,7 @@
     justify-content: center;
     gap: 12px;
     background-color: var(--ap-accent);
-    color: #ffffff;
+    color: var(--ap-text-inverse);
     font-size: 16px;
     font-weight: 600;
     padding: 14px 24px;
@@ -100,13 +100,13 @@
     cursor: pointer;
     width: 100%;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .btn-google:hover {
     background-color: var(--ap-accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
+    box-shadow: var(--ap-shadow-md);
 }
 
 .btn-google svg {

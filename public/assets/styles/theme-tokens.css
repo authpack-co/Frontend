@@ -4,6 +4,10 @@
    All visual theming is controlled from this single file.
    Light theme is the default; Dark theme is activated via data-theme="dark"
    on the <html> element.
+
+   A marca é preto e off-white, e o acento acompanha: ação primária é preta
+   com texto off-white no claro, e off-white com texto preto no escuro. Cor
+   sobrou só onde ela informa — sucesso, aviso, erro e as marcas de terceiros.
    
    Naming convention: --ap-{category}-{property}
    ============================================================================ */
@@ -32,36 +36,41 @@
     --ap-text-secondary: #44444a;
     --ap-text-muted: #71717a;
     --ap-text-placeholder: #a1a1aa;
-    --ap-text-inverse: #ffffff;
+    /* Texto sobre o acento (botão primário, badge cheio). */
+    --ap-text-inverse: #fdfaf6;
 
     /* ── Borders ── */
     --ap-border: #e6e5e2;
     --ap-border-hover: #d5d3ce;
-    /* Foco de campo é neutro: o laranja da marca fica para ação primária e
-       estado selecionado. Um tom acima da borda de repouso — o bastante para
-       dizer onde se está digitando. */
+    /* Foco de campo é um tom acima da borda de repouso — o bastante para
+       dizer onde se está digitando, sem virar moldura. */
     --ap-border-focus: #71717a;
     --ap-border-muted: #d5d3ce;
 
-    /* ── Accent (Laranja — cor da marca) ──
+    /* ── Accent (preto da marca) ──
        Reservado a ações primárias, estado ativo/selecionado e foco.
-       O que é decorativo usa a escala neutra acima. */
-    --ap-accent: #f97316;
-    --ap-accent-hover: #ea6a0c;
-    --ap-accent-light: #fff7ed;
-    --ap-accent-muted: #fed7aa;
-    --ap-accent-strong: #c2410c;
-    --ap-accent-subtle: rgba(234, 88, 12, 0.08);
-    /* Canal RGB do acento — para glows e anéis: rgba(var(--ap-accent-rgb), .3) */
-    --ap-accent-rgb: 249, 115, 22;
-    /* Plus (tier premium): âmbar → laranja, "dourado" sem sair da família
-       da marca. No claro os dois tons escurecem para manter contraste. */
-    --ap-plus-gradient: linear-gradient(135deg, #d97706, #c2410c);
+       O que é decorativo usa a escala neutra acima.
 
-    /* ── Seleção (neutra) ──
-       Item ativo/selecionado se distingue por superfície e peso, não por
-       matiz: um segundo tom brigaria com o laranja e recriaria o cansaço.
-       O acento fica para ação (CTA, foco, progresso), não para estado. */
+       O acento é o mesmo preto do símbolo. Como não há matiz para separar
+       ação de superfície, quem faz o trabalho é o contraste: o botão é o
+       ponto mais escuro da tela, e o texto dele é o off-white da marca
+       (--ap-text-inverse). No escuro os dois papéis trocam de lado. */
+    --ap-accent: #1d1d1c;
+    --ap-accent-hover: #333230;
+    --ap-accent-light: #f1f0ed;
+    --ap-accent-muted: #d5d3ce;
+    --ap-accent-strong: #0f0f0e;
+    --ap-accent-subtle: rgba(29, 29, 28, 0.06);
+    /* Canal RGB do acento — para glows e anéis: rgba(var(--ap-accent-rgb), .3) */
+    --ap-accent-rgb: 29, 29, 28;
+    /* Plus (tier premium): grafite → preto. O "dourado" saiu com o laranja;
+       o que distingue o tier agora é profundidade, não matiz. */
+    --ap-plus-gradient: linear-gradient(135deg, #4a4842, #1d1d1c);
+
+    /* ── Seleção ──
+       Item ativo/selecionado se distingue por superfície e peso: o acento,
+       sendo preto cheio, é peso demais para estado — fica para ação (CTA,
+       foco, progresso). */
     --ap-selected-bg: #edece9;
     --ap-selected-border: #cfcdc8;
 
@@ -72,8 +81,8 @@
     --ap-success-text: #15803d;
 
     /* ── Warning ──
-       Puxado para o amarelo (e não para o âmbar) para não colidir
-       com o laranja da marca. */
+       Puxado para o amarelo, e não para o âmbar: âmbar sobre off-white
+       lê como sujeira, amarelo lê como aviso. */
     --ap-warning: #ca8a04;
     --ap-warning-light: #fefce8;
     --ap-warning-border: #fde047;
@@ -149,7 +158,8 @@
     --ap-text-secondary: #d6d3cd;
     --ap-text-muted: #9d9488;
     --ap-text-placeholder: #8f8d8a;
-    --ap-text-inverse: #17181a;
+    /* Texto sobre o acento — que aqui é claro, então este é escuro. */
+    --ap-text-inverse: #1d1d1c;
 
     /* ── Borders ── */
     --ap-border: #2e2f33;
@@ -157,15 +167,18 @@
     --ap-border-focus: #9d9488;
     --ap-border-muted: #6d655a;
 
-    /* ── Accent (Laranja — cor da marca) ── */
-    --ap-accent: #f97316;
-    --ap-accent-hover: #fb8f3f;
-    --ap-accent-light: rgba(249, 115, 22, 0.10);
-    --ap-accent-muted: rgba(249, 115, 22, 0.18);
-    --ap-accent-strong: #fb923c;
-    --ap-accent-subtle: rgba(249, 115, 22, 0.08);
-    --ap-accent-rgb: 249, 115, 22;
-    --ap-plus-gradient: linear-gradient(135deg, #fbbf24, #f97316);
+    /* ── Accent (off-white da marca) ──
+       Espelho do claro: aqui o botão é o ponto mais claro da tela, e o
+       texto dele é o preto da marca. O hover recua um tom em vez de
+       clarear — no escuro não há para onde clarear. */
+    --ap-accent: #fdfaf6;
+    --ap-accent-hover: #e8e6e3;
+    --ap-accent-light: rgba(253, 250, 246, 0.10);
+    --ap-accent-muted: rgba(253, 250, 246, 0.20);
+    --ap-accent-strong: #ffffff;
+    --ap-accent-subtle: rgba(253, 250, 246, 0.07);
+    --ap-accent-rgb: 253, 250, 246;
+    --ap-plus-gradient: linear-gradient(135deg, #fdfaf6, #b8b2a7);
 
     /* ── Seleção (neutra) ── */
     --ap-selected-bg: #26272a;
@@ -177,17 +190,14 @@
     --ap-success-border: rgba(76, 175, 80, 0.3);
     --ap-success-text: #4ade80;
 
-    /* ── Warning ──
-       Amarelo, para não colidir com o laranja da marca. */
+    /* ── Warning ── */
     --ap-warning: #facc15;
     --ap-warning-light: rgba(250, 204, 21, 0.1);
     --ap-warning-border: rgba(250, 204, 21, 0.28);
     --ap-warning-text: #facc15;
     --ap-warning-rgb: 250, 204, 21;
 
-    /* ── Danger / Error ──
-       Vermelho puro: o antigo #f54e42 puxava para o laranja e passaria
-       a competir com o acento da marca. */
+    /* ── Danger / Error ── */
     --ap-danger: #ef4444;
     --ap-danger-light: rgba(169, 20, 9, 0.2);
     --ap-danger-border: rgba(239, 68, 68, 0.3);

@@ -196,7 +196,7 @@
     transition: background .15s, border-color .15s, opacity .15s;
 }
 .admin-btn:hover { background: var(--ap-bg-hover); }
-.admin-btn-primary { background: var(--ap-accent-strong); border-color: var(--ap-accent-strong); color: #fff; }
+.admin-btn-primary { background: var(--ap-accent-strong); border-color: var(--ap-accent-strong); color: var(--ap-text-inverse); }
 .admin-btn-primary:hover { background: var(--ap-accent-hover); }
 .admin-btn-danger { background: var(--ap-danger); border-color: var(--ap-danger); color: #fff; }
 .admin-btn-danger:hover { opacity: .9; }

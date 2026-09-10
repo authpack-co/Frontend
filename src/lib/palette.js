@@ -4,8 +4,10 @@
  * ícone nos cards de acesso.
  */
 
-// Accent do tema — só quando a sessão não traz cor.
-const NEUTRAL_RGB = [249, 115, 22];
+// Cinza da escala neutra — só quando a sessão não traz cor. Não é o acento
+// do tema: o acento inverte entre claro e escuro, e este valor é lido em JS,
+// longe do CSS que sabe qual tema está no ar.
+const NEUTRAL_RGB = [125, 120, 113];
 
 const clamp255 = (value) => Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
 
