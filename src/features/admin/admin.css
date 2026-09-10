@@ -251,7 +251,7 @@
 .badge-admin { background: var(--ap-warning-light); color: var(--ap-warning-text); border-color: var(--ap-warning-border); }
 .badge-active { background: var(--ap-success-light); color: var(--ap-success-text); border-color: var(--ap-success-border); }
 .badge-suspended { background: var(--ap-danger-light); color: var(--ap-danger-text); border-color: var(--ap-danger-border); }
-.badge-plan-plus { background: var(--ap-moss-light); color: var(--ap-moss); }
+.badge-plan-plus { background: var(--ap-accent-light); color: var(--ap-accent-strong); }
 .badge-neutral { background: var(--ap-bg-muted); color: var(--ap-text-muted); }
 
 /* ── States ──────────────────────────────────────────────── */

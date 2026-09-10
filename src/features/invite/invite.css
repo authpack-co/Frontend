@@ -40,8 +40,8 @@ button { font-family: inherit; cursor: pointer; }
     filter: blur(130px);
     opacity: 0.5;
 }
-.inv-bg::before { top: -280px; left: -200px; background: radial-gradient(circle, color-mix(in oklab, var(--inv-accent) 9%, transparent), transparent 65%); }
-.inv-bg::after { bottom: -320px; right: -220px; background: radial-gradient(circle, color-mix(in oklab, var(--inv-accent) 7%, transparent), transparent 65%); }
+.inv-bg::before { top: -280px; left: -200px; background: radial-gradient(circle, color-mix(in oklab, var(--inv-accent) 22%, transparent), transparent 65%); }
+.inv-bg::after { bottom: -320px; right: -220px; background: radial-gradient(circle, color-mix(in oklab, var(--inv-accent) 16%, transparent), transparent 65%); }
 
 /* Page frame */
 .inv-shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }

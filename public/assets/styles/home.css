@@ -29,32 +29,31 @@
   --line: #e6e5e2;
   --line-2: #d5d3ce;
 
-  /* ── Acento (preto da marca) ──
+  /* ── Acento (verde da marca) ──
      Os nomes --blue* são históricos: blog.css e a página de preços
-     dependem deles. O valor já foi azul, depois laranja, e agora é o preto
-     do símbolo — o mesmo --ap-accent do painel.
+     dependem deles. O valor já foi azul, depois laranja, e agora é o verde.
 
      --blue preenche (botão, ponto, anel de foco), --accent-ink escreve e
-     --on-accent é o texto que vai por cima do preenchimento. No escuro os
-     três invertem: o botão é off-white e a legenda dele é preta. */
-  --blue: #1d1d1c;
-  --blue-deep: #333230;
-  --accent-ink: #1d1d1c;
-  --on-accent: #fdfaf6;
-  --blue-soft: rgba(29, 29, 28, 0.06);
-  --blue-rgb: 29, 29, 28;
-  --mint: #16a34a;
-  /* Musgo: a terceira cor, para detalhe. Mesmo tom do --ap-moss do painel.
-     Não é status — o verde de status fica na matiz 142°, este em 78°. */
-  --moss: #4F5D2F;
-  --moss-soft: rgba(79, 93, 47, 0.12);
-  /* Tom de destaque para texto grande. */
-  --accent-soft: #6d675e;
+     --on-accent é a legenda que vai por cima do preenchimento: branca no
+     claro, preta no escuro. O verde cheio não tem contraste para texto
+     pequeno sobre superfície clara, e é por isso que escrever é papel do
+     tom fechado.
 
-  /* Gradientes, todos na escala neutra. */
-  --grad-brand: linear-gradient(92deg, #1d1d1c 0%, #3a3936 100%);
-  --grad-soft: linear-gradient(180deg, rgba(29, 29, 28, 0.05), rgba(29, 29, 28, 0.01));
-  --grad-text: linear-gradient(92deg, #1a1a1c 0%, #6d675e 100%);
+     --mint continua o verde de status (matiz 142°); o da marca fica na 81°. */
+  --blue: #7db217;
+  --blue-deep: #4b6b0e;
+  --accent-ink: #4b6b0e;
+  --on-accent: #ffffff;
+  --blue-soft: rgba(125, 178, 23, 0.12);
+  --blue-rgb: 125, 178, 23;
+  --mint: #16a34a;
+  --accent-soft: #557a10;
+
+  /* Gradientes. O acento entra em dose pequena — verde cheio cansa quando
+     cobre superfície grande, então aqui ele só tinge o fundo. */
+  --grad-brand: linear-gradient(92deg, #7db217 0%, #9acd1d 100%);
+  --grad-soft: linear-gradient(180deg, rgba(125, 178, 23, 0.07), rgba(125, 178, 23, 0.01));
+  --grad-text: linear-gradient(92deg, #1a1a1c 0%, #4b6b0e 100%);
 
   /* ── Sombras ── */
   --sh-1: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -100,20 +99,17 @@
   --line: #2e2f33;
   --line-2: #3a3b3f;
 
-  --blue: #fdfaf6;
-  --blue-deep: #e8e6e3;
-  --accent-ink: #fdfaf6;
+  --blue: #7db217;
+  --blue-deep: #9acd1d;
+  --accent-ink: #9acd1d;
   --on-accent: #1d1d1c;
-  --blue-soft: rgba(253, 250, 246, 0.10);
-  --blue-rgb: 253, 250, 246;
+  --blue-soft: rgba(125, 178, 23, 0.16);
+  --blue-rgb: 125, 178, 23;
   --mint: #4ade80;
-  --moss: #9CAF7E;
-  --moss-soft: rgba(156, 175, 126, 0.16);
-  --accent-soft: #a9a29a;
+  --accent-soft: #a8d93b;
 
-  --grad-brand: linear-gradient(92deg, #fdfaf6 0%, #d6d3cd 100%);
-  --grad-soft: linear-gradient(180deg, rgba(253, 250, 246, 0.05), rgba(253, 250, 246, 0.01));
-  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #9d9488 100%);
+  --grad-soft: linear-gradient(180deg, rgba(125, 178, 23, 0.09), rgba(125, 178, 23, 0.02));
+  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #a8d93b 100%);
 
   --sh-1: 0 1px 2px rgba(0, 0, 0, 0.2);
   --sh-2: 0 4px 16px rgba(0, 0, 0, 0.35);
@@ -163,7 +159,7 @@ figure, figcaption, blockquote { margin: 0; }
 
 /* Foco visível — o tema escuro engole outline padrão em alguns navegadores. */
 a:focus-visible, button:focus-visible {
-  outline: 2px solid var(--moss);
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: var(--radius);
 }
@@ -223,7 +219,7 @@ body.user-logged-in .nav-user { display: flex; }
 .nav-plus-badge {
   font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
   letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--moss); background: var(--moss-soft);
+  color: var(--accent-ink); background: var(--blue-soft);
   border-radius: 6px; padding: 3px 7px; line-height: 1.4;
 }
 
@@ -299,7 +295,7 @@ body.user-logged-in .nav-user { display: flex; }
   font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
   color: var(--ink-3);
 }
-.eyebrow .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--moss); flex-shrink: 0; }
+.eyebrow .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mint); flex-shrink: 0; }
 .eyebrow .pill {
   display: inline-block; padding: 2px 8px; border-radius: 999px;
   background: var(--blue-soft); color: var(--accent-ink);
@@ -316,7 +312,7 @@ body.user-logged-in .nav-user { display: flex; }
   text-wrap: pretty;
   max-width: 15ch;
 }
-.h1 .grad { color: var(--moss); }
+.h1 .grad { color: var(--accent-ink); }
 
 .lede {
   max-width: 60ch;
@@ -377,7 +373,8 @@ body.user-logged-in .nav-user { display: flex; }
    desenho passa a seguir o tema sem precisar tocar em centena de atributos.
    Mudou um tom no SVG? Acrescente a linha correspondente aqui.
 
-   Fora da lista, de propósito: as cores dos serviços
+   Fora da lista, de propósito: o verde da marca, que é o mesmo nos dois
+   temas e por isso não precisa de tabela, e as cores dos serviços
    (Figma, Linear, Stripe…), que não mudam com o tema; o disco da marca
    (#1d1d1c + #fdfaf6), que é o símbolo e não uma superfície; e o painel do
    popup da extensão (#1c1c1e + branco translúcido), escuro nos dois temas. */
@@ -408,22 +405,13 @@ body.user-logged-in .nav-user { display: flex; }
 .figure.is-art svg [stroke="#d6d3cd"] { stroke: var(--ink-2); }
 .figure.is-art svg [stroke="#9d9488"] { stroke: var(--ink-3); }
 
-/* O acento da marca, que agora inverte com o tema. Aqui ele precisa passar
-   pela tabela como o resto: quando o botão vira off-white no escuro, a
-   legenda dele tem de virar preta — é o que .art-on-accent faz, nos poucos
-   elementos que ficam por cima do preenchimento. */
-.figure.is-art svg [fill="#f97316"] { fill: var(--blue); }
-.figure.is-art svg [stroke="#f97316"] { stroke: var(--blue); }
-.figure.is-art svg [stop-color="#f97316"] { stop-color: var(--blue); }
-.figure.is-art svg [fill="#fb923c"] { fill: var(--blue-deep); }
-.figure.is-art svg [fill="rgba(249,115,22,.16)"] { fill: var(--blue-soft); }
+/* Duas classes para o acento, porque ele tem dois papéis dentro do desenho.
+   O verde de preenchimento é o mesmo nos dois temas e entra direto no
+   atributo; o que muda com o tema é quem escreve: a legenda por cima do
+   verde (branca no claro, preta no escuro) e o texto em verde sobre a
+   superfície da maquete (fechado no claro, aberto no escuro). */
 .figure.is-art svg .art-on-accent { fill: var(--on-accent); stroke: var(--on-accent); }
-
-/* A camada de dado da maquete segue o gráfico real, que é musgo. Vem depois
-   da tabela de propósito: mesma especificidade, e quem está por último manda. */
-.figure.is-art svg #apArea stop { stop-color: var(--moss); }
-.figure.is-art svg .art-data { stroke: var(--moss); }
-.figure.is-art svg .art-data-label { fill: var(--moss); }
+.figure.is-art svg .art-accent-ink { fill: var(--accent-ink); }
 
 
 /* ============================================================================
@@ -693,7 +681,7 @@ body.user-logged-in .nav-user { display: flex; }
 .fact-list li::before {
   content: ''; flex-shrink: 0;
   width: 6px; height: 6px; margin-top: 9px;
-  border-radius: 999px; background: var(--moss);
+  border-radius: 999px; background: var(--blue);
 }
 
 
@@ -743,7 +731,7 @@ body.user-logged-in .nav-user { display: flex; }
   color: var(--ink-3); font-size: 20px; font-weight: 400;
   transition: transform .2s ease;
 }
-.faq-item.open .plus { transform: rotate(45deg); color: var(--moss); }
+.faq-item.open .plus { transform: rotate(45deg); color: var(--ink); }
 .faq-a {
   display: grid; grid-template-rows: 0fr; opacity: 0;
   transition: grid-template-rows .28s ease, opacity .2s ease;
