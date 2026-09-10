@@ -9,8 +9,6 @@
  * que se repete mora em onboarding.css.
  */
 
-const WELCOME_TILES = ['og-chip--a', 'og-chip--b', 'og-chip--c', 'og-chip--d'];
-
 /** Cursor do mouse, para as maquetes em que alguém clica em alguma coisa. */
 function Cursor({ animation }) {
     return (
@@ -30,17 +28,24 @@ function Check({ size = 16, color = '#16a34a', style }) {
     );
 }
 
+/**
+ * Boas-vindas: a marca sozinha.
+ *
+ * É o único slide que não imita uma tela, então ele também não finge ser uma:
+ * o símbolo do Niango sem a moldura escura do favicon, um respiro de luz atrás
+ * dele e a frase. Nada pisca — o que se quer aqui é o silêncio antes do guia
+ * começar.
+ */
 export function WelcomeDemo() {
     return (
         <div className="og-hero">
             <div className="og-hero-mark">
-                <span className="og-hero-ring"></span>
-                <img src="/assets/images/favicon-128x128.png" alt="" />
-            </div>
-            <div className="og-hero-tiles">
-                {WELCOME_TILES.map((tone, index) => (
-                    <span key={tone} className={tone} style={{ animationDelay: `${index * 0.1}s` }}></span>
-                ))}
+                <svg viewBox="0 0 512 512" aria-hidden="true">
+                    <path
+                        fill="currentColor"
+                        d="M127.1 127a20.5 20.5 0 0 1 33.06-16.2l166.35 129.01a20.5 20.5 0 0 1 0 32.4L160.16 401.2A20.5 20.5 0 0 1 127.1 385Z"
+                    />
+                </svg>
             </div>
             <div className="og-hero-caption">Suas sessões, num lugar só</div>
         </div>
