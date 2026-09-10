@@ -90,7 +90,7 @@ export default function PlansModal({ open, onClose }) {
             console.error('[Plans] preview error:', err);
             notify('error', err instanceof ApiError
                 ? err.message
-                : 'Não foi possível simular a troca de plano.');
+                : 'Não foi possível iniciar a troca de plano.');
         } finally {
             setBusyTier(null);
         }
@@ -153,7 +153,7 @@ export default function PlansModal({ open, onClose }) {
                                     disabled={isCurrent || busyTier !== null}
                                     onClick={() => choose(plan.tier)}
                                 >
-                                    {isCurrent ? 'Plano atual' : (busyTier === plan.tier ? 'Simulando...' : plan.cta)}
+                                    {isCurrent ? 'Plano atual' : (busyTier === plan.tier ? 'Carregando...' : plan.cta)}
                                 </button>
                             )}
                         </div>
