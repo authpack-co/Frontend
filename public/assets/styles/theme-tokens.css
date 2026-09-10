@@ -6,8 +6,13 @@
    on the <html> element.
 
    A marca é preto e off-white, e o acento acompanha: ação primária é preta
-   com texto off-white no claro, e off-white com texto preto no escuro. Cor
-   sobrou só onde ela informa — sucesso, aviso, erro e as marcas de terceiros.
+   com texto off-white no claro, e off-white com texto preto no escuro.
+
+   O musgo é a terceira cor, e vale para detalhe: dado (gráfico e barra),
+   seleção, foco e o tier Plus. Ele não é status — o verde de status vive na
+   matiz 142° e o musgo em 78°, longe o bastante para "ativa" continuar
+   querendo dizer ativa. Fora daí, cor só onde ela informa: sucesso, aviso,
+   erro e as marcas de terceiros.
    
    Naming convention: --ap-{category}-{property}
    ============================================================================ */
@@ -44,7 +49,7 @@
     --ap-border-hover: #d5d3ce;
     /* Foco de campo é um tom acima da borda de repouso — o bastante para
        dizer onde se está digitando, sem virar moldura. */
-    --ap-border-focus: #71717a;
+    --ap-border-focus: #4F5D2F;
     --ap-border-muted: #d5d3ce;
 
     /* ── Accent (preto da marca) ──
@@ -63,14 +68,22 @@
     --ap-accent-subtle: rgba(29, 29, 28, 0.06);
     /* Canal RGB do acento — para glows e anéis: rgba(var(--ap-accent-rgb), .3) */
     --ap-accent-rgb: 29, 29, 28;
-    /* Plus (tier premium): grafite → preto. O "dourado" saiu com o laranja;
-       o que distingue o tier agora é profundidade, não matiz. */
-    --ap-plus-gradient: linear-gradient(135deg, #4a4842, #1d1d1c);
+    /* Plus (tier premium): musgo → musgo profundo. O "dourado" saiu com o
+       laranja, e o tier volta a ter matiz própria em vez de só profundidade. */
+    --ap-plus-gradient: linear-gradient(135deg, #6b7a49, #3f5233);
+
+    /* ── Musgo (detalhe da marca) ──
+       Terceira cor, em dose pequena. Escurece no hover, como o acento. */
+    --ap-moss: #4F5D2F;
+    --ap-moss-hover: #3F5233;
+    --ap-moss-light: #f1f3ea;
+    --ap-moss-muted: #cfd7bd;
+    --ap-moss-rgb: 79, 93, 47;
 
     /* ── Seleção ──
-       Item ativo/selecionado se distingue por superfície e peso: o acento,
-       sendo preto cheio, é peso demais para estado — fica para ação (CTA,
-       foco, progresso). */
+       Item ativo/selecionado se distingue por superfície e peso, e ganha uma
+       marca em musgo: o acento, sendo preto cheio, é peso demais para estado
+       — fica para ação (CTA, progresso). */
     --ap-selected-bg: #edece9;
     --ap-selected-border: #cfcdc8;
 
@@ -164,7 +177,7 @@
     /* ── Borders ── */
     --ap-border: #2e2f33;
     --ap-border-hover: #3a3b3f;
-    --ap-border-focus: #9d9488;
+    --ap-border-focus: #9CAF7E;
     --ap-border-muted: #6d655a;
 
     /* ── Accent (off-white da marca) ──
@@ -178,9 +191,17 @@
     --ap-accent-strong: #ffffff;
     --ap-accent-subtle: rgba(253, 250, 246, 0.07);
     --ap-accent-rgb: 253, 250, 246;
-    --ap-plus-gradient: linear-gradient(135deg, #fdfaf6, #b8b2a7);
+    --ap-plus-gradient: linear-gradient(135deg, #c3d1a5, #8fa86a);
 
-    /* ── Seleção (neutra) ── */
+    /* ── Musgo (detalhe da marca) ──
+       Clareia no hover: no escuro não há para onde escurecer. */
+    --ap-moss: #9CAF7E;
+    --ap-moss-hover: #B3C293;
+    --ap-moss-light: rgba(156, 175, 126, 0.12);
+    --ap-moss-muted: rgba(156, 175, 126, 0.28);
+    --ap-moss-rgb: 156, 175, 126;
+
+    /* ── Seleção ── */
     --ap-selected-bg: #26272a;
     --ap-selected-border: #45464a;
 

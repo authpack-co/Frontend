@@ -203,9 +203,9 @@ body.user-logged-in .nav-user {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent-strong);
+    color: var(--ap-moss);
     background: var(--ap-bg-card);
-    border: 1px solid rgba(var(--ap-accent-rgb), 0.35);
+    border: 1px solid var(--ap-moss-muted);
     border-radius: 4px;
     padding: 2px 6px;
     line-height: 1;
@@ -215,9 +215,9 @@ body.user-logged-in .nav-user {
 }
 
 .navbar.navbar-light .nav-plus-badge {
-    background: var(--ap-accent-light);
-    color: var(--ap-accent-strong);
-    border-color: var(--ap-accent-muted);
+    background: var(--ap-moss-light);
+    color: var(--ap-moss);
+    border-color: var(--ap-moss-muted);
     box-shadow: none;
 }
 

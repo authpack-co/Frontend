@@ -44,8 +44,11 @@
   --blue-soft: rgba(29, 29, 28, 0.06);
   --blue-rgb: 29, 29, 28;
   --mint: #16a34a;
-  /* Tom de destaque para texto grande: sem matiz para chamar atenção, o
-     contraste vira o recurso — a palavra realçada recua um tom. */
+  /* Musgo: a terceira cor, para detalhe. Mesmo tom do --ap-moss do painel.
+     Não é status — o verde de status fica na matiz 142°, este em 78°. */
+  --moss: #4F5D2F;
+  --moss-soft: rgba(79, 93, 47, 0.12);
+  /* Tom de destaque para texto grande. */
   --accent-soft: #6d675e;
 
   /* Gradientes, todos na escala neutra. */
@@ -104,6 +107,8 @@
   --blue-soft: rgba(253, 250, 246, 0.10);
   --blue-rgb: 253, 250, 246;
   --mint: #4ade80;
+  --moss: #9CAF7E;
+  --moss-soft: rgba(156, 175, 126, 0.16);
   --accent-soft: #a9a29a;
 
   --grad-brand: linear-gradient(92deg, #fdfaf6 0%, #d6d3cd 100%);
@@ -158,7 +163,7 @@ figure, figcaption, blockquote { margin: 0; }
 
 /* Foco visível — o tema escuro engole outline padrão em alguns navegadores. */
 a:focus-visible, button:focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--moss);
   outline-offset: 2px;
   border-radius: var(--radius);
 }
@@ -218,7 +223,7 @@ body.user-logged-in .nav-user { display: flex; }
 .nav-plus-badge {
   font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
   letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--accent-ink); background: var(--blue-soft);
+  color: var(--moss); background: var(--moss-soft);
   border-radius: 6px; padding: 3px 7px; line-height: 1.4;
 }
 
@@ -294,7 +299,7 @@ body.user-logged-in .nav-user { display: flex; }
   font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
   color: var(--ink-3);
 }
-.eyebrow .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--mint); flex-shrink: 0; }
+.eyebrow .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--moss); flex-shrink: 0; }
 .eyebrow .pill {
   display: inline-block; padding: 2px 8px; border-radius: 999px;
   background: var(--blue-soft); color: var(--accent-ink);
@@ -311,7 +316,7 @@ body.user-logged-in .nav-user { display: flex; }
   text-wrap: pretty;
   max-width: 15ch;
 }
-.h1 .grad { color: var(--accent-soft); }
+.h1 .grad { color: var(--moss); }
 
 .lede {
   max-width: 60ch;
@@ -413,6 +418,12 @@ body.user-logged-in .nav-user { display: flex; }
 .figure.is-art svg [fill="#fb923c"] { fill: var(--blue-deep); }
 .figure.is-art svg [fill="rgba(249,115,22,.16)"] { fill: var(--blue-soft); }
 .figure.is-art svg .art-on-accent { fill: var(--on-accent); stroke: var(--on-accent); }
+
+/* A camada de dado da maquete segue o gráfico real, que é musgo. Vem depois
+   da tabela de propósito: mesma especificidade, e quem está por último manda. */
+.figure.is-art svg #apArea stop { stop-color: var(--moss); }
+.figure.is-art svg .art-data { stroke: var(--moss); }
+.figure.is-art svg .art-data-label { fill: var(--moss); }
 
 
 /* ============================================================================
@@ -682,7 +693,7 @@ body.user-logged-in .nav-user { display: flex; }
 .fact-list li::before {
   content: ''; flex-shrink: 0;
   width: 6px; height: 6px; margin-top: 9px;
-  border-radius: 999px; background: var(--blue);
+  border-radius: 999px; background: var(--moss);
 }
 
 
@@ -732,7 +743,7 @@ body.user-logged-in .nav-user { display: flex; }
   color: var(--ink-3); font-size: 20px; font-weight: 400;
   transition: transform .2s ease;
 }
-.faq-item.open .plus { transform: rotate(45deg); color: var(--ink); }
+.faq-item.open .plus { transform: rotate(45deg); color: var(--moss); }
 .faq-a {
   display: grid; grid-template-rows: 0fr; opacity: 0;
   transition: grid-template-rows .28s ease, opacity .2s ease;
