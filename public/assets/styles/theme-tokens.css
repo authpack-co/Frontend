@@ -220,7 +220,13 @@
    que o JSON-LD de todas as páginas publica como logo da organização.
    ─────────────────────────────────────────────────────────────────────────── */
 .niango-mark { display: block; }
-.niango-mark--dark { display: none; }
 
-[data-theme="dark"] .niango-mark--light { display: none; }
-[data-theme="dark"] .niango-mark--dark { display: block; }
+/* O !important não é preguiça: regras de contêiner como
+   `.sidebar-brand img { display: block }` misturam classe e elemento, o que
+   pesa mais que a classe sozinha da marca, e reacendiam o ícone do tema
+   oposto — no tema claro a sidebar mostrava os dois discos ao mesmo tempo.
+   Esconder e mostrar aqui precisa ganhar de qualquer contêiner. */
+.niango-mark--dark { display: none !important; }
+
+[data-theme="dark"] .niango-mark--light { display: none !important; }
+[data-theme="dark"] .niango-mark--dark { display: block !important; }
