@@ -466,9 +466,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 
 /* Plus plan - premium avatar border */
 .profile-picture.plus-avatar {
-    outline: 2px solid var(--ap-moss);
+    outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
-    box-shadow: var(--ap-shadow-sm);
+    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
 }
 
 /* Plus plan - badge tag */
@@ -482,9 +482,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-moss);
+    color: var(--ap-accent);
     background: var(--ap-bg-card);
-    border: 1px solid var(--ap-moss-muted);
+    border: 1px solid var(--ap-accent-muted);
     border-radius: 4px;
     padding: 2px 6px;
     line-height: 1;
@@ -713,7 +713,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
-    color: var(--ap-moss) !important;
+    color: var(--ap-accent-strong) !important;
     font-size: 12.5px !important;
     font-weight: 600 !important;
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -820,7 +820,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .plus-subscribe-btn svg {
-    color: var(--ap-moss);
+    color: #fbbf24;
 }
 
 .nav-menu {
@@ -854,23 +854,6 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .nav-item.active {
     color: var(--ap-text-primary);
     background-color: var(--ap-bg-page);
-    position: relative;
-}
-
-/* Marca do item aberto. Superfície e peso já diziam qual é; o traço em musgo
-   diz de longe, sem pintar a linha inteira. */
-.nav-item.active::before,
-.sidebar-section-toggle.active::before,
-#packages-list .access-item.sidebar-pkg-item.selected::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 16px;
-    border-radius: 0 2px 2px 0;
-    background: var(--ap-moss);
 }
 
 .nav-links {
@@ -1087,7 +1070,7 @@ span.coming-soon {
 
 .ext-btn--primary {
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #ffffff;
 }
 
 .ext-btn--primary:hover {
@@ -2498,7 +2481,7 @@ span.coming-soon {
 
 .btn-primary {
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #ffffff;
     border-color: var(--ap-accent);
 }
 
@@ -3471,7 +3454,7 @@ span.coming-soon {
 
 /* Pick de pacote Plus — borda e brilho no acento da marca */
 .access-item.plus-pick {
-    box-shadow: 0 0 0 1px var(--ap-moss-muted), var(--ap-shadow-sm);
+    box-shadow: 0 0 0 1px rgba(var(--ap-accent-rgb), 0.22), 0 4px 16px rgba(var(--ap-accent-rgb), 0.12);
 }
 
 /* Badge absoluto no canto superior direito do card-header */
@@ -3495,13 +3478,13 @@ span.coming-soon {
 }
 
 .package-status-badge.status-badge--plus {
-    background: var(--ap-moss-light);
-    border: 1px solid var(--ap-moss-muted);
-    color: var(--ap-moss);
+    background: rgba(var(--ap-accent-rgb), 0.12);
+    border: 1px solid rgba(var(--ap-accent-rgb), 0.3);
+    color: var(--ap-accent-strong);
 }
 
 .package-status-badge.status-badge--plus svg {
-    color: var(--ap-moss);
+    color: var(--ap-accent);
 }
 
 .package-status-badge.status-badge--warning {
@@ -3948,7 +3931,7 @@ span.coming-soon {
    Focus-Visible (Accessibility)
    ============================================ */
 :focus-visible {
-    outline: 2px solid var(--ap-moss);
+    outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
 }
 
@@ -3958,15 +3941,14 @@ button:focus-visible,
 .nav-item:focus-visible,
 .session-card:focus-visible,
 .access-item:focus-visible {
-    outline: 2px solid var(--ap-moss);
+    outline: 2px solid var(--ap-accent);
     outline-offset: 2px;
     border-radius: var(--ap-radius-md);
 }
 
 /* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
-   clique — então este é o foco que se vê no dia a dia, e ele é a borda um tom
-   acima. O anel de acessibilidade continua nos controles que não são de
-   digitar. */
+   clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
+   laranja de acessibilidade continua nos controles que não são de digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -4437,15 +4419,16 @@ textarea:focus-visible {
 }
 
 .pkg-person-btn--primary {
-    background: var(--ap-accent);
+    background: var(--ap-accent, #f97316);
     border-color: transparent;
-    color: var(--ap-text-inverse);
+    color: #fff;
     font-weight: 600;
 }
 
 .pkg-person-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover);
-    color: var(--ap-text-inverse);
+    background: var(--ap-accent-hover, #ea6a0c);
+    color: #fff;
+    filter: brightness(1.05);
 }
 
 .pkg-person-btn--danger:hover:not(:disabled) {
@@ -4595,7 +4578,7 @@ textarea:focus-visible {
 .up-status { font-size: 13px; color: var(--ap-text-secondary); }
 .up-count { font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); font-variant-numeric: tabular-nums; }
 .up-bar { height: 6px; border-radius: var(--ap-radius-full); background: var(--ap-bg-muted); overflow: hidden; }
-.up-bar-fill { height: 100%; width: 0; border-radius: inherit; background: var(--ap-moss); transition: width .35s ease; }
+.up-bar-fill { height: 100%; width: 0; border-radius: inherit; background: var(--ap-accent); transition: width .35s ease; }
 
 .up-list {
     list-style: none; margin: 0; padding: 0;
@@ -4638,13 +4621,13 @@ textarea:focus-visible {
 .up-item[data-state="pending"] .up-item-bar { display: block; }
 .up-item-bar-fill {
     height: 100%; width: 0; border-radius: inherit;
-    background: var(--ap-moss); transition: width .3s ease-out;
+    background: var(--ap-accent); transition: width .3s ease-out;
 }
 .up-item-status { flex: none; width: 18px; height: 18px; display: grid; place-items: center; }
 
 .up-item[data-state="pending"] .up-item-status::before {
     content: ""; width: 13px; height: 13px; border-radius: 50%;
-    border: 2px solid var(--ap-border-hover); border-top-color: var(--ap-moss);
+    border: 2px solid var(--ap-border-hover); border-top-color: var(--ap-accent);
     animation: up-spin .7s linear infinite;
 }
 @keyframes up-spin { to { transform: rotate(360deg); } }
@@ -4775,7 +4758,7 @@ textarea:focus-visible {
 }
 
 .us-item.is-selected .us-item-check {
-    background: var(--ap-accent); border-color: var(--ap-accent); color: var(--ap-text-inverse);
+    background: var(--ap-accent); border-color: var(--ap-accent); color: #fff;
 }
 
 .as-pkg-icon {
@@ -4834,7 +4817,7 @@ textarea:focus-visible {
     border-radius: 6px; background: var(--ap-bg-muted); color: var(--ap-text-primary);
     border: none; cursor: pointer; transition: all 0.15s ease;
 }
-.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: var(--ap-text-inverse); }
+.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
 .as-dropdown-item.is-selected .as-dropdown-btn { background: transparent; color: var(--ap-text-muted); padding: 6px; cursor: default; }
 
 .as-selected-section { margin-bottom: 24px; }
@@ -4938,7 +4921,7 @@ textarea:focus-visible {
 }
 .as-service-check {
     flex: none; width: 18px; height: 18px; border-radius: 50%;
-    display: grid; place-items: center; color: var(--ap-text-inverse); background: var(--ap-accent);
+    display: grid; place-items: center; color: #fff; background: var(--ap-accent);
     opacity: 0; transform: scale(.6); transition: all .18s ease;
 }
 .as-service.is-selected .as-service-check { opacity: 1; transform: scale(1); }
@@ -5020,11 +5003,6 @@ textarea:focus-visible {
     color: var(--ap-text-primary);
     background: var(--ap-selected-bg);
     border-color: var(--ap-selected-border);
-    position: relative;
-}
-
-.sidebar-section-toggle.active::before {
-    left: -1px;
 }
 
 .sidebar-packages-heading {
@@ -5102,10 +5080,6 @@ textarea:focus-visible {
 #packages-list .access-item.sidebar-pkg-item.selected {
     background: var(--ap-selected-bg);
     border-color: var(--ap-selected-border);
-}
-
-#packages-list .access-item.sidebar-pkg-item.selected::before {
-    left: -1px;
 }
 
 .sidebar-pkg-main {
@@ -5431,7 +5405,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     height: 44px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6753,16 +6727,13 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     left: 2px;
     width: 20px;
     height: 20px;
-    background-color: #fdfaf6;
+    background-color: #fff;
     border-radius: 50%;
     transition: transform 0.2s ease;
 }
 
-/* Sobre o trilho aceso o botão é o inverso do acento: no escuro o trilho é
-   off-white, e um botão branco desapareceria nele. */
 .toggle-switch.active .toggle-slider {
     transform: translateX(20px);
-    background-color: var(--ap-text-inverse);
 }
 
 /* Status Badge */
@@ -7173,12 +7144,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     background:
         linear-gradient(var(--ap-bg-card), var(--ap-bg-card)) padding-box,
         linear-gradient(150deg, var(--ap-accent), var(--ap-accent-strong)) border-box;
-    box-shadow: var(--ap-shadow-md);
+    box-shadow: 0 14px 34px -20px rgba(var(--ap-accent-rgb), 0.45);
 }
 
 .plan-card--featured:hover {
     border-color: transparent;
-    box-shadow: var(--ap-shadow-lg);
+    box-shadow: 0 18px 40px -20px rgba(var(--ap-accent-rgb), 0.5);
 }
 
 /* Selo do card em destaque e do plano atual: mesma pílula, cores distintas. */
@@ -7198,8 +7169,8 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 
 .plan-badge {
     background: var(--ap-accent-strong);
-    color: var(--ap-text-inverse);
-    box-shadow: var(--ap-shadow-sm);
+    color: #fff;
+    box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
 }
 
 /* ── Cabeçalho ── */
@@ -7281,7 +7252,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border: 1px solid transparent;
     border-radius: var(--ap-radius-md);
     background: var(--ap-accent-strong);
-    color: var(--ap-text-inverse);
+    color: #fff;
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 600;
@@ -7536,7 +7507,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border: none;
     border-radius: 10px;
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #ffffff;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -7545,12 +7516,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
-    box-shadow: var(--ap-shadow-sm);
+    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
 }
 
 .plus-cta-btn:hover {
     background: var(--ap-accent-hover);
-    box-shadow: var(--ap-shadow-md);
+    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
     transform: translateY(-1px);
 }
 

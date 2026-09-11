@@ -346,7 +346,7 @@
 /* Reuse dashboard btn styles */
 .sc-full-btn.btn-primary {
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #fff;
 }
 
 .sc-full-btn.btn-primary:hover:not(:disabled) {
