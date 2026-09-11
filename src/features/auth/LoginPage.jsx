@@ -35,7 +35,8 @@ export default function LoginPage() {
         <main className="login-main">
             <div className="login-card">
                 <div className="login-logo">
-                    <img src="/assets/images/favicon-128x128.png" alt="Niango" />
+                    <img className="niango-mark niango-mark--light" src="/assets/images/favicon-128x128.png" alt="Niango" />
+                    <img className="niango-mark niango-mark--dark" src="/assets/images/niango-mark-dark.png" alt="Niango" />
                 </div>
                 <h1 className="login-title">Bem-vindo ao Niango</h1>
                 <p className="login-subtitle">Seu gerenciador de sessões.</p>

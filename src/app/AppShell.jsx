@@ -122,7 +122,8 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <img src="/assets/images/favicon-128x128.png" alt="Niango" />
+                <img className="niango-mark niango-mark--light" src="/assets/images/favicon-128x128.png" alt="Niango" />
+                <img className="niango-mark niango-mark--dark" src="/assets/images/niango-mark-dark.png" alt="Niango" />
                 <span className="sidebar-brand-name">Niango</span>
             </div>
 

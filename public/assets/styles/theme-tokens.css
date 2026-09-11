@@ -206,3 +206,21 @@
 }
 
 
+
+/* ── Marca do Niango: um arquivo por tema ────────────────────────────────────
+   O disco preto desaparece contra o fundo escuro e o branco contra o claro,
+   então cada tema tem o seu arquivo. O par vem sempre junto no HTML e o CSS
+   mostra um só. É por isso que a troca é por CSS e não por JS trocando o src:
+   o data-theme já está no <html> antes do primeiro paint, então o ícone certo
+   é o primeiro a aparecer, sem piscar o do outro tema.
+
+   O favicon não entra nessa troca — ele é fixo, na versão de disco branco.
+
+   O arquivo do tema claro continua sendo favicon-128x128.png porque é a URL
+   que o JSON-LD de todas as páginas publica como logo da organização.
+   ─────────────────────────────────────────────────────────────────────────── */
+.niango-mark { display: block; }
+.niango-mark--dark { display: none; }
+
+[data-theme="dark"] .niango-mark--light { display: none; }
+[data-theme="dark"] .niango-mark--dark { display: block; }
