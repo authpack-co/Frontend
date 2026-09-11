@@ -466,9 +466,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 
 /* Plus plan - premium avatar border */
 .profile-picture.plus-avatar {
-    outline: 2px solid var(--ap-accent);
+    outline: 2px solid var(--ap-moss);
     outline-offset: 2px;
-    box-shadow: 0 0 8px rgba(var(--ap-accent-rgb), 0.5);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 /* Plus plan - badge tag */
@@ -482,9 +482,9 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-moss);
     background: var(--ap-bg-card);
-    border: 1px solid var(--ap-accent-muted);
+    border: 1px solid var(--ap-moss-muted);
     border-radius: 4px;
     padding: 2px 6px;
     line-height: 1;
@@ -713,7 +713,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     background: none !important;
     border: none !important;
     border-radius: 0 !important;
-    color: var(--ap-accent-strong) !important;
+    color: var(--ap-moss) !important;
     font-size: 12.5px !important;
     font-weight: 600 !important;
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -820,7 +820,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .plus-subscribe-btn svg {
-    color: var(--ap-accent-strong);
+    color: var(--ap-moss);
 }
 
 .nav-menu {
@@ -854,6 +854,23 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .nav-item.active {
     color: var(--ap-text-primary);
     background-color: var(--ap-bg-page);
+    position: relative;
+}
+
+/* Marca do item aberto. Superfície e peso já diziam qual é; o traço em musgo
+   diz de longe, sem pintar a linha inteira. */
+.nav-item.active::before,
+.sidebar-section-toggle.active::before,
+#packages-list .access-item.sidebar-pkg-item.selected::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    border-radius: 0 2px 2px 0;
+    background: var(--ap-moss);
 }
 
 .nav-links {
@@ -3454,7 +3471,7 @@ span.coming-soon {
 
 /* Pick de pacote Plus — borda e brilho no acento da marca */
 .access-item.plus-pick {
-    box-shadow: 0 0 0 1px rgba(var(--ap-accent-rgb), 0.22), 0 4px 16px rgba(var(--ap-accent-rgb), 0.12);
+    box-shadow: 0 0 0 1px var(--ap-moss-muted), var(--ap-shadow-sm);
 }
 
 /* Badge absoluto no canto superior direito do card-header */
@@ -3478,13 +3495,13 @@ span.coming-soon {
 }
 
 .package-status-badge.status-badge--plus {
-    background: rgba(var(--ap-accent-rgb), 0.12);
-    border: 1px solid rgba(var(--ap-accent-rgb), 0.3);
-    color: var(--ap-accent-strong);
+    background: var(--ap-moss-light);
+    border: 1px solid var(--ap-moss-muted);
+    color: var(--ap-moss);
 }
 
 .package-status-badge.status-badge--plus svg {
-    color: var(--ap-accent);
+    color: var(--ap-moss);
 }
 
 .package-status-badge.status-badge--warning {
@@ -3931,7 +3948,7 @@ span.coming-soon {
    Focus-Visible (Accessibility)
    ============================================ */
 :focus-visible {
-    outline: 2px solid var(--ap-accent);
+    outline: 2px solid var(--ap-moss);
     outline-offset: 2px;
 }
 
@@ -3941,14 +3958,15 @@ button:focus-visible,
 .nav-item:focus-visible,
 .session-card:focus-visible,
 .access-item:focus-visible {
-    outline: 2px solid var(--ap-accent);
+    outline: 2px solid var(--ap-moss);
     outline-offset: 2px;
     border-radius: var(--ap-radius-md);
 }
 
 /* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
-   clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
-   verde de acessibilidade continua nos controles que não são de digitar. */
+   clique — então este é o foco que se vê no dia a dia, e ele é a borda um tom
+   acima. O anel de acessibilidade continua nos controles que não são de
+   digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -4577,7 +4595,7 @@ textarea:focus-visible {
 .up-status { font-size: 13px; color: var(--ap-text-secondary); }
 .up-count { font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); font-variant-numeric: tabular-nums; }
 .up-bar { height: 6px; border-radius: var(--ap-radius-full); background: var(--ap-bg-muted); overflow: hidden; }
-.up-bar-fill { height: 100%; width: 0; border-radius: inherit; background: var(--ap-accent); transition: width .35s ease; }
+.up-bar-fill { height: 100%; width: 0; border-radius: inherit; background: var(--ap-moss); transition: width .35s ease; }
 
 .up-list {
     list-style: none; margin: 0; padding: 0;
@@ -4620,13 +4638,13 @@ textarea:focus-visible {
 .up-item[data-state="pending"] .up-item-bar { display: block; }
 .up-item-bar-fill {
     height: 100%; width: 0; border-radius: inherit;
-    background: var(--ap-accent); transition: width .3s ease-out;
+    background: var(--ap-moss); transition: width .3s ease-out;
 }
 .up-item-status { flex: none; width: 18px; height: 18px; display: grid; place-items: center; }
 
 .up-item[data-state="pending"] .up-item-status::before {
     content: ""; width: 13px; height: 13px; border-radius: 50%;
-    border: 2px solid var(--ap-border-hover); border-top-color: var(--ap-accent);
+    border: 2px solid var(--ap-border-hover); border-top-color: var(--ap-moss);
     animation: up-spin .7s linear infinite;
 }
 @keyframes up-spin { to { transform: rotate(360deg); } }
@@ -5002,6 +5020,11 @@ textarea:focus-visible {
     color: var(--ap-text-primary);
     background: var(--ap-selected-bg);
     border-color: var(--ap-selected-border);
+    position: relative;
+}
+
+.sidebar-section-toggle.active::before {
+    left: -1px;
 }
 
 .sidebar-packages-heading {
@@ -5079,6 +5102,10 @@ textarea:focus-visible {
 #packages-list .access-item.sidebar-pkg-item.selected {
     background: var(--ap-selected-bg);
     border-color: var(--ap-selected-border);
+}
+
+#packages-list .access-item.sidebar-pkg-item.selected::before {
+    left: -1px;
 }
 
 .sidebar-pkg-main {
@@ -6726,13 +6753,13 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     left: 2px;
     width: 20px;
     height: 20px;
-    background-color: #fff;
+    background-color: #fdfaf6;
     border-radius: 50%;
     transition: transform 0.2s ease;
 }
 
-/* Sobre o trilho aceso o botão é a legenda do acento: no escuro ela é
-   preta, e um botão branco brigaria com o verde em vez de marcar posição. */
+/* Sobre o trilho aceso o botão é o inverso do acento: no escuro o trilho é
+   off-white, e um botão branco desapareceria nele. */
 .toggle-switch.active .toggle-slider {
     transform: translateX(20px);
     background-color: var(--ap-text-inverse);
@@ -7146,12 +7173,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     background:
         linear-gradient(var(--ap-bg-card), var(--ap-bg-card)) padding-box,
         linear-gradient(150deg, var(--ap-accent), var(--ap-accent-strong)) border-box;
-    box-shadow: 0 14px 34px -20px rgba(var(--ap-accent-rgb), 0.45);
+    box-shadow: var(--ap-shadow-md);
 }
 
 .plan-card--featured:hover {
     border-color: transparent;
-    box-shadow: 0 18px 40px -20px rgba(var(--ap-accent-rgb), 0.5);
+    box-shadow: var(--ap-shadow-lg);
 }
 
 /* Selo do card em destaque e do plano atual: mesma pílula, cores distintas. */
@@ -7172,7 +7199,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 .plan-badge {
     background: var(--ap-accent-strong);
     color: var(--ap-text-inverse);
-    box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 /* ── Cabeçalho ── */
@@ -7518,12 +7545,12 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(var(--ap-accent-rgb), 0.28);
+    box-shadow: var(--ap-shadow-sm);
 }
 
 .plus-cta-btn:hover {
     background: var(--ap-accent-hover);
-    box-shadow: 0 6px 20px rgba(var(--ap-accent-rgb), 0.38);
+    box-shadow: var(--ap-shadow-md);
     transform: translateY(-1px);
 }
 

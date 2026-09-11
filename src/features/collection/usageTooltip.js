@@ -38,8 +38,8 @@ function compactDuration(seconds) {
  * A cor da barra: a do próprio serviço, tirada do ícone dele.
  *
  * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
- * vai de cinza. O paletteFromSession cairia no acento da marca, e uma barra
- * verde no meio das outras afirmaria que a sessão é verde.
+ * vai de cinza: uma barra com cor no meio das outras afirmaria que a sessão
+ * tem aquela cor.
  */
 function barColor(session) {
     const rgb = parseDarkPalette(session?.darkPalette);

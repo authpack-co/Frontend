@@ -135,8 +135,8 @@ export default function UsageChart({ data, isDaily, sessions }) {
 
         const styles = getComputedStyle(document.documentElement);
         const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
-        const accent = token('--ap-accent', '#7db217');
-        const accentRgb = token('--ap-accent-rgb', '125, 178, 23');
+        const moss = token('--ap-moss', '#9CAF7E');
+        const mossRgb = token('--ap-moss-rgb', '156, 175, 126');
         const cardBg = token('--ap-bg-card', '#131416');
         const border = token('--ap-border', '#2e2f33');
         const fontBody = token('--ap-font-body', 'system-ui, sans-serif');
@@ -153,17 +153,17 @@ export default function UsageChart({ data, isDaily, sessions }) {
                 labels: displayLabels,
                 datasets: [{
                     data: values,
-                    borderColor: accent,
+                    borderColor: moss,
                     // O degradê acompanha a altura real da área do desenho: com
                     // uma altura fixa ele terminava fora do gráfico e a mancha
                     // chegava chapada na linha de base, em vez de sumir nela.
                     backgroundColor(context) {
                         const { ctx, chartArea } = context.chart;
-                        if (!chartArea) return `rgba(${accentRgb}, 0.16)`;
+                        if (!chartArea) return `rgba(${mossRgb}, 0.16)`;
 
                         const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        gradient.addColorStop(0, `rgba(${accentRgb}, 0.26)`);
-                        gradient.addColorStop(1, `rgba(${accentRgb}, 0)`);
+                        gradient.addColorStop(0, `rgba(${mossRgb}, 0.26)`);
+                        gradient.addColorStop(1, `rgba(${mossRgb}, 0)`);
                         return gradient;
                     },
                     borderWidth: 2,
@@ -177,11 +177,11 @@ export default function UsageChart({ data, isDaily, sessions }) {
                         context.dataIndex === peakIndex ? 5 : (values.length > 14 ? 2.5 : 3.5)
                     ),
                     pointBackgroundColor: cardBg,
-                    pointBorderColor: accent,
+                    pointBorderColor: moss,
                     pointBorderWidth: 2,
                     pointHoverRadius: 6,
                     pointHoverBackgroundColor: cardBg,
-                    pointHoverBorderColor: token('--ap-accent-strong', '#9acd1d'),
+                    pointHoverBorderColor: token('--ap-moss-hover', '#B3C293'),
                     pointHoverBorderWidth: 2.5,
                 }],
             },
@@ -200,7 +200,7 @@ export default function UsageChart({ data, isDaily, sessions }) {
                     usagePeakLabel: {
                         index: peakIndex,
                         text: peakIndex >= 0 ? formatHours(maxValue) : '',
-                        color: accent,
+                        color: moss,
                         font: `600 12px ${fontBody}`,
                     },
                     tooltip: {
