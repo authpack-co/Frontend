@@ -161,7 +161,7 @@ function AccessSessionNotFound({ packageId }) {
                 <p className="nothing-here-text">
                     Ela pode ter sido removida do pacote pelo dono.
                 </p>
-                <Link className="btn btn-primary" to={`/shared/${packageId}`} style={{ marginTop: 16 }}>
+                <Link className="btn btn-accent-soft" to={`/shared/${packageId}`} style={{ marginTop: 16 }}>
                     Voltar para o pacote
                 </Link>
             </div>

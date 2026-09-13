@@ -138,7 +138,7 @@ function UserNotFound({ packageId }) {
             <div className="nothing-here-content">
                 <h3 className="nothing-here-title">Pessoa não encontrada</h3>
                 <p className="nothing-here-text">Ela pode ter saído do pacote ou perdido o acesso.</p>
-                <Link className="btn btn-primary" to={`/collection/${packageId}`} style={{ marginTop: 16 }}>
+                <Link className="btn btn-accent-soft" to={`/collection/${packageId}`} style={{ marginTop: 16 }}>
                     Voltar para o pacote
                 </Link>
             </div>

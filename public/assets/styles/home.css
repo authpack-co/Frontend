@@ -40,6 +40,7 @@
   --blue-deep: #c2410c;
   --accent-ink: #c2410c;
   --blue-soft: rgba(249, 115, 22, 0.12);
+  --blue-subtle: rgba(234, 88, 12, 0.08);  /* (= --ap-accent-subtle) */
   --blue-rgb: 249, 115, 22;
   --mint: #16a34a;
   --accent-soft: #c2410c;
@@ -98,6 +99,7 @@
   --blue-deep: #fb923c;
   --accent-ink: #f97316;
   --blue-soft: rgba(249, 115, 22, 0.15);
+  --blue-subtle: rgba(249, 115, 22, 0.08);  /* (= --ap-accent-subtle) */
   --mint: #4ade80;
   --accent-soft: #fbb072;
 
@@ -239,6 +241,16 @@ body.user-logged-in .nav-user { display: flex; }
 /* Ação principal */
 .btn-primary { background: var(--blue); color: #fff; }
 .btn-primary:hover { background: var(--blue-deep); }
+
+/* Ação principal em dose pequena — "Entrar", "Ver planos".
+   O laranja cheio fica reservado ao "Adicionar ao Chrome", que é a conversão
+   da página: se toda ação usa o mesmo tom, nenhuma se destaca. */
+.btn-accent-soft {
+  background: var(--blue-subtle);
+  color: var(--accent-ink);
+  border: 1px solid var(--blue-soft);
+}
+.btn-accent-soft:hover { background: var(--blue-soft); border-color: var(--blue); }
 
 /* Ação secundária com contorno — usada pelo "Adicionar ao Chrome" no topo */
 .btn-outline { border: 1px solid var(--line); background: transparent; color: var(--ink-2); }

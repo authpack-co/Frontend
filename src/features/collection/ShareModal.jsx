@@ -97,7 +97,7 @@ export default function ShareModal() {
                 <div className="share-link-row">
                     <span className="share-link-url" title={url}>{url || '—'}</span>
                     <button
-                        className="btn btn-primary share-copy-btn"
+                        className="btn btn-accent-soft share-copy-btn"
                         type="button"
                         onClick={() => copy(url, 'link', 'Não foi possível copiar o link.')}
                     >

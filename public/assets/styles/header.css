@@ -248,13 +248,15 @@ body.user-logged-in .nav-user {
     color: var(--ap-text-primary);
 }
 
+/* "Entrar" / "Começar" do nav: ação de todo dia, não a conversão da página —
+   por isso o acento só tinge o fundo, como em .btn-accent-soft no app. */
 .nav-btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--ap-accent);
-    color: #ffffff;
-    border: none;
+    background: var(--ap-accent-subtle);
+    color: var(--ap-accent-strong);
+    border: 1px solid var(--ap-accent-muted);
     font-size: 15px;
     font-weight: 600;
     padding: 10px 22px;
@@ -266,21 +268,15 @@ body.user-logged-in .nav-user {
 }
 
 .nav-btn-primary:hover {
-    background: var(--ap-accent-hover);
+    background: var(--ap-accent-muted);
+    border-color: var(--ap-accent);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(var(--ap-accent-rgb), 0.25);
 }
 
 .navbar.navbar-light .nav-btn-primary {
-    background: var(--ap-accent);
     font-size: 13.5px;
     padding: 8px 16px;
     border-radius: 8px;
-}
-
-.navbar.navbar-light .nav-btn-primary:hover {
-    background: var(--ap-accent-hover);
-    box-shadow: 0 2px 8px rgba(var(--ap-accent-rgb), 0.35);
 }
 
 /* Hidden helper */

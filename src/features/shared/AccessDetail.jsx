@@ -187,7 +187,7 @@ function AccessNotFound() {
                 <p className="nothing-here-text">
                     O acesso pode ter sido encerrado, ou o link aponta para um pacote que não é seu.
                 </p>
-                <Link className="btn btn-primary" to="/shared" style={{ marginTop: 16 }}>
+                <Link className="btn btn-accent-soft" to="/shared" style={{ marginTop: 16 }}>
                     Voltar para meus acessos
                 </Link>
             </div>

@@ -119,7 +119,7 @@ export function ConfirmModal({ open, onClose, title, confirmLabel, danger = true
                         Cancelar
                     </button>
                     <button
-                        className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
+                        className={`btn ${danger ? 'btn-danger' : 'btn-accent-soft'}`}
                         type="button"
                         onClick={onConfirm}
                         disabled={busy}
@@ -156,7 +156,7 @@ export function NameFormModal({
                     onChange={(event) => onChange(event.target.value)}
                     onKeyDown={(event) => { if (event.key === 'Enter') onSubmit(); }}
                 />
-                <button className="btn btn-primary btn-small" type="button" onClick={onSubmit} disabled={busy}>
+                <button className="btn btn-accent-soft btn-small" type="button" onClick={onSubmit} disabled={busy}>
                     {busy ? <div className="spinner"></div> : submitLabel}
                 </button>
             </div>

@@ -61,7 +61,7 @@ function EmptyAccess() {
                             onKeyDown={(event) => { if (event.key === 'Enter') activate(); }}
                         />
                         <button
-                            className="btn btn-primary activate-access-btn confirm-btn"
+                            className="btn btn-accent-soft activate-access-btn confirm-btn"
                             type="button"
                             onClick={activate}
                             disabled={sending}

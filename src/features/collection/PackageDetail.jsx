@@ -48,7 +48,7 @@ export default function PackageDetail() {
                         Compartilhar
                     </Link>
 
-                    <Link className="btn btn-primary topbar-add-session-btn add-session-btn" to={`/collection/${pkg.id}/sessions/new`}>
+                    <Link className="btn btn-accent-soft topbar-add-session-btn add-session-btn" to={`/collection/${pkg.id}/sessions/new`}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 5v14" />
                             <path d="M5 12h14" />
@@ -144,7 +144,7 @@ function PackageNotFound() {
                 <p className="nothing-here-text">
                     Ele pode ter sido excluído, ou o link aponta para um pacote que não é seu.
                 </p>
-                <Link className="btn btn-primary" to="/collection" style={{ marginTop: 16 }}>
+                <Link className="btn btn-accent-soft" to="/collection" style={{ marginTop: 16 }}>
                     Voltar para a coleção
                 </Link>
             </div>

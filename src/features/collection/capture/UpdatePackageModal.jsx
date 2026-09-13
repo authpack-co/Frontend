@@ -221,7 +221,7 @@ function SelectFooter({ count, onCancel, onConfirm }) {
                     Cancelar
                 </button>
                 <button
-                    className="btn btn-primary as-confirm"
+                    className="btn btn-accent-soft as-confirm"
                     type="button"
                     disabled={count === 0}
                     onClick={onConfirm}

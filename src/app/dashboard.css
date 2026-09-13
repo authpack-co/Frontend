@@ -2536,6 +2536,27 @@ span.coming-soon {
     filter: none;
 }
 
+/* Acento suave: o laranja cheio custa caro quando cobre a tela inteira, e a
+   maior parte destes botões é ação de todo dia — adicionar sessão, criar
+   pacote, copiar link, salvar. Aqui o acento só tinge o fundo, e quem carrega
+   a cor é o texto. O laranja cheio fica para o que converte ou não tem volta:
+   assinar, pagar, instalar a extensão.
+
+   O hover sobe para --ap-accent-muted, e não para --ap-accent-light: no tema
+   claro o "light" é #fff7ed, mais pálido que o repouso — o botão clarearia ao
+   receber o mouse. */
+.btn-accent-soft {
+    background: var(--ap-accent-subtle);
+    color: var(--ap-accent-strong);
+    border-color: var(--ap-accent-muted);
+}
+
+.btn-accent-soft:hover {
+    background: var(--ap-accent-muted);
+    border-color: var(--ap-accent);
+    filter: none;
+}
+
 .btn-secondary {
     background: transparent;
     color: var(--ap-text-secondary);

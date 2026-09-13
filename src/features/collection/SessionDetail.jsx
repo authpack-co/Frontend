@@ -178,7 +178,7 @@ function SessionNotFound({ packageId }) {
             <div className="nothing-here-content">
                 <h3 className="nothing-here-title">Sessão não encontrada</h3>
                 <p className="nothing-here-text">Ela pode ter sido excluída do pacote.</p>
-                <Link className="btn btn-primary" to={`/collection/${packageId}`} style={{ marginTop: 16 }}>
+                <Link className="btn btn-accent-soft" to={`/collection/${packageId}`} style={{ marginTop: 16 }}>
                     Voltar para o pacote
                 </Link>
             </div>
