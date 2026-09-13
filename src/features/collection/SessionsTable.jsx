@@ -58,8 +58,10 @@ function useScrollToNewSessions(sessions) {
     }, [batch, focus, location.pathname, navigate, sessions]);
 }
 
-export default function SessionsTable({ pkg, sessions, search, stats, statsStatus, online }) {
-    const query = (search || '').trim().toLowerCase();
+export default function SessionsTable({ pkg, sessions, stats, statsStatus, online }) {
+    // A busca mora com a lista que ela filtra: o estado nasce e morre aqui.
+    const [search, setSearch] = useState('');
+    const query = search.trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
     const { connect, connectingId, gate } = useConnectSession(pkg, { isAcquired: false });
     // A recaptura mora aqui (e não na linha) para o progresso sobreviver a
@@ -97,7 +99,22 @@ export default function SessionsTable({ pkg, sessions, search, stats, statsStatu
         <div className="sessions-panel-container content-state">
             <div className="preset-content">
                 <div className="sessions-panel">
-                    <p className="panel-title">Minhas sessões</p>
+                    <div className="sessions-panel-head">
+                        <p className="panel-title">Minhas sessões</p>
+                        <div className="sessions-search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.3-4.3" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Buscar sessões..."
+                                autoComplete="off"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                            />
+                        </div>
+                    </div>
                     <div className="sessions-table">
                         <div className="sessions-table-head">
                             <span>Serviço</span>

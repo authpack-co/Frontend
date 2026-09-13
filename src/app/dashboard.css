@@ -5217,7 +5217,7 @@ textarea:focus-visible {
     transform: translateY(0);
 }
 
-/* ---- Top bar (busca + contador de pessoas + ações da seção) ---- */
+/* ---- Top bar (nome do pacote + contador de pessoas + ações da seção) ---- */
 .dashboard-topbar {
     display: flex;
     align-items: center;
@@ -5226,37 +5226,20 @@ textarea:focus-visible {
     flex-wrap: wrap;
 }
 
-.topbar-search {
-    position: relative;
+/* Quem abre a tela do pacote quer saber qual pacote é: o nome ocupa a faixa
+   que era da busca, e as ações continuam na ponta direita. */
+.topbar-title {
     flex: 1;
-    max-width: 440px;
-    min-width: 200px;
-}
-
-.topbar-search > svg {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--ap-text-muted);
-    pointer-events: none;
-}
-
-.topbar-search input {
-    width: 100%;
-    background: var(--ap-bg-input);
-    border: 1px solid var(--ap-border);
-    border-radius: 12px;
-    padding: 11px 16px 11px 42px;
+    min-width: 0;
+    font-family: var(--ap-font-heading);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -.02em;
     color: var(--ap-text-primary);
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: border-color .15s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-
-.topbar-search input::placeholder { color: var(--ap-text-placeholder); }
-.topbar-search input:focus { border-color: var(--ap-border-focus); }
 
 .topbar-actions {
     display: flex;
@@ -5512,20 +5495,12 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 .collection-content-layout .collection-chart-users-row { order: 1; }
 .collection-content-layout .sessions-panel-container { order: 2; }
 
-/* Título do pacote + contagem de sessões */
+/* Contagem de sessões + data de criação (o nome subiu para a top bar) */
 #package-details .preset-collection .screen-section.primary .header-top {
     display: flex;
     align-items: baseline;
     gap: 12px;
     flex-wrap: wrap;
-}
-
-#package-details .preset-collection .screen-section.primary .header-top h2 {
-    font-family: var(--ap-font-heading);
-    font-size: 21px;
-    font-weight: 700;
-    letter-spacing: -.02em;
-    color: var(--ap-text-primary);
 }
 
 .pkg-sessions-count {
@@ -5701,9 +5676,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     color: var(--ap-text-secondary);
 }
 
-/* Só o título solto (lista do dono) se separa do que vem abaixo. Dentro do
-   .sessions-panel-head quem espaça é o próprio cabeçalho, e o padding aqui
-   tiraria o título do eixo do campo de busca. */
+/* O título solto é o do estado vazio, que não tem busca ao lado: ali o
+   espaçamento é dele mesmo. Dentro do .sessions-panel-head quem espaça é o
+   cabeçalho, e o padding tiraria o título do eixo do campo de busca. */
 #package-details .sessions-panel > .panel-title {
     padding-bottom: 14px;
 }
@@ -6158,7 +6133,8 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
    O membro quer entrar no serviço: o card diz qual é e abre. Barra de uso,
    "usando agora" e contagem de online eram leitura do dono — saíram daqui. */
 
-/* Cabeçalho da seção: título + busca das sessões do pacote. */
+/* Cabeçalho da lista de sessões, nas duas telas: o título à esquerda e a
+   busca à direita, encostada na lista que ela filtra. */
 .sessions-panel-head {
     display: flex;
     align-items: center;
@@ -6181,13 +6157,13 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     color: var(--ap-text-secondary);
 }
 
-.access-search {
+.sessions-search {
     position: relative;
     width: 260px;
     max-width: 100%;
 }
 
-.access-search > svg {
+.sessions-search > svg {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -6196,7 +6172,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     pointer-events: none;
 }
 
-.access-search input {
+.sessions-search input {
     width: 100%;
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-border);
@@ -6209,8 +6185,16 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     transition: border-color .15s ease;
 }
 
-.access-search input::placeholder { color: var(--ap-text-placeholder); }
-.access-search input:focus { border-color: var(--ap-border-focus); }
+.sessions-search input::placeholder { color: var(--ap-text-placeholder); }
+.sessions-search input:focus { border-color: var(--ap-border-focus); }
+
+/* Na lista do dono a tabela logo abaixo já tem moldura própria, e mais uma
+   linha aqui viraria borda dupla. Em "Meus acessos" os cards flutuam, então
+   lá a linha é o que separa o cabeçalho da grade. */
+#package-details .preset-collection .sessions-panel-head {
+    padding-bottom: 0;
+    border-bottom: none;
+}
 
 /* Em "Meus acessos" a busca mora ao lado do título e não há mais o campo de
    chave, então a top bar não teria o que mostrar. */

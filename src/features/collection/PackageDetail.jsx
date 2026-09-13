@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, Outlet, useParams } from 'react-router';
 import { getSuspendedMembershipKeys, usePackage, usePackages } from '../../lib/packages.jsx';
 import { usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
@@ -15,7 +15,6 @@ export default function PackageDetail() {
     // "Usando agora" tem carga própria, que se repete: ela envelhece em 60s,
     // e o resto das estatísticas não envelhece enquanto a tela está aberta.
     const online = usePackageOnline(pkg ? packageId : null);
-    const [search, setSearch] = useState('');
 
     const suspendedKeys = useMemo(
         () => getSuspendedMembershipKeys(collection, userInfo?.peopleLimit),
@@ -34,19 +33,10 @@ export default function PackageDetail() {
     return (
         <>
             <div className="dashboard-topbar">
-                <div className="topbar-search">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.3-4.3" />
-                    </svg>
-                    <input
-                        type="text"
-                        placeholder="Buscar sessões do pacote..."
-                        autoComplete="off"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                {/* O nome do pacote abre a tela aqui, no lugar onde a busca
+                    ficava — longe demais da lista que ela filtra. A busca
+                    desceu para o cabeçalho da lista, como em "Meus acessos". */}
+                <h2 className="topbar-title">{pkg.name}</h2>
 
                 {/* Ordem do painel: pessoas, compartilhar, adicionar sessão. */}
                 <div className="topbar-actions">
@@ -84,7 +74,6 @@ export default function PackageDetail() {
                         <div className="preset-content">
                             <div className="card-header">
                                 <div className="header-top">
-                                    <h2>{pkg.name}</h2>
                                     <span className="pkg-sessions-count">
                                         {sessions.length} {sessions.length === 1 ? 'sessão' : 'sessões'}
                                     </span>
@@ -121,7 +110,6 @@ export default function PackageDetail() {
                                     <SessionsTable
                                         pkg={pkg}
                                         sessions={sessions}
-                                        search={search}
                                         stats={stats}
                                         statsStatus={statsStatus}
                                         online={online}
