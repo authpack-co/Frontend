@@ -1190,13 +1190,6 @@ span.coming-soon {
     margin: 0 0 10px 0;
 }
 
-#package-details .created-date {
-    font-size: 14px;
-    color: var(--ap-text-muted);
-    display: flex;
-    gap: 0.5rem;
-}
-
 .card-header {
     /* Inherits from .content-card h2 styling */
 }
@@ -5475,43 +5468,19 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     .empty-screen-activate input { width: 100%; }
 }
 
-/* ---- #package-details: reordenação (gráfico + pessoas em cima, sessões, métricas embaixo) ---- */
+/* ---- #package-details: a tela do pacote é só conteúdo ----
+   O nome vive na top bar e o cabeçalho do card saiu junto da contagem de
+   sessões e da data de criação. */
 #package-details .preset-collection .screen-section.primary > .preset-content {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-#package-details .preset-collection .screen-section.primary > .preset-content > .card-header {
-    display: contents;
-}
-
-#package-details .preset-collection .screen-section.primary .preset-content > .card-header > .header-top { order: 0; }
-#package-details .preset-collection .screen-section.primary .preset-content > .card-content { order: 1; }
-#package-details .preset-collection .screen-section.primary .preset-content > .card-header > .package-stats-container { order: 2; }
-
 /* Dentro do card-content: os dois painéis de resumo abrem a tela e a lista de
    sessões vem abaixo deles — a mesma ordem em que o JSX os escreve. */
 .collection-content-layout .collection-chart-users-row { order: 1; }
 .collection-content-layout .sessions-panel-container { order: 2; }
-
-/* Contagem de sessões + data de criação (o nome subiu para a top bar) */
-#package-details .preset-collection .screen-section.primary .header-top {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.pkg-sessions-count {
-    font-size: 13px;
-    color: var(--ap-text-muted);
-    font-weight: 500;
-}
-
-#package-details .preset-collection .screen-section.primary .header-top .created-date {
-    margin-left: auto;
-}
 
 /* Métricas no rodapé sem padding extra */
 #package-details .package-stats { padding: 0; }
