@@ -611,7 +611,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .sidebar-ext-card {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 6px;
     background: var(--ap-accent-subtle);
     border: 1px solid var(--ap-accent-muted);
     border-radius: var(--ap-radius-lg);
@@ -623,6 +623,16 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 .sidebar-ext-card:hover {
     background: var(--ap-accent-light);
     border-color: var(--ap-accent);
+}
+
+/* O que leva à loja: ícone e texto lado a lado, ocupando a linha até o botão
+   de minimizar. */
+.sidebar-ext-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .sidebar-ext-icon {
@@ -663,6 +673,47 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-size: 12.5px;
     font-weight: 600;
     color: var(--ap-accent-strong);
+}
+
+/* ── Minimizado ──
+   Mesma ideia do card de planos: o aviso vira uma linha e devolve altura à
+   lista de pacotes. O ícone sai junto da descrição — numa coluna de 248px o
+   título e a ação já ocupam a linha inteira. */
+.sidebar-ext-card.is-collapsed {
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px 6px 8px;
+}
+
+.sidebar-ext-card.is-collapsed .sidebar-ext-main { align-items: center; gap: 6px; }
+.sidebar-ext-card.is-collapsed .sidebar-ext-icon { display: none; }
+.sidebar-ext-card.is-collapsed .sidebar-ext-desc { display: none; }
+
+/* A seta sai junto com a descrição: a linha não tem os ~14px dela. */
+.sidebar-ext-card.is-collapsed .sidebar-ext-arrow { display: none; }
+
+.sidebar-ext-card.is-collapsed .sidebar-ext-body {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.sidebar-ext-card.is-collapsed .sidebar-ext-title {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Menor que o aviso: a hierarquia é o problema primeiro, a ação em seguida. */
+.sidebar-ext-card.is-collapsed .sidebar-ext-link {
+    flex: none;
+    margin-left: auto;
+    font-size: 10.5px;
+    white-space: nowrap;
 }
 
 .sidebar-upgrade-card {
@@ -725,7 +776,8 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     transform: none !important;
 }
 
-.sidebar-upgrade-toggle {
+/* Minimizar: o mesmo controle no card de planos e no da extensão. */
+.sidebar-card-toggle {
     flex: none;
     display: grid;
     place-items: center;
@@ -740,12 +792,12 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     transition: background .15s ease, color .15s ease;
 }
 
-.sidebar-upgrade-toggle:hover {
+.sidebar-card-toggle:hover {
     background: var(--ap-bg-hover);
     color: var(--ap-text-primary);
 }
 
-.sidebar-upgrade-toggle svg { transition: transform .2s ease; }
+.sidebar-card-toggle svg { transition: transform .2s ease; }
 
 /* ── Minimizado ──
    Nome e ação lado a lado numa linha só: o objetivo do estado é devolver
@@ -789,12 +841,12 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     white-space: nowrap;
 }
 
-.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle {
+:is(.sidebar-upgrade-card, .sidebar-ext-card).is-collapsed .sidebar-card-toggle {
     width: 18px;
     height: 18px;
 }
 
-.sidebar-upgrade-card.is-collapsed .sidebar-upgrade-toggle svg { transform: rotate(180deg); }
+:is(.sidebar-upgrade-card, .sidebar-ext-card).is-collapsed .sidebar-card-toggle svg { transform: rotate(180deg); }
 
 
 .plus-subscribe-btn {

@@ -25,13 +25,34 @@ import './dashboard.css';
 const PLUS_BENEFIT_ROLES = ['admin'];
 
 const UPGRADE_COLLAPSED_KEY = 'niango-upgrade-collapsed';
+const EXT_COLLAPSED_KEY = 'niango-ext-collapsed';
 
-function readUpgradeCollapsed() {
-    try {
-        return localStorage.getItem(UPGRADE_COLLAPSED_KEY) === '1';
-    } catch {
-        return false;
-    }
+/**
+ * Estado minimizado de um card do rodapé da sidebar.
+ *
+ * Quem minimizou um banner não quer vê-lo aberto de novo a cada visita, e
+ * cada card lembra do seu por conta própria: minimizar o convite a assinar
+ * não diz nada sobre o aviso da extensão.
+ */
+function useCollapsedCard(storageKey) {
+    const [collapsed, setCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem(storageKey) === '1';
+        } catch {
+            return false;
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(storageKey, collapsed ? '1' : '0');
+        } catch {
+            // Navegador sem storage (aba anônima, cookies bloqueados): o estado
+            // vale só para esta sessão, e o banner segue funcionando.
+        }
+    }, [storageKey, collapsed]);
+
+    return [collapsed, setCollapsed];
 }
 
 /**
@@ -382,39 +403,51 @@ function FooterCard({ loading, hasPlusBenefits, onOpenPlans }) {
 }
 
 function SidebarExtensionCard() {
+    const [collapsed, setCollapsed] = useCollapsedCard(EXT_COLLAPSED_KEY);
+
     return (
-        <a
-            className="sidebar-ext-card"
-            href={WEBSTORE_URL}
-            target="_blank"
-            rel="noreferrer"
-            title="Instalar a extensão do Niango na Chrome Web Store"
-        >
-            <span className="sidebar-ext-icon" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15.5 3.5a2.5 2.5 0 0 0-5 0V6H7a1 1 0 0 0-1 1v3.5H3.5a2.5 2.5 0 0 0 0 5H6V19a1 1 0 0 0 1 1h3.5v-2.5a2.5 2.5 0 0 1 5 0V20H19a1 1 0 0 0 1-1v-3.5h-2.5a2.5 2.5 0 0 1 0-5H20V7a1 1 0 0 0-1-1h-3.5Z" />
+        <div className={`sidebar-ext-card${collapsed ? ' is-collapsed' : ''}`}>
+            {/* O card inteiro era o link. Com o botão de minimizar ao lado,
+                quem leva à loja é só o corpo — botão dentro de <a> não é HTML
+                válido, e o clique em minimizar abriria a loja junto. */}
+            <a
+                className="sidebar-ext-main"
+                href={WEBSTORE_URL}
+                target="_blank"
+                rel="noreferrer"
+                title="Instalar a extensão do Niango na Chrome Web Store"
+            >
+                <span className="sidebar-ext-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15.5 3.5a2.5 2.5 0 0 0-5 0V6H7a1 1 0 0 0-1 1v3.5H3.5a2.5 2.5 0 0 0 0 5H6V19a1 1 0 0 0 1 1h3.5v-2.5a2.5 2.5 0 0 1 5 0V20H19a1 1 0 0 0 1-1v-3.5h-2.5a2.5 2.5 0 0 1 0-5H20V7a1 1 0 0 0-1-1h-3.5Z" />
+                    </svg>
+                </span>
+                <span className="sidebar-ext-body">
+                    <span className="sidebar-ext-title">Extensão não detectada</span>
+                    <span className="sidebar-ext-desc">Sem ela não dá para conectar às sessões.</span>
+                    <span className="sidebar-ext-link">
+                        Instalar extensão<span className="sidebar-ext-arrow"> &rarr;</span>
+                    </span>
+                </span>
+            </a>
+            <button
+                className="sidebar-card-toggle"
+                type="button"
+                aria-expanded={!collapsed}
+                title={collapsed ? 'Expandir' : 'Minimizar'}
+                aria-label={collapsed ? 'Expandir aviso da extensão' : 'Minimizar aviso da extensão'}
+                onClick={() => setCollapsed((value) => !value)}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m6 9 6 6 6-6" />
                 </svg>
-            </span>
-            <span className="sidebar-ext-body">
-                <span className="sidebar-ext-title">Extensão não detectada</span>
-                <span className="sidebar-ext-desc">Sem ela não dá para conectar às sessões.</span>
-                <span className="sidebar-ext-link">Instalar extensão<span> &rarr;</span></span>
-            </span>
-        </a>
+            </button>
+        </div>
     );
 }
 
 function SidebarUpgradeCard({ onOpenPlans }) {
-    // Quem minimizou o banner não quer vê-lo aberto de novo a cada visita.
-    const [collapsed, setCollapsed] = useState(readUpgradeCollapsed);
-    useEffect(() => {
-        try {
-            localStorage.setItem(UPGRADE_COLLAPSED_KEY, collapsed ? '1' : '0');
-        } catch {
-            // Navegador sem storage (aba anônima, cookies bloqueados): o estado
-            // vale só para esta sessão, e o banner segue funcionando.
-        }
-    }, [collapsed]);
+    const [collapsed, setCollapsed] = useCollapsedCard(UPGRADE_COLLAPSED_KEY);
 
     return (
         <div className={`sidebar-upgrade-card${collapsed ? ' is-collapsed' : ''}`}>
@@ -429,7 +462,7 @@ function SidebarUpgradeCard({ onOpenPlans }) {
                 </button>
             </div>
             <button
-                className="sidebar-upgrade-toggle"
+                className="sidebar-card-toggle"
                 type="button"
                 aria-expanded={!collapsed}
                 title={collapsed ? 'Expandir' : 'Minimizar'}
