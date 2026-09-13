@@ -5086,13 +5086,21 @@ textarea:focus-visible {
    A barra é a do `.custom-scrollbar` (a classe vem do JSX): aparece no hover
    e some quando o cursor sai, para a coluna não carregar uma barra fixa. Por
    isso nada de largura ou de `scrollbar-gutter` aqui — qualquer um dos dois
-   deixaria a barra permanente. */
+   deixaria a barra permanente.
+
+   O par margem negativa + padding é o que dá folga à barra sem encolher a
+   lista: a margem joga a borda direita da área rolável para dentro da
+   goteira da .sidebar-nav (onde a barra passa a morar), e o padding afasta
+   os pacotes dela. Sem isso o polegar encostava no fundo do item sob o
+   cursor — os dois acendem no mesmo hover. */
 #packages-list {
     display: block;
     flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    margin-right: -4px;
+    padding-right: 6px;
 }
 
 #packages-list .sidebar-pkg-list {
