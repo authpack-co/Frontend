@@ -1,0 +1,4 @@
+# Gerados por fonts.py / slides.py — o que se versiona é a receita e o PNG final.
+.fontcache/
+fonts.css
+slide-*.html
