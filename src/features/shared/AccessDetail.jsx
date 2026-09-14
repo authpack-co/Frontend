@@ -19,7 +19,7 @@ const IDENTITY_ICONS = 3;
 export default function AccessDetail() {
     const { packageId } = useParams();
     const { pkg, notFound } = usePackage(packageId);
-    const { connect, connectingId, gate } = useConnectSession(pkg, { isAcquired: true });
+    const { connect, connectingId, isConnected, disconnect, disconnectingId, gate } = useConnectSession(pkg, { isAcquired: true });
 
     const [search, setSearch] = useState('');
     const { joinedAt } = useAccessStats(pkg ? packageId : null);
@@ -111,6 +111,9 @@ export default function AccessDetail() {
                                                     inactive={inactive}
                                                     connecting={connectingId === session.id}
                                                     onConnect={connect}
+                                                    connected={isConnected(session)}
+                                                    disconnecting={disconnectingId === session.id}
+                                                    onDisconnect={disconnect}
                                                 />
                                             ))}
                                         </div>

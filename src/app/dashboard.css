@@ -7650,6 +7650,34 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     cursor: progress;
 }
 
+/* Selo "Conectado": a sessão está aberta neste navegador (a extensão avisa).
+   No card do membro vai para a direita do cabeçalho; na linha do dono fica
+   colado ao nome, dentro da coluna do serviço. */
+.session-connected-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border: 1px solid var(--ap-success-border);
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-success-light);
+    color: var(--ap-success-text);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.session-connected-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.session-row .session-connected-badge { margin-left: 0; }
+
 /* ============================================
    Tooltip do gráfico de uso
    ============================================

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import ConnectedBadge from '../../components/ConnectedBadge.jsx';
 import OptionsMenu from '../../components/OptionsMenu.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
 import useConnectSession from '../../components/useConnectSession.jsx';
@@ -63,7 +64,7 @@ export default function SessionsTable({ pkg, sessions, stats, statsStatus, onlin
     const [search, setSearch] = useState('');
     const query = search.trim().toLowerCase();
     // Um portão de extensão para a lista inteira, não um por linha.
-    const { connect, connectingId, gate } = useConnectSession(pkg, { isAcquired: false });
+    const { connect, connectingId, isConnected, disconnect, disconnectingId, gate } = useConnectSession(pkg, { isAcquired: false });
     // A recaptura mora aqui (e não na linha) para o progresso sobreviver a
     // qualquer re-render da lista enquanto as abas abrem.
     const [updating, setUpdating] = useState(null);
@@ -134,6 +135,9 @@ export default function SessionsTable({ pkg, sessions, stats, statsStatus, onlin
                                     onlineRows={online.bySession[session.id] || []}
                                     connecting={connectingId === session.id}
                                     onConnect={connect}
+                                    connected={isConnected(session)}
+                                    disconnecting={disconnectingId === session.id}
+                                    onDisconnect={disconnect}
                                     onUpdate={setUpdating}
                                     onShowUsingNow={setUsingNow}
                                 />
@@ -173,7 +177,9 @@ export default function SessionsTable({ pkg, sessions, stats, statsStatus, onlin
     );
 }
 
-function SessionRow({ session, pkg, stats, statsStatus, onlineRows, connecting, onConnect, onUpdate, onShowUsingNow }) {
+function SessionRow({
+    session, pkg, stats, statsStatus, onlineRows, connecting, onConnect, connected, disconnecting, onDisconnect, onUpdate, onShowUsingNow,
+}) {
     const navigate = useNavigate();
     // 'rename' | 'delete' | null
     const [action, setAction] = useState(null);
@@ -214,6 +220,7 @@ function SessionRow({ session, pkg, stats, statsStatus, onlineRows, connecting, 
                     <p className="session-card-name">{session.name}</p>
                     <p className="session-card-domain">{sessionDomain(session)}</p>
                 </div>
+                {connected && <ConnectedBadge />}
             </div>
 
             <div className={`session-card-status${inactive ? ' is-inactive' : ''}`}>
@@ -238,12 +245,12 @@ function SessionRow({ session, pkg, stats, statsStatus, onlineRows, connecting, 
                     linha depois que o menu some. A extensão ainda vai buscar os
                     dados de autenticação, e sem sinal nenhum a linha fica igual
                     à de antes do clique. */}
-                {connecting ? (
+                {connecting || disconnecting ? (
                     <span
                         className="session-connecting"
                         role="status"
-                        title="Conectando à sessão…"
-                        aria-label="Conectando à sessão"
+                        title={disconnecting ? 'Saindo da sessão…' : 'Conectando à sessão…'}
+                        aria-label={disconnecting ? 'Saindo da sessão' : 'Conectando à sessão'}
                         onClick={(event) => event.stopPropagation()}
                     >
                         <span className="spinner" aria-hidden="true"></span>
@@ -260,17 +267,34 @@ function SessionRow({ session, pkg, stats, statsStatus, onlineRows, connecting, 
                     >
                         {(closeMenu) => (
                             <>
-                                <button
-                                    className="connect-session-btn"
-                                    type="button"
-                                    disabled={inactive}
-                                    onClick={() => { closeMenu(); onConnect(session); }}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
-                                    </svg>
-                                    <span>Conectar</span>
-                                </button>
+                                {connected ? (
+                                    // Já conectada neste navegador: conectar de novo
+                                    // só abriria outra aba da mesma sessão.
+                                    <button
+                                        className="disconnect-session-btn"
+                                        type="button"
+                                        onClick={() => { closeMenu(); onDisconnect(session); }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                            <polyline points="16 17 21 12 16 7" />
+                                            <line x1="21" x2="9" y1="12" y2="12" />
+                                        </svg>
+                                        <span>Sair</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="connect-session-btn"
+                                        type="button"
+                                        disabled={inactive}
+                                        onClick={() => { closeMenu(); onConnect(session); }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+                                        </svg>
+                                        <span>Conectar</span>
+                                    </button>
+                                )}
                                 {/* Recaptura: mesmo motor do "Adicionar sessão",
                                     sem etapa de seleção. */}
                                 <button
