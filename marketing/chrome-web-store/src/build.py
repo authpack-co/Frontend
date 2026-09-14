@@ -1,4 +1,5 @@
 from _parts import MARK, ICON, head, page, winbar
+from icons import ico
 
 GRID = 'grid-template-columns:292px 104px 236px 1fr'
 
@@ -52,10 +53,10 @@ def person(ini, name, when, color, online=False, creator=False, action='Ver deta
       <div style="min-width:0;flex:1"><b>{name}</b><span>{when}</span></div>
       {tag}<span class="ghost{d}">{action}</span></div>'''
 
-def row(letter, lcolor, name, domain, avs, using, time, trend, tclass, hi=False):
+def row(name, domain, avs, using, time, trend, tclass, hi=False):
     stack = ''.join(f'<i style="background:{c}">{t}</i>' for c, t in avs)
     return f'''<div class="row{' hi' if hi else ''}" style="{GRID}">
-      <div class="svc"><span class="ico" style="color:{lcolor}">{letter}</span>
+      <div class="svc">{ico(domain, 26)}
         <span style="min-width:0"><b>{name}</b><span>{domain}</span></span></div>
       <div><span class="st"><i></i>Ativa</span></div>
       <div style="display:flex;align-items:center"><span class="stack">{stack}</span>
@@ -65,8 +66,8 @@ def row(letter, lcolor, name, domain, avs, using, time, trend, tclass, hi=False)
 
 TABLE = f'''<div class="tbl">
   <div class="tbl-h" style="{GRID}"><span>SERVIÇO</span><span>STATUS</span><span>USANDO AGORA</span><span>TEMPO DE USO HOJE</span></div>
-  {row('F','#0acf83','Figma','figma.com',[('#4ade80','C'),('#7b57d4','B'),('#f97316','A')],'3 pessoas','2h 10m','↑ 1,8× o costume','up',hi=True)}
-  {row('N','#e8e6e3','Notion','notion.so',[('#7b57d4','B'),('#f97316','A')],'2 pessoas','1h 24m','↓ 62% do costume','flat')}
-  {row('L','#7b8cff','Linear','linear.app',[('#4ade80','C')],'1 pessoa','58m','no costume','flat')}
-  {row('S','#8a7bff','Slack','slack.com',[('#f97316','A')],'1 pessoa','42m','↓ 38% do costume','flat')}
+  {row('Figma','figma.com',[('#4ade80','C'),('#7b57d4','B'),('#f97316','A')],'3 pessoas','2h 10m','↑ 1,8× o costume','up',hi=True)}
+  {row('Notion','notion.so',[('#7b57d4','B'),('#f97316','A')],'2 pessoas','1h 24m','↓ 62% do costume','flat')}
+  {row('Linear','linear.app',[('#4ade80','C')],'1 pessoa','58m','no costume','flat')}
+  {row('Slack','slack.com',[('#f97316','A')],'1 pessoa','42m','↓ 38% do costume','flat')}
 </div>'''

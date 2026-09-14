@@ -8,7 +8,7 @@ for (let i = 1; i <= 5; i++) {
   await page.goto('file://' + path.join(dir, `slide-${i}.html`));
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(250);
-  await page.screenshot({ path: path.join(dir, `out/niango-${i}.png`), clip: { x: 0, y: 0, width: 1280, height: 800 } });
+  await page.screenshot({ path: path.join(dir, '..', `niango-${i}.png`), clip: { x: 0, y: 0, width: 1280, height: 800 } });
   console.log('ok slide', i);
 }
 await browser.close();

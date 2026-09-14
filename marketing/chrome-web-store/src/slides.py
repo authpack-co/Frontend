@@ -1,5 +1,6 @@
 from _parts import MARK, ICON, head, page, winbar
 from build import side, topbar, CHART, TABLE, person, row, GRID
+from icons import ico
 
 def panel_head():
     return f'''<div class="pkg-title"><h2>Engenharia</h2><span class="tag">6 sessões</span></div>
@@ -43,21 +44,20 @@ s1 = page('.canvas{top:344px}', head(
   </div></div>''')
 
 # ── 2 ────────────────────────────────────────────────────────────────────
-serv = [('C','#e8e6e3','ChatGPT','chatgpt.com','a','Adicionado'),
-        ('N','#e8e6e3','Notion','notion.so','g','Adicionar'),
-        ('S','#8a7bff','Slack','slack.com','g','Adicionar'),
-        ('F','#0acf83','Figma','figma.com','g','Adicionar')]
+serv = [('ChatGPT','chatgpt.com','a','Adicionado'),
+        ('Notion','notion.so','g','Adicionar'),
+        ('Slack','slack.com','g','Adicionar'),
+        ('Figma','figma.com','g','Adicionar')]
 drop = ''.join(f'''<div class="drop-i{' on' if k=='a' else ''}">
-    <span class="ico" style="width:24px;height:24px;font-size:11px;color:{c}">{l}</span>
-    <b>{n}</b><span class="mini {k}">{t}</span></div>''' for l,c,n,d,k,t in serv)
+    {ico(d, 24)}<b>{n}</b><span class="mini {k}">{t}</span></div>''' for n,d,k,t in serv)
 
 prog = ''.join(f'''<div style="display:flex;align-items:center;gap:10px;margin-top:11px">
-    <span class="ico" style="width:24px;height:24px;font-size:11px;color:{c}">{l}</span>
+    {ico(d, 24)}
     <span style="flex:1"><span style="display:block;font-size:11px;font-weight:600;margin-bottom:5px">{n}</span>
       <span class="bar"><i style="width:{w}"></i></span></span>
     <span style="width:14px;color:{'#4ade80' if w=='100%' else '#6d655a'};display:block">{ICON['check']}</span></div>'''
-    for l,c,n,w in [('C','#e8e6e3','ChatGPT','100%'),('N','#e8e6e3','Notion','100%'),
-                    ('S','#8a7bff','Slack','100%'),('F','#0acf83','Figma','46%')])
+    for n,d,w in [('ChatGPT','chatgpt.com','100%'),('Notion','notion.so','100%'),
+                  ('Slack','slack.com','100%'),('Figma','figma.com','46%')])
 
 s2 = page('.canvas{top:340px}', head(
     'Passo 01 · Captura',
@@ -135,13 +135,13 @@ s3 = page('.canvas{top:336px}', head(
   </div></div>''')
 
 # ── 4 ────────────────────────────────────────────────────────────────────
-def acc(l, c, n, d, state=''):
+def acc(n, d, state=''):
     if state == 'wait':
         btn = '<span class="connect wait">Conectando<span class="spin"></span></span>'
     else:
         btn = f'<span class="connect">Conectar{ICON["open"]}</span>'
     return f'''<div class="acc">
-      <div class="acc-h"><span class="ico" style="color:{c}">{l}</span>
+      <div class="acc-h">{ico(d, 38)}
         <span style="min-width:0"><b>{n}</b><span>{d}</span></span></div>
       <div class="acc-a">{btn}<span class="det">Detalhes</span></div></div>'''
 
@@ -163,12 +163,12 @@ s4 = page('.canvas{top:340px}', head(
           <div class="pkg-title"><h2>Meus acessos</h2><span class="tag">6 sessões</span></div>
           <p class="meta">Compartilhado por Ana Ribeiro · Engenharia</p>
           <div class="acc-grid" style="margin-top:16px">
-            {acc('F','#0acf83','Figma','figma.com','wait')}
-            {acc('N','#e8e6e3','Notion','notion.so')}
-            {acc('S','#8a7bff','Slack','slack.com')}
-            {acc('L','#7b8cff','Linear','linear.app')}
-            {acc('C','#e8e6e3','ChatGPT','chatgpt.com')}
-            {acc('G','#e8e6e3','GitHub','github.com')}
+            {acc('Figma','figma.com','wait')}
+            {acc('Notion','notion.so')}
+            {acc('Slack','slack.com')}
+            {acc('Linear','linear.app')}
+            {acc('ChatGPT','chatgpt.com')}
+            {acc('GitHub','github.com')}
           </div>
         </div>
       </div>
