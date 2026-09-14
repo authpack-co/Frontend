@@ -31,15 +31,28 @@ offline); `NO_FAVICON_FETCH=1` força esse caminho. O que fica no PNG entregue
 depende de onde o render rodou, então vale conferir a saída de
 `python3 icons.py`, que imprime a origem de cada ícone.
 
-Cada ícone fica num chip claro, e não solto sobre o painel. Favicon é arte
-feita para fundo claro: no `#1b1c1e` do tema escuro, o preto do Notion e do
-GitHub sumiria, e o laranja do Figma passaria a disputar com o acento do
-Niango. Com o chip, cada marca aparece como na aba do navegador.
+Cada ícone fica num tile escuro, o mesmo `--ap-bg-card-alt` do painel. No
+caminho do vetor isso exige escolher a cor do glifo: metade destas marcas é
+preta ou quase — o `#000` do Notion, o `#181717` do GitHub, a berinjela do
+Slack — e sumiria no escuro. Clarear o matiz devolveria um Slack rosa, então
+`on_dark()` mede o contraste contra o tile e, abaixo de 3:1, usa o tom claro
+do tema: marca sem contraste no escuro é justamente a que já publica uma
+versão invertida. Figma e Linear passam no teste e ficam com a cor de sempre.
+Pelo caminho do favicon a questão não existe — o PNG já vem colorido.
+
+O glifo é dimensionado em pixel inteiro, não em porcentagem da caixa: 64% de
+26px dá 16,64px, e o meio-pixel tira o ícone do centro e o deixa borrado
+justamente no tamanho em que ele aparece.
 
 Os vetores de `src/vendor/icons/` vêm do simple-icons (CC0, licença junto dos
-arquivos). A cor de cada glifo é como a marca se apresenta hoje, não o que o
-simple-icons guarda: o registro dele para a OpenAI ainda é o roxo de duas
-identidades atrás, enquanto o favicon do chatgpt.com é preto.
+arquivos), com o `viewBox` já recentrado na caixa real do desenho por
+`normalize_icons.mjs` — o viewBox de origem não promete arte centrada, e a do
+Figma encostava à esquerda. É um passo de uma vez só; o resultado fica
+versionado e o build não depende dele.
+
+A cor de cada glifo é como a marca se apresenta hoje, não o que o simple-icons
+guarda: o registro dele para a OpenAI ainda é o roxo de duas identidades
+atrás, enquanto o favicon do chatgpt.com é preto.
 
 ## Regerar
 

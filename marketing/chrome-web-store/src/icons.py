@@ -15,6 +15,12 @@ que não chega a tempo deixa buraco na imagem que vai para a loja.
 import base64, os, re, subprocess
 
 GOOGLE_SIZE = 128
+# Superfície do tile — a mesma --ap-bg-card-alt do tema escuro.
+CHIP_BG = '#1b1c1e'
+# Abaixo disto o glifo encosta no fundo do tile e vira mancha.
+MIN_CONTRAST = 3.0
+# Tom claro do tema, para as marcas que no escuro se apresentam invertidas.
+REVERSED = '#E8E6E3'
 here = os.path.dirname(os.path.abspath(__file__))
 cache = os.path.join(here, '.iconcache')
 
@@ -31,6 +37,30 @@ SERVICES = {
     'chatgpt.com': ('ChatGPT', 'openai.svg', '#0D0D0D'),
     'github.com':  ('GitHub',  'github.svg', '#181717'),
 }
+
+
+def _lum(hex_color):
+    """Luminância relativa (WCAG), para medir o glifo contra o tile."""
+    out = []
+    for i in (1, 3, 5):
+        c = int(hex_color[i:i + 2], 16) / 255
+        out.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
+    r, g, b = out
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def on_dark(hex_color):
+    """A cor do glifo sobre o tile escuro.
+
+    Metade destas marcas é preta ou quase — #000 do Notion, #181717 do GitHub,
+    a berinjela do Slack: no tile escuro elas desapareceriam. E não é caso de
+    clarear o matiz, que devolveria um Slack rosa. Marca que não tem contraste
+    no escuro é justamente a que já publica uma versão invertida, então é essa
+    que entra. Quem tem contraste (Figma, Linear) fica com a cor de sempre.
+    """
+    l1, l2 = _lum(hex_color), _lum(CHIP_BG)
+    contrast = (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+    return hex_color if contrast >= MIN_CONTRAST else REVERSED
 
 
 def _google(domain):
@@ -62,7 +92,7 @@ def build(prefer_google=True):
     out = {}
     for domain, (_, filename, color) in SERVICES.items():
         uri = _google(domain) if prefer_google else None
-        out[domain] = (uri, 'favicon') if uri else (_vendored(filename, color), 'vetor')
+        out[domain] = (uri, 'favicon') if uri else (_vendored(filename, on_dark(color)), 'vetor')
     return out
 
 
@@ -70,17 +100,18 @@ ICONS = build(prefer_google=os.environ.get('NO_FAVICON_FETCH') != '1')
 SOURCES = {d: src for d, (_, src) in ICONS.items()}
 
 
-def ico(domain, box=26, extra=''):
-    """O tile de ícone: chip claro com o favicon dentro.
+def ico(domain, box=26, glyph=None, extra=''):
+    """O tile de ícone do painel: quadrado escuro com a marca dentro.
 
-    O chip não é enfeite. Favicon é arte feita para fundo claro — sobre o
-    #1b1c1e do painel, o preto do Notion e do GitHub simplesmente sumiria, e o
-    laranja do Figma passaria a disputar com o acento do Niango. Com o chip,
-    cada marca aparece como a pessoa a vê na aba do navegador.
+    O glifo vai em pixel inteiro, não em porcentagem da caixa. 64% de 26px dá
+    16,64px: o meio-pixel joga a imagem para uma posição fracionária, e o que
+    era para ser um ícone centrado sai meio borrado e visivelmente torto no
+    tamanho em que ele de fato aparece.
     """
     uri = ICONS[domain][0]
+    glyph = glyph if glyph is not None else round(box * 0.62 / 2) * 2
     return (f'<span class="ico{extra}" style="width:{box}px;height:{box}px">'
-            f'<img src="{uri}" alt=""></span>')
+            f'<img src="{uri}" alt="" width="{glyph}" height="{glyph}"></span>')
 
 
 if __name__ == '__main__':
