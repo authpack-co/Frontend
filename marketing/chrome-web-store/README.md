@@ -1,7 +1,9 @@
-# Imagens do carrossel da Chrome Web Store
+# Imagens da ficha na Chrome Web Store
 
-Cinco telas 1280×800 (o tamanho que a loja pede) para a ficha da extensão.
-Os PNGs prontos estão em `niango-1.png` … `niango-5.png`.
+As sete peças da ficha da extensão, cada uma no tamanho exato que a loja
+aceita. Os PNGs prontos estão nesta pasta.
+
+## Carrossel — 1280×800
 
 | # | Arquivo | Assunto |
 |---|---|---|
@@ -10,6 +12,25 @@ Os PNGs prontos estão em `niango-1.png` … `niango-5.png`.
 | 3 | `niango-3.png` | Passo 02 · distribuição por link ou código |
 | 4 | `niango-4.png` | Passo 03 · quem recebe conecta em um clique |
 | 5 | `niango-5.png` | Controle e revogação por pessoa, pacote ou sessão |
+
+## Peças promocionais
+
+| Arquivo | Tamanho | Onde aparece |
+|---|---|---|
+| `niango-promo-440x280.png` | 440×280 | tile pequeno, nas listas e buscas da loja |
+| `niango-marquee-1400x560.png` | 1400×560 | marquee, na vitrine de destaque |
+
+As duas seguem regras próprias, e não são o carrossel reduzido. O tile é visto
+em miniatura: screenshot não sobrevive a esse tamanho, então leva só a marca e
+uma frase — daí ele dizer "Compartilhe o acesso, não a senha" em vez de repetir
+a manchete da tela 1. O marquee pode ser recortado nas laterais conforme a
+superfície, então nada essencial encosta na borda; a mensagem e a marca ficam à
+esquerda, onde sobrevivem a qualquer corte.
+
+Nenhuma das duas leva canal alfa — a loja recusa. O Playwright já grava RGB
+opaco quando a página tem fundo sólido, que é o caso; vale conferir com
+`python3 -c "print(open('arquivo.png','rb').read(26)[25])"`, que deve imprimir
+`2` (RGB).
 
 ## Como as telas são feitas
 
@@ -62,16 +83,19 @@ npm i -D playwright        # só o pacote; o Chromium do ambiente já serve
 python3 fonts.py           # baixa e embute Inter, Sora e Fira Code
 python3 icons.py           # confere a origem dos ícones (favicon ou vetor)
 python3 slides.py          # escreve slide-1.html … slide-5.html
-node shot.mjs              # renderiza em ../niango-N.png
+python3 promo.py           # escreve promo-tile.html e promo-marquee.html
+node shot.mjs              # renderiza as sete peças na pasta acima
 ```
 
-`shot.mjs` fixa viewport 1280×800 e `deviceScaleFactor: 1` — a loja recusa
-qualquer coisa que não seja exatamente 1280×800 (ou 640×400). Renderizar em 2x
-e reduzir depois só amolece o texto, então o desenho já nasce no tamanho final.
+`shot.mjs` renderiza cada peça no seu próprio viewport com
+`deviceScaleFactor: 1` — a loja recusa o que não bate exato, e renderizar em 2x
+para reduzir depois só amolece o texto, então o desenho já nasce no tamanho de
+entrega.
 
 Onde mexer:
 
 - **texto das telas** — `slides.py`, no topo de cada bloco `s1`…`s5`;
+- **tile e marquee** — `promo.py` (cada um com o seu bloco `<style>`);
 - **quais serviços aparecem** — `SERVICES` em `icons.py`, mais as chamadas
   de `row()` e `acc()` em `build.py` / `slides.py`;
 - **pedaços de UI** (sidebar, tabela, gráfico, pessoas) — `build.py`;

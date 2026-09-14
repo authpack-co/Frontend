@@ -2,5 +2,6 @@
 .fontcache/
 fonts.css
 slide-*.html
+promo-*.html
 .iconcache/
 __pycache__/
