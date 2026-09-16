@@ -821,26 +821,8 @@ body.user-logged-in .nav-user { display: flex; }
   .nav-visitor .btn-outline { display: none; }
 }
 
-/* ── Marca do Niango: um arquivo por tema ────────────────────────────────────
-   O disco preto desaparece contra o fundo escuro e o branco contra o claro,
-   então cada tema tem o seu arquivo. O par vem sempre junto no HTML e o CSS
-   mostra um só. É por isso que a troca é por CSS e não por JS trocando o src:
-   o data-theme já está no <html> antes do primeiro paint, então o ícone certo
-   é o primeiro a aparecer, sem piscar o do outro tema.
-
-   O favicon não entra nessa troca — ele é fixo, na versão de disco branco.
-
-   O arquivo do tema claro continua sendo favicon-128x128.png porque é a URL
-   que o JSON-LD de todas as páginas publica como logo da organização.
+/* ── Marca do Niango ─────────────────────────────────────────────────────────
+   Um arquivo só, o disco preto, nos dois temas — antes havia um par (preto no
+   claro, branco no escuro) que o CSS trocava.
    ─────────────────────────────────────────────────────────────────────────── */
 .niango-mark { display: block; }
-
-/* O !important não é preguiça: regras de contêiner como
-   `.sidebar-brand img { display: block }` misturam classe e elemento, o que
-   pesa mais que a classe sozinha da marca, e reacendiam o ícone do tema
-   oposto — no tema claro a sidebar mostrava os dois discos ao mesmo tempo.
-   Esconder e mostrar aqui precisa ganhar de qualquer contêiner. */
-.niango-mark--dark { display: none !important; }
-
-[data-theme="dark"] .niango-mark--light { display: none !important; }
-[data-theme="dark"] .niango-mark--dark { display: block !important; }

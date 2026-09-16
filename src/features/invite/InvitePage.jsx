@@ -140,8 +140,7 @@ export default function InvitePage() {
             <div className="inv-shell">
                 <header className="inv-topbar">
                     <Link className="inv-brand" to="/collection">
-                        <img className="niango-mark niango-mark--light" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                        <img className="niango-mark niango-mark--dark" src="/assets/images/niango-mark-dark.png" alt="Niango" />
+                        <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
                         <span className="inv-brand-name">Niango</span>
                     </Link>
                 </header>
