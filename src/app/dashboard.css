@@ -2609,150 +2609,161 @@ span.coming-soon {
 
 /* ============================================
    Notification
-   ============================================ */
-.notification {
-    display: flex;
-    align-items: center;
+   ============================================
+
+   Um aviso por vez, no alto à direita. A cor do tipo entra em doses pequenas —
+   ícone e barra de tempo — e o resto é a superfície de card do tema: o balão
+   inteiro pintado competia com a tela por trás, e a tarja lateral grossa
+   brigava com o próprio ícone.
+
+   Sem barra de tempo: era mais um elemento em movimento para um aviso que dura
+   segundos. O cursor em cima ainda pausa a contagem (ver Notifications.jsx). */
+
+.notifications {
     position: fixed;
-    top: 30px;
-    right: 30px;
-    width: 280px;
-    min-height: 60px;
-    gap: 14px;
-    background: var(--ap-bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--ap-border);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--ap-text-primary);
+    top: 24px;
+    right: 24px;
     z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(40px) scale(0.95);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    overflow: hidden;
-}
-
-.notification::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* A área não intercepta cliques; só o balão dentro dela. */
     pointer-events: none;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-.notification.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0) scale(1);
+.notification {
+    --notification-tint: var(--ap-text-muted);
+
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    box-sizing: border-box;
+    width: min(280px, calc(100vw - 32px));
+    padding: 12px 12px 13px;
+    /* Vidro: a superfície do card com transparência sobre o desfoque do que está
+       atrás — o mesmo efeito do popup da extensão. 88% e não menos: sobre uma
+       área muito colorida (um gráfico, um card da marca) o aviso tingia junto e
+       o texto perdia contraste. A borda sobe um tom porque fundo translúcido
+       perde o contorno. */
+    background: color-mix(in srgb, var(--ap-bg-card) 88%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid var(--ap-border-hover);
+    border-radius: var(--ap-radius-lg);
+    box-shadow: var(--ap-shadow-lg);
+    overflow: hidden;
+    pointer-events: auto;
+    animation: notificationIn 0.26s cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 
-.notification .notification-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+/* Sem suporte a desfoque, o vidro vira superfície sólida — translúcido sem
+   blur deixaria o texto por cima do que está atrás. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .notification {
+        background: var(--ap-bg-card);
+    }
+}
+
+.notification.is-leaving {
+    animation: notificationOut 0.18s ease-in forwards;
+}
+
+@keyframes notificationIn {
+    from {
+        opacity: 0;
+        transform: translateX(16px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes notificationOut {
+    to {
+        opacity: 0;
+        transform: translateX(16px) scale(0.98);
+    }
+}
+
+/* Ícone: disco discreto na cor do tipo, o único lugar onde ela aparece cheia. */
+.notification-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--notification-tint) 14%, transparent);
+    color: var(--notification-tint);
+}
+
+.notification-message {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding-top: 2px;
+    color: var(--ap-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.notification-close {
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
+    width: 22px;
+    height: 22px;
+    margin: 1px -2px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--ap-radius-sm);
+    color: var(--ap-text-placeholder);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
+.notification-close:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-secondary);
+}
+
+/* Cores por tipo. "info" fica no neutro de propósito: o laranja é da ação
+   primária, e um aviso de informação não é uma. */
 .notification.success {
-    border-left: 4px solid var(--ap-success);
+    --notification-tint: var(--ap-success);
 }
 
-.notification.success .notification-icon {
-    background: color-mix(in srgb, var(--ap-success) 20%, transparent);
-    color: var(--ap-success);
-}
-
-.notification.success .notification-icon svg {
-    stroke: var(--ap-success);
+.notification.warning {
+    --notification-tint: var(--ap-warning);
 }
 
 .notification.error {
-    border-left: 4px solid var(--ap-danger);
+    --notification-tint: var(--ap-danger);
 }
 
-.notification.error .notification-icon {
-    background: color-mix(in srgb, var(--ap-danger) 20%, transparent);
-    color: var(--ap-danger);
+/* O erro é o único que a moldura acusa — é o que não pode passar batido. */
+.notification.error {
+    border-color: color-mix(in srgb, var(--ap-danger) 35%, var(--ap-border));
 }
 
-.notification.error .notification-icon svg {
-    stroke: var(--ap-danger);
-}
-
-.notification.info {
-    border-left: 4px solid var(--ap-accent);
-}
-
-.notification.info .notification-icon {
-    background: color-mix(in srgb, var(--ap-accent) 20%, transparent);
-    color: var(--ap-accent);
-}
-
-.notification.info .notification-icon svg {
-    stroke: var(--ap-accent);
-}
-
-.notification .notification-message {
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
-    color: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    line-height: 1.4;
-    z-index: 1;
-}
-
-.notification-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    width: 100%;
-    transform-origin: left;
-    transform: scaleX(1);
-    opacity: 0.8;
-}
-
-.notification.success .notification-progress {
-    background: var(--ap-accent);
-}
-
-.notification.error .notification-progress {
-    background: var(--ap-danger);
-}
-
-.notification.info .notification-progress {
-    background: var(--ap-accent);
-}
-
-.notification.show .notification-progress {
-    animation: shrinkProgress 2.5s linear forwards;
-}
-
-@keyframes shrinkProgress {
-    0% {
-        transform: scaleX(1);
+@media (max-width: 640px) {
+    .notifications {
+        top: 12px;
+        right: 12px;
+        left: 12px;
     }
 
-    100% {
-        transform: scaleX(0);
+    .notification {
+        width: auto;
     }
 }
 
