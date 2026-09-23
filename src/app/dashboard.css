@@ -5880,18 +5880,20 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     flex: 1;
     min-height: 0;
     gap: 0;
-    /* Sem respiro lateral: os separadores das linhas atravessam o card de
-       ponta a ponta, na mesma medida da borda do cabeçalho. */
+    /* O respiro fica nas linhas, para o hover e a rolagem irem de ponta a
+       ponta do card. */
     padding: 0;
     max-height: none;
     overflow-y: auto;
 }
 
 /* ── Lista de quem está conectado ── */
+/* Sem separador entre as linhas: a única linha do card é a borda do
+   cabeçalho. O respiro em cima e embaixo faz o papel dela na lista. */
 .un-list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 8px 0;
     display: flex;
     flex-direction: column;
 }
@@ -5900,12 +5902,8 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 13px 20px;
+    padding: 10px 20px;
 }
-
-/* Separador só entre linhas: a primeira encosta no cabeçalho, que já tem a
-   sua própria borda. */
-.un-row + .un-row { border-top: 1px solid var(--ap-border); }
 
 .un-avatar {
     width: 34px;
