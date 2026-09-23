@@ -446,8 +446,11 @@ a.dt-crumb:hover {
     color: var(--ap-text-muted);
 }
 
+/* Umas seis linhas à vista e o resto rolando dentro do card: num período de
+   30 dias o histórico passa de uma centena de linhas, e sem teto ele
+   empurraria a tela para baixo sem fim. */
 .dt-history-body {
-    max-height: 560px;
+    max-height: 320px;
     overflow-y: auto;
 }
 
