@@ -1,21 +1,33 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon from '../../components/ServiceIcon.jsx';
+import { formatDate } from '../../lib/format.js';
 import { usePackage } from '../../lib/packages.jsx';
-import { makeUserLookup, usePackageStats } from '../../lib/packageStats.js';
+import { makeUserLookup, usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
 import {
     byUser,
     filterAccessHistory,
     filterByLastDays,
     formatDuration,
+    getAccessCount,
+    getAverageUsage,
     getDailyUsage,
     getTotalUsage,
     getUserHistoryUsage,
     timeAgo,
     toAccessRows,
 } from '../../lib/usage.js';
-import { DetailHeader, HistoryTable, StatCard } from './DetailScreen.jsx';
-import UsagePanel, { PERIOD_DAYS, periodTitle } from './UsagePanel.jsx';
+import {
+    CalendarIcon,
+    DetailHero,
+    DetailHistory,
+    DetailScreen,
+    DetailTopBar,
+    DetailUsageCard,
+    PresencePill,
+} from './DetailScreen.jsx';
+import { PERIOD_DAYS, periodTitle } from './UsagePanel.jsx';
 
 const title = periodTitle('da pessoa');
 
@@ -24,6 +36,7 @@ export default function UserDetail() {
     const { packageId, userId } = useParams();
     const { pkg, notFound } = usePackage(packageId);
     const { stats, status } = usePackageStats(pkg ? packageId : null);
+    const online = usePackageOnline(pkg ? packageId : null);
 
     // Sair do pacote não apaga o que a pessoa usou: o tempo dela continua no
     // gráfico do pacote, então esta tela continua existindo para ex-membros —
@@ -55,81 +68,114 @@ export default function UserDetail() {
     if (!pkg || !user) return null;
 
     const total = getTotalUsage(scoped);
+    const average = getAverageUsage(scoped);
     const lastUsage = stats?.lastUsageByUser?.[user.id];
 
+    // "Última vez" não é do período: é quando a pessoa usou por último, e
+    // dizer "—" só porque foi antes do recorte esconderia a resposta.
+    const lastUsageLabel = lastUsage ? timeAgo(lastUsage) : '—';
+
+    // Em que sessões a pessoa está agora — normalmente uma.
+    const usingNow = (pkg.sessions || []).filter((session) => (
+        (online.bySession[session.id] || []).some((row) => row.userId === user.id)
+    ));
+
+    const joinedAt = formatDate(user.connectedAt);
+
     return (
-        <section id="package-details" className="content-card collection-state expanded">
-            <div className="preset-collection">
-                <div className="screen-section secondary user-overview-state">
-                    <div className="preset-user-overview">
-                        <DetailHeader pkg={pkg} subject={user.name} backTo={`/collection/${pkg.id}`} />
+        <DetailScreen>
+            <DetailTopBar
+                pkg={pkg}
+                subject={user.name}
+                backTo={`/collection/${pkg.id}`}
+                period={period}
+                onPeriodChange={setPeriod}
+            />
 
-                        <div className="overview-container">
-                            <div className="overview-content">
-                                <div className="profile-card">
-                                    <div className="profile-avatar">
-                                        {user.picture && <img src={user.picture} alt={user.name || ''} />}
-                                    </div>
-                                    <h4 className="profile-title">{user.name}</h4>
-                                    <p className="profile-subtitle">{user.email}</p>
-                                    {user.removed && (
-                                        <p className="profile-removed-note">
-                                            Esta pessoa foi removida do pacote. O uso abaixo é o que
-                                            ficou registrado enquanto ela tinha acesso.
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="overview-stats">
-                                    <div className="stats-grid">
-                                        <StatCard
-                                            label="Tempo total de uso do pacote"
-                                            value={status === 'ready' ? formatDuration(total.seconds) : '—'}
-                                            highlight
-                                        />
-                                        <StatCard
-                                            label="Última vez que usou o pacote"
-                                            value={status === 'ready' ? (lastUsage ? timeAgo(lastUsage) : '—') : '—'}
-                                        />
-                                    </div>
-
-                                    <UsagePanel
-                                        title={title}
-                                        subtitle="Tempo de uso por dia"
-                                        status={status}
-                                        sessions={pkg.sessions}
-                                        period={period}
-                                        onPeriodChange={setPeriod}
-                                        dataFor={(_days, isDaily) => (isDaily
-                                            ? getDailyUsage(history, new Date(), { countUsers: false })
-                                            : getUserHistoryUsage(scoped))}
-                                    />
-                                </div>
-                            </div>
-
-                            <HistoryTable
-                                columnLabel="Serviço"
-                                rows={rows}
-                                loading={status === 'loading'}
-                                renderSubject={(session) => (
-                                    <div className="service-badge">
-                                        <div className="service-icon">
-                                            <ServiceIcon
-                                                icon={session.icon}
-                                                url={session.url}
-                                                name={session.name}
-                                            />
-                                        </div>
-                                        <span>{session.name}</span>
-                                    </div>
-                                )}
+            <DetailHero
+                media={<PersonAvatar className="dt-hero-avatar" name={user.name} picture={user.picture} />}
+                title={user.name}
+                subtitle={user.email}
+                meta={[
+                    user.isCreator && (
+                        <>
+                            <CalendarIcon />
+                            Dono do pacote
+                        </>
+                    ),
+                    !user.isCreator && !user.removed && joinedAt && (
+                        <>
+                            <CalendarIcon />
+                            No pacote desde <strong>{joinedAt}</strong>
+                        </>
+                    ),
+                    user.removed && (
+                        <span
+                            className="dt-hero-removed"
+                            title="O uso abaixo é o que ficou registrado enquanto ela tinha acesso."
+                        >
+                            <span className="removed-user-tag">removido</span>
+                            Não tem mais acesso ao pacote
+                        </span>
+                    ),
+                ]}
+                presence={!user.removed && (
+                    <PresencePill
+                        active={usingNow.length > 0}
+                        label={presenceLabel(usingNow)}
+                        leading={usingNow.length > 0 && (
+                            <ServiceIcon
+                                className="dt-presence-service"
+                                icon={usingNow[0].icon}
+                                url={usingNow[0].url}
+                                name={usingNow[0].name}
                             />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                        )}
+                    />
+                )}
+            />
+
+            <DetailUsageCard
+                kpis={[
+                    { label: 'Tempo de uso no período', value: formatDuration(total.seconds) },
+                    { label: 'Vezes que usou', value: getAccessCount(scoped) },
+                    { label: 'Tempo médio por uso', value: average == null ? null : formatDuration(average) },
+                    { label: 'Última vez que usou', value: lastUsageLabel },
+                ]}
+                title={title(period)}
+                subtitle={days === 0 ? 'Tempo de uso por hora' : 'Tempo de uso por dia'}
+                status={status}
+                period={period}
+                sessions={pkg.sessions}
+                dataFor={(_days, isDaily) => (isDaily
+                    ? getDailyUsage(history, new Date(), { countUsers: false })
+                    : getUserHistoryUsage(scoped))}
+            />
+
+            <DetailHistory
+                columnLabel="Serviço"
+                rows={rows}
+                loading={status === 'loading'}
+                renderSubject={(session) => (
+                    <>
+                        <ServiceIcon
+                            className="dt-history-service"
+                            icon={session.icon}
+                            url={session.url}
+                            name={session.name}
+                        />
+                        <span className="dt-history-name">{session.name}</span>
+                    </>
+                )}
+            />
+        </DetailScreen>
     );
+}
+
+function presenceLabel(sessions) {
+    if (sessions.length === 0) return 'Não está usando agora';
+    if (sessions.length === 1) return `Usando ${sessions[0].name} agora`;
+    return `Usando ${sessions[0].name} e mais ${sessions.length - 1} agora`;
 }
 
 function UserNotFound({ packageId }) {

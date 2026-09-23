@@ -1,0 +1,555 @@
+/* ============================================================================
+   Telas de detalhe (sessão e pessoa)
+
+   Sessão e pessoa têm o mesmo esqueleto: barra com o período, identidade,
+   um card com números e gráfico, e o histórico. Sem o cartão externo do resto
+   do painel — a tela inteira já é sobre uma coisa só, e os cards internos
+   bastam para separar as partes.
+   ============================================================================ */
+
+.dt-screen {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding-bottom: var(--ap-space-lg);
+}
+
+.dt-main {
+    flex: 1;
+    max-width: 1100px;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ap-space-lg);
+}
+
+/* ── Barra: voltar, caminho e período ── */
+
+.dt-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--ap-space-md);
+}
+
+.dt-crumbs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.dt-back {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ap-border);
+    background: var(--ap-bg-card);
+    border-radius: var(--ap-radius-md);
+    color: var(--ap-text-secondary);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dt-back:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+}
+
+.dt-crumb {
+    color: var(--ap-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+a.dt-crumb:hover {
+    color: var(--ap-text-secondary);
+}
+
+.dt-crumb.is-current {
+    color: var(--ap-text-primary);
+}
+
+.dt-crumb-sep {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--ap-text-muted);
+    opacity: 0.5;
+}
+
+.dt-period {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+    padding: 3px;
+    background: var(--ap-bg-input);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+}
+
+.dt-period-option {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: var(--ap-radius-sm);
+    white-space: nowrap;
+    background: transparent;
+    color: var(--ap-text-muted);
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dt-period-option:hover {
+    color: var(--ap-text-secondary);
+}
+
+.dt-period-option.is-active {
+    background: var(--ap-bg-card);
+    color: var(--ap-text-primary);
+    box-shadow: var(--ap-shadow-sm);
+}
+
+.dt-period-option:focus-visible {
+    outline: 2px solid var(--ap-border-focus);
+    outline-offset: 1px;
+}
+
+/* ── Identidade ── */
+
+.dt-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ap-space-lg);
+    padding: 4px 0 8px;
+}
+
+.dt-hero-identity {
+    display: flex;
+    align-items: center;
+    gap: var(--ap-space-md);
+    min-width: 0;
+}
+
+.dt-hero-icon {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: var(--ap-radius-lg);
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+}
+
+.dt-hero-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: scale-down;
+    border-radius: var(--ap-radius-sm);
+}
+
+.dt-hero-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-size: 24px;
+}
+
+.dt-hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.dt-hero-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ap-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dt-hero-subtitle {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: var(--ap-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dt-hero-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
+.dt-hero-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* Ponto separador entre metadados, como no desenho. */
+.dt-hero-meta-item + .dt-hero-meta-item::before {
+    content: '';
+    width: 3px;
+    height: 3px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background: var(--ap-border-muted);
+}
+
+.dt-hero-meta strong {
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.dt-hero-removed {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Selo de "agora" ── */
+
+.dt-presence {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    padding: 6px 14px 6px 8px;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-full);
+    font-family: inherit;
+}
+
+/* Sem nada à esquerda do ponto, o respiro volta a ser simétrico. */
+.dt-presence > .dt-presence-dot:first-child {
+    margin-left: 6px;
+}
+
+.dt-presence.is-clickable {
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.dt-presence.is-clickable:hover {
+    background: var(--ap-bg-hover);
+    border-color: var(--ap-border-hover);
+}
+
+.dt-presence-avatars {
+    display: flex;
+    padding-right: 10px;
+}
+
+.dt-presence-avatar {
+    width: 28px;
+    height: 28px;
+    margin-right: -10px;
+    border-radius: 50%;
+    border: 2px solid var(--ap-bg-card);
+    font-size: 11px;
+}
+
+.dt-presence-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ap-bg-muted);
+    color: var(--ap-text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.dt-presence-service {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--ap-radius-sm);
+    object-fit: contain;
+}
+
+.dt-presence-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--ap-border-muted);
+}
+
+.dt-presence-dot.is-active {
+    background: var(--ap-success);
+}
+
+.dt-presence-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+}
+
+/* ── Cards ── */
+
+.dt-card {
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
+    box-shadow: var(--ap-shadow-sm);
+    overflow: hidden;
+}
+
+.dt-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-bottom: 1px solid var(--ap-border);
+}
+
+.dt-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 24px;
+    border-right: 1px solid var(--ap-border);
+    min-width: 0;
+}
+
+.dt-kpi:last-child {
+    border-right: none;
+}
+
+.dt-kpi-label {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
+.dt-kpi-value {
+    font-family: var(--ap-font-data);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dt-chart-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+}
+
+.dt-chart-title {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ap-text-secondary);
+}
+
+.dt-chart-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ap-text-muted);
+}
+
+.dt-chart {
+    height: 180px;
+}
+
+.dt-chart canvas {
+    height: 180px !important;
+    max-height: 180px;
+}
+
+/* ── Histórico ── */
+
+.dt-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--ap-space-md);
+    padding: 18px 24px;
+}
+
+.dt-history-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ap-text-primary);
+}
+
+.dt-history-count {
+    font-size: 13px;
+    color: var(--ap-text-muted);
+    white-space: nowrap;
+}
+
+.dt-history-row {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr) 120px;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 24px;
+    border-bottom: 1px solid var(--ap-bg-hover);
+    font-size: 14px;
+}
+
+.dt-history-row:last-child {
+    border-bottom: none;
+}
+
+.dt-history-row.is-head {
+    padding: 10px 24px;
+    background: var(--ap-bg-card-alt);
+    border-top: 1px solid var(--ap-border);
+    border-bottom: 1px solid var(--ap-border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ap-text-muted);
+}
+
+.dt-history-body {
+    max-height: 560px;
+    overflow-y: auto;
+}
+
+.dt-history-when {
+    color: var(--ap-text-muted);
+    white-space: nowrap;
+}
+
+.dt-history-subject {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--ap-text-primary);
+    font-weight: 500;
+}
+
+.dt-history-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dt-history-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 10px;
+}
+
+.dt-history-service {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: var(--ap-radius-sm);
+    object-fit: contain;
+}
+
+.dt-history-usage {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.dt-history-row:not(.is-head) .dt-history-usage {
+    font-family: var(--ap-font-data);
+    color: var(--ap-text-secondary);
+}
+
+/* ── Telas menores ── */
+
+@media (max-width: 900px) {
+    .dt-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dt-kpi:nth-child(2n) {
+        border-right: none;
+    }
+
+    .dt-kpi:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--ap-border);
+    }
+
+    .dt-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .dt-topbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dt-period-option {
+        flex: 1;
+    }
+
+    .dt-hero-title {
+        font-size: 22px;
+    }
+
+    /* Empilhados, o ponto entre os metadados sobraria no começo da linha. */
+    .dt-hero-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dt-hero-meta-item + .dt-hero-meta-item::before {
+        display: none;
+    }
+
+    .dt-kpi {
+        padding: 16px;
+    }
+
+    .dt-kpi-value {
+        font-size: 20px;
+    }
+
+    .dt-chart-section,
+    .dt-history-header {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dt-history-row,
+    .dt-history-row.is-head {
+        grid-template-columns: 110px minmax(0, 1fr) 72px;
+        padding-left: 16px;
+        padding-right: 16px;
+        font-size: 13px;
+    }
+
+    .dt-history-when {
+        white-space: normal;
+    }
+}

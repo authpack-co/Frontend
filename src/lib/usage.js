@@ -441,6 +441,24 @@ export function getTotalUsage(accessHistory) {
     return { seconds: totalSeconds, hours: parseFloat((totalSeconds / 3600).toFixed(4)) };
 }
 
+/**
+ * Quantas vezes o recorte foi usado: um acesso por conexão.
+ *
+ * Pelo id do acesso, e não por linha: quem atravessa a meia-noite vira uma
+ * fatia em cada dia, e contar as fatias contaria a mesma conexão duas vezes.
+ */
+export function getAccessCount(accessHistory) {
+    const accesses = new Set();
+    Object.values(accessHistory || {}).flat().forEach((access) => accesses.add(access.accessId));
+    return accesses.size;
+}
+
+/** Tempo médio por uso, em segundos. Sem uso no recorte, null. */
+export function getAverageUsage(accessHistory) {
+    const count = getAccessCount(accessHistory);
+    return count > 0 ? getTotalUsage(accessHistory).seconds / count : null;
+}
+
 export function getDistinctUsers(accessHistory) {
     const users = new Set();
     Object.values(accessHistory || {}).flat().forEach((access) => users.add(access.userId));
@@ -579,11 +597,11 @@ export function toAccessRows(accessHistory, resolve) {
         const time = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
 
         let when;
-        if (atDay.getTime() === today.getTime()) when = `Hoje às ${time}`;
-        else if (atDay.getTime() === yesterday.getTime()) when = `Ontem às ${time}`;
+        if (atDay.getTime() === today.getTime()) when = `Hoje, ${time}`;
+        else if (atDay.getTime() === yesterday.getTime()) when = `Ontem, ${time}`;
         else {
             const year = String(at.getFullYear()).slice(-2);
-            when = `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${year} às ${time}`;
+            when = `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${year}, ${time}`;
         }
 
         rows.push({
