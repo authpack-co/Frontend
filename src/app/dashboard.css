@@ -5592,17 +5592,23 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #4ade80;
     flex-shrink: 0;
 }
 
 .session-card-status-text {
-    color: #4ade80;
     font-weight: 600;
 }
 
-.session-card-status.is-inactive .session-card-status-dot { background: var(--ap-warning); }
-.session-card-status.is-inactive .session-card-status-text { color: var(--ap-warning); }
+/* Verde só quando há gente usando: é o estado que pede atenção. Em repouso
+   é o normal, e fala em cinza. */
+.session-card-status.is-active .session-card-status-dot { background: var(--ap-success); }
+.session-card-status.is-active .session-card-status-text { color: var(--ap-success-text); }
+
+.session-card-status.is-resting .session-card-status-dot { background: var(--ap-border-muted); }
+.session-card-status.is-resting .session-card-status-text { color: var(--ap-text-muted); font-weight: 500; }
+
+.session-card-status.is-paused .session-card-status-dot { background: var(--ap-warning); }
+.session-card-status.is-paused .session-card-status-text { color: var(--ap-warning); }
 
 .session-card-usage { margin-top: 2px; }
 

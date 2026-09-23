@@ -265,11 +265,11 @@ export function ShareButtonDemo() {
                 <div className="og-win-body">
                     <div className="og-t og-t--sm" style={{ marginBottom: 3 }}>Trabalho</div>
                     <div className="og-muted" style={{ marginBottom: 13 }}>3 sessões</div>
-                    {[['Netflix', 'og-chip--e'], ['Spotify', 'og-chip--b'], ['ChatGPT', 'og-chip']].map(([name, tone]) => (
+                    {[['Netflix', 'og-chip--e', 'Ativa'], ['Spotify', 'og-chip--b', 'Em repouso'], ['ChatGPT', 'og-chip', 'Em repouso']].map(([name, tone, state]) => (
                         <div className="og-row" key={name}>
                             <span className={`og-chip ${tone}`} style={{ width: 24, height: 24 }}></span>
                             <span className="og-grow og-t og-t--sm" style={{ fontWeight: 500 }}>{name}</span>
-                            <span className="og-muted">Ativa</span>
+                            <span className="og-muted">{state}</span>
                         </div>
                     ))}
                 </div>
