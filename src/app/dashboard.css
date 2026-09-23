@@ -5899,7 +5899,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 
 /* Separador só entre linhas: a primeira encosta no cabeçalho, que já tem a
    sua própria borda. */
-.un-row + .un-row { border-top: 1px solid var(--ap-border-muted); }
+.un-row + .un-row { border-top: 1px solid var(--ap-border); }
 
 .un-avatar {
     width: 34px;
