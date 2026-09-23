@@ -5811,9 +5811,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
    `.modal.un-modal` porque modals.css carrega depois deste arquivo: sem os dois
    nomes, o max-width de 400px do .modal base ganharia por ordem.
 
-   O card responde uma pergunta só: quem está nesta sessão agora. Cada pessoa
-   é uma linha com dois números pequenos — desde que horas e há quanto tempo —,
-   e dois números não pedem tabela com cabeçalho nem rodapé de totais. */
+   O card responde uma pergunta só: quem está aqui agora — as pessoas numa
+   sessão, ou as sessões de uma pessoa. Cada item é uma linha com o nome e
+   há quanto tempo está ativo, em texto neutro: não é um alerta, é uma lista. */
 .modal.un-modal {
     max-width: 440px;
     width: 100%;
@@ -5904,38 +5904,28 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 .un-avatar {
     width: 34px;
     height: 34px;
-    flex-shrink: 0;
     border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--ap-bg-muted);
-    border: 1px solid var(--ap-border);
-}
-
-.un-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.un-avatar-fallback {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--ap-text-secondary);
-    text-transform: uppercase;
 }
 
-.un-row-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
+/* Na tela da pessoa, o cabeçalho é ela: avatar redondo no lugar do ícone. */
+.un-service-icon.un-person {
+    border-radius: 50%;
+    border: none;
+    font-size: 15px;
+}
+
+.un-row-service {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--ap-radius-sm);
+    object-fit: contain;
 }
 
 .un-row-name {
+    flex: 1;
+    min-width: 0;
     font-size: 13.5px;
     font-weight: 500;
     color: var(--ap-text-primary);
@@ -5945,49 +5935,20 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .un-row-since {
-    font-size: 12px;
+    flex-shrink: 0;
+    font-size: 12.5px;
     color: var(--ap-text-muted);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-/* Verde pelos tokens: no tema claro o #4ade80 dos cards não teria contraste
-   suficiente para texto pequeno. */
-.un-row-time {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--ap-font-data);
-    font-variant-numeric: tabular-nums;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--ap-success-text);
-}
-
-.un-live-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: currentColor;
-}
-
-/* ── Estado vazio (todo mundo saiu antes do card abrir) ── */
+/* ── Estado vazio ── */
 .un-empty {
     padding: 34px 20px;
     text-align: center;
 }
 
-.un-empty-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ap-text-secondary);
-}
-
 .un-empty-text {
-    margin: 5px 0 0;
+    margin: 0;
     font-size: 12.5px;
     color: var(--ap-text-muted);
 }

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
+import { formatDate, parseApiDate } from '../../lib/format.js';
 import { useAccessStats } from '../../lib/packageStats.js';
 import { usePackage } from '../../lib/packages.jsx';
 import {
@@ -8,27 +10,38 @@ import {
     filterAccessHistory,
     filterByLastDays,
     formatDuration,
+    getAccessCount,
+    getAverageUsage,
     getDailyUsage,
     getTotalUsage,
     getUserHistoryUsage,
     timeAgo,
     toAccessRows,
 } from '../../lib/usage.js';
-import { DetailHeader, HistoryTable, StatCard } from '../collection/DetailScreen.jsx';
-import UsagePanel, { PERIOD_DAYS, periodTitle } from '../collection/UsagePanel.jsx';
+import {
+    CalendarIcon,
+    DetailHero,
+    DetailHistory,
+    DetailScreen,
+    DetailTopBar,
+    DetailUsageCard,
+    RefreshIcon,
+} from '../collection/DetailScreen.jsx';
+import { PERIOD_DAYS, periodTitle } from '../collection/UsagePanel.jsx';
 
 const title = periodTitle('da sessão');
 
 /**
- * Tela de uma sessão recebida — o mesmo desenho da tela do dono, com um
+ * Tela de uma sessão recebida — a mesma estrutura da tela do dono, com um
  * escopo menor: o uso é só o de quem está olhando.
  *
  * Isso não é uma escolha de interface, é o que existe: /access-overview
  * responde a membro e devolve apenas o histórico do próprio usuário. Não há
  * como um membro ver o uso dos outros, nem aqui nem no servidor.
  *
- * Daí os dois cards e o gráfico falarem de tempo, e não de gente: numa tela
- * sobre uma pessoa só, contar usuários diria "1" em todo ponto.
+ * Daí os números e o gráfico falarem de tempo, e não de gente: numa tela
+ * sobre uma pessoa só, contar usuários diria "1" em todo ponto. E no lugar de
+ * "usando agora", que o membro não vê, o selo diz de quem é a sessão.
  */
 export default function AccessSessionDetail() {
     const { packageId, sessionId } = useParams();
@@ -37,7 +50,7 @@ export default function AccessSessionDetail() {
 
     const session = pkg?.sessions?.find((item) => item.id === sessionId) || null;
 
-    // O período recorta a tela inteira — cards, gráfico e histórico —, como
+    // O período recorta a tela inteira — números, gráfico e histórico —, como
     // nas telas de detalhe da coleção.
     const [period, setPeriod] = useState('7days');
     const days = PERIOD_DAYS[period];
@@ -49,8 +62,6 @@ export default function AccessSessionDetail() {
 
     const scoped = useMemo(() => filterByLastDays(history, days), [history, days]);
 
-    // A coluna do meio é o próprio serviço: a pessoa é sempre a mesma, e
-    // repetir o nome dela linha a linha não informaria nada.
     const rows = useMemo(
         () => toAccessRows(scoped, () => session),
         [scoped, session]
@@ -60,84 +71,74 @@ export default function AccessSessionDetail() {
     if (!pkg || !session) return null;
 
     const total = getTotalUsage(scoped);
+    const average = getAverageUsage(scoped);
     const lastAccess = lastAccessAt(history);
     const domain = faviconDomain(session.url) || session.url || '';
+    const owner = pkg.owner || {};
+
+    const createdAt = formatDate(session.createdAt);
+    const refreshedAt = parseApiDate(session.refreshedAt);
 
     return (
-        <section id="package-details" className="content-card access-state expanded">
-            <div className="preset-access">
-                <div className="screen-section secondary session-overview-state">
-                    <div className="preset-session-overview">
-                        <DetailHeader pkg={pkg} subject={session.name} backTo={`/shared/${pkg.id}`} />
+        <DetailScreen>
+            <DetailTopBar
+                pkg={pkg}
+                subject={session.name}
+                backTo={`/shared/${pkg.id}`}
+                period={period}
+                onPeriodChange={setPeriod}
+            />
 
-                        <div className="overview-container">
-                            <div className="overview-content">
-                                <div className="service-card">
-                                    <div className="service-card-content">
-                                        <div className="service-header">
-                                            <ServiceIcon
-                                                className="service-card-icon"
-                                                icon={session.icon}
-                                                url={session.url}
-                                                name={session.name}
-                                            />
-                                            <div className="service-header-text">
-                                                <h2 className="service-name">{session.name}</h2>
-                                                <p className="service-domain">{domain}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="service-users-section">
-                                            <div className="service-users-label">Compartilhado por</div>
-                                            <p className="service-shared-by">{pkg.owner?.name || '—'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="overview-stats">
-                                    <div className="stats-grid">
-                                        <StatCard
-                                            label="Seu tempo de uso no período"
-                                            value={status === 'ready' ? formatDuration(total.seconds) : '—'}
-                                            highlight
-                                        />
-                                        <StatCard
-                                            label="Última vez que você usou"
-                                            value={status === 'ready' ? (lastAccess ? timeAgo(lastAccess) : '—') : '—'}
-                                        />
-                                    </div>
-
-                                    <UsagePanel
-                                        title={title}
-                                        subtitle="Tempo de uso por dia"
-                                        status={status}
-                                        period={period}
-                                        onPeriodChange={setPeriod}
-                                        dataFor={(_days, isDaily) => (isDaily
-                                            ? getDailyUsage(history, new Date(), { countUsers: false })
-                                            : getUserHistoryUsage(scoped))}
-                                    />
-                                </div>
-                            </div>
-
-                            <HistoryTable
-                                columnLabel="Serviço"
-                                rows={rows}
-                                loading={status === 'loading'}
-                                renderSubject={(item) => (
-                                    <div className="service-badge">
-                                        <div className="service-icon">
-                                            <ServiceIcon icon={item.icon} url={item.url} name={item.name} />
-                                        </div>
-                                        <span>{item.name}</span>
-                                    </div>
-                                )}
-                            />
-                        </div>
+            <DetailHero
+                media={(
+                    <span className="dt-hero-icon">
+                        <ServiceIcon icon={session.icon} url={session.url} name={session.name} />
+                    </span>
+                )}
+                title={session.name}
+                subtitle={domain}
+                meta={[
+                    createdAt && (
+                        <>
+                            <CalendarIcon />
+                            Criada em <strong>{createdAt}</strong>
+                        </>
+                    ),
+                    refreshedAt && (
+                        <>
+                            <RefreshIcon />
+                            Atualizada <strong>{timeAgo(refreshedAt)}</strong>
+                        </>
+                    ),
+                ]}
+                presence={owner.name && (
+                    <div className="dt-presence">
+                        <PersonAvatar className="dt-presence-avatar dt-owner-avatar" name={owner.name} picture={owner.picture} />
+                        <span className="dt-presence-label">
+                            <span className="dt-presence-muted">Compartilhado por</span> {owner.name}
+                        </span>
                     </div>
-                </div>
-            </div>
-        </section>
+                )}
+            />
+
+            <DetailUsageCard
+                kpis={[
+                    { label: 'Seu tempo de uso no período', value: formatDuration(total.seconds) },
+                    { label: 'Vezes que você usou', value: getAccessCount(scoped) },
+                    { label: 'Tempo médio por uso', value: average == null ? null : formatDuration(average) },
+                    { label: 'Última vez que você usou', value: lastAccess ? timeAgo(lastAccess) : '—' },
+                ]}
+                title={title(period)}
+                subtitle={days === 0 ? 'Tempo de uso por hora' : 'Tempo de uso por dia'}
+                status={status}
+                period={period}
+                dataFor={(_days, isDaily) => (isDaily
+                    ? getDailyUsage(history, new Date(), { countUsers: false })
+                    : getUserHistoryUsage(scoped))}
+            />
+
+            <DetailHistory rows={rows} loading={status === 'loading'} />
+        </DetailScreen>
     );
 }
 

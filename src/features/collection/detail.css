@@ -275,6 +275,16 @@ a.dt-crumb:hover {
     font-size: 11px;
 }
 
+/* Selo de dono (sessão recebida): um avatar só, sem a pilha. */
+.dt-presence-avatar.dt-owner-avatar {
+    margin-right: 0;
+}
+
+.dt-presence-muted {
+    font-weight: 500;
+    color: var(--ap-text-muted);
+}
+
 .dt-presence-more {
     display: inline-flex;
     align-items: center;
@@ -418,6 +428,10 @@ a.dt-crumb:hover {
     font-size: 14px;
 }
 
+.dt-history.is-compact .dt-history-row {
+    grid-template-columns: minmax(0, 1fr) 120px;
+}
+
 .dt-history-row:last-child {
     border-bottom: none;
 }
@@ -547,6 +561,10 @@ a.dt-crumb:hover {
         padding-left: 16px;
         padding-right: 16px;
         font-size: 13px;
+    }
+
+    .dt-history.is-compact .dt-history-row {
+        grid-template-columns: minmax(0, 1fr) 90px;
     }
 
     .dt-history-when {
