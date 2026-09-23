@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
-import { formatDate } from '../../lib/format.js';
+import { formatDate, parseApiDate } from '../../lib/format.js';
 import { usePackage } from '../../lib/packages.jsx';
 import { makeUserLookup, usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
 import {
@@ -82,10 +82,11 @@ export default function SessionDetail() {
     const average = getAverageUsage(scoped);
     const domain = faviconDomain(session.url) || session.url;
 
-    // Datas da sessão só aparecem quando a API as manda: um "Criada em" vazio
-    // ou chutado diria mais do que se sabe.
-    const createdAt = formatDate(session.createdAt || session.created_at);
-    const updatedAt = session.updatedAt || session.updated_at;
+    // "Atualizada" é a última captura feita pelo dono (criar ou "Atualizar
+    // sessão"), não qualquer mudança na linha. Sessões anteriores a esse
+    // registro vêm sem a data, e aí o item simplesmente não aparece.
+    const createdAt = formatDate(session.createdAt);
+    const refreshedAt = parseApiDate(session.refreshedAt);
 
     const people = onlineUsers.length;
 
@@ -114,10 +115,10 @@ export default function SessionDetail() {
                             Criada em <strong>{createdAt}</strong>
                         </>
                     ),
-                    updatedAt && (
+                    refreshedAt && (
                         <>
                             <RefreshIcon />
-                            Atualizada <strong>{timeAgo(updatedAt)}</strong>
+                            Atualizada <strong>{timeAgo(refreshedAt)}</strong>
                         </>
                     ),
                 ]}

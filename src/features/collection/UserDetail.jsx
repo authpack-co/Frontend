@@ -80,7 +80,7 @@ export default function UserDetail() {
         (online.bySession[session.id] || []).some((row) => row.userId === user.id)
     ));
 
-    const joinedAt = formatDate(user.connectedAt || user.joinedAt);
+    const joinedAt = formatDate(user.connectedAt);
 
     return (
         <DetailScreen>
