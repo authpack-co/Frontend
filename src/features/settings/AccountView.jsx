@@ -74,12 +74,17 @@ function GoogleAccountCard({ user, onDisconnect }) {
     );
 }
 
+function planName(plan) {
+    return plan ? `${plan.charAt(0).toUpperCase()}${plan.slice(1)}` : '';
+}
+
 function PlanCard({ user, onChange, onOpenPlans }) {
     const [canceling, setCanceling] = useState(false);
+    const [reactivating, setReactivating] = useState(false);
 
     async function handleCancel() {
         const confirmed = window.confirm(
-            'Cancelar sua assinatura Plus?\n\nVocê mantém o acesso até o fim do período pago.'
+            `Cancelar sua assinatura ${planName(user?.plan)}?\n\nVocê mantém o acesso até o fim do período pago.`
         );
         if (!confirmed) return;
 
@@ -97,6 +102,19 @@ function PlanCard({ user, onChange, onOpenPlans }) {
         }
     }
 
+    async function handleReactivate() {
+        setReactivating(true);
+        try {
+            await api.reactivateBilling();
+            await onChange();
+        } catch (err) {
+            console.error('[Settings] reactivateBilling error:', err);
+            window.alert('Não foi possível reativar a assinatura. Tente novamente.');
+        } finally {
+            setReactivating(false);
+        }
+    }
+
     return (
         <div className="settings-card">
             <div className="settings-card-header">
@@ -104,13 +122,20 @@ function PlanCard({ user, onChange, onOpenPlans }) {
                 <span className="settings-card-title">Plano</span>
             </div>
             <div className="settings-card-body sc-plan-body">
-                <PlanState user={user} canceling={canceling} onCancel={handleCancel} onOpenPlans={onOpenPlans} />
+                <PlanState
+                    user={user}
+                    canceling={canceling}
+                    reactivating={reactivating}
+                    onCancel={handleCancel}
+                    onReactivate={handleReactivate}
+                    onOpenPlans={onOpenPlans}
+                />
             </div>
         </div>
     );
 }
 
-function PlanState({ user, canceling, onCancel, onOpenPlans }) {
+function PlanState({ user, canceling, reactivating, onCancel, onReactivate, onOpenPlans }) {
     const plan = user?.plan;
     const status = user?.plan_status;
     const expiresAt = user?.plan_expires_at;
@@ -135,9 +160,19 @@ function PlanState({ user, canceling, onCancel, onOpenPlans }) {
                     {expiresAt && `Você continua no plano até: ${formatDate(expiresAt)}`}
                 </p>
                 <p className="sc-plan-note">
-                    Seu acesso Plus permanece ativo até o fim do período pago. Após o vencimento,
-                    você pode assinar novamente.
+                    Seu acesso {planName(plan)} permanece ativo até o fim do período pago. Mudou de
+                    ideia? Reative agora e a assinatura volta a renovar no mesmo cartão, sem cobrança
+                    hoje.
                 </p>
+                <button
+                    className="sc-full-btn btn-primary"
+                    type="button"
+                    style={{ marginTop: 'auto' }}
+                    onClick={onReactivate}
+                    disabled={reactivating}
+                >
+                    {reactivating ? 'Reativando…' : 'Reativar assinatura'}
+                </button>
             </div>
         );
     }
@@ -145,7 +180,7 @@ function PlanState({ user, canceling, onCancel, onOpenPlans }) {
     if (isPaid && status === 'active') {
         return (
             <div className="sc-plan-state">
-                <p className="sc-plan-text">Você está no plano <strong>Plus</strong>.</p>
+                <p className="sc-plan-text">Você está no plano <strong>{planName(plan)}</strong>.</p>
                 <p className="sc-plan-sub">{expiresAt && `Renova em: ${formatDate(expiresAt)}`}</p>
                 <button
                     className="sc-full-btn btn-danger"

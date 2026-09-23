@@ -517,6 +517,64 @@
     color: var(--ap-text-muted);
 }
 
+/* Ações do plano: botões do tamanho do texto, alinhados à direita. O botão
+   de largura cheia (sc-full-btn) pesava demais num card só de leitura. */
+.bl-plan-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.bl-action-btn {
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    border-radius: var(--ap-radius-md);
+    border: 1px solid var(--ap-border);
+    background: transparent;
+    color: var(--ap-text-primary);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.bl-action-btn:hover:not(:disabled) {
+    background: var(--ap-bg-hover);
+}
+
+.bl-action-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Pagamento pendente: regularizar é a ação principal. */
+.bl-action-btn--primary {
+    background: var(--ap-accent);
+    border-color: var(--ap-accent);
+    color: #fff;
+}
+
+.bl-action-btn--primary:hover:not(:disabled) {
+    background: var(--ap-accent-hover);
+}
+
+.bl-action-btn--danger {
+    color: var(--ap-danger);
+    border-color: var(--ap-danger-border);
+}
+
+.bl-action-btn--danger:hover:not(:disabled) {
+    background: var(--ap-danger-light);
+}
+
+@media (max-width: 480px) {
+    .bl-action-btn {
+        flex: 1 1 auto;
+    }
+}
+
 /* ─── Billing: Status badge ───────────────────────────────── */
 .bl-status-badge {
     display: inline-flex;
