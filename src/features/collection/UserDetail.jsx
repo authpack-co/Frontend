@@ -28,6 +28,7 @@ import {
     PresencePill,
 } from './DetailScreen.jsx';
 import { PERIOD_DAYS, periodTitle } from './UsagePanel.jsx';
+import { UserUsingNowModal } from './UsingNowModal.jsx';
 
 const title = periodTitle('da pessoa');
 
@@ -37,6 +38,7 @@ export default function UserDetail() {
     const { pkg, notFound } = usePackage(packageId);
     const { stats, status } = usePackageStats(pkg ? packageId : null);
     const online = usePackageOnline(pkg ? packageId : null);
+    const [showOnline, setShowOnline] = useState(false);
 
     // Sair do pacote não apaga o que a pessoa usou: o tempo dela continua no
     // gráfico do pacote, então esta tela continua existindo para ex-membros —
@@ -75,10 +77,13 @@ export default function UserDetail() {
     // dizer "—" só porque foi antes do recorte esconderia a resposta.
     const lastUsageLabel = lastUsage ? timeAgo(lastUsage) : '—';
 
-    // Em que sessões a pessoa está agora — normalmente uma.
-    const usingNow = (pkg.sessions || []).filter((session) => (
-        (online.bySession[session.id] || []).some((row) => row.userId === user.id)
-    ));
+    // Em que sessões a pessoa está agora — normalmente uma. Quem está ativo
+    // há mais tempo vem primeiro, na mesma ordem do card que o selo abre.
+    const activeSecondsIn = (session) => (online.bySession[session.id] || [])
+        .find((row) => row.userId === user.id)?.activeSeconds;
+    const usingNow = (pkg.sessions || [])
+        .filter((session) => activeSecondsIn(session) != null)
+        .sort((a, b) => activeSecondsIn(b) - activeSecondsIn(a));
 
     const joinedAt = formatDate(user.connectedAt);
 
@@ -123,6 +128,8 @@ export default function UserDetail() {
                     <PresencePill
                         active={usingNow.length > 0}
                         label={presenceLabel(usingNow)}
+                        onClick={usingNow.length > 0 ? () => setShowOnline(true) : undefined}
+                        title={usingNow.length > 0 ? 'Ver as sessões que está usando agora' : undefined}
                         leading={usingNow.length > 0 && (
                             <ServiceIcon
                                 className="dt-presence-service"
@@ -168,6 +175,15 @@ export default function UserDetail() {
                     </>
                 )}
             />
+
+            {showOnline && (
+                <UserUsingNowModal
+                    pkg={pkg}
+                    user={user}
+                    online={online}
+                    onClose={() => setShowOnline(false)}
+                />
+            )}
         </DetailScreen>
     );
 }
@@ -175,7 +191,7 @@ export default function UserDetail() {
 function presenceLabel(sessions) {
     if (sessions.length === 0) return 'Não está usando agora';
     if (sessions.length === 1) return `Usando ${sessions[0].name} agora`;
-    return `Usando ${sessions[0].name} e mais ${sessions.length - 1} agora`;
+    return `Usando ${sessions[0].name} e +${sessions.length - 1}`;
 }
 
 function UserNotFound({ packageId }) {
