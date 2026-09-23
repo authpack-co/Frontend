@@ -177,6 +177,37 @@ export default function SessionsTable({ pkg, sessions, stats, statsStatus, onlin
     );
 }
 
+/**
+ * O estado da sessão agora: "Ativa" quando alguém está usando, "Em repouso"
+ * quando ninguém está. Antes dizia "Ativa" sempre — um rótulo que nunca muda
+ * não informa nada.
+ *
+ * "Pausada" continua na frente de tudo: pacote suspenso não conecta ninguém,
+ * então nem dá para estar em uso.
+ */
+function SessionStatus({ inactive, inUse }) {
+    let state = 'resting';
+    let label = 'Em repouso';
+    let hint = 'Ninguém está usando esta sessão agora';
+
+    if (inactive) {
+        state = 'paused';
+        label = 'Pausada';
+        hint = 'O pacote está pausado';
+    } else if (inUse) {
+        state = 'active';
+        label = 'Ativa';
+        hint = 'Alguém está usando esta sessão agora';
+    }
+
+    return (
+        <div className={`session-card-status is-${state}`} title={hint}>
+            <span className="session-card-status-dot"></span>
+            <span className="session-card-status-text">{label}</span>
+        </div>
+    );
+}
+
 function SessionRow({
     session, pkg, stats, statsStatus, onlineRows, connecting, onConnect, connected, disconnecting, onDisconnect, onUpdate, onShowUsingNow,
 }) {
@@ -223,10 +254,7 @@ function SessionRow({
                 {connected && <ConnectedBadge />}
             </div>
 
-            <div className={`session-card-status${inactive ? ' is-inactive' : ''}`}>
-                <span className="session-card-status-dot"></span>
-                <span className="session-card-status-text">{inactive ? 'Pausada' : 'Ativa'}</span>
-            </div>
+            <SessionStatus inactive={inactive} inUse={onlineRows.length > 0} />
 
             <UsingNow
                 users={onlineUsers}
