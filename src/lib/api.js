@@ -140,6 +140,8 @@ export const api = {
     getBilling: () => request('/api/subscription/billing'),
     createBillingPortal: () => request('/api/subscription/portal', { method: 'POST' }),
     cancelBilling: () => request('/api/subscription/cancel', { method: 'POST' }),
+    // Desfaz um cancelamento agendado enquanto o período pago corre.
+    reactivateBilling: () => request('/api/subscription/reactivate', { method: 'POST' }),
 
     // ── Painel admin ──────────────────────────────────────────────────────
     // O namespace inteiro é fechado por requireAuth + requireAdmin no

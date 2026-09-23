@@ -146,7 +146,15 @@ function PlanSummary({ billing, role }) {
     } else if (status === 'canceled') {
         badge = { text: 'Cancelada', kind: 'overdue' };
         if (billing.plan_expires_at) renew = `Acesso até ${formatDate(billing.plan_expires_at)}`;
-        note = 'Assinatura cancelada — não será renovada. O acesso Plus permanece até o fim do período pago.';
+        note = `Assinatura cancelada — não será renovada. O acesso ${planLabel} permanece até o fim do período pago.`;
+    } else if (sub.status === 'past_due' || sub.status === 'unpaid') {
+        // Renovação recusada: a Stripe segue tentando no cartão salvo e o
+        // acesso continua por alguns dias. O caminho é trocar o cartão no
+        // portal, não assinar de novo.
+        badge = { text: 'Pagamento pendente', kind: 'overdue' };
+        if (sub.current_period_end) renew = `Venceu em ${formatDate(sub.current_period_end)}`;
+        note = 'Não conseguimos cobrar a renovação. Atualize o cartão em "Gerenciar pagamento" '
+            + 'para não perder o acesso — a cobrança é refeita automaticamente.';
     } else if (sub.pending_plan) {
         // Downgrade agendado: o plano maior continua valendo até a data.
         const pendingLabel = `Niango ${sub.pending_plan.charAt(0).toUpperCase()}${sub.pending_plan.slice(1)}`;
