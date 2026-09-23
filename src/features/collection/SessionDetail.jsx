@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import PersonAvatar from '../../components/PersonAvatar.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
+import { formatDate } from '../../lib/format.js';
 import { usePackage } from '../../lib/packages.jsx';
 import { makeUserLookup, usePackageOnline, usePackageStats } from '../../lib/packageStats.js';
 import {
@@ -8,16 +10,29 @@ import {
     filterAccessHistory,
     filterByLastDays,
     formatDuration,
+    getAccessCount,
+    getAverageUsage,
     getDailyUsage,
     getDistinctUsers,
     getSessionHistoryUsage,
     getTotalUsage,
+    timeAgo,
     toAccessRows,
 } from '../../lib/usage.js';
-import { DetailHeader, HistoryTable, StatCard } from './DetailScreen.jsx';
-import UsagePanel, { PERIOD_DAYS, periodTitle } from './UsagePanel.jsx';
+import {
+    CalendarIcon,
+    DetailHero,
+    DetailHistory,
+    DetailScreen,
+    DetailTopBar,
+    DetailUsageCard,
+    PresencePill,
+    RefreshIcon,
+} from './DetailScreen.jsx';
+import { PERIOD_DAYS, periodTitle } from './UsagePanel.jsx';
+import UsingNowModal from './UsingNowModal.jsx';
 
-const MAX_AVATARS = 5;
+const MAX_AVATARS = 3;
 const title = periodTitle('da sessão');
 
 /** Tela de uma sessão do pacote: quem a usa, quanto, e o histórico. */
@@ -26,10 +41,11 @@ export default function SessionDetail() {
     const { pkg, notFound } = usePackage(packageId);
     const { stats, status } = usePackageStats(pkg ? packageId : null);
     const online = usePackageOnline(pkg ? packageId : null);
+    const [showOnline, setShowOnline] = useState(false);
 
     const session = pkg?.sessions?.find((item) => item.id === sessionId) || null;
 
-    // O período manda na tela inteira, não só no gráfico: os dois cards falam
+    // O período manda na tela inteira, não só no gráfico: os números falam
     // em "no período", e o histórico abaixo mostra o mesmo recorte.
     const [period, setPeriod] = useState('7days');
     const days = PERIOD_DAYS[period];
@@ -43,7 +59,7 @@ export default function SessionDetail() {
     const scoped = useMemo(() => filterByLastDays(history, days), [history, days]);
 
     // Inclusive quem já saiu do pacote: o tempo dessa pessoa continua nos
-    // cards e no gráfico acima, então a linha dela tem que continuar aqui —
+    // números e no gráfico acima, então a linha dela tem que continuar aqui —
     // senão o total não bate com o histórico que o explica.
     const users = makeUserLookup(pkg, stats?.historyUsers);
 
@@ -60,115 +76,124 @@ export default function SessionDetail() {
 
     const backTo = `/collection/${pkg.id}`;
     const onlineUsers = (online.bySession[session.id] || [])
-        .map((row) => (pkg.users || []).find((user) => user.id === row.userId))
-        .filter(Boolean);
+        .map((row) => users.resolve(row.userId));
 
     const total = getTotalUsage(scoped);
-    const distinctUsers = getDistinctUsers(scoped);
+    const average = getAverageUsage(scoped);
+    const domain = faviconDomain(session.url) || session.url;
+
+    // Datas da sessão só aparecem quando a API as manda: um "Criada em" vazio
+    // ou chutado diria mais do que se sabe.
+    const createdAt = formatDate(session.createdAt || session.created_at);
+    const updatedAt = session.updatedAt || session.updated_at;
+
+    const people = onlineUsers.length;
 
     return (
-        <section id="package-details" className="content-card collection-state expanded">
-            <div className="preset-collection">
-                <div className="screen-section secondary session-overview-state">
-                    <div className="preset-session-overview">
-                        <DetailHeader pkg={pkg} subject={session.name} backTo={backTo} />
+        <DetailScreen>
+            <DetailTopBar
+                pkg={pkg}
+                subject={session.name}
+                backTo={backTo}
+                period={period}
+                onPeriodChange={setPeriod}
+            />
 
-                        <div className="overview-container">
-                            <div className="overview-content">
-                                <div className="service-card">
-                                    <div className="service-card-content">
-                                        <div className="service-header">
-                                            <ServiceIcon
-                                                className="service-card-icon"
-                                                icon={session.icon}
-                                                url={session.url}
-                                                name={session.name}
-                                            />
-                                            <div className="service-header-text">
-                                                <h2 className="service-name">{session.name}</h2>
-                                                <p className="service-domain">
-                                                    {faviconDomain(session.url) || session.url}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="service-users-section">
-                                            <div className="service-users-label">
-                                                {onlineUsers.length > 0 ? 'Usando agora' : 'Ninguém usando agora'}
-                                            </div>
-                                            <div className={`service-users-list${onlineUsers.length === 0 ? ' is-empty' : ''}`}>
-                                                {onlineUsers.slice(0, MAX_AVATARS).map((user) => (
-                                                    <img
-                                                        key={user.id}
-                                                        className="service-user-avatar"
-                                                        alt={user.name || ''}
-                                                        src={user.picture || undefined}
-                                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                                    />
-                                                ))}
-                                                {onlineUsers.length > MAX_AVATARS && (
-                                                    <div className="service-add-user">
-                                                        +{onlineUsers.length - MAX_AVATARS}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="overview-stats">
-                                    <div className="stats-grid">
-                                        <StatCard
-                                            label="Usuários conectados"
-                                            value={status === 'ready' ? distinctUsers : '—'}
-                                            highlight
-                                        />
-                                        <StatCard
-                                            label="Tempo de uso no período"
-                                            value={status === 'ready' ? formatDuration(total.seconds) : '—'}
-                                            highlight
-                                        />
-                                    </div>
-
-                                    <UsagePanel
-                                        title={title}
-                                        subtitle="Horas de uso por dia"
-                                        status={status}
-                                        period={period}
-                                        onPeriodChange={setPeriod}
-                                        dataFor={(_days, isDaily) => (isDaily
-                                            ? getDailyUsage(history)
-                                            : getSessionHistoryUsage(scoped))}
+            <DetailHero
+                media={(
+                    <span className="dt-hero-icon">
+                        <ServiceIcon icon={session.icon} url={session.url} name={session.name} />
+                    </span>
+                )}
+                title={session.name}
+                subtitle={domain}
+                meta={[
+                    createdAt && (
+                        <>
+                            <CalendarIcon />
+                            Criada em <strong>{createdAt}</strong>
+                        </>
+                    ),
+                    updatedAt && (
+                        <>
+                            <RefreshIcon />
+                            Atualizada <strong>{timeAgo(updatedAt)}</strong>
+                        </>
+                    ),
+                ]}
+                presence={(
+                    <PresencePill
+                        active={people > 0}
+                        label={people === 0 ? 'Ninguém usando agora' : `${people} usando agora`}
+                        onClick={people > 0 ? () => setShowOnline(true) : undefined}
+                        title={people > 0 ? 'Ver quem está usando agora' : undefined}
+                        leading={people > 0 && (
+                            <span className="dt-presence-avatars">
+                                {onlineUsers.slice(0, MAX_AVATARS).map((user) => (
+                                    <PersonAvatar
+                                        key={user.id}
+                                        className="dt-presence-avatar"
+                                        name={user.name}
+                                        picture={user.picture}
                                     />
-                                </div>
-                            </div>
-
-                            <HistoryTable
-                                columnLabel="Usuário"
-                                rows={rows}
-                                loading={status === 'loading'}
-                                renderSubject={(user) => (
-                                    <div className="service-badge">
-                                        <div className="service-icon">
-                                            {user.picture && <img src={user.picture} alt="" />}
-                                        </div>
-                                        <span>{user.name}</span>
-                                        {user.removed && (
-                                            <span
-                                                className="removed-user-tag"
-                                                title="Esta pessoa não tem mais acesso ao pacote"
-                                            >
-                                                removido
-                                            </span>
-                                        )}
-                                    </div>
+                                ))}
+                                {people > MAX_AVATARS && (
+                                    <span className="dt-presence-avatar dt-presence-more">
+                                        +{people - MAX_AVATARS}
+                                    </span>
                                 )}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                            </span>
+                        )}
+                    />
+                )}
+            />
+
+            <DetailUsageCard
+                kpis={[
+                    { label: 'Usuários conectados', value: getDistinctUsers(scoped) },
+                    { label: 'Vezes utilizada', value: getAccessCount(scoped) },
+                    { label: 'Tempo de uso no período', value: formatDuration(total.seconds) },
+                    { label: 'Tempo médio por uso', value: average == null ? null : formatDuration(average) },
+                ]}
+                title={title(period)}
+                subtitle={days === 0 ? 'Tempo de uso por hora' : 'Horas de uso por dia'}
+                status={status}
+                period={period}
+                dataFor={(_days, isDaily) => (isDaily
+                    ? getDailyUsage(history)
+                    : getSessionHistoryUsage(scoped))}
+            />
+
+            <DetailHistory
+                columnLabel="Usuário"
+                rows={rows}
+                loading={status === 'loading'}
+                renderSubject={(user) => (
+                    <>
+                        <PersonAvatar className="dt-history-avatar" name={user.name} picture={user.picture} />
+                        <span className="dt-history-name">{user.name}</span>
+                        {user.removed && (
+                            <span
+                                className="removed-user-tag"
+                                title="Esta pessoa não tem mais acesso ao pacote"
+                            >
+                                removido
+                            </span>
+                        )}
+                    </>
+                )}
+            />
+
+            {showOnline && (
+                <UsingNowModal
+                    pkg={pkg}
+                    session={session}
+                    historyUsers={stats?.historyUsers}
+                    online={online}
+                    onClose={() => setShowOnline(false)}
+                />
+            )}
+        </DetailScreen>
     );
 }
 
