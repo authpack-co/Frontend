@@ -180,7 +180,11 @@ function PlanSummary({ billing, role }) {
             {note && <p className="bl-plan-note">{note}</p>}
             {/* O portal só existe para quem tem customer na Stripe — cortesia e
                 Free não têm nada para gerenciar lá. */}
-            {sub?.has_billing_account && <BillingPortalButton />}
+            {sub?.has_billing_account && (
+                <div className="bl-plan-actions">
+                    <BillingPortalButton />
+                </div>
+            )}
         </>
     );
 }
@@ -244,10 +248,12 @@ function DelinquentSummary({ billing }) {
                     : 'Não conseguimos cobrar a renovação e sua conta voltou ao Free. Atualize o cartão em '
                         + `"Gerenciar pagamento": assim que a cobrança passar, o ${label} volta sozinho.`}
             </p>
-            {sub.has_billing_account && <BillingPortalButton />}
-            <button className="sc-full-btn btn-danger" type="button" onClick={handleCancel} disabled={canceling}>
-                {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
-            </button>
+            <div className="bl-plan-actions">
+                <button className="bl-action-btn bl-action-btn--danger" type="button" onClick={handleCancel} disabled={canceling}>
+                    {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
+                </button>
+                {sub.has_billing_account && <BillingPortalButton primary />}
+            </div>
         </>
     );
 }
@@ -256,7 +262,7 @@ function DelinquentSummary({ billing }) {
  * Trocar cartão, baixar faturas e cancelar acontecem no portal hospedado pela
  * Stripe — nenhum dado de pagamento passa por aqui.
  */
-function BillingPortalButton() {
+function BillingPortalButton({ primary = false }) {
     const [opening, setOpening] = useState(false);
 
     async function handleClick() {
@@ -273,7 +279,12 @@ function BillingPortalButton() {
     }
 
     return (
-        <button className="sc-full-btn btn-primary" onClick={handleClick} disabled={opening}>
+        <button
+            className={`bl-action-btn${primary ? ' bl-action-btn--primary' : ''}`}
+            type="button"
+            onClick={handleClick}
+            disabled={opening}
+        >
             {opening ? 'Abrindo…' : 'Gerenciar pagamento'}
         </button>
     );
