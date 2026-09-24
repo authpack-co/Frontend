@@ -1,4 +1,4 @@
-import { parseDarkPalette } from '../../lib/palette.js';
+import { parseIconColor } from '../../lib/palette.js';
 import { formatDuration, formatHours } from '../../lib/usage.js';
 
 /**
@@ -42,7 +42,7 @@ function compactDuration(seconds) {
  * laranja no meio das outras afirmaria que a sessão é laranja.
  */
 function barColor(session) {
-    const rgb = parseDarkPalette(session?.darkPalette);
+    const rgb = parseIconColor(session?.iconColor);
     return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'var(--ap-text-muted)';
 }
 
