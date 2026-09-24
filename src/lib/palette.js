@@ -1,5 +1,5 @@
 /**
- * Cor do serviço, vinda de session.darkPalette (dado da própria sessão, como
+ * Cor do serviço, vinda de session.iconColor (dado da própria sessão, como
  * url e name). É ela que pinta o badge de "acima do costume" e a bolha do
  * ícone nos cards de acesso.
  */
@@ -13,14 +13,14 @@ const clamp255 = (value) => Math.max(0, Math.min(255, Math.round(Number(value) |
  * A API entrega "[12,116,44]"; array e hex são aceitos por precaução, porque
  * o campo já circulou nos três formatos.
  */
-export function parseDarkPalette(darkPalette) {
-    if (Array.isArray(darkPalette)) {
-        const numbers = darkPalette.map(Number).filter(Number.isFinite);
+export function parseIconColor(iconColor) {
+    if (Array.isArray(iconColor)) {
+        const numbers = iconColor.map(Number).filter(Number.isFinite);
         return numbers.length >= 3 ? numbers.slice(0, 3).map(clamp255) : null;
     }
 
-    if (typeof darkPalette === 'string') {
-        const value = darkPalette.trim();
+    if (typeof iconColor === 'string') {
+        const value = iconColor.trim();
         if (!value) return null;
 
         if (value[0] === '#') {
@@ -45,7 +45,7 @@ export function parseDarkPalette(darkPalette) {
 const darken = (rgb, factor) => rgb.map((value) => clamp255(value * factor));
 
 export function paletteFromSession(session) {
-    const rgb = parseDarkPalette(session?.darkPalette) || NEUTRAL_RGB;
+    const rgb = parseIconColor(session?.iconColor) || NEUTRAL_RGB;
     const darker = darken(rgb, 0.55);
 
     return {
