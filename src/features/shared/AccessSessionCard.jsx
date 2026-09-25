@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
 import ConnectedBadge from '../../components/ConnectedBadge.jsx';
 import ServiceIcon, { faviconDomain } from '../../components/ServiceIcon.jsx';
-import { paletteFromSession } from '../../lib/palette.js';
 
 /**
  * Card de sessão de quem recebeu o acesso.
@@ -14,7 +13,6 @@ import { paletteFromSession } from '../../lib/palette.js';
 export default function AccessSessionCard({
     session, packageId, inactive, connecting, onConnect, connected, disconnecting, onDisconnect,
 }) {
-    const palette = paletteFromSession(session);
     const domain = faviconDomain(session.url) || session.url || '';
 
     return (
@@ -25,9 +23,6 @@ export default function AccessSessionCard({
                     icon={session.icon}
                     url={session.url}
                     name={session.name}
-                    // backgroundColor, e não o atalho background: o atalho
-                    // zeraria o background-image do placeholder do favicon.
-                    style={{ backgroundColor: palette.glow(0.1), borderColor: palette.glow(0.3) }}
                 />
                 <div className="session-card-header-text">
                     <h3 className="session-card-name">{session.name}</h3>

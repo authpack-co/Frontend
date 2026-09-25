@@ -5750,9 +5750,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     padding-bottom: 14px;
 }
 
-/* O grid de cards agora é só de "Meus acessos" — cards menores, mais por linha. */
+/* O grid de cards agora é só de "Meus acessos" — cards menores, mais por linha.
+   O mínimo é o que cabe "Conectando" e "Ver detalhes" lado a lado com folga. */
 .sessions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 14px;
     max-height: none;
     overflow: visible;
@@ -5852,9 +5853,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     height: 38px;
     flex-shrink: 0;
     border-radius: 10px;
-    object-fit: cover;
-    background: var(--ap-bg-muted);
-    border: 1px solid var(--ap-border);
+    object-fit: contain;
 }
 
 .un-service-text { min-width: 0; }
@@ -6062,11 +6061,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .session-row .session-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    background: var(--ap-bg-card-alt);
-    border: 1px solid var(--ap-border);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .session-row .session-card-name { font-size: 15px; }
@@ -6249,13 +6247,15 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     gap: 12px;
 }
 
-/* Bolha na cor do serviço — o fundo e a borda vêm inline, da paleta da sessão. */
+/* Bolha neutra em volta do favicon: a mesma para todo serviço, sem puxar a
+   cor do ícone. */
 .access-card .session-card-icon {
     width: 42px;
     height: 42px;
     padding: 8px;
     border-radius: 50%;
-    border: 1px solid transparent;
+    background-color: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
 }
 
 .access-card .session-card-name {
@@ -6270,10 +6270,18 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     font-size: 12.5px;
 }
 
+/* "Conectar" ocupa o que sobra e "Ver detalhes" fica com a largura dele: com
+   o conectar em tamanho fixo, num card estreito era o detalhes que ia sendo
+   empurrado até a borda. */
 .access-card-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+}
+
+.access-card-actions > .connect-session-btn {
+    flex: 1;
+    min-width: 0;
 }
 
 .access-card .connect-session-btn {
@@ -7862,7 +7870,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     .sessions-table-head { padding: 14px 32px 14px 24px; }
     .sessions-table-head span { font-size: 12px; }
     .sessions-list .session-row { padding: 17px 24px; }
-    .session-row .session-card-icon { width: 42px; height: 42px; border-radius: 10px; }
+    .session-row .session-card-icon { width: 36px; height: 36px; border-radius: 7px; }
     .session-row .session-card-name { font-size: 16px; }
     .session-row .session-card-domain { font-size: 13.5px; }
     .session-row .session-card-status { font-size: 14px; }
