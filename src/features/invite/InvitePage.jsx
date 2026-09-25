@@ -6,11 +6,13 @@ import { initials } from '../../lib/format.js';
 import { startOrbit } from './orbit.js';
 import './invite.css';
 
-// Quantas vagas a órbita tem em volta da caixa (a última vira "+N" se sobrar).
-const ORBIT_SLOTS = 6;
+// Quantos serviços aparecem em volta da caixa. Passou disso, uma quarta vaga
+// mostra quantos ficaram de fora ("+N").
+const ORBIT_ICONS = 3;
 
-// Formas dos ícones da órbita, na ordem das vagas — a mistura é do desenho.
-const ORBIT_SHAPES = ['50%', '34%', '34%', '34%', '50%', '48% 52% 44% 56% / 52% 46% 54% 48%'];
+// Formas dos ícones da órbita — a mistura é do desenho, e o "+N" é a bolha.
+const ORBIT_SHAPES = ['50%', '34%', '34%'];
+const MORE_SHAPE = '48% 52% 44% 56% / 52% 46% 54% 48%';
 
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
 const OWNED_REDIRECT_MS = 2600;
@@ -301,13 +303,13 @@ function OwnerAvatar({ owner }) {
 }
 
 /**
- * A caixa do pacote com os serviços dele em volta. Até ORBIT_SLOTS ícones
- * cabem na órbita; passou disso, a última vaga vira o "+N". O movimento dos
- * ícones (sair da caixa; com um ou dois, passar por trás dela) mora em orbit.js.
+ * A caixa do pacote com os serviços dele em volta: até ORBIT_ICONS ícones e,
+ * se sobrar, o "+N". O movimento deles (sair da caixa, depois o roteiro de
+ * giros, travessias, trocas e mergulhos) mora em orbit.js.
  */
 function InviteHero({ sessions }) {
     const list = sessions || [];
-    const shown = list.length > ORBIT_SLOTS ? list.slice(0, ORBIT_SLOTS - 1) : list;
+    const shown = list.slice(0, ORBIT_ICONS);
     const remaining = list.length - shown.length;
 
     const tiles = shown.map((session) => ({ key: session.id || session.url, session }));
@@ -334,7 +336,7 @@ function InviteHero({ sessions }) {
                     <div
                         className="inv-orbit-face"
                         style={{
-                            '--inv-orbit-radius': ORBIT_SHAPES[i % ORBIT_SHAPES.length],
+                            '--inv-orbit-radius': tile.more ? MORE_SHAPE : ORBIT_SHAPES[i % ORBIT_SHAPES.length],
                             '--inv-orbit-delay': `${-i * 0.9}s`,
                         }}
                     >
