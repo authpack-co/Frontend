@@ -94,10 +94,12 @@ html, body { background: var(--inv-page); }
     aspect-ratio: 440 / 420;
     margin-top: 10px;
     container-type: inline-size;
+    isolation: isolate;
 }
 
 .inv-blob {
     position: absolute;
+    z-index: 0;
     border-radius: 50%;
     pointer-events: none;
 }
@@ -153,12 +155,17 @@ html, body { background: var(--inv-page); }
     50% { transform: translate(-16px, -12px) scale(1.06); }
 }
 
+/* Posição, escala, opacidade e camada de cada ícone vêm do orbit.js (sair da
+   caixa, girar em volta dela). Aqui ficam o tamanho, o ponto zero no canto do
+   palco e o flutuar, que é da face para não brigar com o transform de fora. */
 .inv-orbit {
     position: absolute;
+    left: 0;
+    top: 0;
     width: 17.27%;
     aspect-ratio: 1;
-    animation: inv-float 5s ease-in-out infinite;
-    animation-delay: var(--inv-orbit-delay, 0s);
+    opacity: 0;
+    will-change: transform, opacity;
 }
 .inv-orbit-face {
     width: 100%;
@@ -168,8 +175,8 @@ html, body { background: var(--inv-page); }
     box-shadow: var(--inv-tile-shadow);
     display: grid;
     place-items: center;
-    opacity: 0;
-    animation: inv-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--inv-orbit-enter, 0.3s) both;
+    animation: inv-float 5s ease-in-out infinite;
+    animation-delay: var(--inv-orbit-delay, 0s);
 }
 .inv-orbit-face img { width: 47%; height: 47%; object-fit: contain; }
 .inv-orbit-more {
@@ -178,8 +185,11 @@ html, body { background: var(--inv-page); }
     color: var(--ap-text-secondary);
 }
 
+/* Camada do meio: ícones da metade de cima do anel passam por trás, os de
+   baixo pela frente (z-index 1 e 3, postos pelo orbit.js). */
 .inv-box {
     position: absolute;
+    z-index: 2;
     left: 29.6%; top: 25.5%;
     width: 40.8%;
     aspect-ratio: 1;
@@ -459,10 +469,10 @@ html, body { background: var(--inv-page); }
 
 @media (prefers-reduced-motion: reduce) {
     .inv-card, .inv-inviter, .inv-title, .inv-desc, .inv-cta, .inv-fineprint,
-    .inv-orbit-face, .inv-box {
+    .inv-box {
         animation-duration: 0.001s;
         opacity: 1;
     }
-    .inv-blob, .inv-orbit, .inv-cta::after { animation: none; }
+    .inv-blob, .inv-orbit-face, .inv-cta::after { animation: none; }
     .inv-box { animation: none; }
 }
