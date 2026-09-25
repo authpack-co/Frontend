@@ -2027,17 +2027,16 @@ span.coming-soon {
     margin-top: 14px;
 }
 
+/* Ícones soltos, lado a lado: sem o anel de fundo e borda, sobrepor um ao
+   outro os misturaria. */
 .ph-identity-icon {
-    width: 28px;
-    height: 28px;
-    padding: 4px;
-    border-radius: 50%;
-    object-fit: scale-down;
-    background: var(--ap-bg-card-alt);
-    border: 1px solid var(--ap-border);
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    object-fit: contain;
     flex-shrink: 0;
     position: relative;
-    margin-left: -6px;
+    margin-left: 8px;
 }
 
 .ph-identity-icon:first-child { margin-left: 0; }
@@ -2049,7 +2048,7 @@ span.coming-soon {
     min-width: 28px;
     height: 28px;
     padding: 0 8px;
-    margin-left: -6px;
+    margin-left: 8px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border);
@@ -4680,7 +4679,7 @@ textarea:focus-visible {
 }
 .up-item-icon {
     flex: none; width: 26px; height: 26px; border-radius: var(--ap-radius-sm);
-    object-fit: cover; background: var(--ap-bg-muted);
+    object-fit: contain;
 }
 .up-item-icon--fb { display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); }
 /* Wrapper de conteúdo (nome + mini bar) — permite empilhar verticalmente */
@@ -4807,7 +4806,7 @@ textarea:focus-visible {
 
 .us-item-icon {
     width: 26px; height: 26px; flex-shrink: 0; object-fit: contain;
-    border-radius: var(--ap-radius-sm); background: var(--ap-bg-muted);
+    border-radius: var(--ap-radius-sm);
 }
 
 .us-item-icon--fb {
@@ -4885,7 +4884,7 @@ textarea:focus-visible {
 .as-dropdown-item:hover { background: var(--ap-bg-hover); }
 .as-dropdown-icon {
     flex: none; width: 28px; height: 28px; border-radius: 6px;
-    object-fit: contain; background: var(--ap-bg-muted);
+    object-fit: contain;
 }
 .as-dropdown-icon--fb { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-dropdown-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ap-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4905,7 +4904,7 @@ textarea:focus-visible {
     padding: 4px 8px 4px 4px; background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border); border-radius: 20px;
 }
-.as-selected-chip-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: contain; background: #fff; }
+.as-selected-chip-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: contain; }
 .as-selected-chip-icon--fb { display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-selected-chip-name { font-size: 12.5px; font-weight: 500; color: var(--ap-text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .as-selected-chip-remove {
@@ -4989,7 +4988,7 @@ textarea:focus-visible {
 .as-service.is-selected { border-color: var(--ap-accent); background: var(--ap-selected-bg); }
 .as-service-icon {
     flex: none; width: 24px; height: 24px; border-radius: var(--ap-radius-sm);
-    object-fit: contain; background: var(--ap-bg-muted);
+    object-fit: contain;
 }
 .as-service-icon--fb { display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-service-name {
@@ -5852,9 +5851,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     height: 38px;
     flex-shrink: 0;
     border-radius: 10px;
-    object-fit: cover;
-    background: var(--ap-bg-muted);
-    border: 1px solid var(--ap-border);
+    object-fit: contain;
 }
 
 .un-service-text { min-width: 0; }
@@ -6062,11 +6059,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .session-row .session-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    background: var(--ap-bg-card-alt);
-    border: 1px solid var(--ap-border);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .session-row .session-card-name { font-size: 15px; }
@@ -6249,13 +6245,13 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     gap: 12px;
 }
 
-/* Bolha na cor do serviço — o fundo e a borda vêm inline, da paleta da sessão. */
+/* Só o ícone, sem bolha em volta: fundo e borda ficam para o cabeçalho da
+   tela da sessão. */
 .access-card .session-card-icon {
-    width: 42px;
-    height: 42px;
-    padding: 8px;
-    border-radius: 50%;
-    border: 1px solid transparent;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .access-card .session-card-name {
@@ -7862,7 +7858,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     .sessions-table-head { padding: 14px 32px 14px 24px; }
     .sessions-table-head span { font-size: 12px; }
     .sessions-list .session-row { padding: 17px 24px; }
-    .session-row .session-card-icon { width: 42px; height: 42px; border-radius: 10px; }
+    .session-row .session-card-icon { width: 36px; height: 36px; border-radius: 7px; }
     .session-row .session-card-name { font-size: 16px; }
     .session-row .session-card-domain { font-size: 13.5px; }
     .session-row .session-card-status { font-size: 14px; }
