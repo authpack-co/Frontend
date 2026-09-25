@@ -2027,16 +2027,17 @@ span.coming-soon {
     margin-top: 14px;
 }
 
-/* Ícones soltos, lado a lado: sem o anel de fundo e borda, sobrepor um ao
-   outro os misturaria. */
 .ph-identity-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
-    object-fit: contain;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border-radius: 50%;
+    object-fit: scale-down;
+    background: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
     flex-shrink: 0;
     position: relative;
-    margin-left: 8px;
+    margin-left: -6px;
 }
 
 .ph-identity-icon:first-child { margin-left: 0; }
@@ -2048,7 +2049,7 @@ span.coming-soon {
     min-width: 28px;
     height: 28px;
     padding: 0 8px;
-    margin-left: 8px;
+    margin-left: -6px;
     border-radius: var(--ap-radius-full);
     background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border);
@@ -4679,7 +4680,7 @@ textarea:focus-visible {
 }
 .up-item-icon {
     flex: none; width: 26px; height: 26px; border-radius: var(--ap-radius-sm);
-    object-fit: contain;
+    object-fit: cover; background: var(--ap-bg-muted);
 }
 .up-item-icon--fb { display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); }
 /* Wrapper de conteúdo (nome + mini bar) — permite empilhar verticalmente */
@@ -4806,7 +4807,7 @@ textarea:focus-visible {
 
 .us-item-icon {
     width: 26px; height: 26px; flex-shrink: 0; object-fit: contain;
-    border-radius: var(--ap-radius-sm);
+    border-radius: var(--ap-radius-sm); background: var(--ap-bg-muted);
 }
 
 .us-item-icon--fb {
@@ -4884,7 +4885,7 @@ textarea:focus-visible {
 .as-dropdown-item:hover { background: var(--ap-bg-hover); }
 .as-dropdown-icon {
     flex: none; width: 28px; height: 28px; border-radius: 6px;
-    object-fit: contain;
+    object-fit: contain; background: var(--ap-bg-muted);
 }
 .as-dropdown-icon--fb { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-dropdown-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--ap-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4904,7 +4905,7 @@ textarea:focus-visible {
     padding: 4px 8px 4px 4px; background: var(--ap-bg-card-alt);
     border: 1px solid var(--ap-border); border-radius: 20px;
 }
-.as-selected-chip-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: contain; }
+.as-selected-chip-icon { width: 20px; height: 20px; border-radius: 50%; object-fit: contain; background: #fff; }
 .as-selected-chip-icon--fb { display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-selected-chip-name { font-size: 12.5px; font-weight: 500; color: var(--ap-text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .as-selected-chip-remove {
@@ -4988,7 +4989,7 @@ textarea:focus-visible {
 .as-service.is-selected { border-color: var(--ap-accent); background: var(--ap-selected-bg); }
 .as-service-icon {
     flex: none; width: 24px; height: 24px; border-radius: var(--ap-radius-sm);
-    object-fit: contain;
+    object-fit: contain; background: var(--ap-bg-muted);
 }
 .as-service-icon--fb { display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--ap-text-secondary); }
 .as-service-name {
@@ -6245,13 +6246,15 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     gap: 12px;
 }
 
-/* Só o ícone, sem bolha em volta: fundo e borda ficam para o cabeçalho da
-   tela da sessão. */
+/* Bolha neutra em volta do favicon: a mesma para todo serviço, sem puxar a
+   cor do ícone. */
 .access-card .session-card-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    object-fit: contain;
+    width: 42px;
+    height: 42px;
+    padding: 8px;
+    border-radius: 50%;
+    background-color: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
 }
 
 .access-card .session-card-name {
