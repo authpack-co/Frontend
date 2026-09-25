@@ -156,7 +156,7 @@ html, body { background: var(--inv-page); }
 }
 
 /* Posição, escala, opacidade e camada de cada ícone vêm do orbit.js (sair da
-   caixa, girar em volta dela). Aqui ficam o tamanho, o ponto zero no canto do
+   caixa; com um ou dois, passar por trás dela). Aqui ficam o tamanho, o ponto zero no canto do
    palco e o flutuar, que é da face para não brigar com o transform de fora. */
 .inv-orbit {
     position: absolute;
@@ -185,8 +185,8 @@ html, body { background: var(--inv-page); }
     color: var(--ap-text-secondary);
 }
 
-/* Camada do meio: ícones da metade de cima do anel passam por trás, os de
-   baixo pela frente (z-index 1 e 3, postos pelo orbit.js). */
+/* Camada do meio: os ícones saem da caixa por cima dela (z-index 3) e, quando
+   brincam de atravessar, passam por trás (z-index 1) — postos pelo orbit.js. */
 .inv-box {
     position: absolute;
     z-index: 2;

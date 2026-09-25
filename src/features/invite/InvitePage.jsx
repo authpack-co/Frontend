@@ -303,7 +303,7 @@ function OwnerAvatar({ owner }) {
 /**
  * A caixa do pacote com os serviços dele em volta. Até ORBIT_SLOTS ícones
  * cabem na órbita; passou disso, a última vaga vira o "+N". O movimento dos
- * ícones (sair da caixa, girar em volta dela) mora em orbit.js.
+ * ícones (sair da caixa; com um ou dois, passar por trás dela) mora em orbit.js.
  */
 function InviteHero({ sessions }) {
     const list = sessions || [];
