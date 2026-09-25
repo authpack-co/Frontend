@@ -5,8 +5,11 @@ import { api } from '../../lib/api.js';
 import { initials } from '../../lib/format.js';
 import './invite.css';
 
-// Quantos ícones de serviço aparecem antes do "+N".
-const STACK_PREVIEW = 5;
+// Quantas vagas a órbita tem em volta da caixa (a última vira "+N" se sobrar).
+const ORBIT_SLOTS = 6;
+
+// Formas dos ícones da órbita, na ordem das vagas — a mistura é do desenho.
+const ORBIT_SHAPES = ['50%', '34%', '34%', '34%', '50%', '48% 52% 44% 56% / 52% 46% 54% 48%'];
 
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
 const OWNED_REDIRECT_MS = 2600;
@@ -134,152 +137,136 @@ export default function InvitePage() {
     const ownerName = state.owner?.name || 'o dono';
 
     return (
-        <>
-            <div className="inv-bg" aria-hidden="true"></div>
+        <div className="inv-shell">
+            <header className="inv-topbar">
+                <Link className="inv-brand" to="/collection">
+                    <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
+                    <span className="inv-brand-name">Niango</span>
+                </Link>
+            </header>
 
-            <div className="inv-shell">
-                <header className="inv-topbar">
-                    <Link className="inv-brand" to="/collection">
-                        <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                        <span className="inv-brand-name">Niango</span>
-                    </Link>
-                </header>
+            <main className="inv-main">
+                {state.status === 'loading' && (
+                    <article className="inv-card inv-state-loading">
+                        <div className="inv-skeleton-hero"></div>
+                        <div className="inv-skeleton-line short"></div>
+                        <div className="inv-skeleton-line"></div>
+                        <div className="inv-skeleton-line"></div>
+                        <div className="inv-skeleton-button"></div>
+                    </article>
+                )}
 
-                <main className="inv-main">
-                    {state.status === 'loading' && (
-                        <article className="inv-card inv-state-loading">
-                            <div className="inv-skeleton-hero"></div>
-                            <div className="inv-skeleton-line short"></div>
-                            <div className="inv-skeleton-line"></div>
-                            <div className="inv-skeleton-line"></div>
-                            <div className="inv-skeleton-button"></div>
-                        </article>
-                    )}
+                {state.status === 'error' && (
+                    <article className="inv-card inv-state-error">
+                        <div className="inv-error-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                        </div>
+                        <h1 className="inv-title">Link inválido</h1>
+                        <p className="inv-desc">
+                            {state.message || 'Peça um link novo para quem compartilhou o pacote.'}
+                        </p>
+                        <Cta to="/collection">Ir para o painel</Cta>
+                    </article>
+                )}
 
-                    {state.status === 'error' && (
-                        <article className="inv-card inv-state-error">
-                            <div className="inv-error-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <line x1="12" y1="8" x2="12" y2="12" />
-                                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                                </svg>
-                            </div>
-                            <h1 className="inv-title">Link inválido</h1>
-                            <p className="inv-desc">
-                                {state.message || 'Peça um link novo para quem compartilhou o pacote.'}
-                            </p>
-                            <Cta to="/collection">Ir para o painel</Cta>
-                        </article>
-                    )}
+                {state.status === 'invite' && (
+                    <article className="inv-card inv-state-invite">
+                        <InviteHero sessions={state.pkg?.sessions} />
 
-                    {state.status === 'invite' && (
-                        <article className="inv-card inv-state-invite">
-                            <div className="inv-inviter">
-                                <OwnerAvatar owner={state.owner} />
-                                <span className="inv-inviter-text">
-                                    <b>{state.owner?.name || 'Alguém'}</b> compartilhou este pacote com você
-                                </span>
-                                <svg className="inv-verified" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 1l2.4 2.1 3.2-.3 1 3 2.9 1.4-1 3 1 3-2.9 1.4-1 3-3.2-.3L12 23l-2.4-2.1-3.2.3-1-3L2.5 16.8l1-3-1-3 2.9-1.4 1-3 3.2.3L12 1z" fill="currentColor" />
-                                    <path d="M16.2 9.2l-5 5-2.4-2.4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </div>
+                        <h1 className="inv-title">{state.pkg?.name || 'Pacote'}</h1>
 
-                            <div className="inv-hero-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                    <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
-                                </svg>
-                            </div>
+                        <div className="inv-inviter">
+                            <OwnerAvatar owner={state.owner} />
+                            <span className="inv-inviter-text">
+                                <b>{state.owner?.name || 'Alguém'}</b> compartilhou com você
+                            </span>
+                        </div>
 
-                            <SessionStack sessions={state.pkg?.sessions} />
+                        <button
+                            className={`inv-cta${sending ? ' loading' : ''}`}
+                            type="button"
+                            onClick={requestAccess}
+                            disabled={sending}
+                        >
+                            {sending && <span className="inv-spinner"></span>}
+                            <span className="inv-cta-label">Solicitar acesso</span>
+                            <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                            </svg>
+                        </button>
 
-                            <h1 className="inv-title">{state.pkg?.name || 'Pacote'}</h1>
-
-                            <div className="inv-gift-pill">
+                        <div className="inv-fineprint">
+                            <span>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect x="3" y="11" width="18" height="11" rx="2" />
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                 </svg>
-                                <span>O dono precisa aprovar</span>
-                            </div>
-
-                            <p className="inv-desc">Peça acesso a todos os serviços deste pacote.</p>
-
-                            <button
-                                className={`inv-cta${sending ? ' loading' : ''}`}
-                                type="button"
-                                onClick={requestAccess}
-                                disabled={sending}
-                            >
-                                {sending && <span className="inv-spinner"></span>}
-                                <span className="inv-cta-label">Solicitar acesso</span>
-                                <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                                </svg>
-                            </button>
-
-                            <p className="inv-fineprint">
+                                O dono precisa aprovar
+                            </span>
+                            <span>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M20 6 9 17l-5-5" />
                                 </svg>
                                 Nenhuma senha passa por você
-                            </p>
-                        </article>
-                    )}
+                            </span>
+                        </div>
+                    </article>
+                )}
 
-                    {state.status === 'sent' && (
-                        <article className="inv-card inv-state-sent" aria-live="polite">
-                            <div className="inv-sent-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                                </svg>
-                            </div>
-                            {/* Um pedido que já estava esperando não é novidade
-                                para quem chega: dizer "enviada" de novo soaria
-                                como se algo tivesse mudado agora. */}
-                            <h1 className="inv-title">
-                                {state.alreadyPending ? 'Seu pedido está com o dono' : 'Solicitação enviada'}
-                            </h1>
-                            <p className="inv-desc">
-                                <strong>{ownerName}</strong> precisa aprovar.{' '}
-                                <strong>{state.pkg?.name || 'O pacote'}</strong> aparece em{' '}
-                                <strong>Meus acessos</strong> quando isso acontecer.
-                            </p>
-                            <Cta to="/collection">Ir para o painel</Cta>
-                        </article>
-                    )}
+                {state.status === 'sent' && (
+                    <article className="inv-card inv-state-sent" aria-live="polite">
+                        <div className="inv-sent-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                            </svg>
+                        </div>
+                        {/* Um pedido que já estava esperando não é novidade
+                            para quem chega: dizer "enviada" de novo soaria
+                            como se algo tivesse mudado agora. */}
+                        <h1 className="inv-title">
+                            {state.alreadyPending ? 'Seu pedido está com o dono' : 'Solicitação enviada'}
+                        </h1>
+                        <p className="inv-desc">
+                            <strong>{ownerName}</strong> precisa aprovar.{' '}
+                            <strong>{state.pkg?.name || 'O pacote'}</strong> aparece em{' '}
+                            <strong>Meus acessos</strong> quando isso acontecer.
+                        </p>
+                        <Cta to="/collection">Ir para o painel</Cta>
+                    </article>
+                )}
 
-                    {state.status === 'owned' && (
-                        <article className="inv-card inv-state-owned" aria-live="polite">
-                            <div className="inv-owned-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                    <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
-                                </svg>
-                            </div>
-                            <h1 className="inv-title">
-                                {state.isOwner ? 'Este pacote é seu' : 'Você já tem acesso'}
-                            </h1>
-                            <p className="inv-desc">
-                                <strong>{state.pkg?.name || 'Este pacote'}</strong>{' '}
-                                {state.isOwner
-                                    ? 'está na sua coleção. Este é o link que você compartilha.'
-                                    : 'já está na sua conta.'}
-                            </p>
-                            <Cta to={ownedTarget || '/collection'}>Abrir o pacote</Cta>
-                            <div className="inv-success-meta">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                                </svg>
-                                <span>Abrindo o pacote…</span>
-                            </div>
-                        </article>
-                    )}
-                </main>
-            </div>
-        </>
+                {state.status === 'owned' && (
+                    <article className="inv-card inv-state-owned" aria-live="polite">
+                        <div className="inv-owned-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
+                            </svg>
+                        </div>
+                        <h1 className="inv-title">
+                            {state.isOwner ? 'Este pacote é seu' : 'Você já tem acesso'}
+                        </h1>
+                        <p className="inv-desc">
+                            <strong>{state.pkg?.name || 'Este pacote'}</strong>{' '}
+                            {state.isOwner
+                                ? 'está na sua coleção. Este é o link que você compartilha.'
+                                : 'já está na sua conta.'}
+                        </p>
+                        <Cta to={ownedTarget || '/collection'}>Abrir o pacote</Cta>
+                        <div className="inv-success-meta">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                            </svg>
+                            <span>Abrindo o pacote…</span>
+                        </div>
+                    </article>
+                )}
+            </main>
+        </div>
     );
 }
 
@@ -312,25 +299,55 @@ function OwnerAvatar({ owner }) {
     );
 }
 
-function SessionStack({ sessions }) {
+/**
+ * A caixa do pacote com os serviços dele em volta. Até ORBIT_SLOTS ícones
+ * cabem na órbita; passou disso, a última vaga vira o "+N".
+ */
+function InviteHero({ sessions }) {
     const list = sessions || [];
-    if (list.length === 0) return <div className="inv-stack" aria-hidden="true"></div>;
+    const shown = list.length > ORBIT_SLOTS ? list.slice(0, ORBIT_SLOTS - 1) : list;
+    const remaining = list.length - shown.length;
 
-    const preview = list.slice(0, STACK_PREVIEW);
-    const remaining = list.length - preview.length;
+    const tiles = shown.map((session) => ({ key: session.id || session.url, session }));
+    if (remaining > 0) tiles.push({ key: 'more', more: remaining });
 
     return (
-        <div className="inv-stack" aria-hidden="true">
-            {preview.map((session) => (
-                <span className="inv-stack-av" key={session.id || session.url}>
-                    <ServiceIcon icon={session.icon} url={session.url} name={session.name} />
-                </span>
+        <div className="inv-hero" aria-hidden="true">
+            <span className="inv-blob inv-blob-a"></span>
+            <span className="inv-blob inv-blob-b"></span>
+            <span className="inv-blob inv-blob-c"></span>
+
+            {tiles.map((tile, i) => (
+                <div className="inv-orbit" key={tile.key} style={orbitStyle(i, tiles.length)}>
+                    <div className="inv-orbit-face">
+                        {tile.session
+                            ? <ServiceIcon icon={tile.session.icon} url={tile.session.url} name={tile.session.name} />
+                            : <span className="inv-orbit-more">+{tile.more}</span>}
+                    </div>
+                </div>
             ))}
-            <span className="inv-stack-more">
-                {remaining > 0
-                    ? `+${remaining} ${remaining === 1 ? 'serviço' : 'serviços'}`
-                    : `${list.length} ${list.length === 1 ? 'serviço' : 'serviços'}`}
-            </span>
+
+            <img className="inv-box" src="/assets/images/invite-box.webp" alt="" />
         </div>
     );
+}
+
+/**
+ * Posição de cada ícone numa elipse em volta da caixa, a partir do canto
+ * superior esquerdo e espaçados por igual. As medidas são as do desenho
+ * (palco de 440×420, ícone de 76) convertidas em % para o palco encolher
+ * junto com o card no celular.
+ */
+function orbitStyle(index, total) {
+    const angle = ((-120 + (index * 360) / total) * Math.PI) / 180;
+    const x = 220 + Math.cos(angle) * 178 - 38;
+    const y = 200 + Math.sin(angle) * 158 - 38;
+
+    return {
+        left: `${(x / 440) * 100}%`,
+        top: `${(y / 420) * 100}%`,
+        '--inv-orbit-radius': ORBIT_SHAPES[index % ORBIT_SHAPES.length],
+        '--inv-orbit-delay': `${-index * 0.9}s`,
+        '--inv-orbit-enter': `${0.3 + index * 0.06}s`,
+    };
 }
