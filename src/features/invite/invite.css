@@ -122,6 +122,28 @@ html, body { background: var(--inv-page); }
     opacity: calc(0.6 * var(--inv-blob-strength));
     animation: inv-drift-b 11s ease-in-out infinite;
 }
+/* No escuro, sem o card para cortar, os três brilhos terminavam numa borda
+   redonda visível no desktop. Mais desfoque neles e uma camada larga e fraca
+   por trás fazem a luz ir sumindo no fundo em vez de formar uma bola.
+   No celular a própria tela já corta o brilho antes da borda aparecer. */
+@media (min-width: 541px) {
+    :root[data-theme="dark"] .inv-hero::before {
+        content: '';
+        position: absolute;
+        inset: -90% -160%;
+        pointer-events: none;
+        /* Queda em vários passos (quase exponencial): com só dois pontos o
+           degradê cai em linha reta e o olho enxerga o fim dele como um anel. */
+        background:
+            radial-gradient(ellipse 46% 50% at 42% 50%, rgba(232, 101, 15, 0.2) 0%, rgba(232, 101, 15, 0.144) 22%, rgba(232, 101, 15, 0.084) 45%, rgba(232, 101, 15, 0.036) 68%, rgba(232, 101, 15, 0.01) 86%, transparent 100%),
+            radial-gradient(ellipse 34% 38% at 50% 44%, rgba(194, 24, 91, 0.12) 0%, rgba(194, 24, 91, 0.086) 22%, rgba(194, 24, 91, 0.05) 45%, rgba(194, 24, 91, 0.022) 68%, rgba(194, 24, 91, 0.006) 86%, transparent 100%),
+            radial-gradient(ellipse 46% 50% at 58% 53%, rgba(109, 40, 217, 0.2) 0%, rgba(109, 40, 217, 0.144) 22%, rgba(109, 40, 217, 0.084) 45%, rgba(109, 40, 217, 0.036) 68%, rgba(109, 40, 217, 0.01) 86%, transparent 100%);
+    }
+    :root[data-theme="dark"] .inv-blob-a { filter: blur(100px); }
+    :root[data-theme="dark"] .inv-blob-b { filter: blur(90px); }
+    :root[data-theme="dark"] .inv-blob-c { filter: blur(104px); }
+}
+
 @keyframes inv-drift-a {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(18px, 14px) scale(1.08); }
