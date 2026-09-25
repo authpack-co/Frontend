@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import ServiceIcon from '../../components/ServiceIcon.jsx';
 import { api } from '../../lib/api.js';
 import { initials } from '../../lib/format.js';
+import { startOrbit } from './orbit.js';
 import './invite.css';
 
-// Quantas vagas a órbita tem em volta da caixa (a última vira "+N" se sobrar).
-const ORBIT_SLOTS = 6;
+// Quantos serviços aparecem em volta da caixa. Passou disso, uma quarta vaga
+// mostra quantos ficaram de fora ("+N").
+const ORBIT_ICONS = 3;
 
-// Formas dos ícones da órbita, na ordem das vagas — a mistura é do desenho.
-const ORBIT_SHAPES = ['50%', '34%', '34%', '34%', '50%', '48% 52% 44% 56% / 52% 46% 54% 48%'];
+// Formas dos ícones da órbita — a mistura é do desenho, e o "+N" é a bolha.
+const ORBIT_SHAPES = ['50%', '34%', '34%'];
+const MORE_SHAPE = '48% 52% 44% 56% / 52% 46% 54% 48%';
 
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
 const OWNED_REDIRECT_MS = 2600;
@@ -300,16 +303,27 @@ function OwnerAvatar({ owner }) {
 }
 
 /**
- * A caixa do pacote com os serviços dele em volta. Até ORBIT_SLOTS ícones
- * cabem na órbita; passou disso, a última vaga vira o "+N".
+ * A caixa do pacote com os serviços dele em volta: até ORBIT_ICONS ícones e,
+ * se sobrar, o "+N". O movimento deles (sair da caixa, depois o roteiro de
+ * giros, travessias, trocas e mergulhos) mora em orbit.js.
  */
 function InviteHero({ sessions }) {
     const list = sessions || [];
-    const shown = list.length > ORBIT_SLOTS ? list.slice(0, ORBIT_SLOTS - 1) : list;
+    const shown = list.slice(0, ORBIT_ICONS);
     const remaining = list.length - shown.length;
 
     const tiles = shown.map((session) => ({ key: session.id || session.url, session }));
     if (remaining > 0) tiles.push({ key: 'more', more: remaining });
+
+    const tileRefs = useRef([]);
+    const tileKeys = tiles.map((tile) => tile.key).join('|');
+
+    // Layout effect: a posição de partida (dentro da caixa) entra antes do
+    // primeiro paint, senão os ícones piscariam no canto do palco.
+    useLayoutEffect(() => {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        return startOrbit(tileRefs.current.filter(Boolean), { reduced });
+    }, [tileKeys]);
 
     return (
         <div className="inv-hero" aria-hidden="true">
@@ -318,8 +332,14 @@ function InviteHero({ sessions }) {
             <span className="inv-blob inv-blob-c"></span>
 
             {tiles.map((tile, i) => (
-                <div className="inv-orbit" key={tile.key} style={orbitStyle(i, tiles.length)}>
-                    <div className="inv-orbit-face">
+                <div className="inv-orbit" key={tile.key} ref={(el) => { tileRefs.current[i] = el; }}>
+                    <div
+                        className="inv-orbit-face"
+                        style={{
+                            '--inv-orbit-radius': tile.more ? MORE_SHAPE : ORBIT_SHAPES[i % ORBIT_SHAPES.length],
+                            '--inv-orbit-delay': `${-i * 0.9}s`,
+                        }}
+                    >
                         {tile.session
                             ? <ServiceIcon icon={tile.session.icon} url={tile.session.url} name={tile.session.name} />
                             : <span className="inv-orbit-more">+{tile.more}</span>}
@@ -330,24 +350,4 @@ function InviteHero({ sessions }) {
             <img className="inv-box" src="/assets/images/invite-box.webp" alt="" />
         </div>
     );
-}
-
-/**
- * Posição de cada ícone numa elipse em volta da caixa, a partir do canto
- * superior esquerdo e espaçados por igual. As medidas são as do desenho
- * (palco de 440×420, ícone de 76) convertidas em % para o palco encolher
- * junto com o card no celular.
- */
-function orbitStyle(index, total) {
-    const angle = ((-120 + (index * 360) / total) * Math.PI) / 180;
-    const x = 220 + Math.cos(angle) * 178 - 38;
-    const y = 200 + Math.sin(angle) * 158 - 38;
-
-    return {
-        left: `${(x / 440) * 100}%`,
-        top: `${(y / 420) * 100}%`,
-        '--inv-orbit-radius': ORBIT_SHAPES[index % ORBIT_SHAPES.length],
-        '--inv-orbit-delay': `${-index * 0.9}s`,
-        '--inv-orbit-enter': `${0.3 + index * 0.06}s`,
-    };
 }
