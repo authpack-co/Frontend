@@ -5,10 +5,10 @@
  * pousam nas vagas. Dali em diante descansam flutuando (o flutuar é CSS, não
  * passa por aqui) e, de tempos em tempos, fazem o próximo passo do roteiro do
  * seu número de ícones: giram em volta da caixa, atravessam por trás ou por
- * baixo dela, trocam de lugar, mergulham na caixa e saem de novo. Travessias e
- * trocas passam por trás da caixa; no giro, a metade de cima do anel passa por
- * trás e a de baixo pela frente. Todo passo termina com cada ícone numa vaga,
- * em repouso.
+ * baixo dela, mergulham na caixa e saem de novo — trocando de lugar, quando é
+ * troca. As travessias passam por trás da caixa; no giro, a metade de cima do
+ * anel passa por trás e a de baixo pela frente. Todo passo termina com cada
+ * ícone numa vaga, em repouso.
  *
  * As contas são em unidades do desenho (palco de 440×420, ícone de 76) e o
  * deslocamento sai em % do próprio ícone, então o mesmo número serve do
@@ -19,10 +19,9 @@ const CENTER = { x: 220, y: 200 };
 const RADIUS = { x: 178, y: 158 };
 const TILE = 76;
 
-// A boca da caixa (de onde os ícones saem e onde mergulham), o miolo do corpo
-// dela (por onde as trocas passam, escondidas) e a altura da borda das abas.
+// A boca da caixa (de onde os ícones saem e onde mergulham) e a altura da
+// borda das abas.
 const MOUTH = { x: 220, y: 168 };
-const BOX_CORE = { x: 220, y: 190 };
 const BOX_RIM_Y = 113;
 
 // A caixa fica na camada do meio (z-index 2 no CSS).
@@ -54,8 +53,8 @@ const REST_MS = [6000, 9000];
 // Passos do roteiro.
 const ORBIT_MS = 2600;
 const ORBIT_LAG_MS = 140;      // um ícone sai um pouco depois do outro: anel vivo, não peça rígida
-const PASS_MS = 2200;          // travessias e trocas
-const PASS_STAGGER_MS = 180;   // numa troca, o segundo sai logo depois e eles se cruzam escondidos
+const PASS_MS = 2200;          // travessias
+const PASS_STAGGER_MS = 180;   // com dois, o segundo sai logo depois e eles se cruzam escondidos
 const PAIR_GAP_MS = 450;       // na troca em X, o segundo par
 const DIVE_IN_MS = 850;
 const DIVE_HOLD_MS = 250;      // o tempo dentro da caixa
@@ -88,22 +87,22 @@ const SCRIPTS = {
     2: [
         (at) => [pass(at, 0, 'middle'), pass(at, 1, 'middle', PASS_STAGGER_MS)], // trocam de lado pelo meio
         (at) => orbit(at, 1),                          // giram: um por trás, em cima; o outro pela frente, embaixo
-        (at) => [dive(at, 0, at[1]), dive(at, 1, at[0], DIVE_STAGGER_MS)],       // mergulham e saem trocados
+        (at) => swap(at, 0, 1),                        // mergulham e saem trocados
         (at) => orbit(at, -1),                         // giram de volta
     ],
     3: [
         (at) => orbit(at, 1),                          // giram uma vaga
-        (at) => swap(at, tileAt(at, 30), tileAt(at, 150)),                       // os de baixo trocam
+        (at) => swap(at, tileAt(at, 30), tileAt(at, 150)),                       // os de baixo entram na caixa e saem trocados
         (at) => [dive(at, tileAt(at, TOP), TOP)],      // o de cima mergulha e volta
         (at) => orbit(at, -1),                         // giram de volta
     ],
     4: [
         (at) => orbit(at, 1),                          // giram uma vaga
-        (at) => [                                      // trocam em X, pelo meio da caixa
+        (at) => [                                      // trocam em X: entram na caixa e saem trocados
             ...swap(at, tileAt(at, 225), tileAt(at, 45)),
             ...swap(at, tileAt(at, 315), tileAt(at, 135), PAIR_GAP_MS),
         ],
-        (at) => swap(at, tileAt(at, 225), tileAt(at, 315)),                      // os de cima trocam
+        (at) => swap(at, tileAt(at, 225), tileAt(at, 315)),                      // os de cima entram na caixa e saem trocados
         (at) => [dive(at, tileAt(at, 315), 315)],      // um mergulha e volta
         (at) => orbit(at, -1),                         // giram de volta
     ],
@@ -235,33 +234,15 @@ function pass(angles, tile, route, delay = 0) {
     };
 }
 
-/** Dois ícones trocam de vaga, cruzando-se escondidos no miolo da caixa. */
+/**
+ * Dois ícones trocam de vaga passando pela caixa: entram nela (o mergulho),
+ * um logo depois do outro, e cada um sai na vaga do outro.
+ */
 function swap(angles, a, b, delay = 0) {
-    const pa = restPoint(angles[a]);
-    const pb = restPoint(angles[b]);
-    // A curva passa pelo miolo da caixa no meio do caminho.
-    const bend = {
-        x: 2 * BOX_CORE.x - (pa.x + pb.x) / 2,
-        y: 2 * BOX_CORE.y - (pa.y + pb.y) / 2,
-    };
-
     return [
-        curveMove(a, pa, bend, pb, angles[b], delay),
-        curveMove(b, pb, bend, pa, angles[a], delay + PASS_STAGGER_MS),
+        dive(angles, a, angles[b], delay),
+        dive(angles, b, angles[a], delay + DIVE_STAGGER_MS),
     ];
-}
-
-function curveMove(tile, from, bend, to, end, delay) {
-    return {
-        tile,
-        delay,
-        duration: PASS_MS,
-        end,
-        at: (t) => ({
-            ...bezier(from, bend, to, easeInOutSine(t)),
-            ...behind(Math.sin(Math.PI * t)),
-        }),
-    };
 }
 
 /**
