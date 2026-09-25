@@ -5,9 +5,10 @@
  * pousam nas vagas. Dali em diante descansam flutuando (o flutuar é CSS, não
  * passa por aqui) e, de tempos em tempos, fazem o próximo passo do roteiro do
  * seu número de ícones: giram em volta da caixa, atravessam por trás ou por
- * baixo dela, trocam de lugar, mergulham na caixa e saem de novo. Tudo isso
- * acontece atrás da caixa, e todo passo termina com cada ícone numa vaga, em
- * repouso.
+ * baixo dela, trocam de lugar, mergulham na caixa e saem de novo. Travessias e
+ * trocas passam por trás da caixa; no giro, a metade de cima do anel passa por
+ * trás e a de baixo pela frente. Todo passo termina com cada ícone numa vaga,
+ * em repouso.
  *
  * As contas são em unidades do desenho (palco de 440×420, ícone de 76) e o
  * deslocamento sai em % do próprio ícone, então o mesmo número serve do
@@ -62,11 +63,13 @@ const DIVE_HOP = 110;          // o pulo antes de cair na caixa
 const DIVE_CEILING_Y = -10;    // e até onde ele sobe: o de cima não encosta no cabeçalho
 const DIVE_STAGGER_MS = 350;
 
-// Atrás da caixa o ícone encolhe e apaga de leve, como quem se afasta.
+// Atrás da caixa o ícone encolhe e apaga de leve, como quem se afasta; na
+// frente dela, cresce um pouco, como quem se aproxima.
 const BEHIND_SHRINK = 0.1;
 const BEHIND_FADE = 0.2;
-// No giro o anel recua e achata até esta altura: os de cima passam por trás
-// das abas, os de baixo por trás da base.
+const FRONT_GROW = 0.1;
+// No giro o anel inclina e achata até esta altura: os de cima passam por trás
+// das abas, os de baixo pela frente da base.
 const ORBIT_RY = 70;
 // Atravessando pelo meio, o ícone sobe só um pouco e some inteiro atrás da caixa.
 const PASS_RY = 30;
@@ -78,13 +81,13 @@ const PASS_RY = 30;
 const SCRIPTS = {
     1: [
         (at) => [pass(at, 0, 'middle')],               // atravessa por trás, pelo meio
-        (at) => [pass(at, 0, 'below')],                // volta por baixo da caixa
+        (at) => [pass(at, 0, 'below')],                // volta por baixo, pela frente da caixa
         (at) => [dive(at, 0, opposite(at[0]))],        // mergulha e sai do outro lado
         (at) => [pass(at, 0, 'above')],                // volta por trás das abas
     ],
     2: [
         (at) => [pass(at, 0, 'middle'), pass(at, 1, 'middle', PASS_STAGGER_MS)], // trocam de lado pelo meio
-        (at) => orbit(at, 1),                          // giram: um por cima, o outro por baixo
+        (at) => orbit(at, 1),                          // giram: um por trás, em cima; o outro pela frente, embaixo
         (at) => [dive(at, 0, at[1]), dive(at, 1, at[0], DIVE_STAGGER_MS)],       // mergulham e saem trocados
         (at) => orbit(at, -1),                         // giram de volta
     ],
@@ -191,7 +194,10 @@ export function startOrbit(tiles, { reduced = false } = {}) {
    termina (a vaga, em graus) e onde o ícone está em cada instante t (0 a 1).
    ------------------------------------------------------------------------ */
 
-/** Todos giram `step` vagas em volta da caixa, com o anel recuado para trás dela. */
+/**
+ * Todos giram `step` vagas em volta da caixa, com o anel inclinado: quem passa
+ * em cima vai por trás dela, quem passa embaixo vem pela frente.
+ */
 function orbit(angles, step) {
     const spacing = 360 / angles.length;
     return angles.map((from, tile) => {
@@ -208,7 +214,7 @@ function orbit(angles, step) {
 
 /**
  * Um ícone de um lado da caixa vai para o outro: pelo meio (some inteiro atrás
- * dela), por cima (por trás das abas) ou por baixo (por trás da base).
+ * dela), por cima (por trás das abas) ou por baixo (pela frente da base).
  */
 function pass(angles, tile, route, delay = 0) {
     const from = angles[tile];
@@ -320,15 +326,22 @@ function emergePoint(t, rest) {
     };
 }
 
-/** No anel recuado: `recede` 0 é o anel do desenho, 1 é o anel achatado atrás da caixa. */
-function orbitPoint(deg, recede) {
+/**
+ * No anel inclinado: `tilt` 0 é o anel do desenho; 1 é o anel achatado, com a
+ * metade de cima atrás da caixa e a de baixo na frente dela. A troca de camada
+ * acontece nos lados, longe da caixa, e por isso não aparece.
+ */
+function orbitPoint(deg, tilt) {
     const angle = toRad(deg);
-    const ry = RADIUS.y + (ORBIT_RY - RADIUS.y) * recede;
-    return {
+    const side = Math.sin(angle); // < 0: metade de cima (fundo); > 0: metade de baixo (frente)
+    const ry = RADIUS.y + (ORBIT_RY - RADIUS.y) * tilt;
+    const point = {
         x: CENTER.x + Math.cos(angle) * RADIUS.x,
-        y: CENTER.y + Math.sin(angle) * ry,
-        ...behind(recede),
+        y: CENTER.y + side * ry,
     };
+
+    if (side < 0) return { ...point, ...behind(-side * tilt) };
+    return { ...point, scale: 1 + FRONT_GROW * side * tilt, opacity: 1, z: Z_FRONT };
 }
 
 /** De um lado ao outro pelo meio: mais fundo (e escondido) quanto mais perto do centro. */
@@ -402,5 +415,5 @@ function smoothstep(from, to, v) {
     return t * t * (3 - 2 * t);
 }
 
-// Recua no primeiro quarto, gira recuado, volta para a vaga no último quarto.
+// Inclina no primeiro quarto, gira inclinado, volta de frente no último quarto.
 const plateau = (t) => smoothstep(0, 0.28, t) * (1 - smoothstep(0.72, 1, t));

@@ -185,8 +185,9 @@ html, body { background: var(--inv-page); }
     color: var(--ap-text-secondary);
 }
 
-/* Camada do meio: os ícones saem da caixa por cima dela (z-index 3) e, nas
-   interações, passam por trás (z-index 1) — postos pelo orbit.js. */
+/* Camada do meio: os ícones saem da caixa por cima dela (z-index 3); nas
+   travessias e trocas passam por trás (z-index 1); no giro, a metade de cima
+   do anel passa por trás e a de baixo pela frente — postos pelo orbit.js. */
 .inv-box {
     position: absolute;
     z-index: 2;
