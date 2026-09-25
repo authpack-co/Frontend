@@ -574,3 +574,8 @@ a.dt-crumb:hover {
         white-space: normal;
     }
 }
+
+/* Monitores grandes: acompanha a largura que a tela do pacote ganha ali. */
+@media (min-width: 1600px) {
+    .dt-main { max-width: 1400px; }
+}

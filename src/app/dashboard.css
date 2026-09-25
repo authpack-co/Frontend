@@ -7798,3 +7798,158 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     height: 100%;
     border-radius: var(--ap-radius-full);
 }
+
+/* ============================================================================
+   Responsividade: monitores grandes e celular
+
+   O layout foi desenhado no notebook (~1366–1536px), e é essa faixa que fica
+   intocada aqui. Acima dela o conteúdo parava em 1300px e a lista de sessões
+   numa altura fixa, sobrando tela vazia dos lados e embaixo; abaixo de 640px
+   as ações do topo quebravam linha cada uma num lugar.
+   ============================================================================ */
+
+/* A lista de sessões vai até o pé da janela em vez de parar em 250px: numa
+   tela alta, rolar dentro de uma caixa baixa com meia tela vazia embaixo não
+   faz sentido. O desconto é a altura do que vem acima dela (topo, gráfico e
+   pessoas, cabeçalho da lista) e muda junto com --collection-panel-h. */
+.sessions-list {
+    --sessions-list-offset: 470px;
+    max-height: max(250px, calc(100dvh - var(--sessions-list-offset)));
+}
+
+/* O nome da pessoa usa o espaço que a linha tem, não um teto fixo. */
+.collection-users-col .item-name {
+    max-width: none;
+    min-width: 0;
+}
+
+/* ── Monitores grandes ── */
+
+@media (min-width: 1600px) {
+    .page-content { padding: 28px 40px; }
+
+    .main-content { max-width: 1560px; }
+
+    .dashboard-topbar { margin-bottom: 22px; }
+    .topbar-title { font-size: 24px; }
+
+    .topbar-actions .btn,
+    .pkg-people-counter { font-size: 14px; }
+
+    .collection-chart-users-row { --collection-panel-h: 280px; gap: 1.5rem; }
+
+    .sessions-list { --sessions-list-offset: 540px; }
+
+    .collection-chart-col .usage-chart-container,
+    .collection-users-col .users-panel { padding: 20px 22px; }
+
+    .collection-chart-col .chart-title,
+    #package-details .sessions-panel .panel-title,
+    .sessions-panel-head .panel-title { font-size: 16px; }
+
+    .collection-chart-col .chart-subtitle { font-size: 13px; }
+
+    .collection-users-col .list-item { padding: 9px 10px; }
+    .collection-users-col .profile-picture { width: 36px; height: 36px; font-size: 14px; }
+    .collection-users-col .item-name { font-size: 14.5px; }
+    .collection-users-col .user .item-details { font-size: 12px; }
+    .collection-users-col .user .details-btn { height: 32px; padding: 0 12px; font-size: 12.5px; }
+    .collection-users-col .user .remove-user-access-btn { width: 32px; height: 32px; }
+
+    .sessions-search { width: 300px; }
+    .sessions-search input { padding: 10px 16px 10px 36px; font-size: 14px; }
+
+    .sessions-table-head { padding: 14px 32px 14px 24px; }
+    .sessions-table-head span { font-size: 12px; }
+    .sessions-list .session-row { padding: 17px 24px; }
+    .session-row .session-card-icon { width: 42px; height: 42px; border-radius: 10px; }
+    .session-row .session-card-name { font-size: 16px; }
+    .session-row .session-card-domain { font-size: 13.5px; }
+    .session-row .session-card-status { font-size: 14px; }
+    .session-row .session-card-members-label { font-size: 13px; }
+    .session-row .usage-time-text { font-size: 14px; }
+}
+
+@media (min-width: 2200px) {
+    .main-content { max-width: 1840px; }
+
+    .collection-chart-users-row { --collection-panel-h: 330px; }
+
+    .sessions-list { --sessions-list-offset: 600px; }
+}
+
+/* ── Tablet e celular ── */
+
+@media (max-width: 1199px) {
+    /* O botão do menu é fixo no canto: o título do pacote se alinha ao lado
+       dele, em vez de a página reservar uma faixa vazia só para o botão. */
+    .page-content:has(.dashboard-topbar, .dt-topbar) { padding-top: 14px; }
+
+    .topbar-title,
+    .dt-crumbs {
+        min-height: 42px;
+        padding-left: 56px;
+        line-height: 42px;
+    }
+}
+
+@media (max-width: 900px) {
+    /* Empilhado, a página já rola: a lista inteira entra no fluxo, sem uma
+       segunda rolagem dentro dela. */
+    .sessions-list { max-height: none; }
+
+    /* Sem a coluna do gráfico ao lado, a lista de pessoas não tem com quem
+       empatar de altura — fica do tamanho de quem está nela. */
+    .collection-users-col .users-panel { min-height: 0; }
+
+    /* O gráfico (sem proporção fixa) crescia com a largura da tela e passava
+       de 400px de altura no tablet. */
+    .collection-chart-col { height: 300px; }
+}
+
+@media (max-width: 767px) {
+    /* O ícone do calendário mora à esquerda do select: o padding precisa
+       continuar abrindo espaço para ele, senão ele cobre o texto. */
+    .chart-period-select { padding-left: 30px; }
+}
+
+@media (max-width: 640px) {
+    .page-content { padding-left: 16px; padding-right: 16px; }
+
+    .topbar-title { font-size: 19px; }
+
+    /* Ações em grade: pessoas e compartilhar lado a lado, adicionar sessão
+       na largura toda embaixo — as três alinhadas pelas bordas. */
+    .topbar-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .topbar-people,
+    .pkg-people-counter,
+    .topbar-actions .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .pkg-people-counter,
+    .topbar-actions .btn {
+        justify-content: center;
+        height: 40px;
+        padding: 0 12px;
+        font-size: 13.5px;
+    }
+
+    .topbar-add-session-btn { grid-column: 1 / -1; }
+
+    .collection-chart-col .usage-chart-container,
+    .collection-users-col .users-panel { padding: 14px; }
+
+    .collection-users-col .user .details-btn { padding: 0 8px; }
+
+    .sessions-panel-head { gap: 10px; }
+    .sessions-search { width: 100%; }
+}
