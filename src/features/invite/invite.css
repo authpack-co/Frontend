@@ -25,7 +25,7 @@ button { font-family: inherit; cursor: pointer; }
 :root {
     --inv-accent: var(--ap-accent);
     --inv-accent-hover: var(--ap-accent-hover);
-    --inv-accent-soft: color-mix(in oklab, var(--inv-accent) 12%, var(--ap-bg-card));
+    --inv-accent-soft: color-mix(in oklab, var(--inv-accent) 12%, var(--inv-page));
     --inv-accent-ring: color-mix(in oklab, var(--inv-accent) 40%, transparent);
     --inv-accent-glow: color-mix(in oklab, var(--inv-accent) 32%, transparent);
 
@@ -35,11 +35,6 @@ button { font-family: inherit; cursor: pointer; }
     --inv-cta-hover: #dc5d0e;
 
     --inv-page: var(--ap-bg-page);
-    --inv-card-border: var(--ap-border);
-    --inv-card-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.6) inset,
-        0 30px 64px rgba(0, 0, 0, 0.10),
-        0 12px 24px rgba(0, 0, 0, 0.05);
     --inv-tile: #ffffff;
     --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.04);
     --inv-blob-strength: 0.45;
@@ -47,8 +42,6 @@ button { font-family: inherit; cursor: pointer; }
 }
 :root[data-theme="dark"] {
     --inv-page: #141517;
-    --inv-card-border: rgba(255, 255, 255, 0.16);
-    --inv-card-shadow: 0 30px 64px rgba(0, 0, 0, 0.5), 0 12px 24px rgba(0, 0, 0, 0.32);
     --inv-tile: #1c1d20;
     --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     --inv-blob-strength: 1;
@@ -72,18 +65,14 @@ html, body { background: var(--inv-page); }
 
 .inv-main { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px 24px 40px; }
 
-/* Card */
+/* Conteúdo: sem card em volta — a arte, o texto e o botão ficam direto no
+   fundo da página, e o brilho da arte se espalha por ele sem borda. */
 .inv-card {
     position: relative;
     width: 100%;
-    max-width: 540px;
-    background: var(--ap-bg-card);
-    border: 1px solid var(--inv-card-border);
-    border-radius: 36px;
-    padding: 40px 36px 30px;
-    box-shadow: var(--inv-card-shadow);
+    max-width: 468px;
+    padding: 40px 0 30px;
     text-align: center;
-    overflow: hidden;
     opacity: 0;
     transform: translateY(14px);
     animation: inv-card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
@@ -133,6 +122,28 @@ html, body { background: var(--inv-page); }
     opacity: calc(0.6 * var(--inv-blob-strength));
     animation: inv-drift-b 11s ease-in-out infinite;
 }
+/* No escuro, sem o card para cortar, os três brilhos terminavam numa borda
+   redonda visível no desktop. Mais desfoque neles e uma camada larga e fraca
+   por trás fazem a luz ir sumindo no fundo em vez de formar uma bola.
+   No celular a própria tela já corta o brilho antes da borda aparecer. */
+@media (min-width: 541px) {
+    :root[data-theme="dark"] .inv-hero::before {
+        content: '';
+        position: absolute;
+        inset: -90% -160%;
+        pointer-events: none;
+        /* Queda em vários passos (quase exponencial): com só dois pontos o
+           degradê cai em linha reta e o olho enxerga o fim dele como um anel. */
+        background:
+            radial-gradient(ellipse 46% 50% at 42% 50%, rgba(232, 101, 15, 0.2) 0%, rgba(232, 101, 15, 0.144) 22%, rgba(232, 101, 15, 0.084) 45%, rgba(232, 101, 15, 0.036) 68%, rgba(232, 101, 15, 0.01) 86%, transparent 100%),
+            radial-gradient(ellipse 34% 38% at 50% 44%, rgba(194, 24, 91, 0.12) 0%, rgba(194, 24, 91, 0.086) 22%, rgba(194, 24, 91, 0.05) 45%, rgba(194, 24, 91, 0.022) 68%, rgba(194, 24, 91, 0.006) 86%, transparent 100%),
+            radial-gradient(ellipse 46% 50% at 58% 53%, rgba(109, 40, 217, 0.2) 0%, rgba(109, 40, 217, 0.144) 22%, rgba(109, 40, 217, 0.084) 45%, rgba(109, 40, 217, 0.036) 68%, rgba(109, 40, 217, 0.01) 86%, transparent 100%);
+    }
+    :root[data-theme="dark"] .inv-blob-a { filter: blur(100px); }
+    :root[data-theme="dark"] .inv-blob-b { filter: blur(90px); }
+    :root[data-theme="dark"] .inv-blob-c { filter: blur(104px); }
+}
+
 @keyframes inv-drift-a {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(18px, 14px) scale(1.08); }
@@ -437,8 +448,8 @@ html, body { background: var(--inv-page); }
 
 /* Responsive */
 @media (max-width: 540px) {
-    .inv-main { padding: 12px 14px 32px; }
-    .inv-card { padding: 30px 22px 26px; border-radius: 28px; }
+    .inv-main { padding: 12px 20px 32px; }
+    .inv-card { padding: 30px 0 26px; }
     .inv-state-invite { padding-top: 0; }
     .inv-title { font-size: 1.55rem; }
     .inv-state-invite .inv-title { font-size: 32px; }
