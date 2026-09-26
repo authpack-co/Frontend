@@ -33,11 +33,15 @@ const Z_FRONT = 3;
 const LEFT = 180;
 const RIGHT = 0;
 const TOP = 270;
+const MAX_TILES = 6;
 const SLOTS = {
     1: [LEFT],
     2: [LEFT, RIGHT],
     3: [TOP, 30, 150],
     4: [225, 315, 45, 135],
+    5: [TOP, 342, 54, 126, 198],
+    // As vagas do desenho.
+    6: [240, 300, 0, 60, 120, 180],
 };
 
 // Entrada: espera a caixa terminar de aparecer e solta um ícone de cada vez.
@@ -52,15 +56,15 @@ const REST_MS = [6000, 9000];
 
 // Passos do roteiro.
 // O giro é longo e calmo, para não deixar ninguém tonto: dura uns 10 s e anda
-// cerca de 240° (arredondado para vagas inteiras: 3 vagas com 4 ícones, 2 com
-// 3, 1 com 2).
+// cerca de 240° (arredondado para vagas inteiras: 4 vagas com 6 ícones, 3 com
+// 5 ou 4, 2 com 3, 1 com 2).
 const ORBIT_MS = 10000;
 const ORBIT_TURN_DEG = 240;
 const ORBIT_LAG_MS = 140;      // um ícone sai um pouco depois do outro: anel vivo, não peça rígida
 const PASS_MS = 2200;          // travessias
 const PASS_STAGGER_MS = 180;   // com dois, o segundo sai logo depois e eles se cruzam escondidos
-const PAIR_GAP_MS = 450;       // na troca em X, o segundo par
-const X_SWAP_HOLD_MS = 2000;   // e na troca em X os quatro ficam um tempo dentro da caixa
+const PAIR_GAP_MS = 450;       // quando todos trocam, cada par sai um pouco depois do anterior
+const X_SWAP_HOLD_MS = 2000;   // e ficam um tempo dentro da caixa
 const DIVE_IN_MS = 850;
 const DIVE_HOLD_MS = 250;      // o tempo dentro da caixa
 const DIVE_HOP = 110;          // o pulo antes de cair na caixa
@@ -111,6 +115,24 @@ const SCRIPTS = {
         (at) => [dive(at, tileAt(at, 315), 315)],      // um mergulha e volta
         (at) => orbit(at, -1),                         // giram de volta
     ],
+    5: [
+        (at) => orbit(at, 1),                          // giram
+        (at) => swap(at, tileAt(at, 54), tileAt(at, 126)),                       // os de baixo entram na caixa e saem trocados
+        (at) => [dive(at, tileAt(at, TOP), TOP)],      // o de cima mergulha e volta
+        (at) => swap(at, tileAt(at, 198), tileAt(at, 342)),                      // os dos lados entram na caixa e saem trocados
+        (at) => orbit(at, -1),                         // giram de volta
+    ],
+    6: [
+        (at) => orbit(at, 1),                          // giram
+        (at) => [                                      // todos entram na caixa, ficam um tempo e saem no lado oposto
+            ...swap(at, tileAt(at, 240), tileAt(at, 60), 0, X_SWAP_HOLD_MS),
+            ...swap(at, tileAt(at, 300), tileAt(at, 120), PAIR_GAP_MS, X_SWAP_HOLD_MS),
+            ...swap(at, tileAt(at, 0), tileAt(at, 180), 2 * PAIR_GAP_MS, X_SWAP_HOLD_MS),
+        ],
+        (at) => swap(at, tileAt(at, 240), tileAt(at, 300)),                      // os de cima entram na caixa e saem trocados
+        (at) => [dive(at, tileAt(at, 0), 0)],          // o da direita mergulha e volta
+        (at) => orbit(at, -1),                         // giram de volta
+    ],
 };
 
 /**
@@ -118,7 +140,7 @@ const SCRIPTS = {
  * Devolve a limpeza (para o efeito do React).
  */
 export function startOrbit(tiles, { reduced = false } = {}) {
-    const count = Math.min(tiles.length, 4);
+    const count = Math.min(tiles.length, MAX_TILES);
     if (count === 0) return () => {};
 
     // Onde cada ícone está no anel, em graus.

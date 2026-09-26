@@ -6,12 +6,13 @@ import { initials } from '../../lib/format.js';
 import { startOrbit } from './orbit.js';
 import './invite.css';
 
-// Quantos serviços aparecem em volta da caixa. Passou disso, uma quarta vaga
-// mostra quantos ficaram de fora ("+N").
-const ORBIT_ICONS = 3;
+// Quantas vagas há em volta da caixa. Com mais serviços que isso, a última
+// vaga mostra quantos ficaram de fora ("+N").
+const ORBIT_SLOTS = 6;
 
-// Formas dos ícones da órbita — a mistura é do desenho, e o "+N" é a bolha.
-const ORBIT_SHAPES = ['50%', '34%', '34%'];
+// Formas dos ícones da órbita, na ordem das vagas — a mistura é do desenho, e
+// o "+N" é a bolha.
+const ORBIT_SHAPES = ['50%', '34%', '34%', '34%', '50%', '34%'];
 const MORE_SHAPE = '48% 52% 44% 56% / 52% 46% 54% 48%';
 
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
@@ -303,13 +304,14 @@ function OwnerAvatar({ owner }) {
 }
 
 /**
- * A caixa do pacote com os serviços dele em volta: até ORBIT_ICONS ícones e,
- * se sobrar, o "+N". O movimento deles (sair da caixa, depois o roteiro de
- * giros, travessias, trocas e mergulhos) mora em orbit.js.
+ * A caixa do pacote com os serviços dele em volta: até ORBIT_SLOTS ícones;
+ * com mais que isso, a última vaga vira o "+N". O movimento deles (sair da
+ * caixa, depois o roteiro de giros, travessias, trocas e mergulhos) mora em
+ * orbit.js.
  */
 function InviteHero({ sessions }) {
     const list = sessions || [];
-    const shown = list.slice(0, ORBIT_ICONS);
+    const shown = list.length > ORBIT_SLOTS ? list.slice(0, ORBIT_SLOTS - 1) : list;
     const remaining = list.length - shown.length;
 
     const tiles = shown.map((session) => ({ key: session.id || session.url, session }));
