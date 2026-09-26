@@ -51,11 +51,16 @@ const FIRST_REST_MS = [3500, 5000];
 const REST_MS = [6000, 9000];
 
 // Passos do roteiro.
-const ORBIT_MS = 2600;
+// O giro é longo e calmo, para não deixar ninguém tonto: dura uns 10 s e anda
+// cerca de 240° (arredondado para vagas inteiras: 3 vagas com 4 ícones, 2 com
+// 3, 1 com 2).
+const ORBIT_MS = 10000;
+const ORBIT_TURN_DEG = 240;
 const ORBIT_LAG_MS = 140;      // um ícone sai um pouco depois do outro: anel vivo, não peça rígida
 const PASS_MS = 2200;          // travessias
 const PASS_STAGGER_MS = 180;   // com dois, o segundo sai logo depois e eles se cruzam escondidos
 const PAIR_GAP_MS = 450;       // na troca em X, o segundo par
+const X_SWAP_HOLD_MS = 2000;   // e na troca em X os quatro ficam um tempo dentro da caixa
 const DIVE_IN_MS = 850;
 const DIVE_HOLD_MS = 250;      // o tempo dentro da caixa
 const DIVE_HOP = 110;          // o pulo antes de cair na caixa
@@ -91,16 +96,16 @@ const SCRIPTS = {
         (at) => orbit(at, -1),                         // giram de volta
     ],
     3: [
-        (at) => orbit(at, 1),                          // giram uma vaga
+        (at) => orbit(at, 1),                          // giram
         (at) => swap(at, tileAt(at, 30), tileAt(at, 150)),                       // os de baixo entram na caixa e saem trocados
         (at) => [dive(at, tileAt(at, TOP), TOP)],      // o de cima mergulha e volta
         (at) => orbit(at, -1),                         // giram de volta
     ],
     4: [
-        (at) => orbit(at, 1),                          // giram uma vaga
-        (at) => [                                      // trocam em X: entram na caixa e saem trocados
-            ...swap(at, tileAt(at, 225), tileAt(at, 45)),
-            ...swap(at, tileAt(at, 315), tileAt(at, 135), PAIR_GAP_MS),
+        (at) => orbit(at, 1),                          // giram
+        (at) => [                                      // trocam em X: entram na caixa, ficam um tempo e saem trocados
+            ...swap(at, tileAt(at, 225), tileAt(at, 45), 0, X_SWAP_HOLD_MS),
+            ...swap(at, tileAt(at, 315), tileAt(at, 135), PAIR_GAP_MS, X_SWAP_HOLD_MS),
         ],
         (at) => swap(at, tileAt(at, 225), tileAt(at, 315)),                      // os de cima entram na caixa e saem trocados
         (at) => [dive(at, tileAt(at, 315), 315)],      // um mergulha e volta
@@ -194,13 +199,15 @@ export function startOrbit(tiles, { reduced = false } = {}) {
    ------------------------------------------------------------------------ */
 
 /**
- * Todos giram `step` vagas em volta da caixa, com o anel inclinado: quem passa
- * em cima vai por trás dela, quem passa embaixo vem pela frente.
+ * Todos giram em volta da caixa no sentido de `direction` (1 horário, -1
+ * anti-horário), com o anel inclinado: quem passa em cima vai por trás dela,
+ * quem passa embaixo vem pela frente.
  */
-function orbit(angles, step) {
+function orbit(angles, direction) {
     const spacing = 360 / angles.length;
+    const slots = Math.max(1, Math.round(ORBIT_TURN_DEG / spacing));
     return angles.map((from, tile) => {
-        const to = from + step * spacing;
+        const to = from + direction * slots * spacing;
         return {
             tile,
             delay: Math.random() * ORBIT_LAG_MS,
@@ -238,26 +245,26 @@ function pass(angles, tile, route, delay = 0) {
  * Dois ícones trocam de vaga passando pela caixa: entram nela (o mergulho),
  * um logo depois do outro, e cada um sai na vaga do outro.
  */
-function swap(angles, a, b, delay = 0) {
+function swap(angles, a, b, delay = 0, hold = DIVE_HOLD_MS) {
     return [
-        dive(angles, a, angles[b], delay),
-        dive(angles, b, angles[a], delay + DIVE_STAGGER_MS),
+        dive(angles, a, angles[b], delay, hold),
+        dive(angles, b, angles[a], delay + DIVE_STAGGER_MS, hold),
     ];
 }
 
 /**
- * O ícone dá um pulo, cai dentro da caixa (por trás das abas), fica um
- * instante lá dentro e sai de novo — por cima da caixa, como na entrada —
- * para a vaga `toDeg`.
+ * O ícone dá um pulo, cai dentro da caixa (por trás das abas), fica `hold` ms
+ * lá dentro e sai de novo — por cima da caixa, como na entrada — para a vaga
+ * `toDeg`.
  */
-function dive(angles, tile, toDeg, delay = 0) {
+function dive(angles, tile, toDeg, delay = 0, hold = DIVE_HOLD_MS) {
     const from = restPoint(angles[tile]);
     const to = restPoint(toDeg);
     const hop = {
         x: from.x + (MOUTH.x - from.x) * 0.55,
         y: Math.max(Math.min(from.y, BOX_RIM_Y) - DIVE_HOP, DIVE_CEILING_Y),
     };
-    const duration = DIVE_IN_MS + DIVE_HOLD_MS + EMERGE_MS;
+    const duration = DIVE_IN_MS + hold + EMERGE_MS;
 
     return {
         tile,
@@ -275,8 +282,8 @@ function dive(angles, tile, toDeg, delay = 0) {
                     z: Z_BEHIND,
                 };
             }
-            if (ms < DIVE_IN_MS + DIVE_HOLD_MS) return { ...MOUTH, scale: 0.3, opacity: 0, z: Z_BEHIND };
-            return emergePoint((ms - DIVE_IN_MS - DIVE_HOLD_MS) / EMERGE_MS, to);
+            if (ms < DIVE_IN_MS + hold) return { ...MOUTH, scale: 0.3, opacity: 0, z: Z_BEHIND };
+            return emergePoint((ms - DIVE_IN_MS - hold) / EMERGE_MS, to);
         },
     };
 }
