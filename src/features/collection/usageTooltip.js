@@ -38,12 +38,12 @@ function compactDuration(seconds) {
  * A cor da barra: a do próprio serviço, tirada do ícone dele.
  *
  * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
- * vai no cinza médio de sessão sem cor: mais claro que a trilha no escuro,
- * sem chegar perto do branco. O --ap-text-muted de antes clareava demais.
+ * vai na cor da ação principal: branco no escuro, quase-preto no claro (o
+ * tooltip acompanha o tema, e branco fixo sumiria no cartão claro).
  */
 function barColor(session) {
     const rgb = parseIconColor(session?.iconColor);
-    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'rgb(var(--ap-session-fallback-rgb))';
+    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'var(--ap-primary)';
 }
 
 function el(tag, className, text) {
