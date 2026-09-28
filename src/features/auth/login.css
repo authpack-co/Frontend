@@ -85,31 +85,27 @@
 }
 
 /* Buttons */
-/* Acento em dose baixa, como o .btn-accent-soft do painel: o fundo é tingido e
-   quem carrega a cor é o texto. O laranja cheio fica para o que converte —
-   assinar, instalar a extensão. O hover sobe para --ap-accent-muted, e não
-   para o "light", que no tema claro é mais pálido que o repouso e faria o
-   botão clarear ao receber o mouse. */
+/* Ação da tela: botão sólido invertido, como o .btn-accent-soft do painel. */
 .btn-google {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    background-color: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
+    background-color: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-size: 16px;
     font-weight: 600;
     padding: 14px 24px;
     border-radius: 10px;
-    border: 1px solid var(--ap-accent-muted);
+    border: 1px solid var(--ap-primary);
     cursor: pointer;
     width: 100%;
     transition: all 0.2s ease;
 }
 
 .btn-google:hover {
-    background-color: var(--ap-accent-muted);
-    border-color: var(--ap-accent);
+    background-color: var(--ap-primary-hover);
+    border-color: var(--ap-primary-hover);
     transform: translateY(-1px);
 }
 

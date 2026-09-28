@@ -103,8 +103,8 @@
 }
 
 .og-tab.active {
-    background: var(--ap-accent-light);
-    color: var(--ap-accent-strong);
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-primary);
 }
 
 .og-tab-num {
@@ -122,8 +122,8 @@
 }
 
 .og-tab.active .og-tab-num {
-    background: var(--ap-accent-strong);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
 }
 
 /* ── Trilho de slides ── */
@@ -160,7 +160,7 @@
     font-weight: 700;
     letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: var(--ap-accent-strong);
+    color: var(--ap-text-muted);
     margin-bottom: 14px;
 }
 
@@ -200,8 +200,8 @@
     padding: 13px 22px;
     border: none;
     border-radius: 11px;
-    background: var(--ap-accent);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-family: inherit;
     font-size: 14.5px;
     font-weight: 600;
@@ -209,7 +209,7 @@
     cursor: pointer;
 }
 
-.og-install-btn:hover { background: var(--ap-accent-hover); }
+.og-install-btn:hover { background: var(--ap-primary-hover); }
 
 .og-done-btn {
     padding: 12px 8px;
@@ -294,8 +294,8 @@
     padding: 10px 20px;
     border: none;
     border-radius: 10px;
-    background: var(--ap-accent-strong);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-family: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -324,6 +324,19 @@
 /* Toda maquete é uma "janela" clara sobre o fundo escuro. */
 .og-win {
     background: #fff;
+    /* A maquete é sempre clara, em qualquer tema: usa os valores do tema
+       claro. --og-accent-* alimenta os estilos inline das demos. */
+    --ap-primary: #1a1a1c;
+    --ap-primary-hover: #34343a;
+    --ap-on-primary: #ffffff;
+    --ap-accent: #2563eb;
+    --ap-accent-hover: #1d4ed8;
+    --ap-accent-strong: #1d4ed8;
+    --ap-accent-rgb: 37, 99, 235;
+    --ap-on-accent: #ffffff;
+    --og-accent-ink: #1d4ed8;
+    --og-accent-soft: #60a5fa;
+    --og-accent-rgb: 37, 99, 235;
     border-radius: 14px;
     box-shadow: 0 26px 55px rgba(0, 0, 0, 0.5);
     overflow: hidden;
@@ -354,15 +367,15 @@
 .og-grow { flex: 1; min-width: 0; }
 .og-x { color: #9ca3af; font-size: 16px; line-height: 1; }
 
-/* Pastilha de ação (o botão laranja das maquetes). */
+/* Pastilha de ação (o botão principal das maquetes). */
 .og-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     padding: 7px 12px;
     border-radius: 8px;
-    background: var(--ap-accent);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-size: 11.5px;
     font-weight: 600;
     white-space: nowrap;

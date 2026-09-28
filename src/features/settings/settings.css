@@ -345,12 +345,12 @@
 
 /* Reuse dashboard btn styles */
 .sc-full-btn.btn-primary {
-    background: var(--ap-accent);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
 }
 
 .sc-full-btn.btn-primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover);
+    background: var(--ap-primary-hover);
 }
 
 .sc-full-btn.btn-danger {
@@ -551,13 +551,13 @@
 
 /* Pagamento pendente: regularizar é a ação principal. */
 .bl-action-btn--primary {
-    background: var(--ap-accent);
-    border-color: var(--ap-accent);
-    color: #fff;
+    background: var(--ap-primary);
+    border-color: var(--ap-primary);
+    color: var(--ap-on-primary);
 }
 
 .bl-action-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover);
+    background: var(--ap-primary-hover);
 }
 
 .bl-action-btn--danger {

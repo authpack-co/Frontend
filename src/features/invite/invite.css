@@ -29,11 +29,6 @@ button { font-family: inherit; cursor: pointer; }
     --inv-accent-ring: color-mix(in oklab, var(--inv-accent) 40%, transparent);
     --inv-accent-glow: color-mix(in oklab, var(--inv-accent) 32%, transparent);
 
-    /* O laranja do botão é mais fechado que o acento: texto branco em cima
-       dele precisa de contraste, e o botão é a única coisa quente fora da arte. */
-    --inv-cta: #c9500a;
-    --inv-cta-hover: #dc5d0e;
-
     --inv-page: var(--ap-bg-page);
     --inv-tile: #ffffff;
     --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -281,8 +276,8 @@ html, body { background: var(--inv-page); }
     gap: 10px;
     width: 100%;
     padding: 17px 24px;
-    background: var(--inv-cta);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     border: 0;
     border-radius: var(--ap-radius-full);
     font-size: 16.5px;
@@ -294,7 +289,7 @@ html, body { background: var(--inv-page); }
     animation: inv-fade-up 0.55s ease-out 0.68s forwards;
 }
 .inv-cta:hover:not(:disabled) {
-    background: var(--inv-cta-hover);
+    background: var(--ap-primary-hover);
     transform: translateY(-2px);
 }
 .inv-cta:active:not(:disabled) { transform: translateY(0); }

@@ -4,8 +4,9 @@
  * ícone nos cards de acesso.
  */
 
-// Accent do tema — só quando a sessão não traz cor.
-const NEUTRAL_RGB = [249, 115, 22];
+// Cinza médio — só quando a sessão não traz cor. O tema define o valor em
+// --ap-session-fallback-rgb; este é a reserva se o token não carregar.
+const NEUTRAL_RGB = [113, 113, 122];
 
 const clamp255 = (value) => Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
 
@@ -44,8 +45,13 @@ export function parseIconColor(iconColor) {
 // precisa de duas pontas.
 const darken = (rgb, factor) => rgb.map((value) => clamp255(value * factor));
 
+function fallbackRgb() {
+    const token = getComputedStyle(document.documentElement).getPropertyValue('--ap-session-fallback-rgb');
+    return (token && parseIconColor(token)) || NEUTRAL_RGB;
+}
+
 export function paletteFromSession(session) {
-    const rgb = parseIconColor(session?.iconColor) || NEUTRAL_RGB;
+    const rgb = parseIconColor(session?.iconColor) || fallbackRgb();
     const darker = darken(rgb, 0.55);
 
     return {
