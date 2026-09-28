@@ -38,12 +38,12 @@ function compactDuration(seconds) {
  * A cor da barra: a do próprio serviço, tirada do ícone dele.
  *
  * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
- * vai de cinza. O paletteFromSession cairia no acento do tema, e uma barra
- * laranja no meio das outras afirmaria que a sessão é laranja.
+ * vai no cinza médio de sessão sem cor: mais claro que a trilha no escuro,
+ * sem chegar perto do branco. O --ap-text-muted de antes clareava demais.
  */
 function barColor(session) {
     const rgb = parseIconColor(session?.iconColor);
-    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'var(--ap-text-muted)';
+    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'rgb(var(--ap-session-fallback-rgb))';
 }
 
 function el(tag, className, text) {
