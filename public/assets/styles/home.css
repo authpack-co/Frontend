@@ -14,11 +14,11 @@
 /* ── Tema claro (padrão, como no dashboard) ── */
 :root {
   /* ── Superfícies ── */
-  --bg: #f7f7f6;          /* página            (= --ap-bg-page)     */
+  --bg: #f6f7f9;          /* página            (= --ap-bg-page)     */
   --card: #ffffff;        /* card              (= --ap-bg-card)     */
-  --bg-warm: #fafaf9;     /* card alternativo  (= --ap-bg-card-alt) */
-  --hover: #f1f1ef;       /* hover             (= --ap-bg-hover)    */
-  --muted: #e7e6e3;       /* superfície inerte (= --ap-bg-muted)    */
+  --bg-warm: #fafbfc;     /* card alternativo  (= --ap-bg-card-alt) */
+  --hover: #f0f2f5;       /* hover             (= --ap-bg-hover)    */
+  --muted: #e5e8ec;       /* superfície inerte (= --ap-bg-muted)    */
 
   /* ── Texto ── (o primário é o Grafite da marca) */
   --ink: #11151c;
@@ -26,8 +26,8 @@
   --ink-3: #6b717c;
 
   /* ── Bordas ── */
-  --line: #e6e5e2;
-  --line-2: #d5d3ce;
+  --line: #e4e7eb;
+  --line-2: #d1d5db;
 
   /* ── Ação primária (tinta) ──
      Preto no claro, branco no escuro: é o botão de todo dia ("Entrar",
@@ -66,13 +66,13 @@
      Tons que só aparecem nos desenhos: campos, a moldura do navegador e a
      página simulada atrás do popup da extensão. O popup em si fica escuro
      nos dois temas — é assim que a extensão aparece na tela. */
-  --art-inset: #ededea;      /* campo, pílula, canvas da página simulada */
+  --art-inset: #eceef1;      /* campo, pílula, canvas da página simulada */
   --art-surface: #ffffff;    /* cartão dentro da página simulada         */
-  --art-chrome: #e9e8e4;     /* barra de título do navegador             */
-  --art-bar: #e7e6e2;        /* linha de texto (esqueleto)               */
-  --art-bar-2: #d8d6d1;      /* título (esqueleto)                       */
+  --art-chrome: #e8eaee;     /* barra de título do navegador             */
+  --art-bar: #e5e8ec;        /* linha de texto (esqueleto)               */
+  --art-bar-2: #d6dae0;      /* título (esqueleto)                       */
   --art-placeholder: #a1a1aa; /* texto de campo vazio                    */
-  --art-selected-line: #cfcdc8; /* borda do item selecionado             */
+  --art-selected-line: #cdd2d9; /* borda do item selecionado             */
 
   --radius: 8px;
   --radius-lg: 12px;
