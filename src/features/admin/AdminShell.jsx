@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
+import { NiangoLogo } from '../../components/BrandLogo.jsx';
 import { useAuth } from '../../lib/auth.jsx';
 import { useTheme } from '../../lib/theme.js';
 import './admin.css';
@@ -24,8 +25,8 @@ export default function AdminShell() {
         <div className={`admin-shell${navOpen ? ' nav-open' : ''}`}>
             <aside className="admin-sidebar">
                 <div className="admin-brand">
-                    <span className="admin-brand-mark">N</span>
-                    <span className="admin-brand-name">Niango <em>Admin</em></span>
+                    <NiangoLogo height={26} />
+                    <span className="admin-brand-tag">Admin</span>
                 </div>
 
                 <nav className="admin-nav">
@@ -84,7 +85,10 @@ export default function AdminShell() {
                         <line x1="3" y1="18" x2="21" y2="18" />
                     </svg>
                 </button>
-                <span className="admin-brand-name">Niango <em>Admin</em></span>
+                <span className="admin-brand">
+                    <NiangoLogo height={22} />
+                    <span className="admin-brand-tag">Admin</span>
+                </span>
             </header>
             <div className="admin-overlay" onClick={() => setNavOpen(false)}></div>
 

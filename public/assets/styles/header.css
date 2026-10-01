@@ -50,27 +50,11 @@
     user-select: none;
 }
 
-.navbar-brand img {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-}
-
-.navbar-brand span {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--ap-text-primary);
-    letter-spacing: -0.02em;
-}
-
-.navbar.navbar-light .navbar-brand span {
-    color: var(--ap-text-primary);
-    font-size: 1.125rem;
-}
-
-.navbar.navbar-light .navbar-brand img {
-    width: 30px;
+/* Assinatura (símbolo + nome): a altura vem do atributo, a largura segue a
+   proporção do SVG. A troca claro/escuro está em theme-tokens.css. */
+.navbar-brand .niango-logo {
     height: 30px;
+    width: auto;
 }
 
 /* Links */
@@ -249,14 +233,15 @@ body.user-logged-in .nav-user {
 }
 
 /* "Entrar" / "Começar" do nav: ação de todo dia, não a conversão da página —
-   por isso o acento só tinge o fundo, como em .btn-accent-soft no app. */
+   por isso vai na tinta (preto no claro, branco no escuro), como o .btn-primary
+   do app. */
 .nav-btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
-    border: 1px solid var(--ap-accent-muted);
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
+    border: 1px solid var(--ap-primary);
     font-size: 15px;
     font-weight: 600;
     padding: 10px 22px;
@@ -268,8 +253,8 @@ body.user-logged-in .nav-user {
 }
 
 .nav-btn-primary:hover {
-    background: var(--ap-accent-muted);
-    border-color: var(--ap-accent);
+    background: var(--ap-primary-hover);
+    border-color: var(--ap-primary-hover);
     transform: translateY(-1px);
 }
 

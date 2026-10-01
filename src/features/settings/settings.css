@@ -343,13 +343,13 @@
     cursor: not-allowed;
 }
 
-/* Reuse dashboard btn styles */
-.sc-full-btn.btn-primary {
+/* Assinar e reativar: conversão — o azul cheio da marca (ver .btn-brand). */
+.sc-full-btn.btn-brand {
     background: var(--ap-accent);
     color: #fff;
 }
 
-.sc-full-btn.btn-primary:hover:not(:disabled) {
+.sc-full-btn.btn-brand:hover:not(:disabled) {
     background: var(--ap-accent-hover);
 }
 

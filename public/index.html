@@ -11,7 +11,7 @@
         content="Niango, compartilhamento de acessos, pacotes de acesso, gerenciamento de acessos, distribuição de acessos digitais, compartilhar acesso sem senha">
     <link rel="canonical" href="https://niango.io/">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#17181a">
+    <meta name="theme-color" content="#14171d">
     <meta name="color-scheme" content="light dark">
 
     <!-- ===== Open Graph ===== -->
@@ -20,21 +20,24 @@
     <meta property="og:title" content="Niango — Distribua acessos sem entregar senhas">
     <meta property="og:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique. Você revoga quando quiser.">
     <meta property="og:url" content="https://niango.io/">
-    <meta property="og:image" content="https://niango.io/assets/images/landing-image-neutral.png">
+    <meta property="og:image" content="https://niango.io/assets/images/og-image-1200x630.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:locale" content="pt_BR">
 
     <!-- ===== Twitter ===== -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Niango — Distribua acessos sem entregar senhas">
     <meta name="twitter:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique.">
-    <meta name="twitter:image" content="https://niango.io/assets/images/landing-image-neutral.png">
+    <meta name="twitter:image" content="https://niango.io/assets/images/og-image-1200x630.png">
 
     <!-- Ícone do Niango: .ico para a aba, SVG para telas de alta densidade,
          PNG para a home screen do iOS e o traçado monocromático do Safari. -->
     <link rel="icon" href="/assets/images/favicon.ico" sizes="16x16 32x32 48x48">
     <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
-    <link rel="mask-icon" href="/assets/images/favicon-mono.svg" color="#000000">
+    <link rel="mask-icon" href="/assets/images/favicon-mono.svg" color="#1c65c8">
+    <link rel="manifest" href="/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,13 +57,13 @@
             } catch (e) { }
             if (dark) document.documentElement.setAttribute('data-theme', 'dark');
             var meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', dark ? '#17181a' : '#f7f7f6');
+            if (meta) meta.setAttribute('content', dark ? '#14171d' : '#f7f7f6');
         })();
     </script>
 
     <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
     <style id="ap-block-style">
-        html { visibility: hidden !important; background: var(--bg, #17181a); }
+        html { visibility: hidden !important; background: var(--bg, #14171d); }
     </style>
     <script>
         (function () {
@@ -180,8 +183,8 @@
     <nav class="nav">
         <div class="container nav-inner">
             <a href="/?persist=true" class="nav-logo" aria-label="Niango — início">
-                <img class="niango-mark" src="/assets/images/favicon-128x128.png" width="28" height="28" alt="">
-                <span class="wordmark">Niango</span>
+                <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-assinatura.svg" height="28" alt="Niango">
+                <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-assinatura-negativo.svg" height="28" alt="Niango">
             </a>
             <div class="nav-links">
                 <a href="#como">Como funciona</a>
@@ -196,7 +199,7 @@
                 <div class="nav-visitor">
                     <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
                         target="_blank" rel="noopener" class="btn btn-outline"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" y1="8" x2="12" y2="8" /><line x1="3.95" y1="6.06" x2="8.54" y2="14" /><line x1="10.88" y1="21.94" x2="15.46" y2="14" /></svg>Adicionar ao Chrome</a>
-                    <a href="/login" class="btn btn-accent-soft">Entrar</a>
+                    <a href="/login" class="btn btn-ink">Entrar</a>
                 </div>
                 <!-- Logado (preenchido por home.js) -->
                 <div class="nav-user"></div>
@@ -252,8 +255,8 @@
                                 <path d="M158 0V420" stroke="#2e2f33" />
 
                                 <!-- Marca -->
-                                <circle cx="21" cy="26" r="11" fill="#1d1d1c" stroke="#2e2f33" />
-                                <path d="M17.6 20.8a1.2 1.2 0 0 1 1.9-1L27 24.1a1.2 1.2 0 0 1 0 1.8l-7.5 4.3a1.2 1.2 0 0 1-1.9-1Z" fill="#fdfaf6" />
+                                <circle cx="21" cy="26" r="11" fill="#1c65c8" />
+                                <path transform="translate(10 15) scale(0.04297)" fill="#fff" d="M189 376.1Q155.9 376.1 138.6 364Q121.4 351.9 116.2 332.9L160.5 329.7Q162.8 337.2 169.2 341.5Q175.5 345.9 189 345.9Q204.3 345.9 212.7 338.5Q221 331.2 221 315V298.6Q215.5 309.3 203.4 315.8Q191.3 322.2 176.4 322.2Q157.4 322.2 142.7 313Q128 303.8 119.8 286.8Q111.6 269.8 111.6 247.1Q111.6 224.9 119.8 207.9Q128 190.9 142.5 181.3Q157.1 171.6 175.8 171.6Q192.8 171.6 204.4 179.1Q216.1 186.6 222.2 199V175.1H264.5V314.2Q264.5 334.9 255 348.7Q245.5 362.6 228.5 369.3Q211.5 376.1 189 376.1ZM188.8 290.3Q203.4 290.3 212.4 278.9Q221.3 267.5 221.3 246.8Q221.6 226.6 212.7 215Q203.7 203.3 188.8 203.3Q173.2 203.3 164.6 215.1Q155.9 226.9 155.9 246.8Q155.9 266.7 164.8 278.5Q173.8 290.3 188.8 290.3Z M353.8 332.9Q330.2 332.9 312.6 323Q295 313 285.2 294.9Q275.4 276.7 275.4 252.3Q275.4 227.8 285.2 209.8Q295 191.8 312.6 181.7Q330.2 171.6 353.8 171.6Q377.4 171.6 395.1 181.7Q412.8 191.8 422.5 209.8Q432.1 227.8 432.1 252.3Q432.1 276.7 422.5 294.9Q412.8 313 395.1 323Q377.4 332.9 353.8 332.9ZM353.8 299.8Q369.9 299.8 378.8 287.2Q387.8 274.7 387.8 252.3Q387.8 229.8 378.8 217.3Q369.9 204.7 353.8 204.7Q337.6 204.7 328.7 217.3Q319.8 229.8 319.8 252.3Q319.8 274.7 328.7 287.2Q337.6 299.8 353.8 299.8Z" />
                                 <text x="39" y="30" font-size="12.5" font-weight="700" fill="#e8e6e3" letter-spacing="-.1">Niango</text>
                                 <path d="M0 52H158" stroke="#2e2f33" />
 
@@ -266,7 +269,7 @@
 
                                 <!-- Perfil -->
                                 <path d="M0 372H158" stroke="#2e2f33" />
-                                <circle cx="21" cy="394" r="11" fill="#f97316" />
+                                <circle cx="21" cy="394" r="11" fill="#1c65c8" />
                                 <text x="21" y="397.5" font-size="8.5" font-weight="700" fill="#fff" text-anchor="middle">AR</text>
                                 <text x="39" y="392" font-size="9.5" font-weight="600" fill="#e8e6e3">Ana Ribeiro</text>
                                 <text x="39" y="403" font-size="8" fill="#9d9488">ana@empresa.com</text>
@@ -276,7 +279,7 @@
                                 <text x="190" y="76" font-size="10.5" fill="#9d9488">3 sessões · 4 pessoas com acesso</text>
 
                                 <!-- Compartilhar: a única ação à vista -->
-                                <rect x="468" y="40" width="122" height="34" rx="10" fill="#f97316" />
+                                <rect x="468" y="40" width="122" height="34" rx="10" fill="#1c65c8" />
                                 <path d="M498 50v13M494 54l4-4 4 4M491.5 60v4.5a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6V60"
                                     fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
                                 <text x="512" y="61" font-size="11.5" font-weight="700" fill="#fff">Compartilhar</text>
@@ -313,7 +316,7 @@
                                 <g stroke="#17181a" stroke-width="2">
                                     <circle cx="200" cy="356" r="11" fill="#4ade80" />
                                     <circle cx="216" cy="356" r="11" fill="#7b57d4" />
-                                    <circle cx="232" cy="356" r="11" fill="#f97316" />
+                                    <circle cx="232" cy="356" r="11" fill="#1c65c8" />
                                     <circle cx="248" cy="356" r="11" fill="#26272a" />
                                 </g>
                                 <text x="248" y="359.5" font-size="8.5" font-weight="700" fill="#9d9488" text-anchor="middle">+1</text>
@@ -345,11 +348,11 @@
                                 aria-label="Um pacote trancado distribui acesso para três pessoas do time; cada uma recebe o acesso liberado, sem receber a senha.">
                                 <!-- O pacote: fechado, e é dele que tudo sai. -->
                                 <rect x="22" y="30" width="76" height="60" rx="13" fill="#1b1c1e" stroke="#2e2f33" />
-                                <g fill="none" stroke="#f97316" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                <g fill="none" stroke="#1c65c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="52" y="52" width="16" height="13" rx="3.5" />
                                     <path d="M55.5 52v-3.6a4.5 4.5 0 0 1 9 0V52" />
                                 </g>
-                                <circle cx="60" cy="58" r="1.5" fill="#f97316" />
+                                <circle cx="60" cy="58" r="1.5" fill="#1c65c8" />
                                 <rect x="42" y="74" width="36" height="4" rx="2" fill="#2e2f33" />
 
                                 <!-- Trilhas até cada pessoa -->
@@ -360,7 +363,7 @@
                                 </g>
 
                                 <!-- O acesso viajando pela trilha -->
-                                <g class="cs-flow" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round">
+                                <g class="cs-flow" fill="none" stroke="#1c65c8" stroke-width="2" stroke-linecap="round">
                                     <path d="M98 60h66q8 0 8-8V37q0-8 8-8h70" pathLength="100" style="--d:0s" />
                                     <path d="M98 60h152" pathLength="100" style="--d:.22s" />
                                     <path d="M98 60h66q8 0 8 8v15q0 8 8 8h70" pathLength="100" style="--d:.44s" />
@@ -369,7 +372,7 @@
                                 <!-- As pessoas -->
                                 <g class="cs-member" style="--d:0s">
                                     <rect x="250" y="16" width="90" height="26" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="264" cy="29" r="8" fill="#f97316" />
+                                    <circle cx="264" cy="29" r="8" fill="#1c65c8" />
                                     <rect x="278" y="27" width="32" height="4" rx="2" fill="#2e2f33" />
                                     <path class="cs-check" d="m318 29.5 3.2 3.2 6.8-7.2" />
                                 </g>
@@ -406,9 +409,9 @@
                                 <!-- O trecho do contrato, e o acesso preenchendo ele. -->
                                 <path d="M72 66h216" fill="none" stroke="#26272a" stroke-width="3" stroke-linecap="round" />
                                 <path class="cs-fill" d="M72 66h216" pathLength="100" fill="none"
-                                    stroke="#f97316" stroke-width="3" stroke-linecap="round" />
+                                    stroke="#1c65c8" stroke-width="3" stroke-linecap="round" />
 
-                                <circle cx="72" cy="66" r="6" fill="#f97316" />
+                                <circle cx="72" cy="66" r="6" fill="#1c65c8" />
                                 <circle cx="288" cy="66" r="8" fill="#131416" stroke="#3a3b3f"
                                     stroke-width="1.5" stroke-dasharray="3 3" />
 
@@ -426,7 +429,7 @@
                                 <g class="cs-rider">
                                     <path d="M72 48v10" stroke="#2e2f33" stroke-width="1.5" />
                                     <rect x="46" y="22" width="52" height="24" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="60" cy="34" r="7" fill="#f97316" />
+                                    <circle cx="60" cy="34" r="7" fill="#1c65c8" />
                                     <rect x="72" y="32" width="18" height="4" rx="2" fill="#2e2f33" />
                                 </g>
                             </svg>
@@ -447,7 +450,7 @@
                                 <g transform="translate(56 60)">
                                     <circle r="19" fill="none" stroke="#2e2f33" stroke-width="3" />
                                     <circle class="cs-dial" r="19" pathLength="100" fill="none"
-                                        stroke="#f97316" stroke-width="3" stroke-linecap="round"
+                                        stroke="#1c65c8" stroke-width="3" stroke-linecap="round"
                                         transform="rotate(-90)" />
                                     <path d="M0-8v9h6" fill="none" stroke="#9d9488" stroke-width="1.8"
                                         stroke-linecap="round" stroke-linejoin="round" />
@@ -455,7 +458,7 @@
 
                                 <path d="M79 60h29" fill="none" stroke="#2e2f33" stroke-width="1.5" />
                                 <path class="cs-wire" d="M79 60h29" pathLength="100" fill="none"
-                                    stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+                                    stroke="#1c65c8" stroke-width="2" stroke-linecap="round" />
 
                                 <!-- A sessão aberta, que depois apaga -->
                                 <g class="cs-win">
@@ -598,7 +601,7 @@
                                     <text x="66" y="46" font-size="14" font-weight="600" fill="#fff">Ana</text>
                                     <rect x="99" y="34" width="42" height="16" rx="8" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".12" />
                                     <text x="120" y="45" font-size="9" font-weight="700" letter-spacing=".4" fill="#fff" fill-opacity=".7" text-anchor="middle">FREE</text>
-                                    <rect x="306" y="20" width="26" height="26" rx="6" fill="#f97316" />
+                                    <rect x="306" y="20" width="26" height="26" rx="6" fill="#1c65c8" />
                                     <text x="319" y="38" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">N</text>
                                     <path d="M0 64h350" stroke="#fff" stroke-opacity=".07" />
 
@@ -622,7 +625,7 @@
 
                                     <!-- Pacote 1 — expandido -->
                                     <rect x="18" y="166" width="314" height="196" rx="12" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="30" y="180" width="35" height="35" rx="8" fill="#fb923c" fill-opacity=".8" />
+                                    <rect x="30" y="180" width="35" height="35" rx="8" fill="#609efa" fill-opacity=".8" />
                                     <text x="47.5" y="204" font-size="17" font-weight="600" fill="#fff" text-anchor="middle">E</text>
                                     <text x="77" y="192" font-size="12" fill="#fff" fill-opacity=".6">criado há 2 meses</text>
                                     <text x="77" y="209" font-size="14" font-weight="500" fill="#fff">Engenharia</text>
@@ -708,7 +711,7 @@
                         <p>Um cofre guarda credenciais e ainda depende de alguém digitar, passar por 2FA e receber o
                             código. O Niango entrega o acesso já autenticado — e o retira do mesmo jeito.</p>
                         <div>
-                            <a href="/pages/pricing/" class="btn btn-accent-soft">Ver planos</a>
+                            <a href="/pages/pricing/" class="btn btn-ink">Ver planos</a>
                         </div>
                     </div>
 
@@ -822,8 +825,8 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <a href="/?persist=true" class="nav-logo">
-                        <img class="niango-mark" src="/assets/images/favicon-128x128.png" width="26" height="26" alt="">
-                        <span class="wordmark">Niango</span>
+                        <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-assinatura.svg" height="26" alt="Niango">
+                        <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-assinatura-negativo.svg" height="26" alt="Niango">
                     </a>
                     <p>Distribuição controlada de acessos para times, agências e organizações.</p>
                 </div>

@@ -39,7 +39,7 @@ function compactDuration(seconds) {
  *
  * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
  * vai de cinza. O paletteFromSession cairia no acento do tema, e uma barra
- * laranja no meio das outras afirmaria que a sessão é laranja.
+ * azul no meio das outras afirmaria que a sessão é azul.
  */
 function barColor(session) {
     const rgb = parseIconColor(session?.iconColor);

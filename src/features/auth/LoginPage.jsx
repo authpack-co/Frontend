@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { GoogleIcon } from '../../components/BrandIcons.jsx';
+import { NiangoSymbol } from '../../components/BrandLogo.jsx';
 import { useSearchParams } from 'react-router';
 import { API_URL, api } from '../../lib/api.js';
 import './login.css';
@@ -35,7 +36,7 @@ export default function LoginPage() {
         <main className="login-main">
             <div className="login-card">
                 <div className="login-logo">
-                    <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
+                    <NiangoSymbol size={64} />
                 </div>
                 <h1 className="login-title">Bem-vindo ao Niango</h1>
                 <p className="login-subtitle">Seu gerenciador de sessões.</p>

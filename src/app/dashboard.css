@@ -482,7 +482,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-accent-muted);
     border-radius: 4px;
@@ -564,20 +564,10 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     flex-shrink: 0;
 }
 
-.sidebar-brand img {
-    width: 28px;
-    height: 28px;
-    border-radius: 7px;
-    display: block;
-    flex-shrink: 0;
-}
-
-.sidebar-brand-name {
-    font-size: 16px;
-    font-weight: 700;
+.sidebar-brand {
+    /* O nome da assinatura é currentColor (ver components/BrandLogo.jsx). */
     color: var(--ap-text-primary);
     user-select: none;
-    letter-spacing: -0.01em;
 }
 
 /* Sidebar Nav */
@@ -872,7 +862,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .plus-subscribe-btn svg {
-    color: #fbbf24;
+    color: var(--ap-accent-strong);
 }
 
 .nav-menu {
@@ -1780,7 +1770,7 @@ span.coming-soon {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-accent-muted);
     border-radius: 4px;
@@ -2524,36 +2514,33 @@ span.coming-soon {
     filter: brightness(0.9);
 }
 
+/* Ação primária: tinta — preto no claro, branco no escuro. É o botão de todo
+   dia (adicionar sessão, criar pacote, copiar link, salvar), e por isso não é
+   azul: o azul cobrindo a tela inteira cansa e deixa de chamar atenção. */
 .btn-primary {
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
+    border-color: var(--ap-primary);
+}
+
+.btn-primary:hover {
+    background: var(--ap-primary-hover);
+    border-color: var(--ap-primary-hover);
+    filter: none;
+}
+
+/* Azul cheio: só para o que converte ou destrava o produto — assinar, pagar,
+   instalar a extensão, criar o primeiro pacote. Se aparecer em todo canto,
+   perde o motivo de existir. */
+.btn-brand {
     background: var(--ap-accent);
     color: #ffffff;
     border-color: var(--ap-accent);
 }
 
-.btn-primary:hover {
+.btn-brand:hover {
     background: var(--ap-accent-hover);
     border-color: var(--ap-accent-hover);
-    filter: none;
-}
-
-/* Acento suave: o laranja cheio custa caro quando cobre a tela inteira, e a
-   maior parte destes botões é ação de todo dia — adicionar sessão, criar
-   pacote, copiar link, salvar. Aqui o acento só tinge o fundo, e quem carrega
-   a cor é o texto. O laranja cheio fica para o que converte ou não tem volta:
-   assinar, pagar, instalar a extensão.
-
-   O hover sobe para --ap-accent-muted, e não para --ap-accent-light: no tema
-   claro o "light" é #fff7ed, mais pálido que o repouso — o botão clarearia ao
-   receber o mouse. */
-.btn-accent-soft {
-    background: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
-    border-color: var(--ap-accent-muted);
-}
-
-.btn-accent-soft:hover {
-    background: var(--ap-accent-muted);
-    border-color: var(--ap-accent);
     filter: none;
 }
 
@@ -2736,8 +2723,8 @@ span.coming-soon {
     color: var(--ap-text-secondary);
 }
 
-/* Cores por tipo. "info" fica no neutro de propósito: o laranja é da ação
-   primária, e um aviso de informação não é uma. */
+/* Cores por tipo. "info" fica no neutro de propósito: o azul é da marca
+   e da ação de destaque, e um aviso de informação não é nenhuma das duas. */
 .notification.success {
     --notification-tint: var(--ap-success);
 }
@@ -3426,7 +3413,7 @@ span.coming-soon {
     width: 14px;
     height: 14px;
     /* O selo é amarelo nos dois temas: a tinta do ícone é fixa e escura. */
-    stroke: #1a1a1c;
+    stroke: #11151c;
     stroke-width: 2.5;
 }
 
@@ -3867,7 +3854,7 @@ span.coming-soon {
 
 .pc-btn--primary {
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #fff;
 }
 
 .pc-btn--primary:hover:not(:disabled) {
@@ -4025,7 +4012,7 @@ button:focus-visible,
 
 /* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
    clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
-   laranja de acessibilidade continua nos controles que não são de digitar. */
+   azul de acessibilidade continua nos controles que não são de digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -4496,16 +4483,15 @@ textarea:focus-visible {
 }
 
 .pkg-person-btn--primary {
-    background: var(--ap-accent, #f97316);
+    background: var(--ap-primary);
     border-color: transparent;
-    color: #fff;
+    color: var(--ap-on-primary);
     font-weight: 600;
 }
 
 .pkg-person-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover, #ea6a0c);
-    color: #fff;
-    filter: brightness(1.05);
+    background: var(--ap-primary-hover);
+    color: var(--ap-on-primary);
 }
 
 .pkg-person-btn--danger:hover:not(:disabled) {
@@ -4894,7 +4880,7 @@ textarea:focus-visible {
     border-radius: 6px; background: var(--ap-bg-muted); color: var(--ap-text-primary);
     border: none; cursor: pointer; transition: all 0.15s ease;
 }
-.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
+.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-primary); color: var(--ap-on-primary); }
 .as-dropdown-item.is-selected .as-dropdown-btn { background: transparent; color: var(--ap-text-muted); padding: 6px; cursor: default; }
 
 .as-selected-section { margin-bottom: 24px; }
@@ -6619,7 +6605,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border-radius: 8px;
     background-color: var(--ap-accent-light);
     border: 1px solid var(--ap-accent-muted);
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
 }
 
 .note {
@@ -6682,7 +6668,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .info-text {
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     font-size: 12px;
     line-height: 1.4;
 }
@@ -7072,7 +7058,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     flex-shrink: 0;
     font-size: 12.5px;
     font-weight: 600;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -7186,7 +7172,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .plan-badge {
-    background: var(--ap-accent-strong);
+    background: var(--ap-accent);
     color: #fff;
     box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
 }
@@ -7269,8 +7255,8 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     padding: 11px 12px;
     border: 1px solid transparent;
     border-radius: var(--ap-radius-md);
-    background: var(--ap-accent-strong);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 600;
@@ -7282,6 +7268,17 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .plan-choose-btn:hover {
+    background: var(--ap-primary-hover);
+}
+
+/* O plano em destaque é o único botão azul do modal: é a escolha que a página
+   recomenda, e o azul só funciona como sinal se não estiver nos outros três. */
+.plan-card--featured .plan-choose-btn {
+    background: var(--ap-accent);
+    color: #fff;
+}
+
+.plan-card--featured .plan-choose-btn:hover {
     background: var(--ap-accent-hover);
 }
 
