@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import ServiceIcon from '../../components/ServiceIcon.jsx';
+import { NiangoLogo } from '../../components/BrandLogo.jsx';
 import { api } from '../../lib/api.js';
 import { initials } from '../../lib/format.js';
 import { startOrbit } from './orbit.js';
@@ -144,8 +145,7 @@ export default function InvitePage() {
         <div className="inv-shell">
             <header className="inv-topbar">
                 <Link className="inv-brand" to="/collection">
-                    <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                    <span className="inv-brand-name">Niango</span>
+                    <NiangoLogo height={28} />
                 </Link>
             </header>
 

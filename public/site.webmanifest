@@ -1,0 +1,12 @@
+{
+  "name": "Niango",
+  "short_name": "Niango",
+  "icons": [
+    { "src": "/assets/images/favicon-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/images/favicon-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/images/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "theme_color": "#1c65c8",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

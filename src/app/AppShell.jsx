@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
+import { NiangoLogo } from '../components/BrandLogo.jsx';
 import {
     AbortAccessModal,
     CreatePackageModal,
@@ -143,8 +144,7 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                <span className="sidebar-brand-name">Niango</span>
+                <NiangoLogo height={28} />
             </div>
 
             <nav className="sidebar-nav">

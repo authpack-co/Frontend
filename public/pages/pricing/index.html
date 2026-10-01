@@ -21,21 +21,24 @@
     <meta property="og:description"
         content="Pacotes e sessões ilimitados em todos os planos. O único limite é com quantas pessoas você compartilha acesso.">
     <meta property="og:url" content="https://niango.io/pages/pricing/">
-    <meta property="og:image" content="https://niango.io/assets/images/landing-image-neutral.png">
+    <meta property="og:image" content="https://niango.io/assets/images/og-image-1200x630.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:locale" content="pt_BR">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Planos e preços — Niango">
     <meta name="twitter:description"
         content="Pacotes e sessões ilimitados. O único limite é com quantas pessoas você compartilha acesso.">
-    <meta name="twitter:image" content="https://niango.io/assets/images/landing-image-neutral.png">
+    <meta name="twitter:image" content="https://niango.io/assets/images/og-image-1200x630.png">
 
     <!-- Ícone do Niango: .ico para a aba, SVG para telas de alta densidade,
          PNG para a home screen do iOS e o traçado monocromático do Safari. -->
     <link rel="icon" href="/assets/images/favicon.ico" sizes="16x16 32x32 48x48">
     <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
-    <link rel="mask-icon" href="/assets/images/favicon-mono.svg" color="#000000">
+    <link rel="mask-icon" href="/assets/images/favicon-mono.svg" color="#1c65c8">
+    <link rel="manifest" href="/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,7 +115,7 @@
         .pr-price-value { font-size: 32px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
         .pr-price-period { font-size: 14px; color: var(--ink-3); }
         .pr-people { font-size: 14px; color: var(--ink-2); font-weight: 600; }
-        .pr-people b { color: var(--blue-deep); }
+        .pr-people b { color: var(--accent-ink); }
         /* Para quem o plano é, no lugar da lista de benefícios: o cabeçalho
            acima já diz que pacotes e sessões são ilimitados em todos, e a
            linha de pessoas logo acima já é a diferença entre um e outro. */
@@ -129,8 +132,8 @@
     <nav class="nav">
         <div class="container nav-inner">
             <a href="/?persist=true" class="nav-logo">
-                <img class="niango-mark" src="/assets/images/favicon-128x128.png" width="28" height="28" alt="Niango">
-                <span class="wordmark" style="font-size:19px">Niango</span>
+                <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-assinatura.svg" height="28" alt="Niango">
+                <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-assinatura-negativo.svg" height="28" alt="Niango">
             </a>
             <div class="nav-links">
                 <a href="/#como">Como funciona</a>
@@ -142,7 +145,7 @@
             <div class="nav-cta">
                 <div class="nav-visitor">
                     <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn-outline"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" y1="8" x2="12" y2="8" /><line x1="3.95" y1="6.06" x2="8.54" y2="14" /><line x1="10.88" y1="21.94" x2="15.46" y2="14" /></svg>Adicionar ao Chrome</a>
-                    <a href="/login" class="btn btn-accent-soft">Entrar</a>
+                    <a href="/login" class="btn btn-ink">Entrar</a>
                 </div>
                 <div class="nav-user"></div>
             </div>
@@ -212,8 +215,8 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <a href="/?persist=true" class="nav-logo">
-                        <img class="niango-mark" src="/assets/images/favicon-128x128.png" width="26" height="26" alt="Niango">
-                        <span class="wordmark" style="font-size:19px">Niango</span>
+                        <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-assinatura.svg" height="26" alt="Niango">
+                        <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-assinatura-negativo.svg" height="26" alt="Niango">
                     </a>
                     <p>A plataforma para organizar, compartilhar e distribuir acessos digitais. Para times, comunidades e organizações.</p>
                 </div>
@@ -269,7 +272,7 @@
                             badge +
                             '<img class="' + avatarClass + '" src="' + esc(u.picture || '') + '" alt="' + esc(u.name || 'User') + '">' +
                         '</a>' +
-                        '<a href="/collection"><button class="btn btn-accent-soft">Entrar</button></a>';
+                        '<a href="/collection"><button class="btn btn-ink">Entrar</button></a>';
                     document.body.classList.add('user-logged-in');
                 })
                 .catch(function () { /* mantém estado de visitante */ });

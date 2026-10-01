@@ -30,7 +30,7 @@
                 plusBadge +
                 '<img class="' + avatarClass + '" src="' + escHtml(user.picture || '') + '" alt="' + escHtml(user.name || 'User') + '">' +
             '</a>' +
-            '<a href="/collection" class="btn btn-primary">Abrir painel</a>'
+            '<a href="/collection" class="btn btn-ink">Abrir painel</a>'
         );
     }
 

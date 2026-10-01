@@ -2,7 +2,7 @@
  * Marcas de terceiros em versão monocromática.
  *
  * As duas usam currentColor de propósito: os botões onde elas aparecem são
- * laranja com texto branco, então a marca sai branca sem precisar cravar a
+ * de cor cheia com texto por cima, então a marca sai no tom do texto sem cravar a
  * cor — e no tile claro das configurações ela acompanha o texto do tema em
  * vez de sumir no fundo.
  */

@@ -165,7 +165,7 @@ function PlanState({ user, canceling, reactivating, onCancel, onReactivate, onOp
                     hoje.
                 </p>
                 <button
-                    className="sc-full-btn btn-primary"
+                    className="sc-full-btn btn-brand"
                     type="button"
                     style={{ marginTop: 'auto' }}
                     onClick={onReactivate}
@@ -199,7 +199,7 @@ function PlanState({ user, canceling, reactivating, onCancel, onReactivate, onOp
             <p className="sc-plan-text">Você está no plano <strong>Free</strong>.</p>
             <p className="sc-plan-sub">Acesso básico à plataforma.</p>
             <button
-                className="sc-full-btn btn-primary"
+                className="sc-full-btn btn-brand"
                 type="button"
                 style={{ marginTop: 'auto' }}
                 onClick={onOpenPlans}

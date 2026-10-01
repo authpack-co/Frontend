@@ -135,10 +135,12 @@ export default function UsageChart({ data, isDaily, sessions }) {
 
         const styles = getComputedStyle(document.documentElement);
         const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
-        const accent = token('--ap-accent', '#f97316');
-        const accentRgb = token('--ap-accent-rgb', '249, 115, 22');
-        const cardBg = token('--ap-bg-card', '#131416');
-        const border = token('--ap-border', '#2e2f33');
+        // A linha é texto do gráfico, não preenchimento: usa o tom que escreve
+        // (no escuro, o Azul claro da marca, que se lê sobre o grafite).
+        const accent = token('--ap-accent-strong', '#609efa');
+        const accentRgb = token('--ap-accent-rgb', '96, 158, 250');
+        const cardBg = token('--ap-bg-card', '#101318');
+        const border = token('--ap-border', '#292e37');
         const fontBody = token('--ap-font-body', 'system-ui, sans-serif');
 
         const tooltip = createUsageTooltip({
@@ -181,7 +183,7 @@ export default function UsageChart({ data, isDaily, sessions }) {
                     pointBorderWidth: 2,
                     pointHoverRadius: 6,
                     pointHoverBackgroundColor: cardBg,
-                    pointHoverBorderColor: token('--ap-accent-strong', '#fb923c'),
+                    pointHoverBorderColor: accent,
                     pointHoverBorderWidth: 2.5,
                 }],
             },
@@ -215,7 +217,7 @@ export default function UsageChart({ data, isDaily, sessions }) {
                         grid: { display: false },
                         border: { color: border },
                         ticks: {
-                            color: token('--ap-text-muted', '#9d9488'),
+                            color: token('--ap-text-muted', '#8e95a1'),
                             font: { size: 11 },
                             padding: 8,
                             // Rótulos sempre deitados: no mês (e num dia longo)
