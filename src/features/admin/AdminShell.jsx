@@ -25,7 +25,7 @@ export default function AdminShell() {
         <div className={`admin-shell${navOpen ? ' nav-open' : ''}`}>
             <aside className="admin-sidebar">
                 <div className="admin-brand">
-                    <NiangoWordmark height={24} />
+                    <NiangoWordmark height={22} />
                     <span className="admin-brand-tag">Admin</span>
                 </div>
 

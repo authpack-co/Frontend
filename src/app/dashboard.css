@@ -559,12 +559,11 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 18px 16px;
+    /* 20px na horizontal: o "n" alinha com o rótulo "Pacotes" e com o texto
+       dos itens logo abaixo, em vez de ficar 4px para fora da coluna. */
+    padding: 16px 20px;
     border-bottom: 1px solid var(--ap-border);
     flex-shrink: 0;
-}
-
-.sidebar-brand {
     /* O "nian" do wordmark é currentColor (ver components/BrandLogo.jsx). */
     color: var(--ap-text-primary);
     user-select: none;
