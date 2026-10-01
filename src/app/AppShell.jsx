@@ -144,7 +144,7 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <NiangoWordmark height={26} />
+                <NiangoWordmark height={22} />
             </div>
 
             <nav className="sidebar-nav">
