@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
-import { NiangoLogo } from '../components/BrandLogo.jsx';
+import { NiangoWordmark } from '../components/BrandLogo.jsx';
 import {
     AbortAccessModal,
     CreatePackageModal,
@@ -144,7 +144,7 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <NiangoLogo height={28} />
+                <NiangoWordmark height={26} />
             </div>
 
             <nav className="sidebar-nav">

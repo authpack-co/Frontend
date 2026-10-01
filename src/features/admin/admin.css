@@ -38,7 +38,7 @@
     padding: 0 var(--ap-space-sm) var(--ap-space-lg);
     color: var(--ap-text-primary);
 }
-/* Selo "Admin" ao lado da assinatura: neutro — o azul já está no símbolo. */
+/* Selo "Admin" ao lado do wordmark: neutro — o azul já está no "go". */
 .admin-brand-tag {
     font-size: 10.5px;
     font-weight: 700;

@@ -232,9 +232,11 @@
    segue favicon-128x128.png porque é a URL que o JSON-LD de todas as páginas
    publica como logo da organização.
 
-   A assinatura (símbolo + nome) e o wordmark mudam com o tema: o nome é
-   grafite no claro e branco no escuro. As duas versões vão no HTML e o tema
-   esconde a que não vale — ver assets/images/brand/.
+   A marca padrão é o wordmark ("niango" com o "go" azul); a assinatura
+   (símbolo + nome) só entra onde o ícone precisa vir junto, como no blog.
+   Os dois mudam com o tema: o nome é grafite no claro e branco no escuro.
+   As duas versões vão no HTML e o tema esconde a que não vale — ver
+   assets/images/brand/.
    ─────────────────────────────────────────────────────────────────────────── */
 .niango-mark { display: block; }
 .niango-logo--dark { display: none; }

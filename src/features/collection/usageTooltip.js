@@ -38,12 +38,13 @@ function compactDuration(seconds) {
  * A cor da barra: a do próprio serviço, tirada do ícone dele.
  *
  * Sem cor extraída — ícone monocromático, favicon que não carregou — a barra
- * vai de cinza. O paletteFromSession cairia no acento do tema, e uma barra
- * azul no meio das outras afirmaria que a sessão é azul.
+ * vai no Azul Niango, a cor da marca, nos dois temas.
  */
+const DEFAULT_BAR_COLOR = '#1c65c8';
+
 function barColor(session) {
     const rgb = parseIconColor(session?.iconColor);
-    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : 'var(--ap-text-muted)';
+    return rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : DEFAULT_BAR_COLOR;
 }
 
 function el(tag, className, text) {

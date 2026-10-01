@@ -50,10 +50,10 @@
     user-select: none;
 }
 
-/* Assinatura (símbolo + nome): a altura vem do atributo, a largura segue a
-   proporção do SVG. A troca claro/escuro está em theme-tokens.css. */
+/* Wordmark ("niango" com o "go" azul): a largura segue a proporção do SVG.
+   A troca claro/escuro está em theme-tokens.css. */
 .navbar-brand .niango-logo {
-    height: 30px;
+    height: 26px;
     width: auto;
 }
 
