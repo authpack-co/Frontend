@@ -565,7 +565,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .sidebar-brand {
-    /* O nome da assinatura é currentColor (ver components/BrandLogo.jsx). */
+    /* O "nian" do wordmark é currentColor (ver components/BrandLogo.jsx). */
     color: var(--ap-text-primary);
     user-select: none;
 }

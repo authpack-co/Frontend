@@ -191,8 +191,9 @@ a:focus-visible, button:focus-visible {
 }
 
 .nav-logo { display: flex; align-items: center; flex-shrink: 0; }
-/* Assinatura (símbolo + nome). Duas <img> no HTML — o nome é grafite no claro
-   e branco no escuro — e o tema esconde a que não vale. */
+/* Marca: o wordmark ("niango" com o "go" azul) na landing e nos preços; a
+   assinatura (símbolo + nome) no blog. Duas <img> no HTML — o nome é grafite
+   no claro e branco no escuro — e o tema esconde a que não vale. */
 .niango-logo { display: block; width: auto; }
 .niango-logo--dark { display: none; }
 :root[data-theme="dark"] .niango-logo--light { display: none; }
