@@ -24,6 +24,7 @@ const FAILURE_REASONS = {
     redirect_loop: 'O site redirecionou vezes demais',
     timeout: 'O site não terminou de carregar',
     load_failed: 'O site não carregou',
+    no_response: 'A extensão parou de responder',
 };
 
 /** "2 adicionada(s) · 1 com falha · 3 cancelada(s)" — só as partes que existem. */

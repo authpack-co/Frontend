@@ -31,6 +31,11 @@ const ITEM_TIMEOUT_MS = 75000;
 // estava gravando termina em poucos segundos; passando disso é extensão antiga,
 // que não conhece o cancelar — a tela encerra o lote por conta própria.
 const CANCEL_FALLBACK_MS = 10000;
+// Rede de segurança do lote: a extensão dá sinal de vida o tempo todo (estágios,
+// progresso), e cada aba dela desiste sozinha em 60s. Silêncio maior que isso é
+// a extensão morta no meio (service worker encerrado, extensão recarregada): o
+// captureDone nunca viria e as linhas ficariam carregando para sempre.
+const BATCH_SILENCE_MS = 90000;
 
 export default function useCapture({ packageId, mode = 'create', onFinished }) {
     // ref -> { target, state: 'pending'|'ok'|'error'|'cancelled', pct }
@@ -38,6 +43,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     const [batchDone, setBatchDone] = useState(false);
     const [cancelling, setCancelling] = useState(false);
     const cancelTimer = useRef(null);
+    const silenceTimer = useRef(null);
 
     const creepTimers = useRef({});
     const settleTimers = useRef({});
@@ -187,15 +193,18 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
      * cancelar isso é "cancelada"; sem ele, falha — e a linha ganha o botão de
      * tentar de novo.
      */
-    const endBatch = useCallback((leftover) => {
+    const endBatch = useCallback((leftover, reason = null) => {
         batchActiveRef.current = false;
         clearTimeout(cancelTimer.current);
+        clearTimeout(silenceTimer.current);
         stopAll();
 
         setRows((current) => {
             const next = { ...current };
             Object.keys(next).forEach((ref) => {
-                if (next[ref].state === 'pending') next[ref] = { ...next[ref], state: leftover };
+                if (next[ref].state === 'pending') {
+                    next[ref] = { ...next[ref], state: leftover, reason: leftover === 'error' ? reason : null };
+                }
             });
             return next;
         });
@@ -204,6 +213,15 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         setBatchDone(true);
         finishedRef.current?.();
     }, [stopAll]);
+
+    /** Cada sinal da extensão rearma o prazo de silêncio do lote (BATCH_SILENCE_MS). */
+    const armSilence = useCallback(() => {
+        clearTimeout(silenceTimer.current);
+        silenceTimer.current = setTimeout(() => {
+            if (!batchActiveRef.current) return;
+            endBatch(cancelRequestedRef.current ? 'cancelled' : 'error', 'no_response');
+        }, BATCH_SILENCE_MS);
+    }, [endBatch]);
 
     // A escuta vive enquanto o componente estiver montado — o StrictMode a desliga e religa
     // junto com a remontagem, sem depender de quem chamou o start.
@@ -224,8 +242,10 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             if (!batchActiveRef.current) return;
 
             if (data.type === 'niango:captureStage') {
+                armSilence();
                 handleStage(data.ref, data.current?.stage);
             } else if (data.type === 'niango:captureProgress') {
+                armSilence();
                 applyResult(data.ref, data.current?.status, data.current?.reason);
             } else if (data.type === 'niango:captureDone') {
                 endBatch(cancelRequestedRef.current ? 'cancelled' : 'error');
@@ -234,7 +254,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
 
         window.addEventListener('message', onMessage);
         return () => window.removeEventListener('message', onMessage);
-    }, [applyResult, endBatch, finishRetry, handleStage]);
+    }, [applyResult, armSilence, endBatch, finishRetry, handleStage]);
 
     /** Põe um lote no ar; o progresso chega pela escuta acima até o captureDone. */
     const run = useCallback((targets) => {
@@ -247,8 +267,9 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         targets.forEach((target) => startCreep(target.ref, PCT.interactive));
 
         batchActiveRef.current = true;
+        armSilence();
         post(targets);
-    }, [post, startCreep]);
+    }, [armSilence, post, startCreep]);
 
     const start = useCallback((targets) => {
         stopAll();
@@ -321,6 +342,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     useEffect(() => () => {
         stopAll();
         clearTimeout(cancelTimer.current);
+        clearTimeout(silenceTimer.current);
         retriesRef.current.forEach((timer) => clearTimeout(timer));
         retriesRef.current.clear();
     }, [stopAll]);
