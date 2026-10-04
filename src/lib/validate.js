@@ -1,19 +1,20 @@
 /**
  * Validação dos campos de formulário, porte do utils.validateField.
  *
- * O limite de 20 caracteres num input que aceita 50 é herdado: o maxlength do
- * HTML sempre foi mais frouxo que a regra. Mantido como está para o texto de
- * erro continuar sendo o mesmo que a pessoa já conhece.
+ * Nome de pacote e de sessão: até 30 caracteres, a mesma regra do backend
+ * (middlewares/validators.js). O input aceita 50 de propósito — passar do
+ * limite mostra a mensagem, em vez de o campo travar sem explicação.
  */
 
 const FORBIDDEN = /[<>/"'{};]/;
+export const NAME_MAX = 30;
 
 /** Devolve a mensagem de erro, ou null quando o nome serve. */
 export function validateName(value) {
     const trimmed = (value || '').trim();
 
     if (!trimmed) return 'O nome não pode estar vazio.';
-    if (trimmed.length > 20) return 'O nome deve ter no máximo 20 caracteres.';
+    if (trimmed.length > NAME_MAX) return `O nome deve ter no máximo ${NAME_MAX} caracteres.`;
     if (FORBIDDEN.test(trimmed)) return 'O nome contém caracteres não permitidos.';
 
     return null;
