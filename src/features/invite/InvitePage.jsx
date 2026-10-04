@@ -1,20 +1,14 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import ServiceIcon from '../../components/ServiceIcon.jsx';
 import { NiangoWordmark } from '../../components/BrandLogo.jsx';
 import { api } from '../../lib/api.js';
 import { initials } from '../../lib/format.js';
-import { startOrbit } from './orbit.js';
 import './invite.css';
 
-// Quantas vagas há em volta da caixa. Com mais serviços que isso, a última
-// vaga mostra quantos ficaram de fora ("+N").
-const ORBIT_SLOTS = 6;
-
-// Formas dos ícones da órbita, na ordem das vagas — a mistura é do desenho, e
-// o "+N" é a bolha.
-const ORBIT_SHAPES = ['50%', '34%', '34%', '34%', '50%', '34%'];
-const MORE_SHAPE = '48% 52% 44% 56% / 52% 46% 54% 48%';
+// Quantos ícones cabem na fileira de serviços. Com mais serviços que isso, o
+// último lugar mostra quantos ficaram de fora ("+N").
+const SERVICE_SLOTS = 6;
 
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
 const OWNED_REDIRECT_MS = 2600;
@@ -28,8 +22,8 @@ const APPROVAL_POLL_MS = 4000;
  * O link não dá acesso: dá a chance de pedir. Quem abre vê o que tem dentro e
  * manda uma solicitação; o dono aprova no painel dele. A tela cobre os
  * desfechos disso — link quebrado, pedido a fazer, e acesso que a pessoa já
- * tinha. O pedido feito não troca de tela: a pessoa continua no convite, com
- * os serviços em volta da caixa, e só o botão acompanha a decisão do dono.
+ * tinha. É um cartão só: o pacote em cima (nome, quem compartilhou, serviços)
+ * fica parado, e só o botão e a linha de baixo acompanham o pedido.
  */
 export default function InvitePage() {
     const { key } = useParams();
@@ -77,9 +71,13 @@ export default function InvitePage() {
                 setState({ status: 'invite', pkg, owner, request: null });
             } catch (err) {
                 if (alive) {
+                    // O 404 responde "Link inválido", que já é o título: aí
+                    // vale a orientação padrão de pedir um link novo.
                     setState({
                         status: 'error',
-                        message: err.message || 'Não foi possível carregar este link.',
+                        message: err.status === 404
+                            ? null
+                            : err.message || 'Não foi possível carregar este link.',
                     });
                 }
             }
@@ -91,15 +89,16 @@ export default function InvitePage() {
 
     // Já tem acesso: não há o que pedir, o destino é o pacote. Qual tela é o
     // pacote depende de quem está olhando — o que a pessoa criou mora na
-    // coleção, o que recebeu mora em "meus acessos". Abrir o link do próprio
-    // pacote levava a /shared, onde ele não está.
-    const ownedTarget = state.status === 'owned' ? packageHome(state) : null;
+    // coleção, o que recebeu mora em "meus acessos". O dono abrindo o próprio
+    // link fica no convite: é o link que ele compartilha, e ver o que o
+    // convidado vê é o motivo de abrir.
+    const redirectTarget = state.status === 'owned' && !state.isOwner ? packageHome(state) : null;
 
     useEffect(() => {
-        if (!ownedTarget) return undefined;
-        const timer = setTimeout(() => navigate(ownedTarget), OWNED_REDIRECT_MS);
+        if (!redirectTarget) return undefined;
+        const timer = setTimeout(() => navigate(redirectTarget), OWNED_REDIRECT_MS);
         return () => clearTimeout(timer);
-    }, [ownedTarget, navigate]);
+    }, [redirectTarget, navigate]);
 
     // Pedido pendente: enquanto a tela estiver aberta, pergunta se o dono já
     // decidiu. Com a aba escondida não pergunta — e confere na hora em que a
@@ -162,13 +161,13 @@ export default function InvitePage() {
             // meio do caminho só descobre a posse na resposta do pedido.
             if (data.alreadyOwns) {
                 setState((current) => ({
-                    ...current, status: 'owned', pkg, isOwner: !!data.isOwner,
+                    ...current, status: 'owned', pkg: { ...current.pkg, ...pkg }, isOwner: !!data.isOwner,
                 }));
                 return;
             }
 
             // A resposta traz o pacote sem os serviços: mistura com o do
-            // preview para a caixa não ficar vazia.
+            // preview para a fileira de ícones não sumir.
             setState((current) => ({
                 ...current,
                 pkg: { ...current.pkg, ...data.package },
@@ -185,7 +184,7 @@ export default function InvitePage() {
         }
     }
 
-    const ownerName = state.owner?.name || 'o dono';
+    const showPackage = state.status === 'invite' || state.status === 'owned';
 
     return (
         <div className="inv-shell">
@@ -197,12 +196,17 @@ export default function InvitePage() {
 
             <main className="inv-main">
                 {state.status === 'loading' && (
-                    <article className="inv-card inv-state-loading">
-                        <div className="inv-skeleton-hero"></div>
-                        <div className="inv-skeleton-line short"></div>
-                        <div className="inv-skeleton-line"></div>
-                        <div className="inv-skeleton-line"></div>
-                        <div className="inv-skeleton-button"></div>
+                    <article className="inv-card" aria-busy="true">
+                        <div className="inv-skeleton" aria-hidden="true">
+                            <div className="inv-sk inv-sk-mark"></div>
+                            <div className="inv-sk inv-sk-title"></div>
+                            <div className="inv-sk inv-sk-line"></div>
+                            <div className="inv-sk-tiles">
+                                {Array.from({ length: 5 }, (_, i) => <div className="inv-sk inv-sk-tile" key={i}></div>)}
+                            </div>
+                            <div className="inv-sk inv-sk-button"></div>
+                            <div className="inv-sk inv-sk-note"></div>
+                        </div>
                     </article>
                 )}
 
@@ -219,74 +223,37 @@ export default function InvitePage() {
                         <p className="inv-desc">
                             {state.message || 'Peça um link novo para quem compartilhou o pacote.'}
                         </p>
-                        <Cta to="/collection">Ir para o painel</Cta>
+                        <Link className="inv-btn inv-btn-secondary" to="/collection">Ir para o painel</Link>
                     </article>
                 )}
 
-                {state.status === 'invite' && (
-                    <article className="inv-card inv-state-invite">
-                        <InviteHero sessions={state.pkg?.sessions} />
-
+                {showPackage && (
+                    <article className="inv-card">
+                        <div className="inv-mark" aria-hidden="true">{initials(state.pkg?.name)}</div>
                         <h1 className="inv-title">{state.pkg?.name || 'Pacote'}</h1>
 
                         <div className="inv-inviter">
                             <OwnerAvatar owner={state.owner} />
-                            <span className="inv-inviter-text">
-                                <b>{state.owner?.name || 'Alguém'}</b> compartilhou com você
-                            </span>
+                            {state.status === 'owned' && state.isOwner ? (
+                                <span><b>Você</b> compartilha este pacote</span>
+                            ) : (
+                                <span><b>{state.owner?.name || 'Alguém'}</b> compartilhou com você</span>
+                            )}
                         </div>
 
-                        {state.request === 'approved' ? (
-                            <Cta to={packageHome(state)} className="is-ready">Abrir o pacote</Cta>
-                        ) : waiting ? (
-                            <button className="inv-cta is-waiting" type="button" disabled>
-                                <span className="inv-wait-dot"></span>
-                                <span className="inv-cta-label">Aguardando aprovação</span>
-                            </button>
-                        ) : (
-                            <button
-                                className={`inv-cta${sending ? ' loading' : ''}`}
-                                type="button"
-                                onClick={requestAccess}
-                                disabled={sending}
-                            >
-                                {sending && <span className="inv-spinner"></span>}
-                                <span className="inv-cta-label">Solicitar acesso</span>
-                                <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                                </svg>
-                            </button>
-                        )}
+                        <ServiceRow sessions={state.pkg?.sessions} />
+
+                        <div className="inv-action">
+                            <InviteAction
+                                state={state}
+                                sending={sending}
+                                openTarget={packageHome(state)}
+                                onRequest={requestAccess}
+                            />
+                        </div>
 
                         <div className="inv-fineprint" aria-live="polite">
-                            <InviteFineprint request={state.request} ownerName={ownerName} />
-                        </div>
-                    </article>
-                )}
-
-                {state.status === 'owned' && (
-                    <article className="inv-card inv-state-owned" aria-live="polite">
-                        <div className="inv-owned-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
-                            </svg>
-                        </div>
-                        <h1 className="inv-title">
-                            {state.isOwner ? 'Este pacote é seu' : 'Você já tem acesso'}
-                        </h1>
-                        <p className="inv-desc">
-                            <strong>{state.pkg?.name || 'Este pacote'}</strong>{' '}
-                            {state.isOwner
-                                ? 'está na sua coleção. Este é o link que você compartilha.'
-                                : 'já está na sua conta.'}
-                        </p>
-                        <Cta to={ownedTarget || '/collection'}>Abrir o pacote</Cta>
-                        <div className="inv-success-meta">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                            </svg>
-                            <span>Abrindo o pacote…</span>
+                            <InviteFineprint state={state} />
                         </div>
                     </article>
                 )}
@@ -301,28 +268,70 @@ function packageHome({ pkg, isOwner }) {
     return isOwner ? `/collection/${pkg.id}` : `/shared/${pkg.id}`;
 }
 
-/** A linha de baixo do botão acompanha o pedido: o que falta, ou o que o dono decidiu. */
-function InviteFineprint({ request, ownerName }) {
+/** O botão é a parte do cartão que acompanha o pedido. */
+function InviteAction({ state, sending, openTarget, onRequest }) {
+    if (state.status === 'owned' || state.request === 'approved') {
+        return (
+            <Link className="inv-btn inv-btn-primary inv-btn-open" to={openTarget}>
+                <span>Abrir o pacote</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+            </Link>
+        );
+    }
+
+    if (state.request === 'pending') {
+        return (
+            <div className="inv-waiting" role="status">
+                <span className="inv-wait-dot"></span>
+                <span>Aguardando aprovação</span>
+            </div>
+        );
+    }
+
+    if (sending) {
+        return (
+            <button className="inv-btn inv-btn-primary" type="button" disabled aria-busy="true">
+                <span className="inv-spinner"></span>
+                <span className="inv-sr-only">Enviando pedido</span>
+            </button>
+        );
+    }
+
+    return (
+        <button className="inv-btn inv-btn-primary" type="button" onClick={onRequest}>
+            Solicitar acesso
+        </button>
+    );
+}
+
+/** A linha de baixo do botão: o que falta, o que o dono decidiu, ou por que não há o que pedir. */
+function InviteFineprint({ state }) {
+    if (state.status === 'owned') {
+        return state.isOwner
+            ? <span>Este pacote é seu. Este é o link que você compartilha.</span>
+            : <span>Você já tem acesso · Abrindo o pacote…</span>;
+    }
+
+    const ownerName = state.owner?.name || 'o dono';
     // Sem nome, o "o dono" abre a frase nos desfechos.
     const Owner = ownerName.charAt(0).toUpperCase() + ownerName.slice(1);
 
-    if (request === 'pending') {
+    if (state.request === 'pending') {
         return (
             <>
-                <span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                    </svg>
-                    Pedido enviado para {ownerName}
+                <span>Pedido enviado para <b>{ownerName}</b></span>
+                <span className="inv-fineprint-note">
+                    Se fechar a tela, o pacote aparece em Meus acessos quando for aprovado
                 </span>
-                <span>Se fechar a tela, o pacote aparece em Meus acessos quando for aprovado</span>
             </>
         );
     }
 
-    if (request === 'approved') {
+    if (state.request === 'approved') {
         return (
-            <span className="is-approved">
+            <span className="inv-fineprint-approved">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 6 9 17l-5-5" />
                 </svg>
@@ -331,37 +340,15 @@ function InviteFineprint({ request, ownerName }) {
         );
     }
 
-    if (request === 'rejected') {
+    if (state.request === 'rejected') {
         return <span>{Owner} recusou o pedido. Você pode pedir de novo.</span>;
     }
 
     return (
-        <>
-            <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                O dono precisa aprovar
-            </span>
-            <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6 9 17l-5-5" />
-                </svg>
-                Nenhuma senha passa por você
-            </span>
-        </>
-    );
-}
-
-function Cta({ to, className = '', children }) {
-    return (
-        <Link className={`inv-cta ${className}`.trim()} to={to}>
-            <span className="inv-cta-label">{children}</span>
-            <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-            </svg>
-        </Link>
+        <span className="inv-fineprint-row">
+            <span>O dono precisa aprovar</span>
+            <span>Nenhuma senha passa por você</span>
+        </span>
     );
 }
 
@@ -369,61 +356,37 @@ function OwnerAvatar({ owner }) {
     const [broken, setBroken] = useState(false);
 
     return (
-        <span className="inv-inviter-avatar">
+        <span className="inv-inviter-avatar" aria-hidden="true">
             {owner?.picture && !broken
-                ? <img src={owner.picture} alt={owner.name || ''} onError={() => setBroken(true)} />
+                ? <img src={owner.picture} alt="" onError={() => setBroken(true)} />
                 : initials(owner?.name)}
         </span>
     );
 }
 
 /**
- * A caixa do pacote com os serviços dele em volta: até ORBIT_SLOTS ícones;
- * com mais que isso, a última vaga vira o "+N". O movimento deles (sair da
- * caixa, depois o roteiro de giros, travessias, trocas e mergulhos) mora em
- * orbit.js.
+ * Os serviços do pacote numa fileira: até SERVICE_SLOTS ícones; com mais que
+ * isso, o último lugar vira o "+N".
  */
-function InviteHero({ sessions }) {
+function ServiceRow({ sessions }) {
     const list = sessions || [];
-    const shown = list.length > ORBIT_SLOTS ? list.slice(0, ORBIT_SLOTS - 1) : list;
+    if (!list.length) return null;
+
+    const shown = list.length > SERVICE_SLOTS ? list.slice(0, SERVICE_SLOTS - 1) : list;
     const remaining = list.length - shown.length;
 
-    const tiles = shown.map((session) => ({ key: session.id || session.url, session }));
-    if (remaining > 0) tiles.push({ key: 'more', more: remaining });
-
-    const tileRefs = useRef([]);
-    const tileKeys = tiles.map((tile) => tile.key).join('|');
-
-    // Layout effect: a posição de partida (dentro da caixa) entra antes do
-    // primeiro paint, senão os ícones piscariam no canto do palco.
-    useLayoutEffect(() => {
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        return startOrbit(tileRefs.current.filter(Boolean), { reduced });
-    }, [tileKeys]);
-
     return (
-        <div className="inv-hero" aria-hidden="true">
-            <span className="inv-blob inv-blob-a"></span>
-            <span className="inv-blob inv-blob-b"></span>
-            <span className="inv-blob inv-blob-c"></span>
-
-            {tiles.map((tile, i) => (
-                <div className="inv-orbit" key={tile.key} ref={(el) => { tileRefs.current[i] = el; }}>
-                    <div
-                        className={`inv-orbit-face${tile.more ? ' is-more' : ''}`}
-                        style={{
-                            '--inv-orbit-radius': tile.more ? MORE_SHAPE : ORBIT_SHAPES[i % ORBIT_SHAPES.length],
-                            '--inv-orbit-delay': `${-i * 0.9}s`,
-                        }}
-                    >
-                        {tile.session
-                            ? <ServiceIcon icon={tile.session.icon} url={tile.session.url} name={tile.session.name} />
-                            : <span className="inv-orbit-more">+{tile.more}</span>}
-                    </div>
-                </div>
+        <ul className="inv-services" aria-label="Serviços do pacote">
+            {shown.map((session) => (
+                <li className="inv-service" key={session.id || session.url} title={session.name}>
+                    <ServiceIcon icon={session.icon} url={session.url} name={session.name} />
+                </li>
             ))}
-
-            <img className="inv-box" src="/assets/images/invite-box.webp" alt="" />
-        </div>
+            {remaining > 0 && (
+                <li className="inv-service inv-service-more" title={`Mais ${remaining} serviços`}>
+                    +{remaining}
+                </li>
+            )}
+        </ul>
     );
 }

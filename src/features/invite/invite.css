@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=Fira+Code:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap');
 
 /* ============================================================================
    Niango — Package Invite (ativação por convite)
@@ -21,322 +21,187 @@ button { font-family: inherit; cursor: pointer; }
 
 .hidden { display: none !important; }
 
-/* derived accent helpers */
 :root {
-    --inv-accent: var(--ap-accent);
-    --inv-accent-hover: var(--ap-accent-hover);
-    --inv-accent-soft: color-mix(in oklab, var(--inv-accent) 12%, var(--inv-page));
-    --inv-accent-ring: color-mix(in oklab, var(--inv-accent) 40%, transparent);
-    --inv-accent-glow: color-mix(in oklab, var(--inv-accent) 32%, transparent);
-
     /* Pedir acesso é a conversão da página: o Azul Niango cheio, o mesmo nos
        dois temas — branco em cima dele tem 5.6:1. */
     --inv-cta: #1c65c8;
     --inv-cta-hover: #1857ad;
 
-    --inv-page: var(--ap-bg-page);
-    --inv-tile: #ffffff;
-    --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.04);
-    --inv-blob-strength: 0.45;
-    --inv-avatar-border: rgba(0, 0, 0, 0.08);
+    /* Preenchimento neutro do aviso de espera e do ícone de erro. No escuro o
+       --ap-bg-input fica mais fundo que o cartão e some; o hover sobe um tom. */
+    --inv-fill: var(--ap-bg-input);
 }
 :root[data-theme="dark"] {
-    --inv-page: #14171d;
-    --inv-tile: #1b2028;
-    --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --inv-blob-strength: 1;
-    --inv-avatar-border: rgba(255, 255, 255, 0.12);
+    --inv-fill: var(--ap-bg-hover);
 }
 
-html, body { background: var(--inv-page); }
-
 /* Page frame */
-.inv-shell { position: relative; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+.inv-shell { min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
 .inv-topbar { width: 100%; display: flex; align-items: center; justify-content: center; padding: 26px 24px 4px; }
 .inv-brand { display: flex; align-items: center; color: var(--ap-text-primary); }
 
-.inv-main { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px 24px 40px; }
+.inv-main { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 24px 20px 64px; }
 
-/* Conteúdo: sem card em volta — a arte, o texto e o botão ficam direto no
-   fundo da página, e o brilho da arte se espalha por ele sem borda. */
+/* Cartão único: o pacote em cima, o botão e a linha de baixo embaixo. Os
+   estados do pedido trocam só essas duas últimas partes. */
 .inv-card {
-    position: relative;
     width: 100%;
-    max-width: 468px;
-    padding: 40px 0 30px;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(14px);
-    animation: inv-card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
-}
-.inv-state-invite {
+    max-width: 400px;
+    padding: 40px 32px 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 0;
+    text-align: center;
+    background: var(--ap-bg-card);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xl);
+    box-shadow: var(--ap-shadow-sm);
+    animation: inv-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-@keyframes inv-card-in { to { opacity: 1; transform: translateY(0); } }
+@keyframes inv-card-in { from { opacity: 0; transform: translateY(8px); } }
 
-/* Hero: a caixa do pacote, os serviços em órbita e o brilho atrás.
-   Tudo em % do palco (440×420 no desenho) para encolher junto no celular. */
-.inv-hero {
-    position: relative;
-    width: 100%;
-    max-width: 440px;
-    aspect-ratio: 440 / 420;
-    margin-top: 10px;
-    container-type: inline-size;
-    isolation: isolate;
-}
-
-/* Brilho atrás da caixa: a família do azul da marca (Azul Niango, Azul claro
-   e um índigo para dar profundidade). */
-.inv-blob {
-    position: absolute;
-    z-index: 0;
+/* O pacote não tem imagem: as iniciais do nome fazem as vezes de capa. */
+.inv-mark {
+    width: 88px; height: 88px;
+    flex-shrink: 0;
     border-radius: 50%;
-    pointer-events: none;
-}
-.inv-blob-a {
-    left: 2.3%; top: 16.7%; width: 50%; height: 71.4%;
-    background: #1c65c8;
-    filter: blur(70px);
-    opacity: calc(0.6 * var(--inv-blob-strength));
-    animation: inv-drift-a 9s ease-in-out infinite;
-}
-.inv-blob-b {
-    left: 34.1%; top: 4.8%; width: 34.1%; height: 42.9%;
-    background: #609efa;
-    filter: blur(64px);
-    opacity: calc(0.5 * var(--inv-blob-strength));
-    animation: inv-drift-b 10s ease-in-out infinite;
-}
-.inv-blob-c {
-    right: 2.3%; top: 26.2%; width: 47.7%; height: 66.7%;
-    background: #4f46e5;
-    filter: blur(72px);
-    opacity: calc(0.6 * var(--inv-blob-strength));
-    animation: inv-drift-b 11s ease-in-out infinite;
-}
-/* No escuro, sem o card para cortar, os três brilhos terminavam numa borda
-   redonda visível no desktop. Mais desfoque neles e uma camada larga e fraca
-   por trás fazem a luz ir sumindo no fundo em vez de formar uma bola.
-   No celular a própria tela já corta o brilho antes da borda aparecer. */
-@media (min-width: 541px) {
-    :root[data-theme="dark"] .inv-hero::before {
-        content: '';
-        position: absolute;
-        inset: -90% -160%;
-        pointer-events: none;
-        /* Queda em vários passos (quase exponencial): com só dois pontos o
-           degradê cai em linha reta e o olho enxerga o fim dele como um anel. */
-        background:
-            radial-gradient(ellipse 46% 50% at 42% 50%, rgba(28, 101, 200, 0.2) 0%, rgba(28, 101, 200, 0.144) 22%, rgba(28, 101, 200, 0.084) 45%, rgba(28, 101, 200, 0.036) 68%, rgba(28, 101, 200, 0.01) 86%, transparent 100%),
-            radial-gradient(ellipse 34% 38% at 50% 44%, rgba(96, 158, 250, 0.12) 0%, rgba(96, 158, 250, 0.086) 22%, rgba(96, 158, 250, 0.05) 45%, rgba(96, 158, 250, 0.022) 68%, rgba(96, 158, 250, 0.006) 86%, transparent 100%),
-            radial-gradient(ellipse 46% 50% at 58% 53%, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.144) 22%, rgba(79, 70, 229, 0.084) 45%, rgba(79, 70, 229, 0.036) 68%, rgba(79, 70, 229, 0.01) 86%, transparent 100%);
-    }
-    :root[data-theme="dark"] .inv-blob-a { filter: blur(100px); }
-    :root[data-theme="dark"] .inv-blob-b { filter: blur(90px); }
-    :root[data-theme="dark"] .inv-blob-c { filter: blur(104px); }
-}
-
-@keyframes inv-drift-a {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(18px, 14px) scale(1.08); }
-}
-@keyframes inv-drift-b {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-16px, -12px) scale(1.06); }
-}
-
-/* Posição, escala, opacidade e camada de cada ícone vêm do orbit.js (sair da
-   caixa e o roteiro de interações em volta dela). Aqui ficam o tamanho, o ponto zero no canto do
-   palco e o flutuar, que é da face para não brigar com o transform de fora. */
-.inv-orbit {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 17.27%;
-    aspect-ratio: 1;
-    opacity: 0;
-    will-change: transform, opacity;
-}
-.inv-orbit-face {
-    width: 100%;
-    height: 100%;
-    border-radius: var(--inv-orbit-radius, 50%);
     display: grid;
     place-items: center;
-    animation: inv-float 5s ease-in-out infinite;
-    animation-delay: var(--inv-orbit-delay, 0s);
+    background: var(--ap-accent-light);
+    color: var(--ap-accent-strong);
+    font-family: var(--ap-font-heading);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
-/* Só o "+n" mantém o fundo; os ícones aparecem soltos. */
-.inv-orbit-face.is-more {
-    background: var(--inv-tile);
-    box-shadow: var(--inv-tile-shadow);
-}
-.inv-orbit-face img { width: 72%; height: 72%; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)); }
-.inv-orbit-more {
-    font-size: 3.9cqi;
+
+.inv-title {
+    margin-top: 20px;
+    font-family: var(--ap-font-heading);
+    font-size: 24px;
     font-weight: 700;
-    color: var(--ap-text-secondary);
-}
-
-/* Camada do meio: os ícones saem da caixa por cima dela (z-index 3); entrando
-   nela e nas travessias passam por trás (z-index 1); no giro, a metade de cima
-   do anel passa por trás e a de baixo pela frente — postos pelo orbit.js. */
-.inv-box {
-    position: absolute;
-    z-index: 2;
-    left: 29.6%; top: 25.5%;
-    width: 40.8%;
-    aspect-ratio: 1;
-    object-fit: contain;
-    filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.5));
-    animation:
-        inv-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both,
-        inv-float 6s ease-in-out 0.85s infinite;
-}
-:root:not([data-theme="dark"]) .inv-box { filter: drop-shadow(0 18px 22px rgba(60, 30, 0, 0.22)); }
-
-@keyframes inv-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-7px); }
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ap-text-primary);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
 }
 
 /* Quem compartilhou */
 .inv-inviter {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 28px;
-    opacity: 0;
-    animation: inv-fade-up 0.55s ease-out 0.5s forwards;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ap-text-muted);
 }
+.inv-inviter b { color: var(--ap-text-primary); font-weight: 600; }
 .inv-inviter-avatar {
-    width: 28px; height: 28px;
-    border-radius: 50%;
+    width: 20px; height: 20px;
     flex-shrink: 0;
+    border-radius: 50%;
     display: grid;
     place-items: center;
-    font-family: var(--ap-font-heading);
-    font-weight: 700;
-    font-size: 11px;
-    color: #fff;
     overflow: hidden;
+    font-family: var(--ap-font-heading);
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
     background: linear-gradient(135deg, #4a4a4f, #2e2e33);
-    border: 1px solid var(--inv-avatar-border);
 }
 .inv-inviter-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.inv-inviter-text {
-    font-size: 16px;
-    color: var(--ap-text-secondary);
-    line-height: 1.3;
-    text-align: left;
-    text-wrap: balance;
-}
-.inv-inviter-text b { color: var(--ap-text-primary); font-weight: 700; }
 
-/* Title + meta */
-.inv-title {
-    font-family: var(--ap-font-heading);
-    font-size: 1.9rem;
-    font-weight: 700;
-    line-height: 1.16;
-    letter-spacing: -0.025em;
-    color: var(--ap-text-primary);
-    margin-bottom: 12px;
-    text-wrap: balance;
-    opacity: 0;
-    animation: inv-fade-up 0.55s ease-out 0.46s forwards;
+/* Serviços do pacote: até 6 lugares numa fileira; no celular encolhem juntos. */
+.inv-services {
+    width: 100%;
+    margin-top: 26px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    list-style: none;
 }
-.inv-state-invite .inv-title {
-    font-size: 40px;
-    line-height: 1.1;
-    letter-spacing: -0.035em;
-    max-width: 12ch;
-    margin-bottom: 16px;
+.inv-service {
+    flex: 0 1 44px;
+    min-width: 0;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: var(--ap-bg-page);
+    border: 1px solid var(--ap-border);
 }
+.inv-service img { width: 55%; height: 55%; object-fit: contain; border-radius: 4px; }
+.inv-service-more { font-size: 13px; font-weight: 600; color: var(--ap-text-muted); }
 
-.inv-desc {
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--ap-text-secondary);
-    max-width: 42ch;
-    margin: 0 auto 26px;
-    text-wrap: pretty;
-    opacity: 0;
-    animation: inv-fade-up 0.55s ease-out 0.54s forwards;
-}
+/* Botão e aviso de espera: mesma caixa, para a troca não mexer no cartão. */
+.inv-action { width: 100%; margin-top: 28px; }
 
-/* CTA */
-.inv-cta {
-    position: relative;
-    display: inline-flex;
+.inv-btn {
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     width: 100%;
-    padding: 17px 24px;
-    background: var(--inv-cta);
-    color: #fff;
+    height: 48px;
+    padding: 0 20px;
     border: 0;
-    border-radius: var(--ap-radius-full);
-    font-size: 16.5px;
-    font-weight: 700;
-    letter-spacing: -0.005em;
-    overflow: hidden;
-    transition: transform 0.18s ease, box-shadow 0.22s ease, background 0.18s ease;
-    opacity: 0;
-    animation: inv-fade-up 0.55s ease-out 0.68s forwards;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.18s ease;
 }
-.inv-cta:hover:not(:disabled) {
-    background: var(--inv-cta-hover);
-    transform: translateY(-2px);
-}
-.inv-cta:active:not(:disabled) { transform: translateY(0); }
-.inv-cta:disabled { cursor: default; }
-.inv-cta svg { width: 18px; height: 18px; transition: transform 0.25s ease; }
-.inv-cta:hover:not(:disabled) svg.inv-arrow { transform: translateX(3px); }
-.inv-cta::after {
-    content: '';
-    position: absolute;
-    top: 0; left: -120%;
-    width: 55%; height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
-    transform: skewX(-20deg);
-    pointer-events: none;
-}
-.inv-cta:hover:not(:disabled)::after { animation: inv-shine 0.9s ease forwards; }
-@keyframes inv-shine { to { left: 130%; } }
+.inv-btn:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 2px; }
+.inv-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.inv-btn-open { gap: 8px; }
 
-.inv-cta.loading { pointer-events: none; }
-.inv-cta.loading .inv-cta-label, .inv-cta.loading .inv-arrow { visibility: hidden; }
+.inv-btn-primary { background: var(--inv-cta); color: #fff; }
+.inv-btn-primary:hover:not(:disabled) { background: var(--inv-cta-hover); }
+.inv-btn-primary:disabled { cursor: default; }
+
+.inv-btn-secondary {
+    background: var(--ap-bg-card);
+    color: var(--ap-text-primary);
+    border: 1px solid var(--ap-border-hover);
+}
+.inv-btn-secondary:hover { background: var(--ap-bg-hover); }
+
 .inv-spinner {
-    position: absolute;
     width: 20px; height: 20px;
-    border: 2.5px solid rgba(255,255,255,0.35);
+    border: 2.5px solid rgba(255, 255, 255, 0.35);
     border-top-color: #fff;
     border-radius: 50%;
     animation: inv-spin 0.7s linear infinite;
 }
 @keyframes inv-spin { to { transform: rotate(360deg); } }
 
-/* Pedido pendente: o botão vira o aviso de espera — apagado, sem seta, com um
-   ponto pulsando para dizer que a tela segue de olho na resposta. */
-.inv-cta.is-waiting {
-    background: color-mix(in oklab, var(--inv-cta) 16%, var(--inv-page));
-    color: var(--ap-text-primary);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--inv-cta) 30%, transparent);
+/* Pedido pendente: o botão vira o aviso de espera — neutro, com um ponto
+   pulsando para dizer que a tela segue de olho na resposta. */
+.inv-waiting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 10px;
+    background: var(--inv-fill);
+    border: 1px solid var(--ap-border);
+    color: var(--ap-text-secondary);
+    font-size: 15px;
+    font-weight: 600;
 }
 .inv-wait-dot {
     position: relative;
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: var(--inv-cta);
+    width: 8px; height: 8px;
     flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--ap-accent-strong);
 }
-:root[data-theme="dark"] .inv-wait-dot { background: #609efa; }
 .inv-wait-dot::after {
     content: '';
     position: absolute;
@@ -350,129 +215,78 @@ html, body { background: var(--inv-page); }
     to { transform: scale(2.8); opacity: 0; }
 }
 
-/* Aprovado: o botão volta ao azul cheio já sem o atraso da entrada da página. */
-.inv-cta.is-ready { animation-delay: 0s; }
-
+/* A linha de baixo do botão */
 .inv-fineprint {
-    margin-top: 16px;
+    margin-top: 14px;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 18px;
-    font-size: 12.5px;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    line-height: 1.5;
     color: var(--ap-text-muted);
-    opacity: 0;
-    animation: inv-fade-up 0.55s ease-out 0.74s forwards;
+    text-wrap: pretty;
 }
-.inv-fineprint span { display: flex; align-items: center; gap: 6px; }
-.inv-fineprint svg { width: 14px; height: 14px; flex-shrink: 0; }
-.inv-fineprint .is-approved { color: var(--ap-success); font-weight: 600; }
-
-@keyframes inv-pop {
-    from { transform: scale(0.4); opacity: 0; }
-    60% { transform: scale(1.06); opacity: 1; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-.inv-success-meta {
-    margin: 20px 0 0;
-    padding: 14px 18px;
-    background: var(--ap-bg-card-alt);
-    border: 1px solid var(--ap-border);
-    border-radius: var(--ap-radius-md);
+.inv-fineprint b { color: var(--ap-text-secondary); font-weight: 600; }
+.inv-fineprint-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; }
+.inv-fineprint-note { font-size: 12.5px; max-width: 34ch; }
+.inv-fineprint-approved {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 9px;
-    font-size: 13px;
-    color: var(--ap-text-secondary);
+    gap: 6px;
+    color: var(--ap-success-text);
+    font-weight: 600;
 }
-.inv-success-meta strong { color: var(--ap-text-primary); font-weight: 600; }
-.inv-success-meta svg { width: 16px; height: 16px; color: var(--inv-accent); flex-shrink: 0; }
+.inv-fineprint-approved svg { width: 14px; height: 14px; flex-shrink: 0; }
 
-/* Already-owns state: neutro, sem a celebração do sucesso — nada foi adquirido. */
-.inv-owned-icon {
-    width: 80px; height: 80px;
-    margin: 8px auto 20px;
-    border-radius: 50%;
-    background: var(--inv-accent-soft);
-    border: 2px solid var(--inv-accent-ring);
-    display: grid;
-    place-items: center;
-    color: var(--inv-accent);
-    animation: inv-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-.inv-owned-icon svg { width: 38px; height: 38px; }
-.inv-state-owned .inv-cta { margin-top: 4px; }
-
-/* Error state */
+/* Link inválido */
 .inv-error-icon {
-    width: 80px; height: 80px;
-    margin: 8px auto 20px;
+    width: 72px; height: 72px;
     border-radius: 50%;
-    background: var(--ap-danger-light);
-    border: 2px solid var(--ap-danger-border);
     display: grid;
     place-items: center;
-    color: var(--ap-danger);
+    background: var(--inv-fill);
+    color: var(--ap-text-muted);
 }
-.inv-error-icon svg { width: 38px; height: 38px; }
+.inv-error-icon svg { width: 32px; height: 32px; }
+.inv-state-error .inv-title { font-size: 22px; }
+.inv-desc {
+    margin-top: 8px;
+    max-width: 30ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ap-text-muted);
+    text-wrap: pretty;
+}
+.inv-state-error .inv-btn { margin-top: 28px; }
 
-/* Loading skeleton state */
-.inv-state-loading { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.inv-skeleton-hero {
-    width: 160px; height: 160px;
-    border-radius: 36px;
-    background: linear-gradient(90deg, var(--ap-bg-skeleton-from), var(--ap-bg-skeleton-via), var(--ap-bg-skeleton-from));
-    background-size: 200% 100%;
-    animation: inv-shimmer 1.4s ease-in-out infinite;
-    margin: 6px 0 8px;
-}
-.inv-skeleton-line {
-    width: 80%;
-    height: 16px;
-    border-radius: 8px;
+/* Carregando: o esqueleto do mesmo cartão */
+.inv-skeleton { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.inv-sk {
     background: linear-gradient(90deg, var(--ap-bg-skeleton-from), var(--ap-bg-skeleton-via), var(--ap-bg-skeleton-from));
     background-size: 200% 100%;
     animation: inv-shimmer 1.4s ease-in-out infinite;
 }
-.inv-skeleton-line.short { width: 45%; }
-.inv-skeleton-button {
-    width: 100%;
-    height: 56px;
-    border-radius: var(--ap-radius-full);
-    margin-top: 14px;
-    background: linear-gradient(90deg, var(--ap-bg-skeleton-from), var(--ap-bg-skeleton-via), var(--ap-bg-skeleton-from));
-    background-size: 200% 100%;
-    animation: inv-shimmer 1.4s ease-in-out infinite;
-}
+.inv-sk-mark { width: 88px; height: 88px; border-radius: 50%; }
+.inv-sk-title { width: 58%; height: 22px; margin-top: 22px; border-radius: 6px; }
+.inv-sk-line { width: 64%; height: 14px; margin-top: 14px; border-radius: 6px; }
+.inv-sk-tiles { display: flex; gap: 8px; margin-top: 26px; }
+.inv-sk-tile { width: 44px; height: 44px; border-radius: 10px; }
+.inv-sk-button { width: 100%; height: 48px; margin-top: 28px; border-radius: 10px; }
+.inv-sk-note { width: 70%; height: 12px; margin-top: 16px; border-radius: 6px; }
 @keyframes inv-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
-@keyframes inv-fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
-@media (max-width: 540px) {
-    .inv-main { padding: 12px 20px 32px; }
-    .inv-card { padding: 30px 0 26px; }
-    .inv-state-invite { padding-top: 0; }
-    .inv-title { font-size: 1.55rem; }
-    .inv-state-invite .inv-title { font-size: 32px; }
-    .inv-inviter { margin-bottom: 24px; }
-    .inv-inviter-text { font-size: 14px; }
+.inv-sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .inv-card, .inv-inviter, .inv-title, .inv-desc, .inv-cta, .inv-fineprint,
-    .inv-box {
-        animation-duration: 0.001s;
-        opacity: 1;
-    }
-    .inv-blob, .inv-orbit-face, .inv-cta::after, .inv-wait-dot::after { animation: none; }
-    .inv-box { animation: none; }
+    .inv-card, .inv-sk, .inv-wait-dot::after { animation: none; }
 }
