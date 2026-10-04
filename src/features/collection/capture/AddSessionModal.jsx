@@ -248,9 +248,17 @@ function ProgressFooter({ capture, onClose }) {
                     o que ainda espera a vez e mantém o que já foi coletado. O
                     Fechar só aparece com o lote encerrado. */}
                 {capture.batchDone ? (
-                    <button className="btn btn-secondary as-close" type="button" onClick={onClose}>
-                        Fechar
-                    </button>
+                    <>
+                        <button className="btn btn-secondary as-close" type="button" onClick={onClose}>
+                            Fechar
+                        </button>
+                        {/* Depois de um cancelar, o que ficou parado pode voltar para a fila. */}
+                        {capture.summary.cancelled > 0 && (
+                            <button className="btn btn-primary as-resume" type="button" onClick={capture.resume}>
+                                Retomar
+                            </button>
+                        )}
+                    </>
                 ) : (
                     <button
                         className="btn btn-secondary as-stop"

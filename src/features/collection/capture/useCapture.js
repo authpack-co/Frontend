@@ -210,18 +210,11 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         return () => window.removeEventListener('message', onMessage);
     }, [applyResult, endBatch, finishRetry, handleStage]);
 
-    /** Dispara o lote; o progresso chega pela escuta acima até o captureDone. */
-    const start = useCallback((targets) => {
-        stopAll();
+    /** Põe um lote no ar; o progresso chega pela escuta acima até o captureDone. */
+    const run = useCallback((targets) => {
         setBatchDone(false);
         setCancelling(false);
         cancelRequestedRef.current = false;
-
-        const initial = {};
-        targets.forEach((target) => {
-            initial[target.ref] = { target, state: 'pending', pct: PCT.loading };
-        });
-        setRows(initial);
 
         // Cada linha começa a andar no t=0 e é ancorada pelos estágios reais
         // quando eles chegam.
@@ -229,7 +222,42 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
 
         batchActiveRef.current = true;
         post(targets);
-    }, [post, startCreep, stopAll]);
+    }, [post, startCreep]);
+
+    const start = useCallback((targets) => {
+        stopAll();
+
+        const initial = {};
+        targets.forEach((target) => {
+            initial[target.ref] = { target, state: 'pending', pct: PCT.loading };
+        });
+        setRows(initial);
+
+        run(targets);
+    }, [run, stopAll]);
+
+    /**
+     * Retoma o que o cancelar parou: as linhas canceladas voltam para a fila
+     * num lote novo — com o mesmo Cancelar de antes —, e o que já foi coletado
+     * fica como está.
+     */
+    const resume = useCallback(() => {
+        if (batchActiveRef.current) return;
+        const targets = Object.values(rows || {})
+            .filter((row) => row.state === 'cancelled')
+            .map((row) => row.target);
+        if (targets.length === 0) return;
+
+        setRows((current) => {
+            const next = { ...current };
+            targets.forEach((target) => {
+                next[target.ref] = { ...next[target.ref], state: 'pending', pct: PCT.loading };
+            });
+            return next;
+        });
+
+        run(targets);
+    }, [rows, run]);
 
     /**
      * Para a captura: o que ainda espera a vez não abre, o que já foi coletado
@@ -298,5 +326,6 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         start,
         retry,
         cancel,
+        resume,
     };
 }
