@@ -13,19 +13,25 @@ aceita. Os PNGs prontos estão nesta pasta.
 | 4 | `niango-4.png` | Passo 03 · quem recebe conecta em um clique |
 | 5 | `niango-5.png` | Controle e revogação por pessoa, pacote ou sessão |
 
-## Peças promocionais
+## Blocos promocionais
 
 | Arquivo | Tamanho | Onde aparece |
 |---|---|---|
-| `niango-promo-440x280.png` | 440×280 | tile pequeno, nas listas e buscas da loja |
+| `niango-promo-440x280.png` | 440×280 | bloco pequeno, nas listas e buscas da loja |
+| `niango-promo-920x680.png` | 920×680 | bloco grande, em retrato |
 | `niango-marquee-1400x560.png` | 1400×560 | marquee, na vitrine de destaque |
 
-As duas seguem regras próprias, e não são o carrossel reduzido. O tile é visto
-em miniatura: screenshot não sobrevive a esse tamanho, então leva só a marca e
-uma frase — daí ele dizer "Compartilhe o acesso, não a senha" em vez de repetir
-a manchete da tela 1. O marquee pode ser recortado nas laterais conforme a
-superfície, então nada essencial encosta na borda; a mensagem e a marca ficam à
-esquerda, onde sobrevivem a qualquer corte.
+Os três seguem regras próprias, e nenhum é o carrossel redimensionado. O
+pequeno é visto em miniatura: screenshot não sobrevive a esse tamanho, então
+leva só a marca e uma frase — daí dizer "Compartilhe o acesso, não a senha" em
+vez de repetir a manchete da tela 1. O grande é o único em retrato e tem folga
+para a frase e uma amostra da interface. O marquee pode ser recortado nas
+laterais conforme onde é exibido, então nada essencial encosta na borda: marca
+e mensagem ficam à esquerda, onde sobrevivem a qualquer corte.
+
+O painel da ficha hoje pede o pequeno e o marquee. O grande é a medida
+histórica da loja e entra aqui para o conjunto ficar completo — se o seu painel
+não tiver o campo, é só não enviar.
 
 Nenhuma das duas leva canal alfa — a loja recusa. O Playwright já grava RGB
 opaco quando a página tem fundo sólido, que é o caso; vale conferir com

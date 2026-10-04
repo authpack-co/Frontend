@@ -1,10 +1,13 @@
 """
-As duas peças promocionais da ficha, que seguem regras próprias:
+Os três blocos promocionais da ficha. Cada um responde a uma superfície, e é
+isso que decide o conteúdo — nenhum é o outro redimensionado:
 
-- tile pequeno (440x280): aparece em miniatura nas listas e buscas da loja.
-  Screenshot não sobrevive a esse tamanho, então entra só a marca e uma frase.
-- marquee (1400x560): é a peça de destaque. Pode ser recortado nas laterais
-  conforme a superfície, então nada essencial encosta na borda.
+- pequeno (440x280): aparece em miniatura nas listas e buscas. Screenshot não
+  sobrevive a esse tamanho, então entra só a marca e uma frase.
+- grande (920x680): o bloco em pé, com espaço para a frase e uma amostra da
+  interface. É o único dos três em formato retrato.
+- marquee (1400x560): a peça de destaque, deitada. Pode ser recortada nas
+  laterais conforme onde é exibida, então nada essencial encosta na borda.
 """
 from _parts import ICON
 from brand import signature
@@ -91,6 +94,50 @@ MARQUEE = '''<link rel="stylesheet" href="slides.css">
   </div>
 </div>'''
 
+LARGE = '''<link rel="stylesheet" href="slides.css">
+<style>
+.stage{width:920px;height:680px;padding:0 56px}
+.stage::before{background:
+  radial-gradient(700px 480px at 104% -14%, rgba(42,114,220,.22), transparent 60%),
+  radial-gradient(520px 420px at -10% 112%, rgba(96,158,250,.08), transparent 62%)}
+.grid{-webkit-mask-image:radial-gradient(760px 520px at 50% 18%,#000,transparent 80%)}
+.l-copy{position:relative;padding-top:58px}
+.l-brand{display:flex;align-items:center;margin-bottom:26px}
+.l-brand svg{display:block}
+.l-h{font-family:var(--sora);font-weight:700;font-size:41px;line-height:1.11;letter-spacing:-.023em;color:#f6f4f1}
+.l-h .g{background:linear-gradient(96deg,#8ab8fd,#609efa 52%,#2a72dc);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.l-sub{margin-top:16px;font-size:16.5px;line-height:1.52;color:var(--tx3);max-width:680px}
+.l-sub b{color:var(--tx2);font-weight:600}
+.l-art{position:absolute;left:56px;right:56px;top:300px}
+.l-art .panel{box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.l-art .acc-grid{grid-template-columns:repeat(3,1fr);gap:13px}
+.l-art .acc{padding:13px}
+.l-art .acc-h .ico{width:34px;height:34px}
+.l-art .acc-h b{font-size:12.5px}
+.l-art .acc-a{margin-top:12px}
+</style>
+<div class="stage"><div class="grid"></div>
+  <div class="l-copy">
+    <div class="l-brand">''' + signature(32) + '''</div>
+    <h1 class="l-h">Distribua acessos<br>sem entregar <span class="g">senhas.</span></h1>
+    <p class="l-sub">A sessão já autenticada vai cifrada com AES individual. Quem recebe
+      <b>entra em um clique e nunca vê a credencial</b> — e você revoga quando quiser.</p>
+  </div>
+  <div class="l-art">
+    <div class="panel">
+      <div class="pkg-title"><h2>Meus acessos</h2><span class="tag">6 sessões</span></div>
+      <p class="meta">Compartilhado por Ana Ribeiro · Engenharia</p>
+      <div class="acc-grid" style="margin-top:14px">
+        ''' + acc('Figma', 'figma.com', 'wait') + acc('Notion', 'notion.so') \
+            + acc('Slack', 'slack.com') + acc('Linear', 'linear.app') \
+            + acc('ChatGPT', 'chatgpt.com') + acc('GitHub', 'github.com') + '''
+      </div>
+    </div>
+  </div>
+</div>'''
+
 open('promo-tile.html', 'w').write(TILE)
+open('promo-large.html', 'w').write(LARGE)
 open('promo-marquee.html', 'w').write(MARQUEE)
-print('wrote promo-tile.html e promo-marquee.html')
+print('wrote promo-tile.html, promo-large.html e promo-marquee.html')

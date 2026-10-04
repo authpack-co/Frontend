@@ -16,6 +16,7 @@ const targets = [
     html: `slide-${i}.html`, png: `niango-${i}.png`, w: 1280, h: 800,
   })),
   { html: 'promo-tile.html', png: 'niango-promo-440x280.png', w: 440, h: 280 },
+  { html: 'promo-large.html', png: 'niango-promo-920x680.png', w: 920, h: 680 },
   { html: 'promo-marquee.html', png: 'niango-marquee-1400x560.png', w: 1400, h: 560 },
 ];
 
