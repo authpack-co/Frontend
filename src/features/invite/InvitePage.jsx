@@ -19,13 +19,17 @@ const MORE_SHAPE = '48% 52% 44% 56% / 52% 46% 54% 48%';
 // Quanto o "você já tem acesso" fica na tela antes de levar ao pacote.
 const OWNED_REDIRECT_MS = 2600;
 
+// De quanto em quanto tempo o pedido pendente pergunta se o dono já decidiu.
+const APPROVAL_POLL_MS = 4000;
+
 /**
  * Convite de pacote.
  *
  * O link não dá acesso: dá a chance de pedir. Quem abre vê o que tem dentro e
- * manda uma solicitação; o dono aprova no painel dele. A tela cobre os quatro
- * desfechos disso — link quebrado, pedido a fazer, pedido já feito, e acesso
- * que a pessoa já tinha.
+ * manda uma solicitação; o dono aprova no painel dele. A tela cobre os
+ * desfechos disso — link quebrado, pedido a fazer, e acesso que a pessoa já
+ * tinha. O pedido feito não troca de tela: a pessoa continua no convite, com
+ * os serviços em volta da caixa, e só o botão acompanha a decisão do dono.
  */
 export default function InvitePage() {
     const { key } = useParams();
@@ -65,12 +69,12 @@ export default function InvitePage() {
                         return;
                     }
                     if (status?.request?.status === 'pending') {
-                        setState({ status: 'sent', pkg, owner, alreadyPending: true });
+                        setState({ status: 'invite', pkg, owner, request: 'pending' });
                         return;
                     }
                 }
 
-                setState({ status: 'invite', pkg, owner });
+                setState({ status: 'invite', pkg, owner, request: null });
             } catch (err) {
                 if (alive) {
                     setState({
@@ -97,6 +101,47 @@ export default function InvitePage() {
         return () => clearTimeout(timer);
     }, [ownedTarget, navigate]);
 
+    // Pedido pendente: enquanto a tela estiver aberta, pergunta se o dono já
+    // decidiu. Com a aba escondida não pergunta — e confere na hora em que a
+    // pessoa volta, que é quando a resposta importa.
+    const waiting = state.status === 'invite' && state.request === 'pending';
+
+    useEffect(() => {
+        if (!waiting) return undefined;
+        let alive = true;
+        let busy = false;
+
+        async function check() {
+            if (busy || document.hidden) return;
+            busy = true;
+            try {
+                const status = await api.getInviteStatus(key);
+                if (!alive) return;
+                if (status?.hasAccess) {
+                    setState((current) => ({
+                        ...current, request: 'approved', isOwner: !!status.isOwner,
+                    }));
+                } else if (status?.request?.status === 'rejected') {
+                    setState((current) => ({ ...current, request: 'rejected' }));
+                }
+            } catch {
+                // Falha de rede numa volta do polling não muda nada: a próxima tenta de novo.
+            } finally {
+                busy = false;
+            }
+        }
+
+        const timer = setInterval(check, APPROVAL_POLL_MS);
+        const onVisibility = () => { if (!document.hidden) check(); };
+        document.addEventListener('visibilitychange', onVisibility);
+
+        return () => {
+            alive = false;
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, [waiting, key]);
+
     async function requestAccess() {
         setSending(true);
 
@@ -122,12 +167,13 @@ export default function InvitePage() {
                 return;
             }
 
+            // A resposta traz o pacote sem os serviços: mistura com o do
+            // preview para a caixa não ficar vazia.
             setState((current) => ({
                 ...current,
-                status: 'sent',
-                pkg,
+                pkg: { ...current.pkg, ...data.package },
                 owner: data.owner || current.owner,
-                alreadyPending: data.alreadyPending,
+                request: 'pending',
             }));
         } catch (err) {
             setState({
@@ -190,56 +236,31 @@ export default function InvitePage() {
                             </span>
                         </div>
 
-                        <button
-                            className={`inv-cta${sending ? ' loading' : ''}`}
-                            type="button"
-                            onClick={requestAccess}
-                            disabled={sending}
-                        >
-                            {sending && <span className="inv-spinner"></span>}
-                            <span className="inv-cta-label">Solicitar acesso</span>
-                            <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                            </svg>
-                        </button>
-
-                        <div className="inv-fineprint">
-                            <span>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        {state.request === 'approved' ? (
+                            <Cta to={packageHome(state)} className="is-ready">Abrir o pacote</Cta>
+                        ) : waiting ? (
+                            <button className="inv-cta is-waiting" type="button" disabled>
+                                <span className="inv-wait-dot"></span>
+                                <span className="inv-cta-label">Aguardando aprovação</span>
+                            </button>
+                        ) : (
+                            <button
+                                className={`inv-cta${sending ? ' loading' : ''}`}
+                                type="button"
+                                onClick={requestAccess}
+                                disabled={sending}
+                            >
+                                {sending && <span className="inv-spinner"></span>}
+                                <span className="inv-cta-label">Solicitar acesso</span>
+                                <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                                 </svg>
-                                O dono precisa aprovar
-                            </span>
-                            <span>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M20 6 9 17l-5-5" />
-                                </svg>
-                                Nenhuma senha passa por você
-                            </span>
-                        </div>
-                    </article>
-                )}
+                            </button>
+                        )}
 
-                {state.status === 'sent' && (
-                    <article className="inv-card inv-state-sent" aria-live="polite">
-                        <div className="inv-sent-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                            </svg>
+                        <div className="inv-fineprint" aria-live="polite">
+                            <InviteFineprint request={state.request} ownerName={ownerName} />
                         </div>
-                        {/* Um pedido que já estava esperando não é novidade
-                            para quem chega: dizer "enviada" de novo soaria
-                            como se algo tivesse mudado agora. */}
-                        <h1 className="inv-title">
-                            {state.alreadyPending ? 'Seu pedido está com o dono' : 'Solicitação enviada'}
-                        </h1>
-                        <p className="inv-desc">
-                            <strong>{ownerName}</strong> precisa aprovar.{' '}
-                            <strong>{state.pkg?.name || 'O pacote'}</strong> aparece em{' '}
-                            <strong>Meus acessos</strong> quando isso acontecer.
-                        </p>
-                        <Cta to="/collection">Ir para o painel</Cta>
                     </article>
                 )}
 
@@ -280,9 +301,62 @@ function packageHome({ pkg, isOwner }) {
     return isOwner ? `/collection/${pkg.id}` : `/shared/${pkg.id}`;
 }
 
-function Cta({ to, children }) {
+/** A linha de baixo do botão acompanha o pedido: o que falta, ou o que o dono decidiu. */
+function InviteFineprint({ request, ownerName }) {
+    // Sem nome, o "o dono" abre a frase nos desfechos.
+    const Owner = ownerName.charAt(0).toUpperCase() + ownerName.slice(1);
+
+    if (request === 'pending') {
+        return (
+            <>
+                <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                    </svg>
+                    Pedido enviado para {ownerName}
+                </span>
+                <span>Se fechar a tela, o pacote aparece em Meus acessos quando for aprovado</span>
+            </>
+        );
+    }
+
+    if (request === 'approved') {
+        return (
+            <span className="is-approved">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                </svg>
+                {Owner} aprovou seu acesso
+            </span>
+        );
+    }
+
+    if (request === 'rejected') {
+        return <span>{Owner} recusou o pedido. Você pode pedir de novo.</span>;
+    }
+
     return (
-        <Link className="inv-cta" to={to}>
+        <>
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                O dono precisa aprovar
+            </span>
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Nenhuma senha passa por você
+            </span>
+        </>
+    );
+}
+
+function Cta({ to, className = '', children }) {
+    return (
+        <Link className={`inv-cta ${className}`.trim()} to={to}>
             <span className="inv-cta-label">{children}</span>
             <svg className="inv-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
