@@ -20,7 +20,6 @@ const COPY = {
 // Por que uma linha falhou, nos casos em que dá para dizer algo útil (reason
 // vindo da extensão). Os demais ficam só com o ✕.
 const FAILURE_REASONS = {
-    redirected_offsite: 'O site levou para outro domínio',
     redirect_loop: 'O site redirecionou vezes demais',
     timeout: 'O site não terminou de carregar',
     load_failed: 'O site não carregou',
