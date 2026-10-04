@@ -141,10 +141,11 @@
   border-color: var(--ink-3);
 }
 
+/* Filtro ativo é estado, não ação de destaque: vai na tinta. */
 .filter-chip.active {
-  background: var(--blue);
-  color: #fff;
-  border-color: var(--blue);
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
 }
 
 /* ===== Post grid ===== */
@@ -212,7 +213,7 @@
 }
 
 .post-card:hover h2 a {
-  color: var(--blue-deep);
+  color: var(--accent-ink);
 }
 
 .post-card p {
@@ -226,7 +227,7 @@
 .post-card .post-readmore {
   font-size: 14px;
   font-weight: 600;
-  color: var(--blue-deep);
+  color: var(--accent-ink);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -337,13 +338,13 @@
 }
 
 .prose a {
-  color: var(--blue-deep);
+  color: var(--accent-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .prose a:hover {
-  color: var(--accent-ink);
+  color: var(--ink);
 }
 
 .prose ul,
@@ -489,7 +490,7 @@
 
 .article-foot a.back {
   font-weight: 600;
-  color: var(--blue-deep);
+  color: var(--accent-ink);
   display: inline-flex;
   align-items: center;
   gap: 6px;

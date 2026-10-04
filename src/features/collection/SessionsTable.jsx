@@ -72,17 +72,11 @@ export default function SessionsTable({ pkg, sessions, stats, statsStatus, onlin
 
     useScrollToNewSessions(sessions);
 
-    // Ativas (alguém usando agora) no topo; dentro de cada grupo, ordem
-    // alfabética. A mesma regra do SessionStatus: pacote pausado não tem ativa.
-    const isActive = (session) => pkg.isActive !== false && (online.bySession[session.id] || []).length > 0;
-    const visible = sessions
-        .filter((session) => {
-            if (!query) return true;
-            const name = (session.name || '').toLowerCase();
-            return name.includes(query) || sessionDomain(session).toLowerCase().includes(query);
-        })
-        .sort((a, b) => (isActive(b) - isActive(a))
-            || (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' }));
+    const visible = sessions.filter((session) => {
+        if (!query) return true;
+        const name = (session.name || '').toLowerCase();
+        return name.includes(query) || sessionDomain(session).toLowerCase().includes(query);
+    });
 
     if (sessions.length === 0) {
         return (

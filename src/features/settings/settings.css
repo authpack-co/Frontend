@@ -343,14 +343,14 @@
     cursor: not-allowed;
 }
 
-/* Reuse dashboard btn styles */
-.sc-full-btn.btn-primary {
-    background: var(--ap-primary);
-    color: var(--ap-on-primary);
+/* Assinar e reativar: conversão — o azul cheio da marca (ver .btn-brand). */
+.sc-full-btn.btn-brand {
+    background: var(--ap-accent);
+    color: #fff;
 }
 
-.sc-full-btn.btn-primary:hover:not(:disabled) {
-    background: var(--ap-primary-hover);
+.sc-full-btn.btn-brand:hover:not(:disabled) {
+    background: var(--ap-accent-hover);
 }
 
 .sc-full-btn.btn-danger {
@@ -551,13 +551,13 @@
 
 /* Pagamento pendente: regularizar é a ação principal. */
 .bl-action-btn--primary {
-    background: var(--ap-primary);
-    border-color: var(--ap-primary);
-    color: var(--ap-on-primary);
+    background: var(--ap-accent);
+    border-color: var(--ap-accent);
+    color: #fff;
 }
 
 .bl-action-btn--primary:hover:not(:disabled) {
-    background: var(--ap-primary-hover);
+    background: var(--ap-accent-hover);
 }
 
 .bl-action-btn--danger {

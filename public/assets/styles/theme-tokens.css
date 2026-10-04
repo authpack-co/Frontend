@@ -12,79 +12,73 @@
    LIGHT THEME (Default)
    ============================================ */
 :root {
-    /* ── Backgrounds ── */
-    --ap-bg-page: #f7f7f6;
+    /* ── Backgrounds ──
+       Neutros levemente frios, da mesma família do Grafite (#11151C): o
+       off-white quente do tema antigo puxava para o laranja ao lado do azul. */
+    --ap-bg-page: #f6f7f9;
     --ap-bg-card: #ffffff;
-    --ap-bg-card-alt: #fafaf9;
-    --ap-bg-input: #f4f4f3;
-    --ap-bg-hover: #f1f1ef;
-    --ap-bg-muted: #e7e6e3;
+    --ap-bg-card-alt: #fafbfc;
+    --ap-bg-input: #f3f4f6;
+    --ap-bg-hover: #f0f2f5;
+    --ap-bg-muted: #e5e8ec;
     --ap-bg-overlay: rgba(0, 0, 0, 0.3);
     --ap-bg-header: rgba(255, 255, 255, 0.88);
     --ap-bg-sidebar: #ffffff;
     --ap-bg-dropdown: #ffffff;
     --ap-bg-modal: #ffffff;
-    --ap-bg-skeleton-from: rgba(231, 230, 227, 0.7);
-    --ap-bg-skeleton-via: rgba(213, 211, 206, 0.9);
+    --ap-bg-skeleton-from: rgba(229, 232, 236, 0.7);
+    --ap-bg-skeleton-via: rgba(209, 213, 219, 0.9);
 
-    /* ── Text ── */
-    --ap-text-primary: #1a1a1c;
-    --ap-text-secondary: #44444a;
-    --ap-text-muted: #71717a;
-    --ap-text-placeholder: #a1a1aa;
+    /* ── Text ──
+       O primário é o Grafite da marca (#11151C). */
+    --ap-text-primary: #11151c;
+    --ap-text-secondary: #3f444d;
+    --ap-text-muted: #6b717c;
+    --ap-text-placeholder: #a0a5ae;
     --ap-text-inverse: #ffffff;
 
     /* ── Borders ── */
-    --ap-border: #e6e5e2;
-    --ap-border-hover: #d5d3ce;
-    /* Foco de campo é neutro: um tom acima da borda de repouso — o bastante
-       para dizer onde se está digitando. */
-    --ap-border-focus: #71717a;
-    --ap-border-muted: #d5d3ce;
+    --ap-border: #e4e7eb;
+    --ap-border-hover: #d1d5db;
+    /* Foco de campo é neutro: o azul da marca fica para detalhe e estado
+       selecionado. Um tom acima da borda de repouso — o bastante para dizer
+       onde se está digitando. */
+    --ap-border-focus: #6b717c;
+    --ap-border-muted: #d1d5db;
 
-    /* ── Cores por função ──
-       A marca não pinta a interface. Cada papel tem a sua cor:
-       - Ação principal (--ap-primary): invertida — quase-preto no claro,
-         branco no escuro. Botões primários, confirmar, adicionar.
-       - Interação e informação (--ap-accent): azul. Foco, seleção, toggles,
-         progresso, notificações, gráficos.
-       - Marca (--ap-brand): laranja, e só onde é marca — Plus, upgrade,
-         planos. O que é decorativo usa a escala neutra acima. */
-    --ap-primary: #1a1a1c;
-    --ap-primary-hover: #34343a;
+    /* ── Ação primária (tinta) ──
+       A marca é azul, preto e branco — e o azul cansa se pintar todo botão.
+       O botão do dia a dia (salvar, criar, adicionar, copiar) é tinta: preto
+       no claro, branco no escuro. O azul fica para detalhe e para o punhado
+       de botões que realmente importam (assinar, instalar a extensão, pedir
+       acesso) — ver .btn-brand. */
+    --ap-primary: #11151c;
+    --ap-primary-hover: #2a303b;
     --ap-on-primary: #ffffff;
-    --ap-primary-rgb: 26, 26, 28;
 
-    --ap-accent: #2563eb;
-    --ap-accent-hover: #1d4ed8;
-    --ap-accent-light: #eff6ff;
-    --ap-accent-muted: #bfdbfe;
-    --ap-accent-strong: #1d4ed8;
-    --ap-accent-subtle: rgba(37, 99, 235, 0.07);
+    /* ── Accent (Azul Niango — cor da marca) ──
+       --ap-accent preenche (botão de destaque, ponto, barra, anel de foco) e
+       sempre leva branco por cima; --ap-accent-strong escreve (texto, ícone).
+       No claro os dois são o mesmo #1C65C8 — 5.6:1 sobre branco.
+       O que é decorativo usa a escala neutra acima. */
+    --ap-accent: #1c65c8;
+    --ap-accent-hover: #1857ad;
+    --ap-accent-light: #eef4fd;
+    --ap-accent-muted: #c4d8f5;
+    --ap-accent-strong: #1c65c8;
+    --ap-accent-subtle: rgba(28, 101, 200, 0.07);
     /* Canal RGB do acento — para glows e anéis: rgba(var(--ap-accent-rgb), .3) */
-    --ap-accent-rgb: 37, 99, 235;
-    /* Texto/ícone em cima de um fundo --ap-accent (check, contador). */
-    --ap-on-accent: #ffffff;
-
-    --ap-brand: #f97316;
-    --ap-brand-hover: #ea6a0c;
-    --ap-brand-light: #fff7ed;
-    --ap-brand-muted: #fed7aa;
-    --ap-brand-strong: #c2410c;
-    --ap-brand-subtle: rgba(234, 88, 12, 0.08);
-    --ap-brand-rgb: 249, 115, 22;
-    /* Plus (tier premium): âmbar → laranja, "dourado" sem sair da família
-       da marca. No claro os dois tons escurecem para manter contraste. */
-    --ap-plus-gradient: linear-gradient(135deg, #d97706, #c2410c);
-
-    /* Sessão sem cor própria (iconColor): bolha e barras em cinza médio. */
-    --ap-session-fallback-rgb: 113, 113, 122;
+    --ap-accent-rgb: 28, 101, 200;
+    /* Plus (tier premium): o azul da marca indo para o azul claro. */
+    --ap-plus-gradient: linear-gradient(135deg, #1c65c8, #3a82e4);
 
     /* ── Seleção (neutra) ──
-       Item ativo/selecionado (abas, item da sidebar) se distingue por
-       superfície e peso, não por matiz. */
-    --ap-selected-bg: #edece9;
-    --ap-selected-border: #cfcdc8;
+       Item ativo/selecionado se distingue por superfície e peso, não por
+       matiz: pintar todo estado de azul recriaria o cansaço que a tinta
+       evita nos botões. O acento fica para detalhe (foco, progresso,
+       marcação), não para superfície. */
+    --ap-selected-bg: #eceff3;
+    --ap-selected-border: #cdd2d9;
 
     /* ── Success ── */
     --ap-success: #16a34a;
@@ -93,8 +87,7 @@
     --ap-success-text: #15803d;
 
     /* ── Warning ──
-       Puxado para o amarelo (e não para o âmbar) para não colidir
-       com o laranja do Plus. */
+       Amarelo: longe do azul da marca e do vermelho do erro. */
     --ap-warning: #ca8a04;
     --ap-warning-light: #fefce8;
     --ap-warning-border: #fde047;
@@ -114,8 +107,8 @@
     --ap-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.12);
 
     /* ── Scrollbar ── */
-    --ap-scrollbar-thumb: #d5d3ce;
-    --ap-scrollbar-track: #f4f4f3;
+    --ap-scrollbar-thumb: #d1d5db;
+    --ap-scrollbar-track: #f3f4f6;
     --ap-scrollbar-thumb-hover: #a1a1aa;
 
     /* ── Shared (non-theme) ── */
@@ -150,62 +143,58 @@
    DARK THEME
    ============================================ */
 :root[data-theme="dark"] {
-    /* ── Backgrounds ── */
-    --ap-bg-page: #17181a;
-    --ap-bg-card: #131416;
-    --ap-bg-card-alt: #1b1c1e;
-    --ap-bg-input: #0f1011;
-    --ap-bg-hover: #232426;
-    --ap-bg-muted: #26272a;
+    /* ── Backgrounds ──
+       Escala tirada do Grafite da marca (#11151C): neutro levemente frio,
+       que conversa com o azul em vez de puxar para o marrom. */
+    --ap-bg-page: #14171d;
+    --ap-bg-card: #101318;
+    --ap-bg-card-alt: #181c23;
+    --ap-bg-input: #0c0f13;
+    --ap-bg-hover: #1f242c;
+    --ap-bg-muted: #242a33;
     --ap-bg-overlay: rgba(0, 0, 0, 0.65);
-    --ap-bg-header: rgba(19, 20, 22, 0.85);
-    --ap-bg-sidebar: #131416;
-    --ap-bg-dropdown: #1b1c1e;
-    --ap-bg-modal: #17181a;
-    --ap-bg-skeleton-from: rgba(42, 42, 44, 0.7);
-    --ap-bg-skeleton-via: rgba(54, 54, 56, 0.9);
+    --ap-bg-header: rgba(16, 19, 24, 0.85);
+    --ap-bg-sidebar: #101318;
+    --ap-bg-dropdown: #181c23;
+    --ap-bg-modal: #14171d;
+    --ap-bg-skeleton-from: rgba(38, 43, 52, 0.7);
+    --ap-bg-skeleton-via: rgba(50, 56, 67, 0.9);
 
     /* ── Text ── */
-    --ap-text-primary: #e8e6e3;
-    --ap-text-secondary: #d6d3cd;
-    --ap-text-muted: #9d9488;
-    --ap-text-placeholder: #8f8d8a;
-    --ap-text-inverse: #17181a;
+    --ap-text-primary: #e7e9ed;
+    --ap-text-secondary: #cdd1d8;
+    --ap-text-muted: #8e95a1;
+    --ap-text-placeholder: #737a87;
+    --ap-text-inverse: #11151c;
 
     /* ── Borders ── */
-    --ap-border: #2e2f33;
-    --ap-border-hover: #3a3b3f;
-    --ap-border-focus: #9d9488;
-    --ap-border-muted: #6d655a;
+    --ap-border: #292e37;
+    --ap-border-hover: #353b45;
+    --ap-border-focus: #8e95a1;
+    --ap-border-muted: #4b525e;
 
-    /* ── Cores por função (ver tema claro) ── */
-    --ap-primary: #ededeb;
+    /* ── Ação primária (tinta): branco no escuro ── */
+    --ap-primary: #eef0f3;
     --ap-primary-hover: #ffffff;
-    --ap-on-primary: #131416;
-    --ap-primary-rgb: 237, 237, 235;
+    --ap-on-primary: #11151c;
 
-    --ap-accent: #60a5fa;
-    --ap-accent-hover: #93c5fd;
-    --ap-accent-light: rgba(96, 165, 250, 0.10);
-    --ap-accent-muted: rgba(96, 165, 250, 0.28);
-    --ap-accent-strong: #93c5fd;
-    --ap-accent-subtle: rgba(96, 165, 250, 0.07);
-    --ap-accent-rgb: 96, 165, 250;
-    /* No escuro o azul é claro: o que vai em cima dele é escuro. */
-    --ap-on-accent: #0b1220;
-
-    --ap-brand: #f97316;
-    --ap-brand-hover: #fb8f3f;
-    --ap-brand-light: rgba(249, 115, 22, 0.10);
-    --ap-brand-muted: rgba(249, 115, 22, 0.18);
-    --ap-brand-strong: #fb923c;
-    --ap-brand-subtle: rgba(249, 115, 22, 0.08);
-    --ap-brand-rgb: 249, 115, 22;
-    --ap-plus-gradient: linear-gradient(135deg, #fbbf24, #f97316);
+    /* ── Accent (Azul Niango) ──
+       Preenchimento um passo acima do #1C65C8: no fundo grafite o azul da
+       marca fica apagado, e este ainda leva branco por cima (4.6:1).
+       Para escrever, o Azul claro da marca (#609EFA) — é o mesmo tom do "go"
+       do wordmark em fundo escuro. */
+    --ap-accent: #2a72dc;
+    --ap-accent-hover: #3479e0;
+    --ap-accent-light: rgba(96, 158, 250, 0.12);
+    --ap-accent-muted: rgba(96, 158, 250, 0.24);
+    --ap-accent-strong: #609efa;
+    --ap-accent-subtle: rgba(96, 158, 250, 0.08);
+    --ap-accent-rgb: 96, 158, 250;
+    --ap-plus-gradient: linear-gradient(135deg, #a3c8ff, #609efa);
 
     /* ── Seleção (neutra) ── */
-    --ap-selected-bg: #26272a;
-    --ap-selected-border: #45464a;
+    --ap-selected-bg: #242a33;
+    --ap-selected-border: #3e4551;
 
     /* ── Success ── */
     --ap-success: #4ade80;
@@ -213,19 +202,16 @@
     --ap-success-border: rgba(76, 175, 80, 0.3);
     --ap-success-text: #4ade80;
 
-    /* ── Warning ──
-       Amarelo, para não colidir com o laranja do Plus. */
+    /* ── Warning ── */
     --ap-warning: #facc15;
     --ap-warning-light: rgba(250, 204, 21, 0.1);
     --ap-warning-border: rgba(250, 204, 21, 0.28);
     --ap-warning-text: #facc15;
     --ap-warning-rgb: 250, 204, 21;
 
-    /* ── Danger / Error ──
-       Vermelho puro, e fundo no próprio vermelho: o antigo rgba(169,20,9,.2)
-       era marrom e puxava o #f87171 para o laranja. */
+    /* ── Danger / Error ── */
     --ap-danger: #ef4444;
-    --ap-danger-light: rgba(239, 68, 68, 0.12);
+    --ap-danger-light: rgba(169, 20, 9, 0.2);
     --ap-danger-border: rgba(239, 68, 68, 0.3);
     --ap-danger-text: #f87171;
 
@@ -236,17 +222,25 @@
     --ap-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
 
     /* ── Scrollbar ── */
-    --ap-scrollbar-thumb: #3a3b3f;
-    --ap-scrollbar-track: #26272a;
-    --ap-scrollbar-thumb-hover: #4a4b4f;
+    --ap-scrollbar-thumb: #353b45;
+    --ap-scrollbar-track: #1f242c;
+    --ap-scrollbar-thumb-hover: #4b525e;
 }
 
 
 
 /* ── Marca do Niango ─────────────────────────────────────────────────────────
-   Um arquivo só, o disco preto, nos dois temas — antes havia um par (preto no
-   claro, branco no escuro) que o CSS trocava. O nome do arquivo segue
-   favicon-128x128.png porque é a URL que o JSON-LD de todas as páginas publica
-   como logo da organização.
+   O símbolo (o "go" no disco azul) é um arquivo só, nos dois temas. O nome
+   segue favicon-128x128.png porque é a URL que o JSON-LD de todas as páginas
+   publica como logo da organização.
+
+   A marca padrão é o wordmark ("niango" com o "go" azul); a assinatura
+   (símbolo + nome) só entra onde o ícone precisa vir junto, como no blog.
+   Os dois mudam com o tema: o nome é grafite no claro e branco no escuro.
+   As duas versões vão no HTML e o tema esconde a que não vale — ver
+   assets/images/brand/.
    ─────────────────────────────────────────────────────────────────────────── */
 .niango-mark { display: block; }
+.niango-logo--dark { display: none; }
+:root[data-theme="dark"] .niango-logo--light { display: none; }
+:root[data-theme="dark"] .niango-logo--dark { display: block; }

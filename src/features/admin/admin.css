@@ -36,20 +36,21 @@
     align-items: center;
     gap: 10px;
     padding: 0 var(--ap-space-sm) var(--ap-space-lg);
+    color: var(--ap-text-primary);
 }
-.admin-brand-mark {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--ap-radius-md);
-    background: var(--ap-brand-strong);
-    color: #fff;
-    font-family: var(--ap-font-heading);
+/* Selo "Admin" ao lado do wordmark: neutro — o azul já está no "go". */
+.admin-brand-tag {
+    font-size: 10.5px;
     font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ap-text-muted);
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-xs);
+    padding: 2px 6px;
+    line-height: 1.2;
 }
-.admin-brand-name { font-weight: 600; font-size: 0.98rem; }
-.admin-brand-name em { color: var(--ap-text-muted); font-style: normal; font-weight: 500; }
+.admin-topbar .admin-brand { padding: 0; }
 
 .admin-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .admin-sidebar-footer { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--ap-border); padding-top: var(--ap-space-sm); }
@@ -197,7 +198,7 @@
 }
 .admin-btn:hover { background: var(--ap-bg-hover); }
 .admin-btn-primary { background: var(--ap-primary); border-color: var(--ap-primary); color: var(--ap-on-primary); }
-.admin-btn-primary:hover { background: var(--ap-primary-hover); }
+.admin-btn-primary:hover { background: var(--ap-primary-hover); border-color: var(--ap-primary-hover); }
 .admin-btn-danger { background: var(--ap-danger); border-color: var(--ap-danger); color: #fff; }
 .admin-btn-danger:hover { opacity: .9; }
 .admin-btn-sm { padding: 5px 10px; font-size: 0.78rem; }
@@ -251,7 +252,7 @@
 .badge-admin { background: var(--ap-warning-light); color: var(--ap-warning-text); border-color: var(--ap-warning-border); }
 .badge-active { background: var(--ap-success-light); color: var(--ap-success-text); border-color: var(--ap-success-border); }
 .badge-suspended { background: var(--ap-danger-light); color: var(--ap-danger-text); border-color: var(--ap-danger-border); }
-.badge-plan-plus { background: var(--ap-brand-light); color: var(--ap-brand-strong); }
+.badge-plan-plus { background: var(--ap-accent-light); color: var(--ap-accent-strong); }
 .badge-neutral { background: var(--ap-bg-muted); color: var(--ap-text-muted); }
 
 /* ── States ──────────────────────────────────────────────── */
@@ -264,7 +265,7 @@
 .admin-spinner {
     width: 22px; height: 22px;
     border: 2.5px solid var(--ap-border);
-    border-top-color: var(--ap-accent-strong);
+    border-top-color: var(--ap-accent);
     border-radius: 50%;
     margin: 0 auto var(--ap-space-sm);
     animation: spin .7s linear infinite;

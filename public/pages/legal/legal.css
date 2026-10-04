@@ -88,7 +88,7 @@ a { text-decoration: none; color: inherit; }
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: var(--ap-accent-light);
     border: 1px solid var(--ap-accent-muted);
     border-radius: 6px;
@@ -265,19 +265,18 @@ a { text-decoration: none; color: inherit; }
     margin-top: 12px;
     font-size: 14.5px;
     font-weight: 600;
-    color: var(--ap-accent);
-    background: var(--ap-accent-light);
-    border: 1px solid var(--ap-accent-muted);
+    color: var(--ap-on-primary);
+    background: var(--ap-primary);
+    border: 1px solid var(--ap-primary);
     border-radius: 9px;
     padding: 10px 18px;
     transition: all 0.15s;
 }
 
 .legal-contact-link:hover {
-    background: var(--ap-accent-muted);
-    border-color: var(--ap-accent);
+    background: var(--ap-primary-hover);
+    border-color: var(--ap-primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 3px 12px rgba(var(--ap-accent-rgb), 0.15);
 }
 
 /* ============================================

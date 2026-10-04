@@ -14,42 +14,45 @@
 /* ── Tema claro (padrão, como no dashboard) ── */
 :root {
   /* ── Superfícies ── */
-  --bg: #f7f7f6;          /* página            (= --ap-bg-page)     */
+  --bg: #f6f7f9;          /* página            (= --ap-bg-page)     */
   --card: #ffffff;        /* card              (= --ap-bg-card)     */
-  --bg-warm: #fafaf9;     /* card alternativo  (= --ap-bg-card-alt) */
-  --hover: #f1f1ef;       /* hover             (= --ap-bg-hover)    */
-  --muted: #e7e6e3;       /* superfície inerte (= --ap-bg-muted)    */
+  --bg-warm: #fafbfc;     /* card alternativo  (= --ap-bg-card-alt) */
+  --hover: #f0f2f5;       /* hover             (= --ap-bg-hover)    */
+  --muted: #e5e8ec;       /* superfície inerte (= --ap-bg-muted)    */
 
-  /* ── Texto ── */
-  --ink: #1a1a1c;
-  --ink-2: #44444a;
-  --ink-3: #71717a;
+  /* ── Texto ── (o primário é o Grafite da marca) */
+  --ink: #11151c;
+  --ink-2: #3f444d;
+  --ink-3: #6b717c;
 
   /* ── Bordas ── */
-  --line: #e6e5e2;
-  --line-2: #d5d3ce;
+  --line: #e4e7eb;
+  --line-2: #d1d5db;
 
-  /* ── Acento (laranja da marca) ──
-     Os nomes --blue* são históricos: blog.css e a página de preços
-     dependem deles. Só o valor mudou (azul → laranja).
+  /* ── Ação primária (tinta) ──
+     Preto no claro, branco no escuro: é o botão de todo dia ("Entrar",
+     "Ver planos"). O azul cheio fica para a conversão (ver .btn-primary). */
+  --primary: #11151c;
+  --primary-hover: #2a303b;
+  --on-primary: #ffffff;
 
-     --blue preenche (botão, ponto, anel de foco) e --accent-ink escreve:
-     no claro o laranja de preenchimento não tem contraste para texto
-     pequeno, então o texto usa o tom queimado. */
-  --blue: #f97316;
-  --blue-deep: #c2410c;
-  --accent-ink: #c2410c;
-  --blue-soft: rgba(249, 115, 22, 0.12);
-  --blue-subtle: rgba(234, 88, 12, 0.08);  /* (= --ap-accent-subtle) */
-  --blue-rgb: 249, 115, 22;
+  /* ── Acento (Azul Niango) ──
+     Os nomes --blue* são históricos — e voltaram a dizer a verdade.
+     --blue preenche (botão, ponto, anel de foco) e --accent-ink escreve. */
+  --blue: #1c65c8;
+  --blue-deep: #1857ad;
+  --accent-ink: #1c65c8;
+  --blue-soft: rgba(28, 101, 200, 0.12);
+  --blue-subtle: rgba(28, 101, 200, 0.07);  /* (= --ap-accent-subtle) */
+  --blue-rgb: 28, 101, 200;
   --mint: #16a34a;
-  --accent-soft: #c2410c;
+  --accent-soft: #1c65c8;
 
-  /* Gradientes. O acento entra em dose pequena — o laranja cansa quando
-     cobre superfície grande, então aqui ele só tinge o fundo. */
-  --grad-brand: linear-gradient(92deg, #f97316 0%, #fb923c 100%);
-  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.06), rgba(249, 115, 22, 0.01));
-  --grad-text: linear-gradient(92deg, #1a1a1c 0%, #c2410c 100%);
+  /* Gradientes. O acento entra em dose pequena — cor cobrindo superfície
+     grande cansa, então aqui ele só tinge o fundo. */
+  --grad-brand: linear-gradient(92deg, #1c65c8 0%, #3a82e4 100%);
+  --grad-soft: linear-gradient(180deg, rgba(28, 101, 200, 0.06), rgba(28, 101, 200, 0.01));
+  --grad-text: linear-gradient(92deg, #11151c 0%, #1c65c8 100%);
 
   /* ── Sombras ── */
   --sh-1: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -57,19 +60,19 @@
   --sh-3: 0 10px 24px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.06);
 
   /* Hachura usada nos placeholders de imagem */
-  --stripe: rgba(26, 26, 28, 0.05);
+  --stripe: rgba(17, 21, 28, 0.05);
 
   /* ── Mockups (SVG inline na landing) ──
      Tons que só aparecem nos desenhos: campos, a moldura do navegador e a
      página simulada atrás do popup da extensão. O popup em si fica escuro
      nos dois temas — é assim que a extensão aparece na tela. */
-  --art-inset: #ededea;      /* campo, pílula, canvas da página simulada */
+  --art-inset: #eceef1;      /* campo, pílula, canvas da página simulada */
   --art-surface: #ffffff;    /* cartão dentro da página simulada         */
-  --art-chrome: #e9e8e4;     /* barra de título do navegador             */
-  --art-bar: #e7e6e2;        /* linha de texto (esqueleto)               */
-  --art-bar-2: #d8d6d1;      /* título (esqueleto)                       */
+  --art-chrome: #e8eaee;     /* barra de título do navegador             */
+  --art-bar: #e5e8ec;        /* linha de texto (esqueleto)               */
+  --art-bar-2: #d6dae0;      /* título (esqueleto)                       */
   --art-placeholder: #a1a1aa; /* texto de campo vazio                    */
-  --art-selected-line: #cfcdc8; /* borda do item selecionado             */
+  --art-selected-line: #cdd2d9; /* borda do item selecionado             */
 
   --radius: 8px;
   --radius-lg: 12px;
@@ -82,43 +85,51 @@
 
 /* ── Tema escuro ── */
 :root[data-theme="dark"] {
-  --bg: #17181a;
-  --card: #131416;
-  --bg-warm: #1b1c1e;
-  --hover: #232426;
-  --muted: #26272a;
+  /* Escala tirada do Grafite da marca (= theme-tokens.css). */
+  --bg: #14171d;
+  --card: #101318;
+  --bg-warm: #181c23;
+  --hover: #1f242c;
+  --muted: #242a33;
 
-  --ink: #e8e6e3;
-  --ink-2: #d6d3cd;
-  --ink-3: #9d9488;
+  --ink: #e7e9ed;
+  --ink-2: #cdd1d8;
+  --ink-3: #8e95a1;
 
-  --line: #2e2f33;
-  --line-2: #3a3b3f;
+  --line: #292e37;
+  --line-2: #353b45;
 
-  --blue: #f97316;
-  --blue-deep: #fb923c;
-  --accent-ink: #f97316;
-  --blue-soft: rgba(249, 115, 22, 0.15);
-  --blue-subtle: rgba(249, 115, 22, 0.08);  /* (= --ap-accent-subtle) */
+  --primary: #eef0f3;
+  --primary-hover: #ffffff;
+  --on-primary: #11151c;
+
+  /* Preenchimento um passo acima do #1C65C8 (ainda leva branco), e o Azul
+     claro da marca para escrever. */
+  --blue: #2a72dc;
+  --blue-deep: #3479e0;
+  --accent-ink: #609efa;
+  --blue-soft: rgba(96, 158, 250, 0.15);
+  --blue-subtle: rgba(96, 158, 250, 0.08);  /* (= --ap-accent-subtle) */
+  --blue-rgb: 96, 158, 250;
   --mint: #4ade80;
-  --accent-soft: #fbb072;
+  --accent-soft: #8bbaff;
 
-  --grad-soft: linear-gradient(180deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.02));
-  --grad-text: linear-gradient(92deg, #e8e6e3 0%, #fbb072 100%);
+  --grad-soft: linear-gradient(180deg, rgba(96, 158, 250, 0.08), rgba(96, 158, 250, 0.02));
+  --grad-text: linear-gradient(92deg, #e7e9ed 0%, #8bbaff 100%);
 
   --sh-1: 0 1px 2px rgba(0, 0, 0, 0.2);
   --sh-2: 0 4px 16px rgba(0, 0, 0, 0.35);
   --sh-3: 0 8px 24px rgba(0, 0, 0, 0.45);
 
-  --stripe: rgba(232, 230, 227, 0.05);
+  --stripe: rgba(231, 233, 237, 0.05);
 
-  --art-inset: #0f1011;
-  --art-surface: #171719;
-  --art-chrome: #1a1d21;
-  --art-bar: #191a1c;
-  --art-bar-2: #212225;
-  --art-placeholder: #8f8d8a;
-  --art-selected-line: #45464a;
+  --art-inset: #0c0f13;
+  --art-surface: #151920;
+  --art-chrome: #191d24;
+  --art-bar: #181c23;
+  --art-bar-2: #20252d;
+  --art-placeholder: #737a87;
+  --art-selected-line: #3e4551;
 
   color-scheme: dark;
 }
@@ -179,15 +190,14 @@ a:focus-visible, button:focus-visible {
   box-shadow: var(--sh-1);
 }
 
-.nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.wordmark {
-  display: inline-flex;
-  font-family: 'Sora', 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 19px;
-  letter-spacing: -0.025em;
-  color: var(--ink);
-}
+.nav-logo { display: flex; align-items: center; flex-shrink: 0; }
+/* Marca: o wordmark ("niango" com o "go" azul) na landing e nos preços; a
+   assinatura (símbolo + nome) no blog. Duas <img> no HTML — o nome é grafite
+   no claro e branco no escuro — e o tema esconde a que não vale. */
+.niango-logo { display: block; width: auto; }
+.niango-logo--dark { display: none; }
+:root[data-theme="dark"] .niango-logo--light { display: none; }
+:root[data-theme="dark"] .niango-logo--dark { display: block; }
 
 .nav-links { display: flex; gap: 28px; margin-left: 12px; }
 .nav-links a { font-size: 15px; color: var(--ink-2); transition: color .15s ease; }
@@ -234,23 +244,19 @@ body.user-logged-in .nav-user { display: flex; }
 }
 
 /* Marca dentro do botão (Chrome). Herda currentColor, então sai branca no
-   botão laranja e no tom do texto no contorno. */
+   botão azul e no tom do texto no contorno. */
 .btn-icon { flex: none; width: 18px; height: 18px; }
 .btn-lg .btn-icon { width: 20px; height: 20px; }
 
-/* Ação principal */
+/* Conversão — "Adicionar ao Chrome", "Assinar Plus". O azul cheio da marca é
+   reservado a isto: se toda ação usa o mesmo tom, nenhuma se destaca. */
 .btn-primary { background: var(--blue); color: #fff; }
 .btn-primary:hover { background: var(--blue-deep); }
 
-/* Ação principal em dose pequena — "Entrar", "Ver planos".
-   O laranja cheio fica reservado ao "Adicionar ao Chrome", que é a conversão
-   da página: se toda ação usa o mesmo tom, nenhuma se destaca. */
-.btn-accent-soft {
-  background: var(--blue-subtle);
-  color: var(--accent-ink);
-  border: 1px solid var(--blue-soft);
-}
-.btn-accent-soft:hover { background: var(--blue-soft); border-color: var(--blue); }
+/* Ação comum — "Entrar", "Ver planos": tinta, preto no claro e branco no
+   escuro. */
+.btn-ink { background: var(--primary); color: var(--on-primary); border: 1px solid var(--primary); }
+.btn-ink:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 
 /* Ação secundária com contorno — usada pelo "Adicionar ao Chrome" no topo */
 .btn-outline { border: 1px solid var(--line); background: transparent; color: var(--ink-2); }
@@ -264,7 +270,8 @@ body.user-logged-in .nav-user { display: flex; }
 .btn-soft { background: var(--bg-warm); color: var(--ink); border: 1px solid var(--line); }
 .btn-soft:hover { background: var(--hover); }
 
-/* Alias histórico: o blog/pricing ainda pedem .btn-grad e .btn-on-dark */
+/* Alias histórico: o blog/pricing ainda pedem .btn-grad e .btn-on-dark — os
+   dois são conversão, então são o azul. */
 .btn-grad { background: var(--blue); color: #fff; }
 .btn-grad:hover { background: var(--blue-deep); }
 .btn.btn-on-dark { background: var(--blue); color: #fff; }
@@ -378,9 +385,9 @@ body.user-logged-in .nav-user { display: flex; }
    desenho passa a seguir o tema sem precisar tocar em centena de atributos.
    Mudou um tom no SVG? Acrescente a linha correspondente aqui.
 
-   Fora da lista, de propósito: o laranja da marca e as cores dos serviços
-   (Figma, Linear, Stripe…), que não mudam com o tema; o disco da marca
-   (#1d1d1c + #fdfaf6), que é o símbolo e não uma superfície; e o painel do
+   Fora da lista, de propósito: o azul da marca e as cores dos serviços
+   (Figma, Linear, Stripe…), que não mudam com o tema; o símbolo da marca
+   (disco #1c65c8 + "go" branco), que não é uma superfície; e o painel do
    popup da extensão (#1c1c1e + branco translúcido), escuro nos dois temas. */
 .figure.is-art svg [fill="#17181a"] { fill: var(--bg); }
 .figure.is-art svg [fill="#131416"] { fill: var(--card); }
@@ -545,7 +552,7 @@ body.user-logged-in .nav-user { display: flex; }
 
 /* ── Cena 2: o acesso dura o contrato ── */
 
-/* O trecho laranja cresce do início ao fim, fica, e sai junto com o reinício —
+/* O trecho azul cresce do início ao fim, fica, e sai junto com o reinício —
    é o "acaba quando o projeto acaba" em uma passada só. */
 .cs--contract .cs-fill {
   stroke-dasharray: 100;

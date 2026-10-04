@@ -29,6 +29,11 @@ button { font-family: inherit; cursor: pointer; }
     --inv-accent-ring: color-mix(in oklab, var(--inv-accent) 40%, transparent);
     --inv-accent-glow: color-mix(in oklab, var(--inv-accent) 32%, transparent);
 
+    /* Pedir acesso é a conversão da página: o Azul Niango cheio, o mesmo nos
+       dois temas — branco em cima dele tem 5.6:1. */
+    --inv-cta: #1c65c8;
+    --inv-cta-hover: #1857ad;
+
     --inv-page: var(--ap-bg-page);
     --inv-tile: #ffffff;
     --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -36,8 +41,8 @@ button { font-family: inherit; cursor: pointer; }
     --inv-avatar-border: rgba(0, 0, 0, 0.08);
 }
 :root[data-theme="dark"] {
-    --inv-page: #141517;
-    --inv-tile: #1c1d20;
+    --inv-page: #14171d;
+    --inv-tile: #1b2028;
     --inv-tile-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     --inv-blob-strength: 1;
     --inv-avatar-border: rgba(255, 255, 255, 0.12);
@@ -48,15 +53,7 @@ html, body { background: var(--inv-page); }
 /* Page frame */
 .inv-shell { position: relative; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
 .inv-topbar { width: 100%; display: flex; align-items: center; justify-content: center; padding: 26px 24px 4px; }
-.inv-brand { display: flex; align-items: center; gap: 10px; }
-.inv-brand img { width: 28px; height: 28px; border-radius: 50%; }
-.inv-brand-name {
-    font-family: var(--ap-font-heading);
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--ap-text-primary);
-}
+.inv-brand { display: flex; align-items: center; color: var(--ap-text-primary); }
 
 .inv-main { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; padding: 20px 24px 40px; }
 
@@ -92,6 +89,8 @@ html, body { background: var(--inv-page); }
     isolation: isolate;
 }
 
+/* Brilho atrás da caixa: a família do azul da marca (Azul Niango, Azul claro
+   e um índigo para dar profundidade). */
 .inv-blob {
     position: absolute;
     z-index: 0;
@@ -100,21 +99,21 @@ html, body { background: var(--inv-page); }
 }
 .inv-blob-a {
     left: 2.3%; top: 16.7%; width: 50%; height: 71.4%;
-    background: #e8650f;
+    background: #1c65c8;
     filter: blur(70px);
     opacity: calc(0.6 * var(--inv-blob-strength));
     animation: inv-drift-a 9s ease-in-out infinite;
 }
 .inv-blob-b {
     left: 34.1%; top: 4.8%; width: 34.1%; height: 42.9%;
-    background: #c2185b;
+    background: #609efa;
     filter: blur(64px);
     opacity: calc(0.5 * var(--inv-blob-strength));
     animation: inv-drift-b 10s ease-in-out infinite;
 }
 .inv-blob-c {
     right: 2.3%; top: 26.2%; width: 47.7%; height: 66.7%;
-    background: #6d28d9;
+    background: #4f46e5;
     filter: blur(72px);
     opacity: calc(0.6 * var(--inv-blob-strength));
     animation: inv-drift-b 11s ease-in-out infinite;
@@ -132,9 +131,9 @@ html, body { background: var(--inv-page); }
         /* Queda em vários passos (quase exponencial): com só dois pontos o
            degradê cai em linha reta e o olho enxerga o fim dele como um anel. */
         background:
-            radial-gradient(ellipse 46% 50% at 42% 50%, rgba(232, 101, 15, 0.2) 0%, rgba(232, 101, 15, 0.144) 22%, rgba(232, 101, 15, 0.084) 45%, rgba(232, 101, 15, 0.036) 68%, rgba(232, 101, 15, 0.01) 86%, transparent 100%),
-            radial-gradient(ellipse 34% 38% at 50% 44%, rgba(194, 24, 91, 0.12) 0%, rgba(194, 24, 91, 0.086) 22%, rgba(194, 24, 91, 0.05) 45%, rgba(194, 24, 91, 0.022) 68%, rgba(194, 24, 91, 0.006) 86%, transparent 100%),
-            radial-gradient(ellipse 46% 50% at 58% 53%, rgba(109, 40, 217, 0.2) 0%, rgba(109, 40, 217, 0.144) 22%, rgba(109, 40, 217, 0.084) 45%, rgba(109, 40, 217, 0.036) 68%, rgba(109, 40, 217, 0.01) 86%, transparent 100%);
+            radial-gradient(ellipse 46% 50% at 42% 50%, rgba(28, 101, 200, 0.2) 0%, rgba(28, 101, 200, 0.144) 22%, rgba(28, 101, 200, 0.084) 45%, rgba(28, 101, 200, 0.036) 68%, rgba(28, 101, 200, 0.01) 86%, transparent 100%),
+            radial-gradient(ellipse 34% 38% at 50% 44%, rgba(96, 158, 250, 0.12) 0%, rgba(96, 158, 250, 0.086) 22%, rgba(96, 158, 250, 0.05) 45%, rgba(96, 158, 250, 0.022) 68%, rgba(96, 158, 250, 0.006) 86%, transparent 100%),
+            radial-gradient(ellipse 46% 50% at 58% 53%, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.144) 22%, rgba(79, 70, 229, 0.084) 45%, rgba(79, 70, 229, 0.036) 68%, rgba(79, 70, 229, 0.01) 86%, transparent 100%);
     }
     :root[data-theme="dark"] .inv-blob-a { filter: blur(100px); }
     :root[data-theme="dark"] .inv-blob-b { filter: blur(90px); }
@@ -276,8 +275,8 @@ html, body { background: var(--inv-page); }
     gap: 10px;
     width: 100%;
     padding: 17px 24px;
-    background: var(--ap-primary);
-    color: var(--ap-on-primary);
+    background: var(--inv-cta);
+    color: #fff;
     border: 0;
     border-radius: var(--ap-radius-full);
     font-size: 16.5px;
@@ -289,7 +288,7 @@ html, body { background: var(--inv-page); }
     animation: inv-fade-up 0.55s ease-out 0.68s forwards;
 }
 .inv-cta:hover:not(:disabled) {
-    background: var(--ap-primary-hover);
+    background: var(--inv-cta-hover);
     transform: translateY(-2px);
 }
 .inv-cta:active:not(:disabled) { transform: translateY(0); }

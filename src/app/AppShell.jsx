@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
+import { NiangoWordmark } from '../components/BrandLogo.jsx';
 import {
     AbortAccessModal,
     CreatePackageModal,
@@ -143,8 +144,7 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <img className="niango-mark" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                <span className="sidebar-brand-name">Niango</span>
+                <NiangoWordmark height={22} />
             </div>
 
             <nav className="sidebar-nav">
@@ -619,7 +619,7 @@ function ProfileMenu({ userInfo, loading, hasPlusBenefits, onOpenSettings }) {
                     <span className="profile-name">{userInfo?.name}</span>
                     <span className="sidebar-profile-email">{userInfo?.email}</span>
                 </div>
-                {badge && <span className={`plus-badge${badge === 'Admin' ? ' is-admin' : ''}`}>{badge}</span>}
+                {badge && <span className="plus-badge">{badge}</span>}
                 <svg className="sidebar-profile-chevron" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m18 15-6-6-6 6" />
                 </svg>
