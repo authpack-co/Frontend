@@ -154,6 +154,7 @@ export default function AddSessionModal() {
                         mode="create"
                         rows={capture.rows}
                         batchDone={capture.batchDone}
+                        cancelling={capture.cancelling}
                         summary={capture.summary}
                         onRetry={capture.retry}
                     />
@@ -217,6 +218,7 @@ function ProgressFooter({ capture, onClose }) {
     const status = progressFooterStatus({
         mode: 'create',
         batchDone: capture.batchDone,
+        cancelling: capture.cancelling,
         summary: capture.summary,
     });
 
@@ -241,16 +243,24 @@ function ProgressFooter({ capture, onClose }) {
                 <span className="as-footer-status-text">{status.text}</span>
             </div>
             <div className="as-footer-actions">
-                {/* Fechar só depois que o lote termina: sair no meio deixaria
-                    abas abrindo sem ninguém acompanhando o resultado. */}
-                <button
-                    className="btn btn-secondary as-close"
-                    type="button"
-                    disabled={!capture.batchDone}
-                    onClick={onClose}
-                >
-                    Fechar
-                </button>
+                {/* Sair no meio deixaria abas abrindo sem ninguém acompanhando o
+                    resultado: durante a captura a saída é o Cancelar, que para
+                    o que ainda espera a vez e mantém o que já foi coletado. O
+                    Fechar só aparece com o lote encerrado. */}
+                {capture.batchDone ? (
+                    <button className="btn btn-secondary as-close" type="button" onClick={onClose}>
+                        Fechar
+                    </button>
+                ) : (
+                    <button
+                        className="btn btn-secondary as-stop"
+                        type="button"
+                        disabled={capture.cancelling}
+                        onClick={capture.cancel}
+                    >
+                        {capture.cancelling ? 'Cancelando…' : 'Cancelar'}
+                    </button>
+                )}
             </div>
         </>
     );

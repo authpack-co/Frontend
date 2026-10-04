@@ -5,17 +5,25 @@ const COPY = {
         running: 'Capturando sessões…',
         footerRunning: 'Capturando…',
         allOk: 'Todas as sessões foram adicionadas',
-        partial: (ok, failed) => `${ok} adicionada(s) · ${failed} com falha`,
+        done: 'adicionada(s)',
         footerAllOk: 'Sessões adicionadas com sucesso.',
     },
     update: {
         running: 'Atualizando sessões…',
         footerRunning: 'Atualizando…',
         allOk: 'Todas as sessões foram atualizadas',
-        partial: (ok, failed) => `${ok} atualizada(s) · ${failed} com falha`,
+        done: 'atualizada(s)',
         footerAllOk: 'Sessões atualizadas com sucesso.',
     },
 };
+
+/** "2 adicionada(s) · 1 com falha · 3 cancelada(s)" — só as partes que existem. */
+function partialLine(copy, { ok, failed, cancelled = 0 }) {
+    const parts = [`${ok} ${copy.done}`];
+    if (failed) parts.push(`${failed} com falha`);
+    if (cancelled) parts.push(`${cancelled} cancelada(s)`);
+    return parts.join(' · ');
+}
 
 /**
  * Fase de progresso: uma linha por serviço, com a barra de carregamento de
@@ -24,12 +32,12 @@ const COPY = {
  * A geral avança só quando uma sessão é resolvida; o carregamento de cada aba
  * vive na barra da linha.
  */
-export default function CaptureProgress({ mode, rows, batchDone, summary, onRetry }) {
+export default function CaptureProgress({ mode, rows, batchDone, cancelling = false, summary, onRetry }) {
     const copy = COPY[mode] || COPY.create;
-    const { total, resolved, ok, failed } = summary;
+    const { total, resolved, ok, failed, cancelled = 0 } = summary;
 
-    let status = copy.running;
-    if (batchDone) status = failed === 0 ? copy.allOk : copy.partial(ok, failed);
+    let status = cancelling ? 'Cancelando…' : copy.running;
+    if (batchDone) status = failed === 0 && cancelled === 0 ? copy.allOk : partialLine(copy, summary);
 
     return (
         <div className="modal-body as-progress-body">
@@ -89,10 +97,12 @@ export default function CaptureProgress({ mode, rows, batchDone, summary, onRetr
     );
 }
 
-export function progressFooterStatus({ mode, batchDone, summary }) {
+export function progressFooterStatus({ mode, batchDone, cancelling = false, summary }) {
     const copy = COPY[mode] || COPY.create;
 
-    if (!batchDone) return { text: copy.footerRunning, kind: 'running' };
-    if (summary.failed === 0) return { text: copy.footerAllOk, kind: 'ok' };
-    return { text: 'Toque em tentar de novo nas que falharam.', kind: 'alert' };
+    if (!batchDone) return { text: cancelling ? 'Cancelando…' : copy.footerRunning, kind: 'running' };
+    if (summary.failed) return { text: 'Toque em tentar de novo nas que falharam.', kind: 'alert' };
+    // Cancelar foi escolha de quem estava olhando: nem alerta, nem sucesso.
+    if (summary.cancelled) return { text: 'Captura cancelada. O que já tinha sido coletado ficou.', kind: 'neutral' };
+    return { text: copy.footerAllOk, kind: 'ok' };
 }

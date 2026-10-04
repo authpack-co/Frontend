@@ -10,9 +10,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  *
  * Protocolo (content/bridge.js na extensão):
  *   page → niango:captureRun      { packageId, mode, targets }
+ *   page → niango:captureCancel   para o que ainda não começou a gravar
  *   page ← niango:captureStage    { ref, current:{ stage } }
- *   page ← niango:captureProgress { ref, current:{ status, session } }
- *   page ← niango:captureDone     { mode, total, ok, saved, failed }
+ *   page ← niango:captureProgress { ref, current:{ status: 'ok'|'error'|'cancelled', session } }
+ *   page ← niango:captureDone     { mode, total, ok, saved, failed, cancelled }
  */
 
 // Marcos de progresso — DEVEM casar com a extensão (content/connectHold.js):
@@ -26,11 +27,17 @@ const SETTLE_MS = 3000;   // casa com o CAPTURE_SETTLE_MS do captureManager
 const CREEP_MS = 250;     // intervalo entre ticks do creep
 // Rede de segurança por linha, acima do CAPTURE_TAB_TIMEOUT_MS da extensão (60s).
 const ITEM_TIMEOUT_MS = 75000;
+// Depois do "Cancelar", quanto esperar a extensão fechar o lote. A sessão que já
+// estava gravando termina em poucos segundos; passando disso é extensão antiga,
+// que não conhece o cancelar — a tela encerra o lote por conta própria.
+const CANCEL_FALLBACK_MS = 10000;
 
 export default function useCapture({ packageId, mode = 'create', onFinished }) {
-    // ref -> { target, state: 'pending'|'ok'|'error', pct }
+    // ref -> { target, state: 'pending'|'ok'|'error'|'cancelled', pct }
     const [rows, setRows] = useState(null);
     const [batchDone, setBatchDone] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
+    const cancelTimer = useRef(null);
 
     const creepTimers = useRef({});
     const settleTimers = useRef({});
@@ -40,6 +47,8 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     // seguida — a limpeza da desmontagem tirava o listener, a remontagem não disparava de novo
     // (trava contra abrir duas abas) e o progresso nunca chegava, embora a sessão atualizasse.
     const batchActiveRef = useRef(false);
+    // A escuta lê isto, não o estado: ela é registrada uma vez e veria o valor antigo.
+    const cancelRequestedRef = useRef(false);
     const retriesRef = useRef(new Map());
     const finishedRef = useRef(onFinished);
 
@@ -112,15 +121,17 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         else if (stage === 'settle') { startSettle(ref); }
     }, [setPct, startCreep, startSettle]);
 
-    const applyResult = useCallback((ref, ok) => {
+    /** Desfecho de uma linha: 'ok', 'error' ou 'cancelled' (o que vier da extensão). */
+    const applyResult = useCallback((ref, status) => {
         stopCreep(ref);
         stopSettle(ref);
+        const state = status === 'ok' || status === 'cancelled' ? status : 'error';
         setRows((current) => {
             const row = current?.[ref];
             if (!row) return current;
             return {
                 ...current,
-                [ref]: { ...row, state: ok ? 'ok' : 'error', pct: ok ? PCT.done : row.pct },
+                [ref]: { ...row, state, pct: state === 'ok' ? PCT.done : row.pct },
             };
         });
     }, [stopCreep, stopSettle]);
@@ -136,14 +147,37 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     }, [packageId, mode]);
 
     /** Retry resolvido (progresso da linha ou timeout): uma vez só. */
-    const finishRetry = useCallback((ref, ok) => {
+    const finishRetry = useCallback((ref, status) => {
         const timer = retriesRef.current.get(ref);
         if (timer === undefined) return;
         clearTimeout(timer);
         retriesRef.current.delete(ref);
-        applyResult(ref, ok);
+        applyResult(ref, status);
         finishedRef.current?.();
     }, [applyResult]);
+
+    /**
+     * Fecha o lote: o que ficou pendente não vai mais chegar. Depois de um
+     * cancelar isso é "cancelada"; sem ele, falha — e a linha ganha o botão de
+     * tentar de novo.
+     */
+    const endBatch = useCallback((leftover) => {
+        batchActiveRef.current = false;
+        clearTimeout(cancelTimer.current);
+        stopAll();
+
+        setRows((current) => {
+            const next = { ...current };
+            Object.keys(next).forEach((ref) => {
+                if (next[ref].state === 'pending') next[ref] = { ...next[ref], state: leftover };
+            });
+            return next;
+        });
+
+        setCancelling(false);
+        setBatchDone(true);
+        finishedRef.current?.();
+    }, [stopAll]);
 
     // A escuta vive enquanto o componente estiver montado — o StrictMode a desliga e religa
     // junto com a remontagem, sem depender de quem chamou o start.
@@ -157,7 +191,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             // retry não cruza com o lote original.
             if (data.ref != null && retriesRef.current.has(data.ref)) {
                 if (data.type === 'niango:captureStage') handleStage(data.ref, data.current?.stage);
-                else if (data.type === 'niango:captureProgress') finishRetry(data.ref, data.current?.status === 'ok');
+                else if (data.type === 'niango:captureProgress') finishRetry(data.ref, data.current?.status);
                 return;
             }
 
@@ -166,34 +200,22 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             if (data.type === 'niango:captureStage') {
                 handleStage(data.ref, data.current?.stage);
             } else if (data.type === 'niango:captureProgress') {
-                applyResult(data.ref, data.current?.status === 'ok');
+                applyResult(data.ref, data.current?.status);
             } else if (data.type === 'niango:captureDone') {
-                batchActiveRef.current = false;
-                stopAll();
-
-                // O que ficou pendente quando o lote terminou não vai mais
-                // chegar: vira falha, e a linha ganha o botão de tentar de novo.
-                setRows((current) => {
-                    const next = { ...current };
-                    Object.keys(next).forEach((ref) => {
-                        if (next[ref].state === 'pending') next[ref] = { ...next[ref], state: 'error' };
-                    });
-                    return next;
-                });
-
-                setBatchDone(true);
-                finishedRef.current?.();
+                endBatch(cancelRequestedRef.current ? 'cancelled' : 'error');
             }
         }
 
         window.addEventListener('message', onMessage);
         return () => window.removeEventListener('message', onMessage);
-    }, [applyResult, finishRetry, handleStage, stopAll]);
+    }, [applyResult, endBatch, finishRetry, handleStage]);
 
     /** Dispara o lote; o progresso chega pela escuta acima até o captureDone. */
     const start = useCallback((targets) => {
         stopAll();
         setBatchDone(false);
+        setCancelling(false);
+        cancelRequestedRef.current = false;
 
         const initial = {};
         targets.forEach((target) => {
@@ -208,6 +230,22 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         batchActiveRef.current = true;
         post(targets);
     }, [post, startCreep, stopAll]);
+
+    /**
+     * Para a captura: o que ainda espera a vez não abre, o que já foi coletado
+     * fica. A extensão devolve cada linha parada como "cancelled" e fecha o
+     * lote com o captureDone de sempre — é ele que libera o "Fechar".
+     */
+    const cancel = useCallback(() => {
+        if (!batchActiveRef.current || cancelRequestedRef.current) return;
+        cancelRequestedRef.current = true;
+        setCancelling(true);
+
+        window.postMessage({ source: 'niango-page', type: 'niango:captureCancel' }, window.location.origin);
+        cancelTimer.current = setTimeout(() => {
+            if (batchActiveRef.current) endBatch('cancelled');
+        }, CANCEL_FALLBACK_MS);
+    }, [endBatch]);
 
     /** Uma linha só, de novo. */
     const retry = useCallback((ref) => {
@@ -228,6 +266,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     // Sair da tela no meio da captura não pode deixar timers vivos.
     useEffect(() => () => {
         stopAll();
+        clearTimeout(cancelTimer.current);
         retriesRef.current.forEach((timer) => clearTimeout(timer));
         retriesRef.current.clear();
     }, [stopAll]);
@@ -237,11 +276,13 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     const resolved = list.filter((row) => row.state !== 'pending').length;
     const ok = list.filter((row) => row.state === 'ok').length;
     const failed = list.filter((row) => row.state === 'error').length;
+    const cancelled = list.filter((row) => row.state === 'cancelled').length;
 
     return {
         rows: list,
         started: rows !== null,
         batchDone,
+        cancelling,
         // O CSS do modal pendura o resultado num atributo: é `[data-result]`
         // que revela o "tentar de novo" das linhas em erro, e o
         // `[data-result="success"]` que pinta a barra de verde.
@@ -249,12 +290,13 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         // failed cai para zero com a linha ainda pendente, e a barra ficaria
         // verde antes da hora.
         result: batchDone
-            ? (failed === 0 && resolved === total ? 'success' : 'partial')
+            ? (failed === 0 && cancelled === 0 && resolved === total ? 'success' : 'partial')
             : null,
         // A barra PRINCIPAL avança só quando uma sessão é resolvida; o
         // progresso de carregamento vive nas barras de cada linha.
-        summary: { total, resolved, ok, failed },
+        summary: { total, resolved, ok, failed, cancelled },
         start,
         retry,
+        cancel,
     };
 }

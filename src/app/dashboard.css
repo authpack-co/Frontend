@@ -4697,6 +4697,10 @@ textarea:focus-visible {
 .up-item[data-state="ok"] .up-item-status::before { content: "\2713"; font-size: 13px; font-weight: 800; color: #16a34a; }
 .up-item[data-state="error"] { border-color: var(--ap-danger-border); }
 .up-item[data-state="error"] .up-item-status::before { content: "\2715"; font-size: 12px; font-weight: 800; color: var(--ap-danger); }
+/* Cancelada: parada a pedido, não falhou — apagada, sem cor de alerta. */
+.up-item[data-state="cancelled"] .up-item-icon,
+.up-item[data-state="cancelled"] .up-item-name { opacity: .5; }
+.up-item[data-state="cancelled"] .up-item-status::before { content: "\2013"; font-size: 14px; font-weight: 800; color: var(--ap-text-muted); }
 
 /* Botão "tentar de novo" por linha — só aparece com o lote concluído (modal
    com data-result) e a linha em erro. Antes disso fica oculto. */
