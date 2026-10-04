@@ -88,6 +88,16 @@ export default function useConnectSession(pkg, { isAcquired }) {
             notify('error', 'Esta sessão não está mais disponível. Atualize o pacote e tente novamente.');
             return;
         }
+        // A extensão trata redirect como interrupção e recomeça na página nova;
+        // estes são os casos em que não havia onde recomeçar.
+        if (code === 'redirected_offsite') {
+            notify('error', 'O serviço redirecionou para outro site e não foi possível conectar.');
+            return;
+        }
+        if (code === 'redirect_loop') {
+            notify('error', 'O serviço redirecionou vezes demais e não foi possível conectar.');
+            return;
+        }
         notify('error', 'Não foi possível conectar à sessão. Tente novamente em instantes.');
     }, [notify, stopConnecting]);
 

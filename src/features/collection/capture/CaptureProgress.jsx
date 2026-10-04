@@ -17,6 +17,15 @@ const COPY = {
     },
 };
 
+// Por que uma linha falhou, nos casos em que dá para dizer algo útil (reason
+// vindo da extensão). Os demais ficam só com o ✕.
+const FAILURE_REASONS = {
+    redirected_offsite: 'O site levou para outro domínio',
+    redirect_loop: 'O site redirecionou vezes demais',
+    timeout: 'O site não terminou de carregar',
+    load_failed: 'O site não carregou',
+};
+
 /** "2 adicionada(s) · 1 com falha · 3 cancelada(s)" — só as partes que existem. */
 function partialLine(copy, { ok, failed, cancelled = 0 }) {
     const parts = [`${ok} ${copy.done}`];
@@ -57,7 +66,7 @@ export default function CaptureProgress({ mode, rows, batchDone, cancelling = fa
             </div>
 
             <ul className="up-list as-list">
-                {rows.map(({ target, state, pct }) => (
+                {rows.map(({ target, state, pct, reason }) => (
                     <li className="up-item" data-ref={target.ref} data-state={state} key={target.ref}>
                         <ServiceIcon
                             className="up-item-icon"
@@ -67,6 +76,9 @@ export default function CaptureProgress({ mode, rows, batchDone, cancelling = fa
                         />
                         <div className="up-item-content">
                             <span className="up-item-name" title={target.name || ''}>{target.name}</span>
+                            {state === 'error' && FAILURE_REASONS[reason] && (
+                                <span className="up-item-reason">{FAILURE_REASONS[reason]}</span>
+                            )}
                             <div className="up-item-bar">
                                 <div className="up-item-bar-fill" style={{ width: `${Math.round(pct)}%` }}></div>
                             </div>

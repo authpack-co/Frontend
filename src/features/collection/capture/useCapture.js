@@ -11,8 +11,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * Protocolo (content/bridge.js na extensão):
  *   page → niango:captureRun      { packageId, mode, targets }
  *   page → niango:captureCancel   para o que ainda não começou a gravar
- *   page ← niango:captureStage    { ref, current:{ stage } }
- *   page ← niango:captureProgress { ref, current:{ status: 'ok'|'error'|'cancelled', session } }
+ *   page ← niango:captureStage    { ref, current:{ stage } }   start|dcl|complete|settle|restart
+ *   page ← niango:captureProgress { ref, current:{ status: 'ok'|'error'|'cancelled', reason, session } }
  *   page ← niango:captureDone     { mode, total, ok, saved, failed, cancelled }
  */
 
@@ -113,16 +113,37 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         }, SETTLE_MS / STEPS);
     }, [setPct, stopCreep, stopSettle]);
 
+    /**
+     * O site redirecionou a aba e a extensão recomeçou a captura na página nova:
+     * a única vez em que a barra da linha volta — para o zero, junto com o
+     * overlay de lá.
+     */
+    const restartRow = useCallback((ref) => {
+        stopCreep(ref);
+        stopSettle(ref);
+        setRows((current) => {
+            const row = current?.[ref];
+            if (!row || row.state !== 'pending') return current;
+            return { ...current, [ref]: { ...row, pct: PCT.loading } };
+        });
+        startCreep(ref, PCT.interactive);
+    }, [startCreep, stopCreep, stopSettle]);
+
     /** Estágio real vindo do overlay da extensão → barra da linha. */
     const handleStage = useCallback((ref, stage) => {
-        if (stage === 'start') { setPct(ref, PCT.loading); startCreep(ref, PCT.interactive); }
+        if (stage === 'restart') { restartRow(ref); }
+        else if (stage === 'start') { setPct(ref, PCT.loading); startCreep(ref, PCT.interactive); }
         else if (stage === 'dcl') { setPct(ref, PCT.interactive); startCreep(ref, PCT.complete); }
         else if (stage === 'complete') { setPct(ref, PCT.complete); startCreep(ref, PCT.settle); }
         else if (stage === 'settle') { startSettle(ref); }
-    }, [setPct, startCreep, startSettle]);
+    }, [restartRow, setPct, startCreep, startSettle]);
 
-    /** Desfecho de uma linha: 'ok', 'error' ou 'cancelled' (o que vier da extensão). */
-    const applyResult = useCallback((ref, status) => {
+    /**
+     * Desfecho de uma linha: 'ok', 'error' ou 'cancelled' (o que vier da
+     * extensão). Na falha, o `reason` dela (redirected_offsite, redirect_loop…)
+     * vira o texto da linha.
+     */
+    const applyResult = useCallback((ref, status, reason = null) => {
         stopCreep(ref);
         stopSettle(ref);
         const state = status === 'ok' || status === 'cancelled' ? status : 'error';
@@ -131,7 +152,12 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             if (!row) return current;
             return {
                 ...current,
-                [ref]: { ...row, state, pct: state === 'ok' ? PCT.done : row.pct },
+                [ref]: {
+                    ...row,
+                    state,
+                    pct: state === 'ok' ? PCT.done : row.pct,
+                    reason: state === 'error' ? reason : null,
+                },
             };
         });
     }, [stopCreep, stopSettle]);
@@ -147,12 +173,12 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
     }, [packageId, mode]);
 
     /** Retry resolvido (progresso da linha ou timeout): uma vez só. */
-    const finishRetry = useCallback((ref, status) => {
+    const finishRetry = useCallback((ref, status, reason) => {
         const timer = retriesRef.current.get(ref);
         if (timer === undefined) return;
         clearTimeout(timer);
         retriesRef.current.delete(ref);
-        applyResult(ref, status);
+        applyResult(ref, status, reason);
         finishedRef.current?.();
     }, [applyResult]);
 
@@ -191,7 +217,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             // retry não cruza com o lote original.
             if (data.ref != null && retriesRef.current.has(data.ref)) {
                 if (data.type === 'niango:captureStage') handleStage(data.ref, data.current?.stage);
-                else if (data.type === 'niango:captureProgress') finishRetry(data.ref, data.current?.status);
+                else if (data.type === 'niango:captureProgress') finishRetry(data.ref, data.current?.status, data.current?.reason);
                 return;
             }
 
@@ -200,7 +226,7 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             if (data.type === 'niango:captureStage') {
                 handleStage(data.ref, data.current?.stage);
             } else if (data.type === 'niango:captureProgress') {
-                applyResult(data.ref, data.current?.status);
+                applyResult(data.ref, data.current?.status, data.current?.reason);
             } else if (data.type === 'niango:captureDone') {
                 endBatch(cancelRequestedRef.current ? 'cancelled' : 'error');
             }
