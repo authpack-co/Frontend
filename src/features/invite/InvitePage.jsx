@@ -336,7 +336,7 @@ function InviteHero({ sessions }) {
             {tiles.map((tile, i) => (
                 <div className="inv-orbit" key={tile.key} ref={(el) => { tileRefs.current[i] = el; }}>
                     <div
-                        className="inv-orbit-face"
+                        className={`inv-orbit-face${tile.more ? ' is-more' : ''}`}
                         style={{
                             '--inv-orbit-radius': tile.more ? MORE_SHAPE : ORBIT_SHAPES[i % ORBIT_SHAPES.length],
                             '--inv-orbit-delay': `${-i * 0.9}s`,

@@ -165,14 +165,17 @@ html, body { background: var(--inv-page); }
     width: 100%;
     height: 100%;
     border-radius: var(--inv-orbit-radius, 50%);
-    background: var(--inv-tile);
-    box-shadow: var(--inv-tile-shadow);
     display: grid;
     place-items: center;
     animation: inv-float 5s ease-in-out infinite;
     animation-delay: var(--inv-orbit-delay, 0s);
 }
-.inv-orbit-face img { width: 47%; height: 47%; object-fit: contain; }
+/* Só o "+n" mantém o fundo; os ícones aparecem soltos. */
+.inv-orbit-face.is-more {
+    background: var(--inv-tile);
+    box-shadow: var(--inv-tile-shadow);
+}
+.inv-orbit-face img { width: 72%; height: 72%; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)); }
 .inv-orbit-more {
     font-size: 3.9cqi;
     font-weight: 700;
