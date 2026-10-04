@@ -4263,16 +4263,18 @@ textarea:focus-visible {
 }
 
 /* ============================================================================
-   Pessoas do pacote/* ============================================================================
-   Pessoas do pacote/* ============================================================================
    Pessoas do pacote — membros e solicitações no mesmo modal.
    As duas listas vêm da mesma carga e mudam juntas (aprovar move a pessoa de
    uma aba para a outra), então dividem o corpo e a rolagem.
+
+   Altura fixa, não máxima: o modal tem sempre o mesmo tamanho e quem cresce é
+   a lista, que rola por dentro. Com teto, ele esticava a cada pessoa a mais
+   até bater no limite — e pulava de tamanho ao trocar de aba.
    ============================================================================ */
 .modal.pkg-people-modal {
     width: 94vw;
     max-width: 520px;
-    max-height: min(88vh, 640px);
+    height: min(88vh, 560px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4350,7 +4352,7 @@ textarea:focus-visible {
 
 .pkg-people-modal .pkg-people-body {
     flex: 1;
-    min-height: 220px;
+    min-height: 0;
     max-height: none;
     padding: 14px 22px 20px;
     overflow-y: auto;
@@ -4509,6 +4511,13 @@ textarea:focus-visible {
     font-size: 0.78rem;
     line-height: 1.5;
     color: var(--ap-text-secondary);
+}
+
+/* Com a altura fixa, o vazio e o carregando ocupam o corpo todo e ficam no
+   meio dele, em vez de grudados no topo de um modal meio vazio. */
+.pkg-people-body > .spinner-container,
+.pkg-people-empty {
+    flex: 1;
 }
 
 .pkg-people-empty {
