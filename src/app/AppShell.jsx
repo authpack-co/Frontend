@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useMatch } from 'react-router';
 import OptionsMenu from '../components/OptionsMenu.jsx';
+import { NiangoWordmark } from '../components/BrandLogo.jsx';
 import {
     AbortAccessModal,
     CreatePackageModal,
@@ -143,9 +144,7 @@ function Sidebar() {
 
         <aside className={`navigation-sidebar${menuOpen ? ' active' : ''}`}>
             <div className="sidebar-brand">
-                <img className="niango-mark niango-mark--light" src="/assets/images/favicon-128x128.png" alt="Niango" />
-                <img className="niango-mark niango-mark--dark" src="/assets/images/niango-mark-dark.png" alt="Niango" />
-                <span className="sidebar-brand-name">Niango</span>
+                <NiangoWordmark height={22} />
             </div>
 
             <nav className="sidebar-nav">
@@ -415,7 +414,7 @@ function SidebarExtensionCard() {
                 href={WEBSTORE_URL}
                 target="_blank"
                 rel="noreferrer"
-                title="Instalar a extensão do Niango na Chrome Web Store"
+                title="Instalar a extensão da Niango na Chrome Web Store"
             >
                 <span className="sidebar-ext-icon" aria-hidden="true">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

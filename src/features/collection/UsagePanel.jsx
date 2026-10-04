@@ -26,26 +26,45 @@ function emptyChartData(isDaily) {
  * Trocar de período não vai à rede: `dataFor` recorta o histórico que já está
  * na memória.
  */
-export default function UsagePanel({
-    title, subtitle, dataFor, sessions, status = 'ready', period, onPeriodChange,
-}) {
+/**
+ * O miolo do gráfico: carregando, erro, ou o gráfico do recorte. Sai do
+ * painel para as telas de detalhe, que desenham a própria moldura em volta
+ * dele e têm o seletor de período no topo da tela.
+ */
+export function UsageChartBody({ dataFor, sessions, status = 'ready', period }) {
     const days = PERIOD_DAYS[period];
     const isDaily = days === 0;
 
-    let content;
     if (status === 'loading') {
-        content = (
+        return (
             <div className="spinner-container" style={{ height: 120 }}>
                 <div className="spinner large"></div>
             </div>
         );
-    } else if (status === 'error') {
-        content = <p className="bl-error">Não foi possível carregar o uso.</p>;
-    } else {
-        const raw = dataFor(days, isDaily) || {};
-        const data = Object.keys(raw).length ? raw : emptyChartData(isDaily);
-        content = <UsageChart data={data} isDaily={isDaily} sessions={sessions} />;
     }
+    if (status === 'error') {
+        return <p className="bl-error">Não foi possível carregar o uso.</p>;
+    }
+
+    const raw = dataFor(days, isDaily) || {};
+    const data = Object.keys(raw).length ? raw : emptyChartData(isDaily);
+    return <UsageChart data={data} isDaily={isDaily} sessions={sessions} />;
+}
+
+/**
+ * Gráfico de uso com seletor de período — o do pacote e o da sessão recebida.
+ * Só muda o título e de onde os dados saem.
+ *
+ * O período é controlado por quem chama porque nas telas de detalhe ele manda
+ * também nos cards de estatística e no histórico, não só no gráfico.
+ *
+ * Trocar de período não vai à rede: `dataFor` recorta o histórico que já está
+ * na memória.
+ */
+export default function UsagePanel({
+    title, subtitle, dataFor, sessions, status = 'ready', period, onPeriodChange,
+}) {
+    const isDaily = PERIOD_DAYS[period] === 0;
 
     return (
         <div className="usage-chart-container">
@@ -72,7 +91,9 @@ export default function UsagePanel({
                     </select>
                 </div>
             </div>
-            <div className="chart-wrapper">{content}</div>
+            <div className="chart-wrapper">
+                <UsageChartBody dataFor={dataFor} sessions={sessions} status={status} period={period} />
+            </div>
         </div>
     );
 }

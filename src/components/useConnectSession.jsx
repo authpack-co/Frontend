@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ExtensionRequiredModal from './ExtensionRequiredModal.jsx';
 import { useNotify } from './Notifications.jsx';
-import { connectSession, isExtensionInstalled, useConnectResult } from '../lib/extension.js';
+import {
+    connectSession,
+    disconnectSession,
+    isExtensionInstalled,
+    requestConnectedSessions,
+    useConnectedSessions,
+    useConnectResult,
+    useDisconnectResult,
+} from '../lib/extension.js';
 
 /**
  * Teto do "Conectando".
@@ -25,12 +33,19 @@ const CONNECT_TIMEOUT_MS = 15000;
  * bastante para a tela parecer não ter registrado o clique — daí o spinner.
  * Ele apaga quando a extensão devolve o desfecho, quando a aba do serviço
  * esconde esta página, ou no teto acima — o que vier primeiro.
+ *
+ * `isConnected(session)` diz se a sessão já está conectada neste navegador
+ * (a extensão mantém a lista). Conectada, a tela troca "Conectar" por "Sair":
+ * conectar de novo só abriria outra aba da mesma sessão. `disconnect` pede à
+ * extensão que saia, e `disconnectingId` segura o spinner até ela responder.
  */
 export default function useConnectSession(pkg, { isAcquired }) {
     const notify = useNotify();
     const [gateOpen, setGateOpen] = useState(false);
     const [connectingId, setConnectingId] = useState(null);
+    const [disconnectingId, setDisconnectingId] = useState(null);
     const timeoutRef = useRef(null);
+    const connectedIds = useConnectedSessions();
 
     const stopConnecting = useCallback(() => {
         clearTimeout(timeoutRef.current);
@@ -78,6 +93,28 @@ export default function useConnectSession(pkg, { isAcquired }) {
 
     useConnectResult(handleResult);
 
+    const handleDisconnectResult = useCallback(({ ok }) => {
+        setDisconnectingId(null);
+        // Falha aqui quase sempre é a conexão ter caído antes do clique.
+        if (!ok) {
+            notify('error', 'Esta sessão já não estava conectada.');
+            // A lista daqui estava velha: pede a atual para o botão voltar.
+            requestConnectedSessions();
+        }
+    }, [notify]);
+
+    useDisconnectResult(handleDisconnectResult);
+
+    const isConnected = useCallback(
+        (session) => connectedIds.has(String(session.id)),
+        [connectedIds],
+    );
+
+    const disconnect = useCallback((session) => {
+        setDisconnectingId(session.id);
+        disconnectSession(session.id);
+    }, []);
+
     const start = useCallback((session) => {
         setConnectingId(session.id);
         clearTimeout(timeoutRef.current);
@@ -105,5 +142,5 @@ export default function useConnectSession(pkg, { isAcquired }) {
         />
     );
 
-    return { connect, connectingId, gate };
+    return { connect, connectingId, isConnected, disconnect, disconnectingId, gate };
 }

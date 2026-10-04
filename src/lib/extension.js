@@ -68,6 +68,90 @@ export function useConnectResult(onResult) {
     }, [onResult]);
 }
 
+/** Mensagem da ponte da extensão para esta página (e só dela). */
+function isExtensionMessage(event, type) {
+    return event.source === window
+        && event.data?.source === 'niango-extension'
+        && event.data.type === type;
+}
+
+/** Pede à ponte a lista atual; a resposta chega como niango:connectedSessions. */
+export function requestConnectedSessions() {
+    window.postMessage(
+        { source: 'niango-page', type: 'niango:getConnectedSessions' },
+        window.location.origin,
+    );
+}
+
+/**
+ * Sessões conectadas neste navegador, como um Set de ids em string.
+ *
+ * Quem sabe disso é a extensão (é ela que mantém cada conexão viva), então
+ * não custa requisição: a página pergunta à ponte ao montar e, daí em diante,
+ * a extensão avisa sozinha a cada conectar ou sair. A pergunta vai de novo
+ * no bridgeReady porque a ponte carrega depois dos scripts da página e pode
+ * perder a primeira. Uma extensão antiga não responde, e a lista fica vazia —
+ * os botões continuam "Conectar", como antes.
+ *
+ * Pergunta também ao voltar para a aba: se o service worker da extensão foi
+ * reciclado, as conexões caíram sem aviso nenhum para cá.
+ */
+export function useConnectedSessions() {
+    const [ids, setIds] = useState(() => new Set());
+
+    useEffect(() => {
+        const ask = requestConnectedSessions;
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') ask();
+        };
+
+        function handleMessage(event) {
+            if (isExtensionMessage(event, 'niango:bridgeReady')) {
+                ask();
+                return;
+            }
+            if (isExtensionMessage(event, 'niango:connectedSessions')) {
+                setIds(new Set((event.data.sessionIds || []).map(String)));
+            }
+        }
+
+        window.addEventListener('message', handleMessage);
+        document.addEventListener('visibilitychange', onVisible);
+        ask();
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
+    }, []);
+
+    return ids;
+}
+
+/**
+ * Pede à extensão que saia da sessão: ela para de manter a conexão e
+ * recarrega a aba do serviço, que volta para a conta própria da pessoa.
+ */
+export function disconnectSession(sessionId) {
+    window.postMessage({
+        source: 'niango-page',
+        type: 'niango:disconnect',
+        sessionId,
+    }, window.location.origin);
+}
+
+/** Desfecho do "Sair", devolvido pela ponte. */
+export function useDisconnectResult(onResult) {
+    useEffect(() => {
+        function handleMessage(event) {
+            if (!isExtensionMessage(event, 'niango:disconnectResult')) return;
+            onResult({ sessionId: event.data.sessionId, ok: !!event.data.ok });
+        }
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [onResult]);
+}
+
 export function useExtensionStatus() {
     const [status, setStatus] = useState('checking');
 

@@ -32,7 +32,7 @@ function Check({ size = 16, color = '#16a34a', style }) {
  * Boas-vindas: a marca sozinha.
  *
  * É o único slide que não imita uma tela, então ele também não finge ser uma:
- * o símbolo do Niango sem a moldura escura do favicon, um respiro de luz atrás
+ * o símbolo da Niango sem a moldura escura do favicon, um respiro de luz atrás
  * dele e a frase. Nada pisca — o que se quer aqui é o silêncio antes do guia
  * começar.
  */
@@ -172,10 +172,10 @@ export function AddPickDemo() {
                 </div>
 
                 <div style={{ marginTop: 11, animation: 'og-chip-in 6.5s ease-out infinite' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(249,115,22,.10)', border: '1px solid rgba(249,115,22,.30)', borderRadius: 99, padding: '5px 10px 5px 6px' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(28,101,200,.08)', border: '1px solid rgba(28,101,200,.28)', borderRadius: 99, padding: '5px 10px 5px 6px' }}>
                         <span className="og-chip og-chip--e" style={{ width: 18, height: 18, borderRadius: 5 }}></span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#c2410c' }}>Netflix</span>
-                        <span style={{ color: '#fb923c', fontSize: 12 }}>×</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#1c65c8' }}>Netflix</span>
+                        <span style={{ color: '#609efa', fontSize: 12 }}>×</span>
                     </span>
                 </div>
 
@@ -253,7 +253,7 @@ export function ShareButtonDemo() {
             <div className="og-win" style={{ position: 'absolute', left: 26, top: 96, width: 388, height: 300 }}>
                 <div className="og-win-head" style={{ gap: 8 }}>
                     <div className="og-grow" style={{ height: 30, background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 9 }}></div>
-                    <span className="og-btn og-btn--ghost og-btn--pulse" style={{ background: '#fff', borderColor: 'var(--ap-accent)', color: '#c2410c' }}>
+                    <span className="og-btn og-btn--ghost og-btn--pulse" style={{ background: '#fff', borderColor: '#1c65c8', color: '#1c65c8' }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2v13" /><path d="m16 6-4-4-4 4" />
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -265,11 +265,11 @@ export function ShareButtonDemo() {
                 <div className="og-win-body">
                     <div className="og-t og-t--sm" style={{ marginBottom: 3 }}>Trabalho</div>
                     <div className="og-muted" style={{ marginBottom: 13 }}>3 sessões</div>
-                    {[['Netflix', 'og-chip--e'], ['Spotify', 'og-chip--b'], ['ChatGPT', 'og-chip']].map(([name, tone]) => (
+                    {[['Netflix', 'og-chip--e', 'Ativa'], ['Spotify', 'og-chip--b', 'Em repouso'], ['ChatGPT', 'og-chip', 'Em repouso']].map(([name, tone, state]) => (
                         <div className="og-row" key={name}>
                             <span className={`og-chip ${tone}`} style={{ width: 24, height: 24 }}></span>
                             <span className="og-grow og-t og-t--sm" style={{ fontWeight: 500 }}>{name}</span>
-                            <span className="og-muted">Ativa</span>
+                            <span className="og-muted">{state}</span>
                         </div>
                     ))}
                 </div>
@@ -321,9 +321,9 @@ export function ShareApproveDemo() {
             </div>
             <div style={{ display: 'flex', gap: 6, padding: '10px 15px 0' }}>
                 <span style={{ padding: '7px 11px', borderRadius: 8, color: '#6b7280', fontSize: 11.5, fontWeight: 600 }}>Membros</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', borderRadius: 8, background: 'rgba(249,115,22,.10)', color: '#c2410c', fontSize: 11.5, fontWeight: 600 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', borderRadius: 8, background: 'rgba(28,101,200,.08)', color: '#1c65c8', fontSize: 11.5, fontWeight: 600 }}>
                     Solicitações
-                    <span style={{ minWidth: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 99, background: 'var(--ap-accent)', color: '#fff', fontSize: 9.5, padding: '0 4px' }}>2</span>
+                    <span style={{ minWidth: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 99, background: '#1c65c8', color: '#fff', fontSize: 9.5, padding: '0 4px' }}>2</span>
                 </span>
             </div>
             <div className="og-win-body">

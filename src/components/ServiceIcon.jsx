@@ -15,6 +15,17 @@ import { useEffect, useRef, useState } from 'react';
 const FALLBACK_SRC = '/assets/images/fallback-session-icon.png';
 const GOOGLE_SIZE = 64;
 
+/**
+ * A API do Google responde 200 mesmo quando não acha o favicon: devolve um
+ * globo genérico de 16x16, menor que o tamanho pedido. Como a resposta não tem
+ * CORS, não dá para ler os bytes e comparar — o tamanho é o sinal. Veio 16px
+ * onde pedimos 64 → tratamos como não encontrado e caímos no nosso ícone.
+ *
+ * Custo: site cujo único favicon é de 16px também cai no nosso ícone. É melhor
+ * que o globo, e 16px esticado para o tamanho do ícone sairia borrado.
+ */
+const GOOGLE_NOT_FOUND_MAX = 16;
+
 export function faviconDomain(urlOrDomain) {
     const raw = (urlOrDomain || '').toString().trim();
     if (!raw) return '';
@@ -53,11 +64,20 @@ export default function ServiceIcon({ icon, url, name = '', className = '', styl
         setLoading(true);
     }, [icon, googleUrl]);
 
+    // Chegou imagem: ou é o globo do Google (segue para o nosso ícone), ou acabou a cadeia.
+    function settle(img) {
+        if (img.src === googleUrl && img.naturalWidth <= GOOGLE_NOT_FOUND_MAX) {
+            setSrc(FALLBACK_SRC);
+            return;
+        }
+        setLoading(false);
+    }
+
     // Favicon já em cache resolve antes do onLoad ser registrado — sem isto o
     // placeholder ficaria para sempre por cima de uma imagem pronta.
     useEffect(() => {
         const img = imgRef.current;
-        if (img && img.complete && img.naturalWidth > 0) setLoading(false);
+        if (img && img.complete && img.naturalWidth > 0) settle(img);
     });
 
     function handleError() {
@@ -77,7 +97,7 @@ export default function ServiceIcon({ icon, url, name = '', className = '', styl
             src={src}
             alt={name}
             style={style}
-            onLoad={() => setLoading(false)}
+            onLoad={(event) => settle(event.currentTarget)}
             onError={handleError}
         />
     );

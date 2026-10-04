@@ -106,6 +106,13 @@ function PlanSummary({ billing, role }) {
     const { plan, plan_status: status, subscription: sub, invoices = [] } = billing;
     const isPaid = !!plan && plan !== 'free';
 
+    // Renovação recusada: vale com o plano ainda na carência ou já de volta ao
+    // Free. A assinatura segue viva e a Stripe tenta o cartão por algumas
+    // semanas; é aqui que o cliente troca o cartão ou encerra de vez.
+    if (sub && (sub.status === 'past_due' || sub.status === 'unpaid')) {
+        return <DelinquentSummary billing={billing} />;
+    }
+
     if (!isPaid) {
         return (
             <>
@@ -146,7 +153,7 @@ function PlanSummary({ billing, role }) {
     } else if (status === 'canceled') {
         badge = { text: 'Cancelada', kind: 'overdue' };
         if (billing.plan_expires_at) renew = `Acesso até ${formatDate(billing.plan_expires_at)}`;
-        note = 'Assinatura cancelada — não será renovada. O acesso Plus permanece até o fim do período pago.';
+        note = `Assinatura cancelada — não será renovada. O acesso ${planLabel} permanece até o fim do período pago.`;
     } else if (sub.pending_plan) {
         // Downgrade agendado: o plano maior continua valendo até a data.
         const pendingLabel = `Niango ${sub.pending_plan.charAt(0).toUpperCase()}${sub.pending_plan.slice(1)}`;
@@ -173,7 +180,80 @@ function PlanSummary({ billing, role }) {
             {note && <p className="bl-plan-note">{note}</p>}
             {/* O portal só existe para quem tem customer na Stripe — cortesia e
                 Free não têm nada para gerenciar lá. */}
-            {sub?.has_billing_account && <BillingPortalButton />}
+            {sub?.has_billing_account && (
+                <div className="bl-plan-actions">
+                    <BillingPortalButton />
+                </div>
+            )}
+        </>
+    );
+}
+
+function tierLabel(tier) {
+    return tier ? `Niango ${tier.charAt(0).toUpperCase()}${tier.slice(1)}` : 'Niango';
+}
+
+/**
+ * Assinatura com a renovação em atraso. O caminho de volta é trocar o cartão
+ * no portal — a Stripe refaz a cobrança sozinha e o plano volta pelo webhook —,
+ * não assinar de novo. Quem prefere parar cancela aqui e as retentativas acabam
+ * na hora.
+ */
+function DelinquentSummary({ billing }) {
+    const sub = billing.subscription;
+    const [canceling, setCanceling] = useState(false);
+    const inGrace = !!billing.plan && billing.plan !== 'free';
+    const label = tierLabel(sub.plan_tier || billing.plan);
+
+    async function handleCancel() {
+        const confirmed = window.confirm(
+            `Cancelar sua assinatura ${label}?\n\nParamos de tentar cobrar o cartão agora.`
+        );
+        if (!confirmed) return;
+
+        setCanceling(true);
+        try {
+            await api.cancelBilling();
+            window.location.reload();
+        } catch (err) {
+            console.error('[Settings] cancelBilling error:', err);
+            window.alert('Não foi possível cancelar a assinatura. Tente novamente.');
+            setCanceling(false);
+        }
+    }
+
+    return (
+        <>
+            <div className="bl-plan-summary">
+                <div className="bl-plan-summary-main">
+                    <span className="bl-plan-name">{label}</span>
+                    <span className="bl-status-badge bl-status-badge--overdue">Pagamento pendente</span>
+                </div>
+                <div className="bl-plan-summary-side">
+                    <span className="bl-plan-price">
+                        {sub.unit_amount != null ? `${formatMoney(sub.unit_amount, sub.currency || 'BRL')} / mês` : ''}
+                    </span>
+                    {/* current_period_end já avançou para o ciclo novo quando a
+                        fatura da renovação foi criada; a data que venceu é o
+                        fim do período pago. */}
+                    <span className="bl-plan-renew">
+                        {inGrace && billing.plan_expires_at ? `Venceu em ${formatDate(billing.plan_expires_at)}` : ''}
+                    </span>
+                </div>
+            </div>
+            <p className="bl-plan-note">
+                {inGrace
+                    ? 'Não conseguimos cobrar a renovação. Seu acesso continua por alguns dias: atualize o cartão '
+                        + 'em "Gerenciar pagamento" e a cobrança é refeita automaticamente.'
+                    : 'Não conseguimos cobrar a renovação e sua conta voltou ao Free. Atualize o cartão em '
+                        + `"Gerenciar pagamento": assim que a cobrança passar, o ${label} volta sozinho.`}
+            </p>
+            <div className="bl-plan-actions">
+                <button className="bl-action-btn bl-action-btn--danger" type="button" onClick={handleCancel} disabled={canceling}>
+                    {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
+                </button>
+                {sub.has_billing_account && <BillingPortalButton primary />}
+            </div>
         </>
     );
 }
@@ -182,7 +262,7 @@ function PlanSummary({ billing, role }) {
  * Trocar cartão, baixar faturas e cancelar acontecem no portal hospedado pela
  * Stripe — nenhum dado de pagamento passa por aqui.
  */
-function BillingPortalButton() {
+function BillingPortalButton({ primary = false }) {
     const [opening, setOpening] = useState(false);
 
     async function handleClick() {
@@ -199,7 +279,12 @@ function BillingPortalButton() {
     }
 
     return (
-        <button className="sc-full-btn btn-primary" onClick={handleClick} disabled={opening}>
+        <button
+            className={`bl-action-btn${primary ? ' bl-action-btn--primary' : ''}`}
+            type="button"
+            onClick={handleClick}
+            disabled={opening}
+        >
             {opening ? 'Abrindo…' : 'Gerenciar pagamento'}
         </button>
     );

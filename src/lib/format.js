@@ -1,8 +1,23 @@
 // Formatação pt-BR compartilhada pelas telas.
 
+/**
+ * Data vinda da API. Campos montados com JSON_OBJECT no MySQL chegam como
+ * "YYYY-MM-DD HH:mm:ss.ffffff", que o Safari não aceita no new Date; com o T
+ * no lugar do espaço vira ISO local, que todo navegador entende. Null quando
+ * não há data ou ela não é válida.
+ */
+export function parseApiDate(value) {
+    if (!value) return null;
+    const date = value instanceof Date
+        ? value
+        : new Date(String(value).replace(/^(\d{4}-\d{2}-\d{2}) /, '$1T'));
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function formatDate(value) {
-    if (!value) return '';
-    return new Date(value).toLocaleDateString('pt-BR', {
+    const date = parseApiDate(value);
+    if (!date) return '';
+    return date.toLocaleDateString('pt-BR', {
         day: '2-digit', month: '2-digit', year: 'numeric',
     });
 }

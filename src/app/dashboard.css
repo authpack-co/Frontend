@@ -482,7 +482,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-accent-muted);
     border-radius: 4px;
@@ -559,25 +559,14 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 18px 16px;
+    /* 20px na horizontal: o "n" alinha com o rótulo "Pacotes" e com o texto
+       dos itens logo abaixo, em vez de ficar 4px para fora da coluna. */
+    padding: 16px 20px;
     border-bottom: 1px solid var(--ap-border);
     flex-shrink: 0;
-}
-
-.sidebar-brand img {
-    width: 28px;
-    height: 28px;
-    border-radius: 7px;
-    display: block;
-    flex-shrink: 0;
-}
-
-.sidebar-brand-name {
-    font-size: 16px;
-    font-weight: 700;
+    /* O "nian" do wordmark é currentColor (ver components/BrandLogo.jsx). */
     color: var(--ap-text-primary);
     user-select: none;
-    letter-spacing: -0.01em;
 }
 
 /* Sidebar Nav */
@@ -872,7 +861,7 @@ body[data-dash-boot="loading"] .boot-hide { display: none !important; }
 }
 
 .plus-subscribe-btn svg {
-    color: #fbbf24;
+    color: var(--ap-accent-strong);
 }
 
 .nav-menu {
@@ -1780,7 +1769,7 @@ span.coming-soon {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: var(--ap-bg-card);
     border: 1px solid var(--ap-accent-muted);
     border-radius: 4px;
@@ -2524,36 +2513,33 @@ span.coming-soon {
     filter: brightness(0.9);
 }
 
+/* Ação primária: tinta — preto no claro, branco no escuro. É o botão de todo
+   dia (adicionar sessão, criar pacote, copiar link, salvar), e por isso não é
+   azul: o azul cobrindo a tela inteira cansa e deixa de chamar atenção. */
 .btn-primary {
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
+    border-color: var(--ap-primary);
+}
+
+.btn-primary:hover {
+    background: var(--ap-primary-hover);
+    border-color: var(--ap-primary-hover);
+    filter: none;
+}
+
+/* Azul cheio: só para o que converte ou destrava o produto — assinar, pagar,
+   instalar a extensão, criar o primeiro pacote. Se aparecer em todo canto,
+   perde o motivo de existir. */
+.btn-brand {
     background: var(--ap-accent);
     color: #ffffff;
     border-color: var(--ap-accent);
 }
 
-.btn-primary:hover {
+.btn-brand:hover {
     background: var(--ap-accent-hover);
     border-color: var(--ap-accent-hover);
-    filter: none;
-}
-
-/* Acento suave: o laranja cheio custa caro quando cobre a tela inteira, e a
-   maior parte destes botões é ação de todo dia — adicionar sessão, criar
-   pacote, copiar link, salvar. Aqui o acento só tinge o fundo, e quem carrega
-   a cor é o texto. O laranja cheio fica para o que converte ou não tem volta:
-   assinar, pagar, instalar a extensão.
-
-   O hover sobe para --ap-accent-muted, e não para --ap-accent-light: no tema
-   claro o "light" é #fff7ed, mais pálido que o repouso — o botão clarearia ao
-   receber o mouse. */
-.btn-accent-soft {
-    background: var(--ap-accent-subtle);
-    color: var(--ap-accent-strong);
-    border-color: var(--ap-accent-muted);
-}
-
-.btn-accent-soft:hover {
-    background: var(--ap-accent-muted);
-    border-color: var(--ap-accent);
     filter: none;
 }
 
@@ -2609,150 +2595,161 @@ span.coming-soon {
 
 /* ============================================
    Notification
-   ============================================ */
-.notification {
-    display: flex;
-    align-items: center;
+   ============================================
+
+   Um aviso por vez, no alto à direita. A cor do tipo entra em doses pequenas —
+   ícone e barra de tempo — e o resto é a superfície de card do tema: o balão
+   inteiro pintado competia com a tela por trás, e a tarja lateral grossa
+   brigava com o próprio ícone.
+
+   Sem barra de tempo: era mais um elemento em movimento para um aviso que dura
+   segundos. O cursor em cima ainda pausa a contagem (ver Notifications.jsx). */
+
+.notifications {
     position: fixed;
-    top: 30px;
-    right: 30px;
-    width: 280px;
-    min-height: 60px;
-    gap: 14px;
-    background: var(--ap-bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--ap-border);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--ap-text-primary);
+    top: 24px;
+    right: 24px;
     z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(40px) scale(0.95);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    overflow: hidden;
-}
-
-.notification::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* A área não intercepta cliques; só o balão dentro dela. */
     pointer-events: none;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-.notification.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0) scale(1);
+.notification {
+    --notification-tint: var(--ap-text-muted);
+
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    box-sizing: border-box;
+    width: min(280px, calc(100vw - 32px));
+    padding: 12px 12px 13px;
+    /* Vidro: a superfície do card com transparência sobre o desfoque do que está
+       atrás — o mesmo efeito do popup da extensão. 88% e não menos: sobre uma
+       área muito colorida (um gráfico, um card da marca) o aviso tingia junto e
+       o texto perdia contraste. A borda sobe um tom porque fundo translúcido
+       perde o contorno. */
+    background: color-mix(in srgb, var(--ap-bg-card) 88%, transparent);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid var(--ap-border-hover);
+    border-radius: var(--ap-radius-lg);
+    box-shadow: var(--ap-shadow-lg);
+    overflow: hidden;
+    pointer-events: auto;
+    animation: notificationIn 0.26s cubic-bezier(0.21, 1.02, 0.73, 1);
 }
 
-.notification .notification-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+/* Sem suporte a desfoque, o vidro vira superfície sólida — translúcido sem
+   blur deixaria o texto por cima do que está atrás. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .notification {
+        background: var(--ap-bg-card);
+    }
+}
+
+.notification.is-leaving {
+    animation: notificationOut 0.18s ease-in forwards;
+}
+
+@keyframes notificationIn {
+    from {
+        opacity: 0;
+        transform: translateX(16px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes notificationOut {
+    to {
+        opacity: 0;
+        transform: translateX(16px) scale(0.98);
+    }
+}
+
+/* Ícone: disco discreto na cor do tipo, o único lugar onde ela aparece cheia. */
+.notification-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--notification-tint) 14%, transparent);
+    color: var(--notification-tint);
+}
+
+.notification-message {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding-top: 2px;
+    color: var(--ap-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.notification-close {
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
+    width: 22px;
+    height: 22px;
+    margin: 1px -2px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--ap-radius-sm);
+    color: var(--ap-text-placeholder);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
+.notification-close:hover {
+    background: var(--ap-bg-hover);
+    color: var(--ap-text-secondary);
+}
+
+/* Cores por tipo. "info" fica no neutro de propósito: o azul é da marca
+   e da ação de destaque, e um aviso de informação não é nenhuma das duas. */
 .notification.success {
-    border-left: 4px solid var(--ap-success);
+    --notification-tint: var(--ap-success);
 }
 
-.notification.success .notification-icon {
-    background: color-mix(in srgb, var(--ap-success) 20%, transparent);
-    color: var(--ap-success);
-}
-
-.notification.success .notification-icon svg {
-    stroke: var(--ap-success);
+.notification.warning {
+    --notification-tint: var(--ap-warning);
 }
 
 .notification.error {
-    border-left: 4px solid var(--ap-danger);
+    --notification-tint: var(--ap-danger);
 }
 
-.notification.error .notification-icon {
-    background: color-mix(in srgb, var(--ap-danger) 20%, transparent);
-    color: var(--ap-danger);
+/* O erro é o único que a moldura acusa — é o que não pode passar batido. */
+.notification.error {
+    border-color: color-mix(in srgb, var(--ap-danger) 35%, var(--ap-border));
 }
 
-.notification.error .notification-icon svg {
-    stroke: var(--ap-danger);
-}
-
-.notification.info {
-    border-left: 4px solid var(--ap-accent);
-}
-
-.notification.info .notification-icon {
-    background: color-mix(in srgb, var(--ap-accent) 20%, transparent);
-    color: var(--ap-accent);
-}
-
-.notification.info .notification-icon svg {
-    stroke: var(--ap-accent);
-}
-
-.notification .notification-message {
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
-    color: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    line-height: 1.4;
-    z-index: 1;
-}
-
-.notification-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    width: 100%;
-    transform-origin: left;
-    transform: scaleX(1);
-    opacity: 0.8;
-}
-
-.notification.success .notification-progress {
-    background: var(--ap-accent);
-}
-
-.notification.error .notification-progress {
-    background: var(--ap-danger);
-}
-
-.notification.info .notification-progress {
-    background: var(--ap-accent);
-}
-
-.notification.show .notification-progress {
-    animation: shrinkProgress 2.5s linear forwards;
-}
-
-@keyframes shrinkProgress {
-    0% {
-        transform: scaleX(1);
+@media (max-width: 640px) {
+    .notifications {
+        top: 12px;
+        right: 12px;
+        left: 12px;
     }
 
-    100% {
-        transform: scaleX(0);
+    .notification {
+        width: auto;
     }
 }
 
@@ -3415,7 +3412,7 @@ span.coming-soon {
     width: 14px;
     height: 14px;
     /* O selo é amarelo nos dois temas: a tinta do ícone é fixa e escura. */
-    stroke: #1a1a1c;
+    stroke: #11151c;
     stroke-width: 2.5;
 }
 
@@ -3856,7 +3853,7 @@ span.coming-soon {
 
 .pc-btn--primary {
     background: var(--ap-accent);
-    color: var(--ap-text-inverse);
+    color: #fff;
 }
 
 .pc-btn--primary:hover:not(:disabled) {
@@ -4014,7 +4011,7 @@ button:focus-visible,
 
 /* Campo de texto casa :focus-visible sempre que recebe foco, inclusive por
    clique — então este é o foco que se vê no dia a dia, e ele é neutro. O anel
-   laranja de acessibilidade continua nos controles que não são de digitar. */
+   azul de acessibilidade continua nos controles que não são de digitar. */
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -4485,16 +4482,15 @@ textarea:focus-visible {
 }
 
 .pkg-person-btn--primary {
-    background: var(--ap-accent, #f97316);
+    background: var(--ap-primary);
     border-color: transparent;
-    color: #fff;
+    color: var(--ap-on-primary);
     font-weight: 600;
 }
 
 .pkg-person-btn--primary:hover:not(:disabled) {
-    background: var(--ap-accent-hover, #ea6a0c);
-    color: #fff;
-    filter: brightness(1.05);
+    background: var(--ap-primary-hover);
+    color: var(--ap-on-primary);
 }
 
 .pkg-person-btn--danger:hover:not(:disabled) {
@@ -4883,7 +4879,7 @@ textarea:focus-visible {
     border-radius: 6px; background: var(--ap-bg-muted); color: var(--ap-text-primary);
     border: none; cursor: pointer; transition: all 0.15s ease;
 }
-.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-accent); color: #fff; }
+.as-dropdown-item:hover .as-dropdown-btn { background: var(--ap-primary); color: var(--ap-on-primary); }
 .as-dropdown-item.is-selected .as-dropdown-btn { background: transparent; color: var(--ap-text-muted); padding: 6px; cursor: default; }
 
 .as-selected-section { margin-bottom: 24px; }
@@ -5581,17 +5577,23 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #4ade80;
     flex-shrink: 0;
 }
 
 .session-card-status-text {
-    color: #4ade80;
     font-weight: 600;
 }
 
-.session-card-status.is-inactive .session-card-status-dot { background: var(--ap-warning); }
-.session-card-status.is-inactive .session-card-status-text { color: var(--ap-warning); }
+/* Verde só quando há gente usando: é o estado que pede atenção. Em repouso
+   é o normal, e fala em cinza. */
+.session-card-status.is-active .session-card-status-dot { background: var(--ap-success); }
+.session-card-status.is-active .session-card-status-text { color: var(--ap-success-text); }
+
+.session-card-status.is-resting .session-card-status-dot { background: var(--ap-border-muted); }
+.session-card-status.is-resting .session-card-status-text { color: var(--ap-text-muted); font-weight: 500; }
+
+.session-card-status.is-paused .session-card-status-dot { background: var(--ap-warning); }
+.session-card-status.is-paused .session-card-status-text { color: var(--ap-warning); }
 
 .session-card-usage { margin-top: 2px; }
 
@@ -5733,9 +5735,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     padding-bottom: 14px;
 }
 
-/* O grid de cards agora é só de "Meus acessos" — cards menores, mais por linha. */
+/* O grid de cards agora é só de "Meus acessos" — cards menores, mais por linha.
+   O mínimo é o que cabe "Conectando" e "Ver detalhes" lado a lado com folga. */
 .sessions-grid {
-    grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 14px;
     max-height: none;
     overflow: visible;
@@ -5800,9 +5803,9 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
    `.modal.un-modal` porque modals.css carrega depois deste arquivo: sem os dois
    nomes, o max-width de 400px do .modal base ganharia por ordem.
 
-   O card responde uma pergunta só: quem está nesta sessão agora. Cada pessoa
-   é uma linha com dois números pequenos — desde que horas e há quanto tempo —,
-   e dois números não pedem tabela com cabeçalho nem rodapé de totais. */
+   O card responde uma pergunta só: quem está aqui agora — as pessoas numa
+   sessão, ou as sessões de uma pessoa. Cada item é uma linha com o nome e
+   há quanto tempo está ativo, em texto neutro: não é um alerta, é uma lista. */
 .modal.un-modal {
     max-width: 440px;
     width: 100%;
@@ -5835,9 +5838,7 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     height: 38px;
     flex-shrink: 0;
     border-radius: 10px;
-    object-fit: cover;
-    background: var(--ap-bg-muted);
-    border: 1px solid var(--ap-border);
+    object-fit: contain;
 }
 
 .un-service-text { min-width: 0; }
@@ -5863,18 +5864,20 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     flex: 1;
     min-height: 0;
     gap: 0;
-    /* Sem respiro lateral: os separadores das linhas atravessam o card de
-       ponta a ponta, na mesma medida da borda do cabeçalho. */
+    /* O respiro fica nas linhas, para o hover e a rolagem irem de ponta a
+       ponta do card. */
     padding: 0;
     max-height: none;
     overflow-y: auto;
 }
 
 /* ── Lista de quem está conectado ── */
+/* Sem separador entre as linhas: a única linha do card é a borda do
+   cabeçalho. O respiro em cima e embaixo faz o papel dela na lista. */
 .un-list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 8px 0;
     display: flex;
     flex-direction: column;
 }
@@ -5883,48 +5886,34 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 13px 20px;
+    padding: 10px 20px;
 }
-
-/* Separador só entre linhas: a primeira encosta no cabeçalho, que já tem a
-   sua própria borda. */
-.un-row + .un-row { border-top: 1px solid var(--ap-border-muted); }
 
 .un-avatar {
     width: 34px;
     height: 34px;
-    flex-shrink: 0;
     border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--ap-bg-muted);
-    border: 1px solid var(--ap-border);
-}
-
-.un-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.un-avatar-fallback {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--ap-text-secondary);
-    text-transform: uppercase;
 }
 
-.un-row-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
+/* Na tela da pessoa, o cabeçalho é ela: avatar redondo no lugar do ícone. */
+.un-service-icon.un-person {
+    border-radius: 50%;
+    border: none;
+    font-size: 15px;
+}
+
+.un-row-service {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--ap-radius-sm);
+    object-fit: contain;
 }
 
 .un-row-name {
+    flex: 1;
+    min-width: 0;
     font-size: 13.5px;
     font-weight: 500;
     color: var(--ap-text-primary);
@@ -5934,49 +5923,20 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .un-row-since {
-    font-size: 12px;
+    flex-shrink: 0;
+    font-size: 12.5px;
     color: var(--ap-text-muted);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-/* Verde pelos tokens: no tema claro o #4ade80 dos cards não teria contraste
-   suficiente para texto pequeno. */
-.un-row-time {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--ap-font-data);
-    font-variant-numeric: tabular-nums;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--ap-success-text);
-}
-
-.un-live-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: currentColor;
-}
-
-/* ── Estado vazio (todo mundo saiu antes do card abrir) ── */
+/* ── Estado vazio ── */
 .un-empty {
     padding: 34px 20px;
     text-align: center;
 }
 
-.un-empty-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ap-text-secondary);
-}
-
 .un-empty-text {
-    margin: 5px 0 0;
+    margin: 0;
     font-size: 12.5px;
     color: var(--ap-text-muted);
 }
@@ -6086,11 +6046,10 @@ body[data-dash-section="access"] .main-onboarding .empty-screen[data-empty="acce
 }
 
 .session-row .session-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    background: var(--ap-bg-card-alt);
-    border: 1px solid var(--ap-border);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .session-row .session-card-name { font-size: 15px; }
@@ -6273,13 +6232,15 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     gap: 12px;
 }
 
-/* Bolha na cor do serviço — o fundo e a borda vêm inline, da paleta da sessão. */
+/* Bolha neutra em volta do favicon: a mesma para todo serviço, sem puxar a
+   cor do ícone. */
 .access-card .session-card-icon {
     width: 42px;
     height: 42px;
     padding: 8px;
     border-radius: 50%;
-    border: 1px solid transparent;
+    background-color: var(--ap-bg-card-alt);
+    border: 1px solid var(--ap-border);
 }
 
 .access-card .session-card-name {
@@ -6294,10 +6255,18 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     font-size: 12.5px;
 }
 
+/* "Conectar" ocupa o que sobra e "Ver detalhes" fica com a largura dele: com
+   o conectar em tamanho fixo, num card estreito era o detalhes que ia sendo
+   empurrado até a borda. */
 .access-card-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+}
+
+.access-card-actions > .connect-session-btn {
+    flex: 1;
+    min-width: 0;
 }
 
 .access-card .connect-session-btn {
@@ -6635,7 +6604,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     border-radius: 8px;
     background-color: var(--ap-accent-light);
     border: 1px solid var(--ap-accent-muted);
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
 }
 
 .note {
@@ -6698,7 +6667,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .info-text {
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     font-size: 12px;
     line-height: 1.4;
 }
@@ -7088,7 +7057,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     flex-shrink: 0;
     font-size: 12.5px;
     font-weight: 600;
-    color: var(--ap-accent);
+    color: var(--ap-accent-strong);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -7202,7 +7171,7 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .plan-badge {
-    background: var(--ap-accent-strong);
+    background: var(--ap-accent);
     color: #fff;
     box-shadow: 0 4px 10px -4px rgba(var(--ap-accent-rgb), 0.55);
 }
@@ -7285,8 +7254,8 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     padding: 11px 12px;
     border: 1px solid transparent;
     border-radius: var(--ap-radius-md);
-    background: var(--ap-accent-strong);
-    color: #fff;
+    background: var(--ap-primary);
+    color: var(--ap-on-primary);
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 600;
@@ -7298,6 +7267,17 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
 }
 
 .plan-choose-btn:hover {
+    background: var(--ap-primary-hover);
+}
+
+/* O plano em destaque é o único botão azul do modal: é a escolha que a página
+   recomenda, e o azul só funciona como sinal se não estiver nos outros três. */
+.plan-card--featured .plan-choose-btn {
+    background: var(--ap-accent);
+    color: #fff;
+}
+
+.plan-card--featured .plan-choose-btn:hover {
     background: var(--ap-accent-hover);
 }
 
@@ -7650,6 +7630,34 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     cursor: progress;
 }
 
+/* Selo "Conectado": a sessão está aberta neste navegador (a extensão avisa).
+   No card do membro vai para a direita do cabeçalho; na linha do dono fica
+   colado ao nome, dentro da coluna do serviço. */
+.session-connected-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border: 1px solid var(--ap-success-border);
+    border-radius: var(--ap-radius-full);
+    background: var(--ap-success-light);
+    color: var(--ap-success-text);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.session-connected-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.session-row .session-connected-badge { margin-left: 0; }
+
 /* ============================================
    Tooltip do gráfico de uso
    ============================================
@@ -7793,4 +7801,159 @@ body[data-dash-section="access"] .dashboard-topbar { display: none; }
     display: block;
     height: 100%;
     border-radius: var(--ap-radius-full);
+}
+
+/* ============================================================================
+   Responsividade: monitores grandes e celular
+
+   O layout foi desenhado no notebook (~1366–1536px), e é essa faixa que fica
+   intocada aqui. Acima dela o conteúdo parava em 1300px e a lista de sessões
+   numa altura fixa, sobrando tela vazia dos lados e embaixo; abaixo de 640px
+   as ações do topo quebravam linha cada uma num lugar.
+   ============================================================================ */
+
+/* A lista de sessões vai até o pé da janela em vez de parar em 250px: numa
+   tela alta, rolar dentro de uma caixa baixa com meia tela vazia embaixo não
+   faz sentido. O desconto é a altura do que vem acima dela (topo, gráfico e
+   pessoas, cabeçalho da lista) e muda junto com --collection-panel-h. */
+.sessions-list {
+    --sessions-list-offset: 470px;
+    max-height: max(250px, calc(100dvh - var(--sessions-list-offset)));
+}
+
+/* O nome da pessoa usa o espaço que a linha tem, não um teto fixo. */
+.collection-users-col .item-name {
+    max-width: none;
+    min-width: 0;
+}
+
+/* ── Monitores grandes ── */
+
+@media (min-width: 1600px) {
+    .page-content { padding: 28px 40px; }
+
+    .main-content { max-width: 1560px; }
+
+    .dashboard-topbar { margin-bottom: 22px; }
+    .topbar-title { font-size: 24px; }
+
+    .topbar-actions .btn,
+    .pkg-people-counter { font-size: 14px; }
+
+    .collection-chart-users-row { --collection-panel-h: 280px; gap: 1.5rem; }
+
+    .sessions-list { --sessions-list-offset: 540px; }
+
+    .collection-chart-col .usage-chart-container,
+    .collection-users-col .users-panel { padding: 20px 22px; }
+
+    .collection-chart-col .chart-title,
+    #package-details .sessions-panel .panel-title,
+    .sessions-panel-head .panel-title { font-size: 16px; }
+
+    .collection-chart-col .chart-subtitle { font-size: 13px; }
+
+    .collection-users-col .list-item { padding: 9px 10px; }
+    .collection-users-col .profile-picture { width: 36px; height: 36px; font-size: 14px; }
+    .collection-users-col .item-name { font-size: 14.5px; }
+    .collection-users-col .user .item-details { font-size: 12px; }
+    .collection-users-col .user .details-btn { height: 32px; padding: 0 12px; font-size: 12.5px; }
+    .collection-users-col .user .remove-user-access-btn { width: 32px; height: 32px; }
+
+    .sessions-search { width: 300px; }
+    .sessions-search input { padding: 10px 16px 10px 36px; font-size: 14px; }
+
+    .sessions-table-head { padding: 14px 32px 14px 24px; }
+    .sessions-table-head span { font-size: 12px; }
+    .sessions-list .session-row { padding: 17px 24px; }
+    .session-row .session-card-icon { width: 36px; height: 36px; border-radius: 7px; }
+    .session-row .session-card-name { font-size: 16px; }
+    .session-row .session-card-domain { font-size: 13.5px; }
+    .session-row .session-card-status { font-size: 14px; }
+    .session-row .session-card-members-label { font-size: 13px; }
+    .session-row .usage-time-text { font-size: 14px; }
+}
+
+@media (min-width: 2200px) {
+    .main-content { max-width: 1840px; }
+
+    .collection-chart-users-row { --collection-panel-h: 330px; }
+
+    .sessions-list { --sessions-list-offset: 600px; }
+}
+
+/* ── Tablet e celular ── */
+
+@media (max-width: 1199px) {
+    /* O botão do menu é fixo no canto: o título do pacote se alinha ao lado
+       dele, em vez de a página reservar uma faixa vazia só para o botão. */
+    .page-content:has(.dashboard-topbar, .dt-topbar) { padding-top: 14px; }
+
+    .topbar-title,
+    .dt-crumbs {
+        min-height: 42px;
+        padding-left: 56px;
+        line-height: 42px;
+    }
+}
+
+@media (max-width: 900px) {
+    /* Empilhado, a página já rola: a lista inteira entra no fluxo, sem uma
+       segunda rolagem dentro dela. */
+    .sessions-list { max-height: none; }
+
+    /* Sem a coluna do gráfico ao lado, a lista de pessoas não tem com quem
+       empatar de altura — fica do tamanho de quem está nela. */
+    .collection-users-col .users-panel { min-height: 0; }
+
+    /* O gráfico (sem proporção fixa) crescia com a largura da tela e passava
+       de 400px de altura no tablet. */
+    .collection-chart-col { height: 300px; }
+}
+
+@media (max-width: 767px) {
+    /* O ícone do calendário mora à esquerda do select: o padding precisa
+       continuar abrindo espaço para ele, senão ele cobre o texto. */
+    .chart-period-select { padding-left: 30px; }
+}
+
+@media (max-width: 640px) {
+    .page-content { padding-left: 16px; padding-right: 16px; }
+
+    .topbar-title { font-size: 19px; }
+
+    /* Ações em grade: pessoas e compartilhar lado a lado, adicionar sessão
+       na largura toda embaixo — as três alinhadas pelas bordas. */
+    .topbar-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .topbar-people,
+    .pkg-people-counter,
+    .topbar-actions .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .pkg-people-counter,
+    .topbar-actions .btn {
+        justify-content: center;
+        height: 40px;
+        padding: 0 12px;
+        font-size: 13.5px;
+    }
+
+    .topbar-add-session-btn { grid-column: 1 / -1; }
+
+    .collection-chart-col .usage-chart-container,
+    .collection-users-col .users-panel { padding: 14px; }
+
+    .collection-users-col .user .details-btn { padding: 0 8px; }
+
+    .sessions-panel-head { gap: 10px; }
+    .sessions-search { width: 100%; }
 }
