@@ -1,4 +1,5 @@
 from _parts import MARK, ICON, head, page, winbar
+from brand import wordmark
 from icons import ico
 
 GRID = 'grid-template-columns:292px 104px 236px 1fr'
@@ -10,7 +11,7 @@ def side(active='Engenharia'):
         bell = '<i class="n"></i>' if dot else ''
         rows.append(f'<div class="pkg{cls}">{n}{bell}</div>')
     return f'''<div class="side">
-      <div class="side-brand">{MARK}<b>Niango</b></div>
+      <div class="side-brand">{wordmark(20)}</div>
       <div class="nav">
         <div class="nav-item on">{ICON['folder']}Minha coleção</div>
         <div class="nav-item">{ICON['send']}Meus acessos</div>
@@ -26,21 +27,21 @@ def topbar():
         <div class="search">{ICON['search']}Buscar sessões do pacote…</div>
         <span class="btn btn-g">{ICON['users']}<b style="color:var(--tx)">12</b> pessoas</span>
         <span class="btn btn-g">{ICON['share']}Compartilhar</span>
-        <span class="btn btn-a">{ICON['plus']}Adicionar sessão</span>
+        <span class="btn btn-ink">{ICON['plus']}Adicionar sessão</span>
       </div>'''
 
 CHART = '''<svg viewBox="0 0 470 132" style="width:100%;height:116px;margin-top:6px">
   <defs><linearGradient id="a" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#f97316" stop-opacity=".28"/><stop offset="1" stop-color="#f97316" stop-opacity="0"/>
+    <stop offset="0" stop-color="#609efa" stop-opacity=".26"/><stop offset="1" stop-color="#609efa" stop-opacity="0"/>
   </linearGradient></defs>
   <path d="M26 74C48 70 92 46 136 49S202 92 246 86 312 30 356 22s48 26 88 52v38H26Z" fill="url(#a)"/>
   <path d="M26 74C48 70 92 46 136 49S202 92 246 86 312 30 356 22s48 26 88 52" fill="none"
-    stroke="#f97316" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <g fill="#131416" stroke="#f97316" stroke-width="2">
+    stroke="#609efa" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#101318" stroke="#609efa" stroke-width="2">
     <circle cx="26" cy="74" r="3.4"/><circle cx="136" cy="49" r="3.4"/><circle cx="246" cy="86" r="3.4"/>
     <circle cx="356" cy="22" r="4.6"/><circle cx="444" cy="74" r="3.4"/></g>
-  <text x="356" y="12" font-size="10.5" font-weight="700" fill="#d6d3cd" text-anchor="middle" font-family="Inter">7h 18m</text>
-  <g font-size="9.5" fill="#9d9488" text-anchor="middle" font-family="Inter">
+  <text x="356" y="12" font-size="10.5" font-weight="700" fill="#cdd1d8" text-anchor="middle" font-family="Inter">7h 18m</text>
+  <g font-size="9.5" fill="#8e95a1" text-anchor="middle" font-family="Inter">
     <text x="26" y="126">Seg</text><text x="136" y="126">Ter</text><text x="246" y="126">Qua</text>
     <text x="356" y="126">Qui</text><text x="444" y="126">Sex</text></g>
 </svg>'''
@@ -66,8 +67,8 @@ def row(name, domain, avs, using, time, trend, tclass, hi=False):
 
 TABLE = f'''<div class="tbl">
   <div class="tbl-h" style="{GRID}"><span>SERVIÇO</span><span>STATUS</span><span>USANDO AGORA</span><span>TEMPO DE USO HOJE</span></div>
-  {row('Figma','figma.com',[('#4ade80','C'),('#7b57d4','B'),('#f97316','A')],'3 pessoas','2h 10m','↑ 1,8× o costume','up',hi=True)}
-  {row('Notion','notion.so',[('#7b57d4','B'),('#f97316','A')],'2 pessoas','1h 24m','↓ 62% do costume','flat')}
+  {row('Figma','figma.com',[('#4ade80','C'),('#7b57d4','B'),('#1c65c8','A')],'3 pessoas','2h 10m','↑ 1,8× o costume','up',hi=True)}
+  {row('Notion','notion.so',[('#7b57d4','B'),('#1c65c8','A')],'2 pessoas','1h 24m','↓ 62% do costume','flat')}
   {row('Linear','linear.app',[('#4ade80','C')],'1 pessoa','58m','no costume','flat')}
-  {row('Slack','slack.com',[('#f97316','A')],'1 pessoa','42m','↓ 38% do costume','flat')}
+  {row('Slack','slack.com',[('#1c65c8','A')],'1 pessoa','42m','↓ 38% do costume','flat')}
 </div>'''

@@ -1,4 +1,7 @@
-MARK = '<svg viewBox="10 13 22 22" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="24" r="11" fill="#1d1d1c" stroke="#2e2f33"/><path d="M17.6 18.8a1.2 1.2 0 0 1 1.9-1L27 22.1a1.2 1.2 0 0 1 0 1.8l-7.5 4.3a1.2 1.2 0 0 1-1.9-1Z" fill="#fdfaf6"/></svg>'
+from brand import signature, symbol, wordmark
+
+# O símbolo sozinho, para onde só cabe o ícone (o chip da extensão na moldura).
+MARK = symbol(18)
 
 ICON = {
  'search':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
@@ -17,8 +20,10 @@ ICON = {
 }
 
 def head(eyebrow, title, sub):
+    # Assinatura (símbolo + nome): a peça vive fora do produto, onde a marca
+    # precisa do ícone junto — é a regra do kit em theme-tokens.css.
     return f'''<div class="head">
-    <div class="brand">{MARK}<b>Niango</b></div>
+    <div class="brand">{signature(30)}</div>
     <div class="eyebrow"><i></i>{eyebrow}</div>
     <h1>{title}</h1>
     <p class="sub">{sub}</p>

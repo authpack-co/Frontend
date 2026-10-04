@@ -6,28 +6,28 @@ As duas peças promocionais da ficha, que seguem regras próprias:
 - marquee (1400x560): é a peça de destaque. Pode ser recortado nas laterais
   conforme a superfície, então nada essencial encosta na borda.
 """
-from _parts import MARK, ICON, ICON as I
+from _parts import ICON
+from brand import signature
 from icons import ico
 
 TILE = '''<link rel="stylesheet" href="slides.css">
 <style>
 .stage{width:440px;height:280px;display:flex;flex-direction:column;justify-content:center;padding:0 38px}
 .stage::before{background:
-  radial-gradient(420px 260px at 108% -18%, rgba(249,115,22,.30), transparent 62%),
-  radial-gradient(320px 220px at -12% 118%, rgba(123,87,212,.16), transparent 64%)}
+  radial-gradient(400px 250px at 110% -20%, rgba(42,114,220,.26), transparent 60%),
+  radial-gradient(300px 210px at -12% 120%, rgba(96,158,250,.08), transparent 62%)}
 .grid{background-size:34px 34px;-webkit-mask-image:radial-gradient(360px 240px at 50% 30%,#000,transparent 80%)}
-.t-brand{display:flex;align-items:center;gap:9px;margin-bottom:20px}
-.t-brand svg{width:27px;height:27px}
-.t-brand b{font-family:var(--sora);font-weight:700;font-size:18px;letter-spacing:-.01em}
+.t-brand{display:flex;align-items:center;margin-bottom:20px}
+.t-brand svg{display:block}
 .t-h{font-family:var(--sora);font-weight:700;font-size:31px;line-height:1.14;letter-spacing:-.022em;color:#f6f4f1}
-.t-h .g{background:linear-gradient(96deg,#fb923c,#f97316 60%,#e2600a);
+.t-h .g{background:linear-gradient(96deg,#8ab8fd,#609efa 54%,#2a72dc);
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .t-foot{display:flex;align-items:center;gap:8px;margin-top:17px;font-size:12.5px;font-weight:600;color:var(--tx3)}
-.t-foot i{width:5px;height:5px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 3px rgba(249,115,22,.16)}
+.t-foot i{width:5px;height:5px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 3px rgba(42,114,220,.22)}
 </style>
 <div class="stage"><div class="grid"></div>
   <div style="position:relative">
-    <div class="t-brand">''' + MARK + '''<b>Niango</b></div>
+    <div class="t-brand">''' + signature(30) + '''</div>
     <h1 class="t-h">Compartilhe o acesso,<br><span class="g">não a senha.</span></h1>
     <p class="t-foot"><i></i>Extensão para Chrome</p>
   </div>
@@ -49,15 +49,14 @@ MARQUEE = '''<link rel="stylesheet" href="slides.css">
 <style>
 .stage{width:1400px;height:560px;display:flex;align-items:center;gap:56px;padding:0 96px}
 .stage::before{background:
-  radial-gradient(980px 560px at 78% -16%, rgba(249,115,22,.19), transparent 62%),
-  radial-gradient(720px 500px at -6% 116%, rgba(123,87,212,.12), transparent 64%)}
+  radial-gradient(940px 540px at 80% -18%, rgba(42,114,220,.18), transparent 60%),
+  radial-gradient(700px 480px at -6% 118%, rgba(96,158,250,.07), transparent 62%)}
 .grid{-webkit-mask-image:radial-gradient(1100px 560px at 46% 40%,#000,transparent 80%)}
 .m-copy{position:relative;width:588px;flex:none}
-.m-brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-.m-brand svg{width:29px;height:29px}
-.m-brand b{font-family:var(--sora);font-weight:700;font-size:19px;letter-spacing:-.01em}
+.m-brand{display:flex;align-items:center;margin-bottom:24px}
+.m-brand svg{display:block}
 .m-h{font-family:var(--sora);font-weight:700;font-size:52px;line-height:1.09;letter-spacing:-.024em;color:#f6f4f1}
-.m-h .g{background:linear-gradient(96deg,#fb923c,#f97316 58%,#e2600a);
+.m-h .g{background:linear-gradient(96deg,#8ab8fd,#609efa 52%,#2a72dc);
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .m-sub{margin-top:18px;font-size:18px;line-height:1.52;color:var(--tx3)}
 .m-sub b{color:var(--tx2);font-weight:600}
@@ -72,7 +71,7 @@ MARQUEE = '''<link rel="stylesheet" href="slides.css">
 </style>
 <div class="stage"><div class="grid"></div>
   <div class="m-copy">
-    <div class="m-brand">''' + MARK + '''<b>Niango</b></div>
+    <div class="m-brand">''' + signature(34) + '''</div>
     <h1 class="m-h">Distribua acessos<br>sem entregar <span class="g">senhas.</span></h1>
     <p class="m-sub">A extensão compartilha a <b>sessão já autenticada</b>, cifrada com AES
       individual. Quem recebe entra em um clique — e você revoga quando quiser.</p>

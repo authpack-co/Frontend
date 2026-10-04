@@ -21,7 +21,7 @@ def app_body(dim=False):
             </div>
             <div style="border:1px solid var(--bd);border-radius:12px;padding:12px 14px">
               <p class="sec" style="margin-bottom:2px">Pessoas com acesso</p>
-              {person('AR','Ana Ribeiro','agora mesmo','#f97316',online=True,creator=True)}
+              {person('AR','Ana Ribeiro','agora mesmo','#1c65c8',online=True,creator=True)}
               {person('BA','Bruno Alves','há 2 horas','#7b57d4')}
               {person('CD','Carla Dias','agora mesmo','#4ade80',online=True,dark=True)}
             </div>
@@ -36,7 +36,7 @@ def app_body(dim=False):
 s1 = page('.canvas{top:344px}', head(
     'Extensão para Chrome, Edge e Arc',
     'Distribua acessos sem entregar <span class="g">senhas.</span>',
-    'O Niango compartilha a <b>sessão já autenticada</b>, cifrada com AES individual. '
+    'A Niango compartilha a <b>sessão já autenticada</b>, cifrada com AES individual. '
     'Quem recebe entra em um clique — e nunca vê a credencial.') + f'''
   <div class="canvas"><div class="win">
     {winbar('app.niango.io/collection/engenharia')}
@@ -126,7 +126,7 @@ s3 = page('.canvas{top:336px}', head(
       </div>
       <div class="modal" style="position:absolute;right:38px;top:120px;width:400px;padding:16px 18px 10px">
         <p class="sec" style="font-size:12px;margin-bottom:4px">Pessoas com acesso</p>
-        {person('AR','Ana Ribeiro','agora mesmo','#f97316',online=True,creator=True)}
+        {person('AR','Ana Ribeiro','agora mesmo','#1c65c8',online=True,creator=True)}
         {person('BA','Bruno Alves','há 2 horas','#7b57d4')}
         {person('CD','Carla Dias','agora mesmo','#4ade80',online=True,dark=True)}
         {person('DM','Diego Matos','entrou pelo link','#3b82f6',action='Ver detalhes')}
@@ -204,7 +204,7 @@ s5 = page('.canvas{top:336px}', head(
             </div>
             <div style="border:1px solid var(--bd);border-radius:12px;padding:12px 14px">
               <p class="sec" style="font-size:12px;margin-bottom:2px">Pessoas com acesso</p>
-              {person('AR','Ana Ribeiro','agora mesmo','#f97316',online=True,creator=True)}
+              {person('AR','Ana Ribeiro','agora mesmo','#1c65c8',online=True,creator=True)}
               {person('BA','Bruno Alves','há 2 horas · 4h 12m','#7b57d4',action='Revogar',danger=True)}
               {person('CD','Carla Dias','agora mesmo · 1h 40m','#4ade80',online=True,dark=True,action='Revogar',danger=True)}
               {person('DM','Diego Matos','há 3 dias · 22m','#3b82f6',action='Revogar',danger=True)}

@@ -35,9 +35,32 @@ opaco quando a página tem fundo sólido, que é o caso; vale conferir com
 ## Como as telas são feitas
 
 Não são capturas do app rodando: são mockups em HTML/CSS que reusam os tokens
-de `public/assets/styles/theme-tokens.css` (tema escuro) e a mesma linguagem de
-componente do painel. Isso mantém a ficha fiel à interface sem depender de um
+de `public/assets/styles/theme-tokens.css` (tema escuro), a marca de
+`src/components/BrandLogo.jsx` e a mesma linguagem de componente do painel. Isso mantém a ficha fiel à interface sem depender de um
 backend com dados de exemplo, e deixa cada texto editável em um arquivo.
+
+## Marca
+
+`brand.py` lê os traçados de `src/components/BrandLogo.jsx` em vez de guardar
+cópia — o kit já mora no app, com a fonte convertida em curvas, e duplicar aqui
+garantiria que um dia o logo da loja ficasse uma versão atrás do logo do
+produto.
+
+Qual lockup usar segue a regra do próprio tema: o wordmark ("niango" com o "go"
+azul) é a marca padrão e é o que o `AppShell` põe na sidebar — então é ele que
+aparece dentro do mockup. A assinatura (símbolo + nome) entra onde a marca
+precisa do ícone junto, que é o caso de uma peça de loja: ela vive solta, fora
+do produto.
+
+As cores saem de `theme-tokens.css`, tema escuro. Duas valem destaque porque
+mudam o desenho:
+
+- **azul não é botão.** `--ap-accent` preenche detalhe (ponto, barra, foco) e o
+  punhado de botões que destravam o produto. O botão de todo dia — adicionar,
+  copiar — é tinta: `--ap-primary`, que no escuro é branco. Por isso
+  "Adicionar sessão" aparece branco e não azul nas telas.
+- **"Conectar" é pílula neutra**, como em `dashboard.css`: fundo
+  `--ap-bg-hover`, borda `--ap-border-muted`, raio cheio.
 
 ## Ícones dos serviços
 
@@ -96,6 +119,7 @@ Onde mexer:
 
 - **texto das telas** — `slides.py`, no topo de cada bloco `s1`…`s5`;
 - **tile e marquee** — `promo.py` (cada um com o seu bloco `<style>`);
+- **marca** — nada aqui: `brand.py` acompanha `BrandLogo.jsx`;
 - **quais serviços aparecem** — `SERVICES` em `icons.py`, mais as chamadas
   de `row()` e `acc()` em `build.py` / `slides.py`;
 - **pedaços de UI** (sidebar, tabela, gráfico, pessoas) — `build.py`;

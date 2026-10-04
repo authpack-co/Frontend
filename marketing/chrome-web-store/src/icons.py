@@ -16,11 +16,11 @@ import base64, os, re, subprocess
 
 GOOGLE_SIZE = 128
 # Superfície do tile — a mesma --ap-bg-card-alt do tema escuro.
-CHIP_BG = '#1b1c1e'
+CHIP_BG = '#181c23'
 # Abaixo disto o glifo encosta no fundo do tile e vira mancha.
 MIN_CONTRAST = 3.0
 # Tom claro do tema, para as marcas que no escuro se apresentam invertidas.
-REVERSED = '#E8E6E3'
+REVERSED = '#E7E9ED'
 here = os.path.dirname(os.path.abspath(__file__))
 cache = os.path.join(here, '.iconcache')
 
