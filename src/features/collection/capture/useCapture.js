@@ -34,7 +34,13 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
 
     const creepTimers = useRef({});
     const settleTimers = useRef({});
-    const listenerRef = useRef(null);
+    // Lote em andamento e retries em voo (ref -> desfecho). A escuta das mensagens mora num
+    // efeito próprio (abaixo), e não dentro do start: o "Atualizar sessão" dispara o start
+    // num efeito de abertura, e no StrictMode o React desmonta e remonta o componente logo em
+    // seguida — a limpeza da desmontagem tirava o listener, a remontagem não disparava de novo
+    // (trava contra abrir duas abas) e o progresso nunca chegava, embora a sessão atualizasse.
+    const batchActiveRef = useRef(false);
+    const retriesRef = useRef(new Map());
     const finishedRef = useRef(onFinished);
 
     useEffect(() => { finishedRef.current = onFinished; }, [onFinished]);
@@ -129,33 +135,40 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         }, window.location.origin);
     }, [packageId, mode]);
 
-    /** Dispara o lote e escuta até o captureDone. */
-    const start = useCallback((targets) => {
-        stopAll();
-        setBatchDone(false);
+    /** Retry resolvido (progresso da linha ou timeout): uma vez só. */
+    const finishRetry = useCallback((ref, ok) => {
+        const timer = retriesRef.current.get(ref);
+        if (timer === undefined) return;
+        clearTimeout(timer);
+        retriesRef.current.delete(ref);
+        applyResult(ref, ok);
+        finishedRef.current?.();
+    }, [applyResult]);
 
-        const initial = {};
-        targets.forEach((target) => {
-            initial[target.ref] = { target, state: 'pending', pct: PCT.loading };
-        });
-        setRows(initial);
-
-        // Cada linha começa a andar no t=0 e é ancorada pelos estágios reais
-        // quando eles chegam.
-        targets.forEach((target) => startCreep(target.ref, PCT.interactive));
-
+    // A escuta vive enquanto o componente estiver montado — o StrictMode a desliga e religa
+    // junto com a remontagem, sem depender de quem chamou o start.
+    useEffect(() => {
         function onMessage(event) {
             if (event.origin !== window.location.origin) return;
             const data = event.data;
             if (data?.source !== 'niango-extension') return;
+
+            // Retry: casamos pelo ref e não esperamos o captureDone — assim o
+            // retry não cruza com o lote original.
+            if (data.ref != null && retriesRef.current.has(data.ref)) {
+                if (data.type === 'niango:captureStage') handleStage(data.ref, data.current?.stage);
+                else if (data.type === 'niango:captureProgress') finishRetry(data.ref, data.current?.status === 'ok');
+                return;
+            }
+
+            if (!batchActiveRef.current) return;
 
             if (data.type === 'niango:captureStage') {
                 handleStage(data.ref, data.current?.stage);
             } else if (data.type === 'niango:captureProgress') {
                 applyResult(data.ref, data.current?.status === 'ok');
             } else if (data.type === 'niango:captureDone') {
-                window.removeEventListener('message', onMessage);
-                listenerRef.current = null;
+                batchActiveRef.current = false;
                 stopAll();
 
                 // O que ficou pendente quando o lote terminou não vai mais
@@ -173,15 +186,30 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
             }
         }
 
-        listenerRef.current = onMessage;
         window.addEventListener('message', onMessage);
-        post(targets);
-    }, [applyResult, handleStage, post, startCreep, stopAll]);
+        return () => window.removeEventListener('message', onMessage);
+    }, [applyResult, finishRetry, handleStage, stopAll]);
 
-    /**
-     * Uma linha só. Casamos pelo ref e não esperamos o captureDone — assim o
-     * retry não cruza com o lote original.
-     */
+    /** Dispara o lote; o progresso chega pela escuta acima até o captureDone. */
+    const start = useCallback((targets) => {
+        stopAll();
+        setBatchDone(false);
+
+        const initial = {};
+        targets.forEach((target) => {
+            initial[target.ref] = { target, state: 'pending', pct: PCT.loading };
+        });
+        setRows(initial);
+
+        // Cada linha começa a andar no t=0 e é ancorada pelos estágios reais
+        // quando eles chegam.
+        targets.forEach((target) => startCreep(target.ref, PCT.interactive));
+
+        batchActiveRef.current = true;
+        post(targets);
+    }, [post, startCreep, stopAll]);
+
+    /** Uma linha só, de novo. */
     const retry = useCallback((ref) => {
         setRows((current) => {
             const row = current?.[ref];
@@ -190,39 +218,18 @@ export default function useCapture({ packageId, mode = 'create', onFinished }) {
         });
 
         const target = rows?.[ref]?.target;
-        if (!target) return;
+        if (!target || retriesRef.current.has(ref)) return;
 
         startCreep(ref, PCT.interactive);
-
-        let settled = false;
-
-        const finish = (ok) => {
-            if (settled) return;
-            settled = true;
-            window.removeEventListener('message', onMessage);
-            clearTimeout(timer);
-            applyResult(ref, ok);
-            finishedRef.current?.();
-        };
-
-        function onMessage(event) {
-            if (event.origin !== window.location.origin) return;
-            const data = event.data;
-            if (data?.source !== 'niango-extension' || data.ref !== ref) return;
-
-            if (data.type === 'niango:captureStage') handleStage(ref, data.current?.stage);
-            else if (data.type === 'niango:captureProgress') finish(data.current?.status === 'ok');
-        }
-
-        const timer = setTimeout(() => finish(false), ITEM_TIMEOUT_MS);
-        window.addEventListener('message', onMessage);
+        retriesRef.current.set(ref, setTimeout(() => finishRetry(ref, false), ITEM_TIMEOUT_MS));
         post([target]);
-    }, [applyResult, handleStage, post, rows, startCreep]);
+    }, [finishRetry, post, rows, startCreep]);
 
-    // Sair da tela no meio da captura não pode deixar timers nem listener vivos.
+    // Sair da tela no meio da captura não pode deixar timers vivos.
     useEffect(() => () => {
         stopAll();
-        if (listenerRef.current) window.removeEventListener('message', listenerRef.current);
+        retriesRef.current.forEach((timer) => clearTimeout(timer));
+        retriesRef.current.clear();
     }, [stopAll]);
 
     const list = rows ? Object.values(rows) : [];
