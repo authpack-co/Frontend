@@ -45,7 +45,7 @@ const SLIDES = [
         section: -1,
         demo: <WelcomeDemo />,
         eyebrow: 'Bem-vindo',
-        title: 'Bem-vindo ao Niango',
+        title: 'Boas-vindas à Niango',
         text: <>Distribua e controle seus acessos em um só lugar.</>,
         centered: true,
     },
@@ -83,7 +83,7 @@ const SLIDES = [
         section: 1,
         demo: <AddCaptureDemo />,
         eyebrow: 'Seção 2 · Adicionar sessões',
-        title: 'O Niango captura pra você',
+        title: 'A Niango captura pra você',
         text: <>As abas abrem e fecham sozinhas. Só <strong>mantenha esta aba aberta</strong>.</>,
         centered: true,
     },
@@ -208,7 +208,7 @@ export default function OnboardingGuide({ open, startSection, onClose }) {
             className={`og-overlay${visible ? ' show' : ''}`}
             role="dialog"
             aria-modal="true"
-            aria-label="Guia do Niango"
+            aria-label="Guia da Niango"
             onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
         >
             <div

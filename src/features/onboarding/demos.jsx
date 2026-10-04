@@ -32,7 +32,7 @@ function Check({ size = 16, color = '#16a34a', style }) {
  * Boas-vindas: a marca sozinha.
  *
  * É o único slide que não imita uma tela, então ele também não finge ser uma:
- * o símbolo do Niango sem a moldura escura do favicon, um respiro de luz atrás
+ * o símbolo da Niango sem a moldura escura do favicon, um respiro de luz atrás
  * dele e a frase. Nada pisca — o que se quer aqui é o silêncio antes do guia
  * começar.
  */

@@ -414,7 +414,7 @@ function SidebarExtensionCard() {
                 href={WEBSTORE_URL}
                 target="_blank"
                 rel="noreferrer"
-                title="Instalar a extensão do Niango na Chrome Web Store"
+                title="Instalar a extensão da Niango na Chrome Web Store"
             >
                 <span className="sidebar-ext-icon" aria-hidden="true">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

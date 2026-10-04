@@ -69,7 +69,7 @@ export default function ExtensionRequiredModal({ open, onClose }) {
                         <h3 className="ext-card-title">Extensão necessária</h3>
                         <p className="ext-card-subtitle">
                             Conectar a uma sessão acontece dentro do navegador, e quem faz esse
-                            trabalho é a extensão do Niango.
+                            trabalho é a extensão da Niango.
                         </p>
                     </div>
                 </div>

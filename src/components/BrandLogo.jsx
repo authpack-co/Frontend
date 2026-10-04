@@ -1,5 +1,5 @@
 /**
- * Marca do Niango em SVG inline — os traçados são os do kit de identidade
+ * Marca da Niango em SVG inline — os traçados são os do kit de identidade
  * (public/assets/images/brand/), com a fonte já convertida em curvas.
  *
  * Inline, e não <img>, por um motivo: o nome usa currentColor. Grafite no

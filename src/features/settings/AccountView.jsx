@@ -217,7 +217,7 @@ const EXTENSION_COPY = {
     },
     missing: {
         title: 'Extensão não instalada',
-        status: 'Instale a extensão do Niango para conectar às suas sessões.',
+        status: 'Instale a extensão da Niango para conectar às suas sessões.',
     },
     checking: {
         title: 'Verificando extensão…',
