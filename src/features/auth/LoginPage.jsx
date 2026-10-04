@@ -38,7 +38,7 @@ export default function LoginPage() {
                 <div className="login-logo">
                     <NiangoSymbol size={64} />
                 </div>
-                <h1 className="login-title">Boas-vindas à Niango</h1>
+                <h1 className="login-title">Bem-vindo à Niango</h1>
                 <p className="login-subtitle">Seu gerenciador de sessões.</p>
 
                 <div className="login-divider-container">

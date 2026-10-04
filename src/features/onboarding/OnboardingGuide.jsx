@@ -45,7 +45,7 @@ const SLIDES = [
         section: -1,
         demo: <WelcomeDemo />,
         eyebrow: 'Bem-vindo',
-        title: 'Boas-vindas à Niango',
+        title: 'Bem-vindo à Niango',
         text: <>Distribua e controle seus acessos em um só lugar.</>,
         centered: true,
     },
