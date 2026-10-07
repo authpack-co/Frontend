@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Niango — Distribua acessos sem entregar senhas</title>
+    <title>Niango — Compartilhe o acesso. Nunca a senha.</title>
     <meta name="description"
-        content="A Niango compartilha a sessão já autenticada, cifrada com AES individual por sessão. Quem recebe entra em um clique, sem saber a senha, e você revoga quando quiser.">
+        content="Libere e revogue o acesso às ferramentas da sua empresa em um clique, sem expor e-mail e senha.">
     <meta name="keywords"
         content="Niango, compartilhamento de acessos, pacotes de acesso, gerenciamento de acessos, distribuição de acessos digitais, compartilhar acesso sem senha">
     <link rel="canonical" href="https://niango.io/">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#14171d">
-    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="color-scheme" content="light">
 
     <!-- ===== Open Graph ===== -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Niango">
-    <meta property="og:title" content="Niango — Distribua acessos sem entregar senhas">
-    <meta property="og:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique. Você revoga quando quiser.">
+    <meta property="og:title" content="Niango — Compartilhe o acesso. Nunca a senha.">
+    <meta property="og:description" content="Libere e revogue o acesso às ferramentas da sua empresa em um clique, sem expor e-mail e senha.">
     <meta property="og:url" content="https://niango.io/">
     <meta property="og:image" content="https://niango.io/assets/images/og-image-1200x630.png">
     <meta property="og:image:width" content="1200">
@@ -27,8 +27,8 @@
 
     <!-- ===== Twitter ===== -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Niango — Distribua acessos sem entregar senhas">
-    <meta name="twitter:description" content="Compartilhe a sessão já autenticada, cifrada com AES individual. Quem recebe entra em um clique.">
+    <meta name="twitter:title" content="Niango — Compartilhe o acesso. Nunca a senha.">
+    <meta name="twitter:description" content="Libere e revogue o acesso às ferramentas da sua empresa em um clique, sem expor e-mail e senha.">
     <meta name="twitter:image" content="https://niango.io/assets/images/og-image-1200x630.png">
 
     <!-- Ícone da Niango: .ico para a aba, SVG para telas de alta densidade,
@@ -42,28 +42,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fustat:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/assets/styles/index.css">
 
-    <!-- Mesmo boot de tema do app (app.html / assets/scripts/themeManager.js):
-         a preferência do painel vale aqui, e é aplicada antes do primeiro paint
-         para o site não piscar no tema errado. Claro = sem atributo. -->
+    <!-- Revelar ao rolar: os blocos só começam escondidos se houver movimento
+         liberado e IntersectionObserver. Marcado antes do primeiro paint para
+         nada aparecer e sumir em seguida. -->
     <script>
         (function () {
-            var dark = true;
             try {
-                dark = localStorage.getItem('niango-theme') !== 'light';
+                if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    document.documentElement.classList.add('reveal');
+                }
             } catch (e) { }
-            if (dark) document.documentElement.setAttribute('data-theme', 'dark');
-            var meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', dark ? '#14171d' : '#f6f7f9');
         })();
     </script>
 
     <!-- Auth Guard / Anti-Flicker: redirect to dashboard if authenticated -->
     <style id="ap-block-style">
-        html { visibility: hidden !important; background: var(--bg, #14171d); }
+        html { visibility: hidden !important; background: #fff; }
     </style>
     <script>
         (function () {
@@ -113,8 +111,8 @@
           "name": "Niango",
           "url": "https://niango.io/",
           "logo": "https://niango.io/assets/images/favicon-128x128.png",
-          "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes e stacks.",
-          "email": "team@niango.io",
+          "description": "Plataforma de compartilhamento, gerenciamento e distribuição de acessos digitais através de pacotes.",
+          "email": "contato@niango.io",
           "sameAs": [
             "https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
           ]
@@ -124,7 +122,7 @@
           "@id": "https://niango.io/#website",
           "url": "https://niango.io/",
           "name": "Niango",
-          "description": "Distribuição controlada de acessos: compartilhe a sessão já autenticada, sem expor a credencial.",
+          "description": "Compartilhe o acesso às ferramentas da empresa, nunca a senha.",
           "publisher": { "@id": "https://niango.io/#organization" },
           "inLanguage": "pt-BR"
         },
@@ -133,10 +131,10 @@
           "@id": "https://niango.io/#software",
           "name": "Niango",
           "applicationCategory": "BusinessApplication",
-          "operatingSystem": "Chrome, Edge, Brave, Arc",
+          "operatingSystem": "Chrome",
           "url": "https://niango.io/",
           "downloadUrl": "https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm",
-          "description": "Organize acessos em pacotes e distribua para sua equipe em um clique, sem expor credenciais.",
+          "description": "Libere e revogue o acesso às ferramentas da sua empresa em um clique, sem expor e-mail e senha.",
           "publisher": { "@id": "https://niango.io/#organization" },
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
         },
@@ -146,28 +144,33 @@
           "mainEntity": [
             {
               "@type": "Question",
-              "name": "Vocês armazenam minhas senhas?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Não. A Niango trabalha com a sessão já autenticada, cifrada com AES individual. A credencial original continua apenas com você." }
+              "name": "A Niango pede a senha das minhas ferramentas?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Não pra sua equipe. Quem cadastra a ferramenta faz login uma vez, e as pessoas recebem a sessão já autenticada, sem ver e-mail nem senha." }
             },
             {
               "@type": "Question",
-              "name": "Funciona com 2FA, SSO e magic links?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Sim. Como o que é compartilhado é a sessão, e não a credencial, qualquer método de autenticação do serviço continua funcionando. Você passa pela verificação uma vez." }
+              "name": "O que acontece quando eu revogo um acesso?",
+              "acceptedAnswer": { "@type": "Answer", "text": "A pessoa perde a sessão na hora, em todos os dispositivos dela. Não precisa trocar a senha da ferramenta." }
             },
             {
               "@type": "Question",
-              "name": "Como tiro o acesso de alguém?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Pelo painel, por pessoa, por pacote ou por sessão. A revogação encerra na hora a conexão de quem recebeu o acesso." }
+              "name": "Funciona com quais ferramentas?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Com as ferramentas web que sua equipe já usa no navegador, como Notion, Canva e ChatGPT." }
             },
             {
               "@type": "Question",
-              "name": "Isso viola os termos dos serviços?",
-              "acceptedAnswer": { "@type": "Answer", "text": "A Niango é indicada para acesso de equipe em planos que permitem múltiplos usuários e para uso pessoal entre dispositivos. Os termos de cada serviço continuam valendo." }
+              "name": "Preciso instalar alguma coisa?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Só a extensão da Niango no Chrome. O resto acontece no painel." }
             },
             {
               "@type": "Question",
-              "name": "Em quais navegadores funciona?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Chrome, Edge, Brave e Arc — qualquer navegador baseado em Chromium." }
+              "name": "Consigo ver quem usou cada ferramenta?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Sim. O painel mostra quem tem acesso, o status de cada sessão e o tempo de uso por dia." }
+            },
+            {
+              "@type": "Question",
+              "name": "Quanto tempo leva pra configurar?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Poucos minutos: instale a extensão, crie um pacote, adicione as sessões e convide a equipe." }
             }
           ]
         }
@@ -177,692 +180,588 @@
 </head>
 
 <body>
-    <!-- ========== NAV ==========
-         Ação principal do topo: Entrar. O "Adicionar ao Chrome" fica em
-         contorno, como ação secundária. -->
-    <nav class="nav">
-        <div class="container nav-inner">
-            <a href="/?persist=true" class="nav-logo" aria-label="Niango — início">
-                <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-wordmark.svg" height="24" alt="Niango">
-                <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-wordmark-negativo.svg" height="24" alt="Niango">
-            </a>
-            <div class="nav-links">
-                <a href="#como">Como funciona</a>
-                <a href="#seguranca">Segurança</a>
-                <a href="#casos">Casos de uso</a>
+    <!-- ========== CABEÇALHO ========== -->
+    <header class="site-header" id="site-header">
+        <div class="site-header__hatch"></div>
+        <div class="site-header__main">
+            <nav class="nav" aria-label="Principal">
+                <a href="#topo" class="nav__logo" aria-label="Niango, início"><img src="/assets/images/brand/niango-assinatura.svg" alt="Niango"></a>
+                <div class="nav__links">
+                    <a href="#recursos">Produto</a>
+                    <a href="#ferramentas">Ferramentas</a>
+                    <a href="/pages/pricing/">Preços</a>
+                    <a href="#faq">Dúvidas</a>
+                </div>
+                <div class="nav__actions">
+                    <a href="/login" class="nav__signin" data-signed-out>Entrar</a>
+                    <a href="/login" class="btn btn--ink" data-panel-link>Começar agora</a>
+                </div>
+                <button type="button" class="nav__toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>
+                </button>
+            </nav>
+            <div class="mobile-menu" id="mobile-menu">
+                <a href="#recursos">Produto</a>
+                <a href="#ferramentas">Ferramentas</a>
                 <a href="/pages/pricing/">Preços</a>
-                <a href="/blog/">Blog</a>
-            </div>
-            <div class="nav-spacer"></div>
-            <div class="nav-cta">
-                <!-- Visitante -->
-                <div class="nav-visitor">
-                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
-                        target="_blank" rel="noopener" class="btn btn-outline"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" y1="8" x2="12" y2="8" /><line x1="3.95" y1="6.06" x2="8.54" y2="14" /><line x1="10.88" y1="21.94" x2="15.46" y2="14" /></svg>Adicionar ao Chrome</a>
-                    <a href="/login" class="btn btn-ink">Entrar</a>
-                </div>
-                <!-- Logado (preenchido por home.js) -->
-                <div class="nav-user"></div>
+                <a href="#faq">Dúvidas</a>
+                <a href="/login" data-panel-link>Entrar</a>
             </div>
         </div>
-    </nav>
-
-    <!-- ========== HERO ========== -->
-    <header class="hero">
-        <div class="container">
-            <div class="hero-inner">
-                <div class="hero-copy">
-                    <span class="eyebrow">
-                        <span class="dot"></span>
-                        Extensão para Chrome, Edge e Arc
-                    </span>
-                    <h1 class="h1">Distribua acessos sem entregar <span class="grad">senhas.</span></h1>
-                    <p class="lede">
-                        A Niango compartilha a sessão já autenticada, cifrada com AES individual por sessão.
-                        Quem recebe entra em um clique. Você revoga quando quiser.
-                    </p>
-                    <div class="hero-actions">
-                        <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
-                            target="_blank" rel="noopener" class="btn btn-primary btn-lg"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" y1="8" x2="12" y2="8" /><line x1="3.95" y1="6.06" x2="8.54" y2="14" /><line x1="10.88" y1="21.94" x2="15.46" y2="14" /></svg>Adicionar ao Chrome</a>
-                        <a href="#como" class="btn btn-soft btn-lg">Como funciona</a>
-                    </div>
-                    <div class="hero-meta">
-                        <span>Grátis para começar</span>
-                        <span class="sep"></span>
-                        <span>Sem cofre de senhas</span>
-                        <span class="sep"></span>
-                        <span>Revogação imediata</span>
-                    </div>
-                </div>
-
-                <div class="hero-media">
-                    <!-- Mockup do painel, desenhado a partir do código real:
-                         sidebar com a lista de pacotes, topbar de busca e ações,
-                         gráfico de uso + pessoas com acesso, e a tabela de
-                         sessões (uma linha por serviço). -->
-                    <figure class="figure figure--hero is-art">
-                        <svg viewBox="0 0 620 420" role="img"
-                            aria-label="Painel da Niango: barra lateral com os pacotes Engenharia, Design e Financeiro; o pacote Engenharia aberto com o botão Compartilhar e as sessões de Figma, Notion e Linear, todas ativas.">
-                            <defs>
-                                <clipPath id="apFrame"><rect width="620" height="420" rx="10" /></clipPath>
-                            </defs>
-
-                            <g clip-path="url(#apFrame)" font-family="Inter, sans-serif">
-                                <rect width="620" height="420" fill="#17181a" />
-
-                                <!-- ══════════ Barra lateral ══════════ -->
-                                <rect width="158" height="420" fill="#131416" />
-                                <path d="M158 0V420" stroke="#2e2f33" />
-
-                                <!-- Marca -->
-                                <circle cx="21" cy="26" r="11" fill="#1c65c8" />
-                                <path transform="translate(10 15) scale(0.04297)" fill="#fff" d="M189 376.1Q155.9 376.1 138.6 364Q121.4 351.9 116.2 332.9L160.5 329.7Q162.8 337.2 169.2 341.5Q175.5 345.9 189 345.9Q204.3 345.9 212.7 338.5Q221 331.2 221 315V298.6Q215.5 309.3 203.4 315.8Q191.3 322.2 176.4 322.2Q157.4 322.2 142.7 313Q128 303.8 119.8 286.8Q111.6 269.8 111.6 247.1Q111.6 224.9 119.8 207.9Q128 190.9 142.5 181.3Q157.1 171.6 175.8 171.6Q192.8 171.6 204.4 179.1Q216.1 186.6 222.2 199V175.1H264.5V314.2Q264.5 334.9 255 348.7Q245.5 362.6 228.5 369.3Q211.5 376.1 189 376.1ZM188.8 290.3Q203.4 290.3 212.4 278.9Q221.3 267.5 221.3 246.8Q221.6 226.6 212.7 215Q203.7 203.3 188.8 203.3Q173.2 203.3 164.6 215.1Q155.9 226.9 155.9 246.8Q155.9 266.7 164.8 278.5Q173.8 290.3 188.8 290.3Z M353.8 332.9Q330.2 332.9 312.6 323Q295 313 285.2 294.9Q275.4 276.7 275.4 252.3Q275.4 227.8 285.2 209.8Q295 191.8 312.6 181.7Q330.2 171.6 353.8 171.6Q377.4 171.6 395.1 181.7Q412.8 191.8 422.5 209.8Q432.1 227.8 432.1 252.3Q432.1 276.7 422.5 294.9Q412.8 313 395.1 323Q377.4 332.9 353.8 332.9ZM353.8 299.8Q369.9 299.8 378.8 287.2Q387.8 274.7 387.8 252.3Q387.8 229.8 378.8 217.3Q369.9 204.7 353.8 204.7Q337.6 204.7 328.7 217.3Q319.8 229.8 319.8 252.3Q319.8 274.7 328.7 287.2Q337.6 299.8 353.8 299.8Z" />
-                                <text x="39" y="30" font-size="12.5" font-weight="700" fill="#e8e6e3" letter-spacing="-.1">Niango</text>
-                                <path d="M0 52H158" stroke="#2e2f33" />
-
-                                <!-- Pacotes -->
-                                <text x="16" y="80" font-size="8" font-weight="700" letter-spacing="1" fill="#9d9488">PACOTES</text>
-                                <rect x="8" y="92" width="142" height="32" rx="8" fill="#26272a" stroke="#45464a" />
-                                <text x="20" y="112" font-size="11" font-weight="600" fill="#e8e6e3">Engenharia</text>
-                                <text x="20" y="148" font-size="11" font-weight="600" fill="#9d9488">Design</text>
-                                <text x="20" y="184" font-size="11" font-weight="600" fill="#9d9488">Financeiro</text>
-
-                                <!-- Perfil -->
-                                <path d="M0 372H158" stroke="#2e2f33" />
-                                <circle cx="21" cy="394" r="11" fill="#1c65c8" />
-                                <text x="21" y="397.5" font-size="8.5" font-weight="700" fill="#fff" text-anchor="middle">AR</text>
-                                <text x="39" y="392" font-size="9.5" font-weight="600" fill="#e8e6e3">Ana Ribeiro</text>
-                                <text x="39" y="403" font-size="8" fill="#9d9488">ana@empresa.com</text>
-
-                                <!-- ══════════ Pacote aberto ══════════ -->
-                                <text x="190" y="56" font-size="18" font-weight="700" fill="#e8e6e3" letter-spacing="-.3">Engenharia</text>
-                                <text x="190" y="76" font-size="10.5" fill="#9d9488">3 sessões · 4 pessoas com acesso</text>
-
-                                <!-- Compartilhar: a única ação à vista -->
-                                <rect x="468" y="40" width="122" height="34" rx="10" fill="#1c65c8" />
-                                <path d="M498 50v13M494 54l4-4 4 4M491.5 60v4.5a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6V60"
-                                    fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-                                <text x="512" y="61" font-size="11.5" font-weight="700" fill="#fff">Compartilhar</text>
-
-                                <!-- ── Sessões ── -->
-                                <!-- Figma -->
-                                <rect x="190" y="110" width="400" height="62" rx="12" fill="#131416" stroke="#2e2f33" />
-                                <rect x="208" y="127" width="34" height="34" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                <text x="225" y="150" font-size="15" font-weight="700" fill="#e8e6e3" text-anchor="middle">F</text>
-                                <text x="256" y="140" font-size="13" font-weight="600" fill="#e8e6e3">Figma</text>
-                                <text x="256" y="155" font-size="9.5" fill="#9d9488">figma.com</text>
-                                <circle cx="512" cy="141" r="3.4" fill="#4ade80" />
-                                <text x="522" y="144.5" font-size="10" font-weight="600" fill="#4ade80">Ativa</text>
-
-                                <!-- Notion -->
-                                <rect x="190" y="182" width="400" height="62" rx="12" fill="#131416" stroke="#2e2f33" />
-                                <rect x="208" y="199" width="34" height="34" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                <text x="225" y="222" font-size="15" font-weight="700" fill="#e8e6e3" text-anchor="middle">N</text>
-                                <text x="256" y="212" font-size="13" font-weight="600" fill="#e8e6e3">Notion</text>
-                                <text x="256" y="227" font-size="9.5" fill="#9d9488">notion.so</text>
-                                <circle cx="512" cy="213" r="3.4" fill="#4ade80" />
-                                <text x="522" y="216.5" font-size="10" font-weight="600" fill="#4ade80">Ativa</text>
-
-                                <!-- Linear -->
-                                <rect x="190" y="254" width="400" height="62" rx="12" fill="#131416" stroke="#2e2f33" />
-                                <rect x="208" y="271" width="34" height="34" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                <text x="225" y="294" font-size="15" font-weight="700" fill="#7b8cff" text-anchor="middle">L</text>
-                                <text x="256" y="284" font-size="13" font-weight="600" fill="#e8e6e3">Linear</text>
-                                <text x="256" y="299" font-size="9.5" fill="#9d9488">linear.app</text>
-                                <circle cx="512" cy="285" r="3.4" fill="#4ade80" />
-                                <text x="522" y="288.5" font-size="10" font-weight="600" fill="#4ade80">Ativa</text>
-
-                                <!-- Quem recebeu o acesso -->
-                                <g stroke="#17181a" stroke-width="2">
-                                    <circle cx="200" cy="356" r="11" fill="#4ade80" />
-                                    <circle cx="216" cy="356" r="11" fill="#7b57d4" />
-                                    <circle cx="232" cy="356" r="11" fill="#1c65c8" />
-                                    <circle cx="248" cy="356" r="11" fill="#26272a" />
-                                </g>
-                                <text x="248" y="359.5" font-size="8.5" font-weight="700" fill="#9d9488" text-anchor="middle">+1</text>
-                                <text x="272" y="360" font-size="10.5" fill="#9d9488">4 pessoas com acesso a este pacote</text>
-                            </g>
-
-                            <rect x=".5" y=".5" width="619" height="419" rx="10" fill="none" stroke="#2e2f33" />
-                        </svg>
-                    </figure>
-                </div>
-            </div>
-        </div>
+        <div class="site-header__hatch site-header__hatch--end"></div>
     </header>
 
     <main>
-        <!-- ========== CASOS DE USO ========== -->
-        <section class="section" id="casos">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Existe um cenário para o seu caso.</h2>
-                    <p class="section-sub">Qualquer situação em que alguém precisa entrar em um serviço sem receber a
-                        credencial.</p>
+        <!-- ========== HERO ========== -->
+        <section class="hero" id="topo">
+            <div class="hero__copy">
+                <a href="#ferramentas" class="hero__pill" data-reveal>
+                    <span class="hero__pill-icons" aria-hidden="true">
+                        <img data-fav="notion.so" src="https://www.google.com/s2/favicons?domain=notion.so&amp;sz=64" alt="">
+                        <img data-fav="canva.com" src="https://www.google.com/s2/favicons?domain=canva.com&amp;sz=64" alt="">
+                        <img data-fav="chatgpt.com" src="https://www.google.com/s2/favicons?domain=chatgpt.com&amp;sz=64" alt="" class="is-round">
+                    </span>
+                    <span class="hero__pill-text">Centralize seus acessos: <span>Notion, Canva, ChatGPT e mais.</span></span>
+                </a>
+                <h1 class="hero__title" data-reveal style="--d:80ms">
+                    <span>Compartilhe o acesso.</span>
+                    <span class="shimmer">Nunca a senha.</span>
+                </h1>
+                <p class="hero__lede" data-reveal style="--d:160ms">Libere e revogue o acesso às ferramentas da sua empresa em um clique.</p>
+                <div class="hero__actions" data-reveal style="--d:240ms">
+                    <a href="/login" class="hero__cta">Começar agora
+                        <span class="hero__cta-arrow" aria-hidden="true"><svg width="55%" height="55%" viewBox="0 0 20 20"><path d="M4 10h11M10.5 5 15.5 10l-5 5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                    </a>
+                    <a href="#recursos" class="hero__link">Ver como funciona</a>
                 </div>
+            </div>
 
-                <div class="grid-3">
-                    <a class="case-card" href="/blog/como-dar-acesso-ao-time-sem-senha/">
-                        <div class="figure figure--cover is-art case-figure">
-                            <svg viewBox="0 0 360 120" role="img" class="cs cs--team"
-                                aria-label="Um pacote trancado distribui acesso para três pessoas do time; cada uma recebe o acesso liberado, sem receber a senha.">
-                                <!-- O pacote: fechado, e é dele que tudo sai. -->
-                                <rect x="22" y="30" width="76" height="60" rx="13" fill="#1b1c1e" stroke="#2e2f33" />
-                                <g fill="none" stroke="#1c65c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="52" y="52" width="16" height="13" rx="3.5" />
-                                    <path d="M55.5 52v-3.6a4.5 4.5 0 0 1 9 0V52" />
-                                </g>
-                                <circle cx="60" cy="58" r="1.5" fill="#1c65c8" />
-                                <rect x="42" y="74" width="36" height="4" rx="2" fill="#2e2f33" />
+            <!-- Cena: painel do pacote, celular com a lista de pessoas e o post-it.
+                 Desenhada em coordenadas fixas num palco de 960×820. -->
+            <div class="hero__visual" aria-hidden="true">
+                <div class="hero__stage">
+                    <div style="position:absolute;left:75px;top:5px;width:1830px;height:1230px;border-radius:50%;background:linear-gradient(100deg,rgba(234,242,255,0) 18%,#CFE3FF 45%,#9CC6FF 70%,#7DB4FF 90%)"></div>
+                    <div style="position:absolute;left:-260px;top:200px;width:640px;height:640px;border-radius:50%;background:radial-gradient(circle,rgba(125,180,255,.28) 0%,rgba(184,214,255,.14) 40%,rgba(255,255,255,0) 70%)"></div>
 
-                                <!-- Trilhas até cada pessoa -->
-                                <g fill="none" stroke="#2e2f33" stroke-width="1.5">
-                                    <path d="M98 60h66q8 0 8-8V37q0-8 8-8h70" />
-                                    <path d="M98 60h152" />
-                                    <path d="M98 60h66q8 0 8 8v15q0 8 8 8h70" />
-                                </g>
-
-                                <!-- O acesso viajando pela trilha -->
-                                <g class="cs-flow" fill="none" stroke="#1c65c8" stroke-width="2" stroke-linecap="round">
-                                    <path d="M98 60h66q8 0 8-8V37q0-8 8-8h70" pathLength="100" style="--d:0s" />
-                                    <path d="M98 60h152" pathLength="100" style="--d:.22s" />
-                                    <path d="M98 60h66q8 0 8 8v15q0 8 8 8h70" pathLength="100" style="--d:.44s" />
-                                </g>
-
-                                <!-- As pessoas -->
-                                <g class="cs-member" style="--d:0s">
-                                    <rect x="250" y="16" width="90" height="26" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="264" cy="29" r="8" fill="#1c65c8" />
-                                    <rect x="278" y="27" width="32" height="4" rx="2" fill="#2e2f33" />
-                                    <path class="cs-check" d="m318 29.5 3.2 3.2 6.8-7.2" />
-                                </g>
-                                <g class="cs-member" style="--d:.22s">
-                                    <rect x="250" y="47" width="90" height="26" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="264" cy="60" r="8" fill="#7b57d4" />
-                                    <rect x="278" y="58" width="32" height="4" rx="2" fill="#2e2f33" />
-                                    <path class="cs-check" d="m318 60.5 3.2 3.2 6.8-7.2" />
-                                </g>
-                                <g class="cs-member" style="--d:.44s">
-                                    <rect x="250" y="78" width="90" height="26" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="264" cy="91" r="8" fill="#4ade80" />
-                                    <rect x="278" y="89" width="32" height="4" rx="2" fill="#2e2f33" />
-                                    <path class="cs-check" d="m318 91.5 3.2 3.2 6.8-7.2" />
-                                </g>
+                    <!-- Painel -->
+                    <div style="position:absolute;left:255px;top:150px;width:760px;height:720px;border-radius:22px;background:#F8FAFC;border:1px solid #E3E8F0;box-shadow:0 24px 60px rgba(14,39,71,.08);overflow:hidden">
+                        <div style="position:absolute;left:0;top:0;bottom:0;width:250px;background:rgba(255,255,255,.7);border-right:1px solid #EDF0F5"></div>
+                        <img src="/assets/images/brand/niango-assinatura.svg" alt="" style="position:absolute;left:40px;top:36px;height:26px;width:auto">
+                        <div style="position:absolute;left:32px;top:82px;width:200px;height:38px;border:1px solid #E2E7F1;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:'Inter Tight',sans-serif;font-size:14px;color:#6B7489">Buscar<span style="font-size:11px;border:1px solid #E2E7F1;border-radius:4px;padding:1px 5px;color:#4A5368">⌘K</span></div>
+                        <div style="position:absolute;left:32px;top:136px;width:200px;height:38px;border-radius:8px;background:#EAF2FF;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:14px;font-weight:600;color:#0E2747"><i style="width:14px;height:14px;border-radius:4px;border:1.5px solid currentColor;opacity:.7"></i>Pacotes</div>
+                        <div style="position:absolute;left:272px;top:38px;font-size:22px;font-weight:500;letter-spacing:-.02em;color:#0E2747">Marketing</div>
+                        <div style="position:absolute;left:272px;top:80px;width:432px;height:278px;background:#fff;border:1px solid #E6EBF3;border-radius:16px">
+                            <div style="position:absolute;left:18px;top:22px;font-size:16px;font-weight:500;color:#0E2747">Uso do pacote nos últimos 7 dias</div>
+                            <div style="position:absolute;left:18px;top:47px;font-family:'Inter Tight',sans-serif;font-size:12px;color:#6B7489">Horas de uso por dia</div>
+                            <svg viewBox="0 0 432 190" width="432" height="190" style="position:absolute;left:0;top:78px">
+                                <defs><linearGradient id="hArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DB4FF" stop-opacity=".6" /><stop offset="1" stop-color="#7DB4FF" stop-opacity=".04" /></linearGradient></defs>
+                                <g font-family="Inter Tight, sans-serif" font-size="11" fill="#6B7489"><text x="16" y="14">6h</text><text x="16" y="63">4h</text><text x="16" y="112">2h</text><text x="16" y="161">0h</text><g text-anchor="middle"><text x="68" y="181">Seg</text><text x="118" y="181">Ter</text><text x="170" y="181">Qua</text><text x="223" y="181">Qui</text><text x="278" y="181">Sex</text><text x="333" y="181">Sáb</text><text x="389" y="181">Dom</text></g></g>
+                                <path d="M50 10H410M50 59H410M50 108H410M50 157H410" stroke="#EDF0F5" />
+                                <path d="M68,95 C93,95 93,88 118,88 C144,88 144,78 170,78 C196,78 196,93 223,93 C250,93 250,94 278,94 C305,94 305,66 333,66 C361,66 361,37 389,37 L389,157 L68,157 Z" fill="url(#hArea)" />
+                                <path d="M68,95 C93,95 93,88 118,88 C144,88 144,78 170,78 C196,78 196,93 223,93 C250,93 250,94 278,94 C305,94 305,66 333,66 C361,66 361,37 389,37" fill="none" stroke="#1C65C8" stroke-width="2.6" />
+                                <g fill="#fff" stroke="#1C65C8" stroke-width="2.4"><circle cx="68" cy="95" r="4.5" /><circle cx="118" cy="88" r="4.5" /><circle cx="170" cy="78" r="4.5" /><circle cx="223" cy="93" r="4.5" /><circle cx="278" cy="94" r="4.5" /><circle cx="333" cy="66" r="4.5" /><circle cx="389" cy="37" r="4.5" /></g>
                             </svg>
                         </div>
-                        <div class="case-body">
-                            <h3>Equipes internas</h3>
-                            <p>Um pacote por time. Cada pessoa entra nas ferramentas que precisa, sem ninguém repassar
-                                senha no chat.</p>
-                            <span class="case-more">Ver cenário</span>
+                        <div style="position:absolute;left:272px;top:377px;width:418px;height:320px;background:#fff;border:1px solid #E6EBF3;border-radius:16px;padding:22px 18px 0 22px">
+                            <div style="font-size:16px;font-weight:500;color:#0E2747">Minhas sessões</div>
+                            <div style="display:flex;justify-content:space-between;margin-top:18px;padding-bottom:10px;font-size:11px;font-weight:600;letter-spacing:.06em;color:#6B7489"><span>SERVIÇO</span><span>STATUS</span></div>
+                            <div style="height:60px;display:flex;align-items:center;gap:16px;border-top:1px solid #EDF0F5"><span style="width:32px;height:32px;border-radius:8px;border:1px solid #E2E7F1;background:#fff;display:grid;place-items:center;flex:none"><img data-fav="notion.so" src="https://www.google.com/s2/favicons?domain=notion.so&amp;sz=64" alt="" style="width:20px;height:20px"></span><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:500;color:#0E2747;line-height:1.2">Notion</div><div style="font-family:'Inter Tight',sans-serif;font-size:14px;color:#6B7489;line-height:1.3">maria@empresa.com</div></div><span style="font-size:13px;font-weight:600;color:#16A34A;background:#E6F6EC;border-radius:999px;padding:4px 10px">● Ativa</span></div>
+                            <div style="height:60px;display:flex;align-items:center;gap:16px;border-top:1px solid #EDF0F5"><span style="width:32px;height:32px;border-radius:8px;border:1px solid #E2E7F1;background:#fff;display:grid;place-items:center;flex:none"><img data-fav="canva.com" src="https://www.google.com/s2/favicons?domain=canva.com&amp;sz=64" alt="" style="width:20px;height:20px"></span><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:500;color:#0E2747;line-height:1.2">Canva</div><div style="font-family:'Inter Tight',sans-serif;font-size:14px;color:#6B7489;line-height:1.3">time@empresa.com</div></div><span style="font-size:13px;font-weight:600;color:#16A34A;background:#E6F6EC;border-radius:999px;padding:4px 10px">● Ativa</span></div>
+                            <div style="height:60px;display:flex;align-items:center;gap:16px;border-top:1px solid #EDF0F5"><span style="width:32px;height:32px;border-radius:8px;border:1px solid #E2E7F1;background:#fff;display:grid;place-items:center;flex:none"><img data-fav="chatgpt.com" src="https://www.google.com/s2/favicons?domain=chatgpt.com&amp;sz=64" alt="" style="width:20px;height:20px"></span><div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:500;color:#0E2747;line-height:1.2">ChatGPT</div><div style="font-family:'Inter Tight',sans-serif;font-size:14px;color:#6B7489;line-height:1.3">equipe@empresa.com</div></div><span style="font-size:13px;font-weight:600;color:#16A34A;background:#E6F6EC;border-radius:999px;padding:4px 10px">● Ativa</span></div>
                         </div>
-                    </a>
+                    </div>
 
-                    <a class="case-card" href="/blog/como-compartilhar-um-pacote/">
-                        <div class="figure figure--cover is-art case-figure">
-                            <svg viewBox="0 0 360 120" role="img" class="cs cs--contract"
-                                aria-label="Linha do tempo do contrato: o acesso é liberado no início, acompanha o projeto e se encerra no fim.">
-                                <!-- Antes e depois do contrato: sem acesso. -->
-                                <path d="M34 66h288" fill="none" stroke="#2e2f33" stroke-width="2"
-                                    stroke-dasharray="3 6" stroke-linecap="round" />
-
-                                <!-- O trecho do contrato, e o acesso preenchendo ele. -->
-                                <path d="M72 66h216" fill="none" stroke="#26272a" stroke-width="3" stroke-linecap="round" />
-                                <path class="cs-fill" d="M72 66h216" pathLength="100" fill="none"
-                                    stroke="#1c65c8" stroke-width="3" stroke-linecap="round" />
-
-                                <circle cx="72" cy="66" r="6" fill="#1c65c8" />
-                                <circle cx="288" cy="66" r="8" fill="#131416" stroke="#3a3b3f"
-                                    stroke-width="1.5" stroke-dasharray="3 3" />
-
-                                <!-- Fim do contrato: o acesso é encerrado. -->
-                                <g class="cs-end">
-                                    <circle cx="288" cy="66" r="8" fill="#131416" stroke="#9d9488" stroke-width="1.6" />
-                                    <path d="m284.6 62.6 6.8 6.8M291.4 62.6l-6.8 6.8" stroke="#9d9488"
-                                        stroke-width="1.6" stroke-linecap="round" />
-                                </g>
-
-                                <text class="cs-cap" x="72" y="90" text-anchor="middle">INÍCIO</text>
-                                <text class="cs-cap" x="288" y="90" text-anchor="middle">FIM</text>
-
-                                <!-- Quem entrou percorre o contrato inteiro. -->
-                                <g class="cs-rider">
-                                    <path d="M72 48v10" stroke="#2e2f33" stroke-width="1.5" />
-                                    <rect x="46" y="22" width="52" height="24" rx="9" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle cx="60" cy="34" r="7" fill="#1c65c8" />
-                                    <rect x="72" y="32" width="18" height="4" rx="2" fill="#2e2f33" />
-                                </g>
-                            </svg>
+                    <!-- Celular -->
+                    <div style="position:absolute;left:98px;top:300px;width:302px;height:640px;border-radius:44px;background:#fff;border:1px solid #E2E7F1;box-shadow:inset 0 0 0 6px #fff,inset 0 0 0 7px #EEF1F6,0 30px 70px rgba(14,39,71,.14)">
+                        <div style="position:absolute;left:30px;top:22px;font-size:14px;font-weight:600;color:#0E2747">9:41</div>
+                        <div style="position:absolute;left:105px;top:20px;width:88px;height:22px;border-radius:11px;border:1px solid #E2E7F1"></div>
+                        <div style="position:absolute;right:30px;top:20px;font-size:14px;font-weight:700;letter-spacing:1px;color:#0E2747">•••</div>
+                        <div style="position:absolute;left:22px;top:59px;width:256px;height:54px;border-radius:12px;background:#0E2747;display:flex;align-items:center;gap:10px;padding:0 14px 0 12px">
+                            <span style="width:22px;height:22px;border-radius:50%;background:#7DB4FF;display:grid;place-items:center;flex:none"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.5 5 9l4.5-6" stroke="#0E2747" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+                            <span style="font-size:13px;font-weight:600;line-height:1.25;color:#fff">Acesso revogado em todos os dispositivos</span>
                         </div>
-                        <div class="case-body">
-                            <h3>Freelancers e terceirização</h3>
-                            <p>Acesso pelo tempo do contrato. Quando o projeto termina, o acesso termina — sem trocar
-                                senha depois.</p>
-                            <span class="case-more">Ver cenário</span>
+                        <div style="position:absolute;left:23px;top:126px;width:256px;height:380px;border-radius:16px;background:#fff;border:1px solid #E6EBF3;padding:20px 14px 0 17px">
+                            <div style="font-size:15px;font-weight:500;color:#0E2747;margin-bottom:4px">Pessoas com acesso</div>
+                            <div style="height:61px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #EDF0F5"><span style="width:36px;height:36px;border-radius:50%;background:#1C65C8;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none">B</span><div><div style="font-size:15px;font-weight:500;color:#0E2747;line-height:1.25">Bia Santos</div><div style="font-family:'Inter Tight',sans-serif;font-size:13px;color:#6B7489;line-height:1.3">Usando agora</div></div></div>
+                            <div style="height:61px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #EDF0F5"><span style="width:36px;height:36px;border-radius:50%;background:#0E2747;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none">C</span><div><div style="font-size:15px;font-weight:500;color:#0E2747;line-height:1.25">Caio Lima</div><div style="font-family:'Inter Tight',sans-serif;font-size:13px;color:#6B7489;line-height:1.3">Há 2 horas</div></div></div>
+                            <div style="height:61px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #EDF0F5"><span style="width:36px;height:36px;border-radius:50%;background:#9CC6FF;color:#0E2747;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none">D</span><div><div style="font-size:15px;font-weight:500;color:#0E2747;line-height:1.25">Duda Melo</div><div style="font-family:'Inter Tight',sans-serif;font-size:13px;color:#6B7489;line-height:1.3">Nunca usou</div></div></div>
+                            <div style="height:61px;display:flex;align-items:center;gap:14px"><span style="width:36px;height:36px;border-radius:50%;background:#9CC6FF;color:#0E2747;display:grid;place-items:center;font-size:14px;font-weight:700;flex:none">G</span><div><div style="font-size:15px;font-weight:500;color:#0E2747;line-height:1.25">Gabriel Rocha</div><div style="font-family:'Inter Tight',sans-serif;font-size:13px;color:#6B7489;line-height:1.3">Há 1 dia</div></div></div>
+                            <div style="margin:18px auto 0;width:204px;height:45px;border-radius:999px;background:#EAF2FF;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;color:#0E2747">Gerenciar acessos<span style="width:18px;height:18px;border-radius:50%;background:#1C65C8;display:grid;place-items:center"><svg width="10" height="10" viewBox="0 0 20 20"><path d="M4 10h11M10.5 5 15.5 10l-5 5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span></div>
                         </div>
-                    </a>
+                    </div>
 
-                    <a class="case-card" href="/blog/como-usar-um-acesso-recebido/">
-                        <div class="figure figure--cover is-art case-figure">
-                            <svg viewBox="0 0 360 120" role="img" class="cs cs--temp"
-                                aria-label="Uma sessão liberada por tempo determinado: o contador corre, a sessão fica ativa e no fim o acesso é fechado.">
-                                <!-- O tempo correndo -->
-                                <g transform="translate(56 60)">
-                                    <circle r="19" fill="none" stroke="#2e2f33" stroke-width="3" />
-                                    <circle class="cs-dial" r="19" pathLength="100" fill="none"
-                                        stroke="#1c65c8" stroke-width="3" stroke-linecap="round"
-                                        transform="rotate(-90)" />
-                                    <path d="M0-8v9h6" fill="none" stroke="#9d9488" stroke-width="1.8"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                </g>
-
-                                <path d="M79 60h29" fill="none" stroke="#2e2f33" stroke-width="1.5" />
-                                <path class="cs-wire" d="M79 60h29" pathLength="100" fill="none"
-                                    stroke="#1c65c8" stroke-width="2" stroke-linecap="round" />
-
-                                <!-- A sessão aberta, que depois apaga -->
-                                <g class="cs-win">
-                                    <rect x="110" y="33" width="120" height="54" rx="12" fill="#1b1c1e" stroke="#2e2f33" />
-                                    <circle class="cs-dot" cx="126" cy="50" r="4" fill="#4ade80" />
-                                    <rect x="136" y="47" width="50" height="5" rx="2.5" fill="#2e2f33" />
-                                    <rect x="126" y="64" width="88" height="5" rx="2.5" fill="#26272a" />
-                                    <rect x="126" y="74" width="52" height="5" rx="2.5" fill="#26272a" />
-                                </g>
-
-                                <path d="M232 60h30" fill="none" stroke="#2e2f33" stroke-width="1.5" />
-
-                                <!-- O acesso fechado no fim -->
-                                <circle cx="292" cy="60" r="21" fill="#131416" stroke="#2e2f33" />
-                                <g class="cs-shut" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="284" y="58" width="16" height="13" rx="3.5" />
-                                    <path d="M287.5 58v-3.6a4.5 4.5 0 0 1 9 0V58" />
-                                </g>
-                            </svg>
+                    <!-- Post-it com a senha riscada -->
+                    <svg width="60" height="60" viewBox="0 0 60 60" style="position:absolute;left:8px;top:100px;overflow:visible"><g stroke="#7DB4FF" stroke-width="4" stroke-linecap="round"><path d="M37 28 44 8" /><path d="M28 36 14 22" /><path d="M24 46 6 44" /></g></svg>
+                    <div style="position:absolute;left:68px;top:120px;width:166px;height:166px;background:#fff;border:4px solid #0E2747;transform:rotate(-8deg);box-shadow:6px 8px 0 rgba(14,39,71,.06);padding:34px 20px 0 22px">
+                        <div style="font-weight:600;font-size:19px;color:#0E2747">senha:</div>
+                        <div style="position:relative;margin-top:10px;font-weight:700;font-style:italic;font-size:26px;letter-spacing:-.02em;color:#0E2747;white-space:nowrap">cliente123
+                            <svg viewBox="0 0 140 20" preserveAspectRatio="none" style="position:absolute;left:-8px;top:8px;width:142px;height:20px;overflow:visible"><path d="M2 14c30-4 70-8 136-10" fill="none" stroke="#1C65C8" stroke-width="3.5" stroke-linecap="round" /></svg>
                         </div>
-                        <div class="case-body">
-                            <h3>Suporte e acesso temporário</h3>
-                            <p>Alguém precisa entrar agora para resolver um problema. Você libera a sessão e encerra
-                                depois.</p>
-                            <span class="case-more">Ver cenário</span>
-                        </div>
+                    </div>
+                    <svg width="70" height="56" viewBox="0 0 70 56" style="position:absolute;left:225px;top:50px;overflow:visible"><path d="M64 10C44 8 28 18 14 44" fill="none" stroke="#1C65C8" stroke-width="2.6" stroke-linecap="round" /><path d="M6 34l8 11 10-8" fill="none" stroke="#1C65C8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                    <div style="position:absolute;left:298px;top:20px;transform:rotate(-4deg);transform-origin:left top;font-size:17px;font-weight:500;line-height:1.3;letter-spacing:-.01em;color:#0E2747;white-space:nowrap">spoiler: esse post-it vai pro lixo<br>lá embaixo.</div>
+                </div>
+            </div>
+        </section>
+        <!-- Escala da cena antes do primeiro paint (e a cada mudança de largura). -->
+        <script>
+            (function (hero) {
+                function fit() {
+                    var w = hero.offsetWidth;
+                    hero.style.setProperty('--s', Math.min(1.15, w / 1716).toFixed(3));
+                    hero.style.setProperty('--sm', Math.min(.9, Math.max(.5, w / 760)).toFixed(3));
+                }
+                fit();
+                if (window.ResizeObserver) new ResizeObserver(fit).observe(hero);
+                else window.addEventListener('resize', fit);
+            })(document.getElementById('topo'));
+        </script>
+
+        <!-- ========== RECURSOS ========== -->
+        <section class="frame frame--wide" id="recursos" aria-label="Recursos">
+            <div class="frame__in">
+                <div class="features">
+                    <article class="feature" data-reveal>
+                        <div class="feature__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4.5" /><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2" /></svg></div>
+                        <h3 class="h3">Acesso sem senha</h3>
+                        <p class="text">Sua equipe entra logada nas ferramentas sem nunca ver o e-mail ou a senha da conta.</p>
+                    </article>
+                    <article class="feature" data-reveal style="--d:80ms">
+                        <div class="feature__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4" /><path d="M2.5 20.5c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M17 9l5 5M22 9l-5 5" /></svg></div>
+                        <h3 class="h3">Revogação na hora</h3>
+                        <p class="text">Alguém saiu do time? Corte o acesso em um clique, em todos os dispositivos dessa pessoa.</p>
+                    </article>
+                    <article class="feature" data-reveal style="--d:160ms">
+                        <div class="feature__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M11 20V5M17 20v-6M2 20h20" /></svg></div>
+                        <h3 class="h3">Uso à vista</h3>
+                        <p class="text">Veja quem usou cada ferramenta, quando e por quanto tempo, sem pedir print pra ninguém.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PREÇO ========== -->
+        <section class="frame frame--wide" id="preco" aria-label="Preço">
+            <div class="frame__in">
+                <div class="dots" aria-hidden="true"></div>
+                <div class="price" data-reveal>
+                    <div>
+                        <h2 class="price__title"><a href="/pages/pricing/" class="shimmer">Quanto custa?</a></h2>
+                        <p class="lede lede--tight">Bem menos do que uma senha vazada. Escolha o plano do tamanho do seu time.</p>
+                    </div>
+                    <a href="/pages/pricing/" class="price__link">Ver planos
+                        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><mask id="ar2"><rect width="20" height="20" fill="#fff" /><path d="M6 10h7.5M10.5 6.5 14 10l-3.5 3.5" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></mask><circle cx="10" cy="10" r="10" fill="currentColor" mask="url(#ar2)" /></svg>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- ========== COMO FUNCIONA ========== -->
-        <section class="section" id="como">
-            <div class="container">
-                <div class="section-boxed">
-                    <div class="section-header">
-                        <h2 class="section-title">Três passos, nenhuma senha digitada.</h2>
-                        <p class="section-sub">A Niango opera sobre o que já existe no navegador: cookies, tokens,
-                            sessões. Nada de integração por API, nada de SSO para configurar.</p>
-                    </div>
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
 
-                    <div class="grid-3">
-                        <div class="step-card">
-                            <span class="step-num">Passo 01</span>
-                            <h3>Você já está logado</h3>
-                            <p>Acesse o serviço normalmente. A extensão reconhece a sessão ativa no seu navegador.</p>
-                        </div>
-                        <div class="step-card">
-                            <span class="step-num">Passo 02</span>
-                            <h3>Capture em um pacote</h3>
-                            <p>Um clique e a sessão entra no pacote escolhido, cifrada com uma chave AES própria.</p>
-                        </div>
-                        <div class="step-card">
-                            <span class="step-num">Passo 03</span>
-                            <h3>Distribua o acesso</h3>
-                            <p>Convide quem você autoriza. A pessoa abre o pacote e entra, sem saber a senha.</p>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:32px">
-                        <a href="/blog/como-criar-seu-primeiro-pacote/" class="btn btn-soft">Ver o passo a passo</a>
-                    </div>
+        <!-- ========== FERRAMENTAS ========== -->
+        <section class="frame" id="ferramentas">
+            <div class="frame__in">
+                <div class="dots dots--center" aria-hidden="true"></div>
+                <div class="float-chips" aria-hidden="true">
+                    <span style="top:16%;left:7%;transform:rotate(-4deg)"><span class="fchip" style="animation-duration:3.5s"><span class="tool-ico tool-ico--notion"><img data-fav="notion.so" src="https://www.google.com/s2/favicons?domain=notion.so&amp;sz=64" alt=""></span>Notion</span></span>
+                    <span style="top:11%;right:9%;transform:rotate(3deg)"><span class="fchip" style="animation-duration:4.5s"><span class="tool-ico tool-ico--canva"><img data-fav="canva.com" src="https://www.google.com/s2/favicons?domain=canva.com&amp;sz=64" alt=""></span>Canva</span></span>
+                    <span style="top:41%;left:3%;transform:rotate(2deg)"><span class="fchip" style="animation-duration:5s"><span class="tool-ico tool-ico--chatgpt"><img data-fav="chatgpt.com" src="https://www.google.com/s2/favicons?domain=chatgpt.com&amp;sz=64" alt=""></span>ChatGPT</span></span>
+                    <span style="top:39%;right:4%;transform:rotate(-2deg)"><span class="fchip" style="animation-duration:3.8s"><span class="tool-ico tool-ico--figma"><img data-fav="figma.com" src="https://www.google.com/s2/favicons?domain=figma.com&amp;sz=64" alt=""></span>Figma</span></span>
+                    <span style="top:70%;left:8%;transform:rotate(3deg)"><span class="fchip" style="animation-duration:4.2s"><span class="tool-ico tool-ico--hubspot"><img data-fav="hubspot.com" src="https://www.google.com/s2/favicons?domain=hubspot.com&amp;sz=64" alt=""></span>HubSpot</span></span>
+                    <span style="top:68%;right:8%;transform:rotate(-3deg)"><span class="fchip" style="animation-duration:4.8s"><span class="tool-ico tool-ico--ads"><img data-fav="ads.google.com" src="https://www.google.com/s2/favicons?domain=ads.google.com&amp;sz=64" alt=""></span>Google Ads</span></span>
+                </div>
+                <div class="centered">
+                    <span class="tag" data-reveal>Ferramentas</span>
+                    <h2 class="h2" data-reveal style="--d:80ms">Compartilhe como quiser! Time, cliente, freela.</h2>
+                    <p class="lede" data-reveal style="--d:160ms">Monte um pacote com as ferramentas, convide quem precisa e acompanhe o uso de cada pessoa.</p>
+                    <a href="/login" class="btn btn--bright tools__cta" data-reveal style="--d:240ms">Criar meu pacote
+                        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><mask id="ar3"><rect width="20" height="20" fill="#fff" /><path d="M6 10h7.5M10.5 6.5 14 10l-3.5 3.5" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></mask><circle cx="10" cy="10" r="10" fill="currentColor" mask="url(#ar3)" /></svg>
+                    </a>
+                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="link-under tools__alt">ou instale a extensão</a>
                 </div>
             </div>
         </section>
 
-        <!-- ========== SEGURANÇA ========== -->
-        <section class="section" id="seguranca">
-            <div class="container">
-                <div class="grid-2">
-                    <div class="prose-block">
-                        <h2 class="section-title">Uma chave por sessão, não uma senha por pessoa.</h2>
-                        <p>Cada sessão capturada é cifrada com criptografia AES individual. Nada é guardado em texto
-                            claro e nenhuma credencial trafega para quem recebe o acesso — o que circula é a sessão,
-                            sob controle de quem a criou.</p>
-                        <p>Isso muda o que acontece quando alguém sai do time: em vez de trocar a senha e reavisar todo
-                            mundo, você encerra um acesso.</p>
-                        <ul class="fact-list">
-                            <li>AES individual por sessão</li>
-                            <li>Credencial nunca exposta a quem recebe</li>
-                            <li>Revogação por pessoa, por pacote ou por sessão</li>
-                        </ul>
+        <!-- ========== COMO FUNCIONA (bento) ========== -->
+        <section class="frame" aria-label="Como funciona">
+            <div class="frame__grid bento">
+                <article class="card">
+                    <div class="card__media" aria-hidden="true">
+                        <div class="dots"></div>
+                        <div class="ext-mock">
+                            <div class="ext-mock__head"><img src="/assets/images/brand/niango-assinatura.svg" alt=""><span>Pacote: Marketing</span></div>
+                            <div class="ext-mock__row"><span class="tool-ico tool-ico--notion"><img data-fav="notion.so" src="https://www.google.com/s2/favicons?domain=notion.so&amp;sz=64" alt=""></span><div>Notion<small>Ativa · usada há 3 min</small></div><span class="ext-mock__btn">Abrir</span></div>
+                            <div class="ext-mock__row is-current"><span class="tool-ico tool-ico--canva"><img data-fav="canva.com" src="https://www.google.com/s2/favicons?domain=canva.com&amp;sz=64" alt=""></span><div>Canva<small>Ativa · você está aqui</small></div><span class="ext-mock__btn is-primary">Abrir logado</span></div>
+                            <div class="ext-mock__row"><span class="tool-ico tool-ico--chatgpt"><img data-fav="chatgpt.com" src="https://www.google.com/s2/favicons?domain=chatgpt.com&amp;sz=64" alt=""></span><div>ChatGPT<small>Em repouso</small></div><span class="ext-mock__btn">Abrir</span></div>
+                            <div class="ext-mock__row"><span class="tool-ico tool-ico--figma"><img data-fav="figma.com" src="https://www.google.com/s2/favicons?domain=figma.com&amp;sz=64" alt=""></span><div>Figma<small>Expirada · avisamos o dono</small></div><span class="ext-mock__btn">Ver</span></div>
+                        </div>
                     </div>
+                    <div class="card__body">
+                        <h3 class="h3">Extensão para Chrome</h3>
+                        <p class="text">Quem cadastra faz login uma vez. Sua equipe abre a ferramenta já logada, sem ver a senha.</p>
+                        <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="link-arrow"><span>Instalar extensão</span><span aria-hidden="true">→</span></a>
+                    </div>
+                </article>
+                <article class="card">
+                    <div class="card__media" aria-hidden="true">
+                        <div class="share-glow"></div>
+                        <div class="share-box">
+                            <div class="share-box__label">Compartilhar acesso</div>
+                            <div class="share-box__typed"><span id="typed">Liberar o Notion para bia@suaempresa.com</span><span class="share-box__caret"></span></div>
+                            <div class="share-box__actions">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4" /><path d="M2.5 20.5c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M19 8v6M16 11h6" /></svg>
+                                <span class="share-box__send">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+                                    <svg viewBox="0 0 24 24" class="share-box__cursor"><path d="M4 2.5v17.2l4.6-4.3 2.9 6.6 3-1.3-2.9-6.5 6.3-.4z" fill="#0E2747" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" /></svg>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <h3 class="h3">Centralize seus acessos</h3>
+                        <p class="text">Todas as ferramentas da empresa num lugar só. Mande o link do pacote pra sua equipe ou comece por uma das favoritas:</p>
+                        <div class="pkg-url"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></svg>niango.io/p/marketing</div>
+                        <div class="quick-adds">
+                            <a href="/login" class="quick-add"><span class="tool-ico tool-ico--notion"><img data-fav="notion.so" src="https://www.google.com/s2/favicons?domain=notion.so&amp;sz=64" alt=""></span>Adicionar Notion</a>
+                            <a href="/login" class="quick-add"><span class="tool-ico tool-ico--canva"><img data-fav="canva.com" src="https://www.google.com/s2/favicons?domain=canva.com&amp;sz=64" alt=""></span>Adicionar Canva</a>
+                            <a href="/login" class="quick-add"><span class="tool-ico tool-ico--chatgpt"><img data-fav="chatgpt.com" src="https://www.google.com/s2/favicons?domain=chatgpt.com&amp;sz=64" alt=""></span>Adicionar ChatGPT</a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
 
-                    <!-- Mockup do popup da extensão (Extension/popup/): 350×450, cantos de
-                         20px, ancorado no canto superior direito da página (top 20 / right 50,
-                         como em content/injectPopup.js). -->
-                    <figure class="figure figure--tall is-art">
-                        <svg viewBox="0 0 580 473" preserveAspectRatio="xMaxYMid slice" role="img"
-                            aria-label="Popup da extensão Niango aberto sobre uma página: pacote Engenharia expandido com as sessões Figma e Linear, cada uma com o botão Conectar.">
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
+
+        <!-- ========== COFRE ========== -->
+        <section class="frame frame--wide" id="seguranca" aria-label="Segurança">
+            <div class="frame__in">
+                <div class="vault-intro">
+                    <h2 class="vault-intro__title" data-reveal>Um cofre de <span class="circled">acessos<svg viewBox="0 0 240 80" preserveAspectRatio="none" aria-hidden="true"><path data-draw pathLength="1" d="M20 54 C 8 30, 66 8, 128 9 C 196 10, 236 26, 228 46 C 220 66, 146 76, 86 72 C 36 69, 6 58, 14 40 C 20 26, 52 15, 92 12" /></svg></span> para a sua equipe.</h2>
+                    <p class="lede" data-reveal style="--d:120ms">Organize as ferramentas da empresa em pacotes, decida quem entra em cada um e acompanhe o uso em tempo real. Quando alguém sai do time, o acesso sai junto.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PROTEÇÕES ========== -->
+        <section class="frame" aria-label="Proteções">
+            <div class="frame__grid guards">
+                <div class="spacer desk-only" aria-hidden="true"></div>
+                <article class="card guard">
+                    <div class="card__media">
+                        <div class="dots" aria-hidden="true"></div>
+                        <svg viewBox="0 0 220 220" aria-hidden="true" class="guard__art">
                             <defs>
-                                <clipPath id="apWin"><rect width="580" height="473" rx="8" /></clipPath>
-                                <linearGradient id="apAva" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0" stop-color="#ff8a65" />
-                                    <stop offset="1" stop-color="#f06292" />
-                                </linearGradient>
-                                <filter id="apShadow" x="-30%" y="-30%" width="180%" height="180%">
-                                    <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity=".55" />
-                                </filter>
+                                <linearGradient id="shG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" /><stop offset=".5" stop-color="#D6E7FF" /><stop offset="1" stop-color="#7DB4FF" /></linearGradient>
+                                <linearGradient id="rimG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F6FA" /><stop offset="1" stop-color="#D3DBEA" /></linearGradient>
                             </defs>
-
-                            <g clip-path="url(#apWin)" font-family="Inter, sans-serif">
-                                <rect width="580" height="473" fill="#0f1011" />
-
-                                <!-- ── Janela do navegador ── -->
-                                <rect width="580" height="32" fill="#1a1d21" />
-                                <circle cx="16" cy="16" r="4" fill="#ff5f57" />
-                                <circle cx="30" cy="16" r="4" fill="#febc2e" />
-                                <circle cx="44" cy="16" r="4" fill="#28c840" />
-                                <rect x="62" y="6" width="120" height="22" rx="6" fill="#0f1011" />
-                                <text x="74" y="21" font-size="8.5" fill="#9d9488">Painel · Serviço</text>
-                                <rect x="196" y="8" width="200" height="18" rx="9" fill="#0f1011" stroke="#26272a" />
-                                <text x="208" y="21" font-size="8.5" fill="#9d9488">app.servico.com</text>
-                                <path d="M0 32h580" stroke="#26272a" />
-
-                                <!-- ── Página por baixo ── -->
-                                <rect x="24" y="52" width="176" height="12" rx="4" fill="#212225" />
-                                <rect x="24" y="74" width="112" height="8" rx="4" fill="#191a1c" />
-                                <rect x="24" y="104" width="196" height="86" rx="8" fill="#171719" />
-                                <rect x="24" y="204" width="196" height="86" rx="8" fill="#171719" />
-                                <rect x="24" y="304" width="196" height="86" rx="8" fill="#171719" />
-                                <rect x="40" y="122" width="84" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="140" width="140" height="6" rx="3" fill="#191a1c" />
-                                <rect x="40" y="154" width="118" height="6" rx="3" fill="#191a1c" />
-                                <rect x="40" y="222" width="96" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="240" width="140" height="6" rx="3" fill="#191a1c" />
-                                <rect x="40" y="254" width="104" height="6" rx="3" fill="#191a1c" />
-                                <rect x="40" y="322" width="72" height="8" rx="4" fill="#212225" />
-                                <rect x="40" y="340" width="140" height="6" rx="3" fill="#191a1c" />
-
-                                <!-- ── Popup da extensão (coordenadas reais, 350×450) ── -->
-                                <g transform="translate(228 50) scale(.88)" filter="url(#apShadow)">
-                                    <rect width="350" height="450" rx="20" fill="#1c1c1e" stroke="#fff" stroke-opacity=".2" />
-
-                                    <!-- Cabeçalho: perfil + marca -->
-                                    <circle cx="37" cy="33" r="19" fill="url(#apAva)" stroke="#fff" stroke-opacity=".18" stroke-width="1.5" />
-                                    <text x="37" y="38" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">AR</text>
-                                    <circle cx="50" cy="46" r="6" fill="#fff" fill-opacity=".4" stroke="#1c1c1e" stroke-width="2" />
-                                    <text x="66" y="28" font-size="11" font-weight="500" fill="#fff" fill-opacity=".55">Olá,</text>
-                                    <text x="66" y="46" font-size="14" font-weight="600" fill="#fff">Ana</text>
-                                    <rect x="99" y="34" width="42" height="16" rx="8" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".12" />
-                                    <text x="120" y="45" font-size="9" font-weight="700" letter-spacing=".4" fill="#fff" fill-opacity=".7" text-anchor="middle">FREE</text>
-                                    <rect x="306" y="20" width="26" height="26" rx="6" fill="#1c65c8" />
-                                    <text x="319" y="38" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">N</text>
-                                    <path d="M0 64h350" stroke="#fff" stroke-opacity=".07" />
-
-                                    <!-- Controle segmentado -->
-                                    <rect x="18" y="78" width="314" height="32" rx="10" fill="#fff" fill-opacity=".06" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="21" y="81" width="154" height="26" rx="7" fill="#fff" fill-opacity=".12" />
-                                    <path d="M44 89h4.6l1.4 1.6H57a1.4 1.4 0 0 1 1.4 1.4v6a1.4 1.4 0 0 1-1.4 1.4H44a1.4 1.4 0 0 1-1.4-1.4v-7.6A1.4 1.4 0 0 1 44 89Z"
-                                        fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" />
-                                    <text x="66" y="99" font-size="12.5" font-weight="600" fill="#fff">Minha coleção</text>
-                                    <rect x="205" y="89" width="12" height="10" rx="1.6" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" />
-                                    <path d="m213 96 6 2.3-2.3.7-.7 2.3z" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round" />
-                                    <text x="225" y="99" font-size="12.5" font-weight="600" fill="#fff" fill-opacity=".55">Meus acessos</text>
-
-                                    <!-- Cabeçalho da coleção -->
-                                    <text x="18" y="140" font-size="15" font-weight="600" fill="#fff">Pacotes criados</text>
-                                    <circle cx="23" cy="152" r="2.6" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" />
-                                    <path d="M19 159a4 4 0 0 1 8 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" />
-                                    <text x="32" y="159" font-size="11" fill="#fff" fill-opacity=".5"><tspan font-weight="700">8</tspan> / 20 pessoas</text>
-                                    <rect x="268" y="126" width="64" height="28" rx="8" fill="#fff" fill-opacity=".08" stroke="#fff" stroke-opacity=".15" />
-                                    <text x="300" y="145" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">+ Novo</text>
-
-                                    <!-- Pacote 1 — expandido -->
-                                    <rect x="18" y="166" width="314" height="196" rx="12" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="30" y="180" width="35" height="35" rx="8" fill="#609efa" fill-opacity=".8" />
-                                    <text x="47.5" y="204" font-size="17" font-weight="600" fill="#fff" text-anchor="middle">E</text>
-                                    <text x="77" y="192" font-size="12" fill="#fff" fill-opacity=".6">criado há 2 meses</text>
-                                    <text x="77" y="209" font-size="14" font-weight="500" fill="#fff">Engenharia</text>
-                                    <text x="313" y="187" font-size="13" font-weight="700" fill="#fff" fill-opacity=".8" text-anchor="middle">...</text>
-                                    <path d="m308 203 5 5 5-5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-
-                                    <path d="M18 228h314v122a12 12 0 0 1-12 12H30a12 12 0 0 1-12-12z" fill="#000" fill-opacity=".2" />
-                                    <path d="M18 228h314" stroke="#fff" stroke-opacity=".1" />
-
-                                    <rect x="32" y="242" width="286" height="52" rx="12" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="44" y="254" width="28" height="28" rx="4" fill="#0acf83" />
-                                    <text x="58" y="273" font-size="13" font-weight="700" fill="#0b2c1e" text-anchor="middle">F</text>
-                                    <text x="84" y="273" font-size="16" font-weight="500" fill="#fff">Figma</text>
-                                    <rect x="237" y="255" width="69" height="26" rx="8" fill="none" stroke="#fff" stroke-opacity=".15" />
-                                    <text x="271.5" y="272" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">Conectar</text>
-
-                                    <rect x="32" y="302" width="286" height="52" rx="12" fill="#fff" fill-opacity=".05" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="44" y="314" width="28" height="28" rx="4" fill="#5e6ad2" />
-                                    <text x="58" y="333" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">L</text>
-                                    <text x="84" y="333" font-size="16" font-weight="500" fill="#fff">Linear</text>
-                                    <rect x="237" y="315" width="69" height="26" rx="8" fill="none" stroke="#fff" stroke-opacity=".15" />
-                                    <text x="271.5" y="332" font-size="12.5" font-weight="500" fill="#fff" text-anchor="middle">Conectar</text>
-
-                                    <!-- Pacote 2 — recolhido -->
-                                    <rect x="18" y="378" width="314" height="62" rx="12" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".1" />
-                                    <rect x="30" y="392" width="35" height="35" rx="8" fill="#667eea" />
-                                    <text x="47.5" y="416" font-size="17" font-weight="600" fill="#fff" text-anchor="middle">D</text>
-                                    <text x="77" y="404" font-size="12" fill="#fff" fill-opacity=".6">criado há 1 mês</text>
-                                    <text x="77" y="421" font-size="14" font-weight="500" fill="#fff">Design</text>
-                                    <text x="313" y="399" font-size="13" font-weight="700" fill="#fff" fill-opacity=".8" text-anchor="middle">...</text>
-                                    <path d="m311 411 5 5-5 5" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-                                </g>
-                            </g>
-                            <rect x=".5" y=".5" width="579" height="472" rx="8" fill="none" stroke="#2e2f33" />
+                            <ellipse cx="110" cy="196" rx="66" ry="10" fill="#0E2747" opacity=".08" />
+                            <path d="M110 26 L180 50 C180 116 156 162 110 188 C64 162 40 116 40 50 Z" fill="url(#rimG)" />
+                            <path d="M110 20 L174 42 C174 104 152 148 110 172 C68 148 46 104 46 42 Z" fill="#fff" stroke="#E2E7F1" stroke-width="2" />
+                            <path d="M110 32 L162 50 C162 102 144 138 110 158 C76 138 58 102 58 50 Z" fill="url(#shG)" />
+                            <path d="M110 32 L162 50 C162 62 161 72 159 82 C136 62 100 54 60 58 L58 50 Z" fill="#fff" opacity=".55" />
+                            <path d="M96 96v-10a14 14 0 0 1 28 0v10" stroke="#1C65C8" stroke-width="8" fill="none" stroke-linecap="round" />
+                            <rect x="85" y="94" width="50" height="40" rx="10" fill="#1C65C8" />
+                            <rect x="85" y="94" width="50" height="14" rx="7" fill="#fff" opacity=".18" />
+                            <circle cx="110" cy="112" r="5.5" fill="#fff" /><rect x="108" y="114" width="4" height="10" rx="2" fill="#fff" />
                         </svg>
+                    </div>
+                    <div class="card__body">
+                        <h3 class="h3">Senha nunca exposta.</h3>
+                        <p class="text">A sessão chega já autenticada. E-mail e senha ficam só com quem cadastrou a ferramenta.</p>
+                    </div>
+                </article>
+                <article class="card guard">
+                    <div class="card__media">
+                        <div class="dots" aria-hidden="true"></div>
+                        <svg viewBox="0 0 220 220" aria-hidden="true" class="guard__art">
+                            <defs>
+                                <linearGradient id="dkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" /><stop offset=".55" stop-color="#D6E7FF" /><stop offset="1" stop-color="#8FC0FF" /></linearGradient>
+                                <linearGradient id="dkRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8EDF5" /><stop offset="1" stop-color="#CBD4E5" /></linearGradient>
+                            </defs>
+                            <ellipse cx="110" cy="176" rx="80" ry="14" fill="#0E2747" opacity=".08" />
+                            <path d="M26 112v22c0 24 38 44 84 44s84-20 84-44v-22z" fill="url(#dkRim)" />
+                            <ellipse cx="110" cy="112" rx="84" ry="44" fill="#F7F9FC" stroke="#E2E7F1" stroke-width="2" />
+                            <ellipse cx="110" cy="110" rx="66" ry="32" fill="url(#dkG)" />
+                            <g transform="translate(110 108) scale(1 .56)">
+                                <path d="M-30 -8 A31 31 0 1 1 -22 22" fill="none" stroke="#1C65C8" stroke-width="10" stroke-linecap="round" />
+                                <path d="M-42 -16 L-30 -4 L-18 -18" fill="none" stroke="#1C65C8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M2 -14v18" stroke="#1C65C8" stroke-width="10" stroke-linecap="round" /><circle cx="2" cy="18" r="6" fill="#1C65C8" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="card__body">
+                        <h3 class="h3">Aviso de sessão expirada.</h3>
+                        <p class="text">A Niango percebe quando uma sessão cai e avisa antes da sua equipe ficar travada.</p>
+                    </div>
+                </article>
+                <div class="spacer desk-only" aria-hidden="true"></div>
+            </div>
+        </section>
+
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
+
+        <!-- ========== COMO COMEÇAR ========== -->
+        <section class="steps-band" id="como-comecar">
+            <div class="steps-band__in">
+                <div class="steps-band__dots" aria-hidden="true"></div>
+                <div class="steps-band__content">
+                    <div class="steps-band__head">
+                        <h2 class="h2" data-reveal>Em poucos minutos, <span>sua equipe já está usando.</span></h2>
+                        <p class="lede lede--tight" data-reveal style="--d:100ms">Sem migração, sem treinamento e sem trocar nenhuma senha.</p>
+                    </div>
+                    <div class="steps">
+                        <div class="step" data-reveal>
+                            <span class="step__n">1</span>
+                            <h3 class="h3">Instale a extensão</h3>
+                            <p class="text">Adicione a Niango ao Chrome. Leva menos de um minuto.</p>
+                        </div>
+                        <div class="step" data-reveal style="--d:100ms">
+                            <span class="step__n">2</span>
+                            <h3 class="h3">Crie um pacote</h3>
+                            <p class="text">Junte as ferramentas de um time ou de um cliente e faça login uma vez em cada.</p>
+                        </div>
+                        <div class="step" data-reveal style="--d:200ms">
+                            <span class="step__n">3</span>
+                            <h3 class="h3">Convide a equipe</h3>
+                            <p class="text">Mande o link do pacote. Cada pessoa entra logada, sem ver a senha.</p>
+                        </div>
+                        <div class="step" data-reveal style="--d:300ms">
+                            <span class="step__n">4</span>
+                            <h3 class="h3">Acompanhe e revogue</h3>
+                            <p class="text">Veja o uso de cada pessoa e corte o acesso em um clique quando precisar.</p>
+                        </div>
+                    </div>
+                    <div class="steps-band__actions" data-reveal>
+                        <a href="/login" class="btn btn--bright">Começar agora
+                            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><mask id="ar4"><rect width="20" height="20" fill="#fff" /><path d="M6 10h7.5M10.5 6.5 14 10l-3.5 3.5" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></mask><circle cx="10" cy="10" r="10" fill="currentColor" mask="url(#ar4)" /></svg>
+                        </a>
+                        <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener" class="btn btn--outline-light">Instalar extensão</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
+
+        <!-- ========== QUEM FAZ ========== -->
+        <section class="frame" id="quem-faz">
+            <div class="frame__grid">
+                <div class="frame__in">
+                    <div class="dots dots--center" aria-hidden="true"></div>
+                    <div class="centered centered--about">
+                        <span class="tag" data-reveal>Por trás da Niango</span>
+                        <h2 class="h2" data-reveal style="--d:80ms">Quem constrói a Niango responde por ela.</h2>
+                        <p class="lede" data-reveal style="--d:160ms">Segurança de acesso é o que a gente faz todos os dias. E quem assina embaixo é o fundador.</p>
+                    </div>
+                </div>
+                <div class="founder-band">
+                    <figure class="founder" data-reveal>
+                        <span class="founder__tape" aria-hidden="true"></span>
+                        <div class="founder__who">
+                            <!-- Sem foto por enquanto. Para usar a foto:
+                                 <img src="/assets/images/landing/fundador.jpg" alt="Thales Wendel"> no lugar das iniciais. -->
+                            <span class="founder__avatar" aria-hidden="true">TW</span>
+                            <div><b class="founder__name">Thales Wendel</b><span class="founder__role">Fundador da Niango</span></div>
+                        </div>
+                        <blockquote class="founder__quote"><span>Por muito tempo eu vi senha de cliente rodando em grupo de WhatsApp, em planilha compartilhada e até em post-it no monitor. Todo mundo sabia que era arriscado, mas ninguém tinha uma alternativa simples. A Niango existe pra isso: sua equipe trabalha com as ferramentas que precisa, e a senha continua sendo só sua. Se algo não funcionar como você espera, me chama. Eu respondo pessoalmente.</span></blockquote>
+                        <svg viewBox="0 0 150 56" class="founder__sign" role="img" aria-label="Assinatura"><path d="M6 38c10-18 18-30 22-28s-8 34-4 34 12-26 18-24-2 20 2 20 10-14 16-12-2 12 4 10 8-10 14-8 0 8 6 6 14-10 22-12 18 2 26-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
                     </figure>
                 </div>
             </div>
         </section>
 
-        <!-- ========== LINHA DO TEMPO ========== -->
-        <section class="section">
-            <div class="container">
-                <div class="section-header">
-                    <h2 class="section-title">Do login ao acesso encerrado.</h2>
-                </div>
-                <div class="timeline">
-                    <div class="timeline-row">
-                        <span class="t-n">01</span>
-                        <h3>Você entra normalmente</h3>
-                        <p>Login, 2FA, SSO ou magic link — o fluxo do serviço não muda em nada.</p>
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
+
+        <!-- ========== SUPORTE ========== -->
+        <section class="frame" id="suporte" aria-label="Suporte">
+            <div class="frame__grid">
+                <!-- Foto real do suporte (alguém do time usando a Niango no notebook,
+                     luz natural, sem banco de imagem). Quando existir, descomente:
+                <div class="support-photo"><img src="/assets/images/landing/suporte.jpg" alt="Pessoa da equipe usando a Niango no notebook"></div>
+                -->
+                <div class="split">
+                    <div data-reveal>
+                        <span class="tag">Suporte</span>
+                        <h2 class="split__title">E tudo isso com um suporte que responde de verdade.</h2>
                     </div>
-                    <div class="timeline-row">
-                        <span class="t-n">02</span>
-                        <h3>A extensão captura a sessão</h3>
-                        <p>Cookies e tokens da sessão ativa são lidos no navegador e agrupados em um pacote.</p>
-                    </div>
-                    <div class="timeline-row">
-                        <span class="t-n">03</span>
-                        <h3>A sessão é cifrada</h3>
-                        <p>Criptografia AES individual por sessão. Nada é guardado em texto claro.</p>
-                    </div>
-                    <div class="timeline-row">
-                        <span class="t-n">04</span>
-                        <h3>Você distribui para quem autoriza</h3>
-                        <p>A pessoa abre o pacote e conecta. Nenhuma credencial é exibida ou enviada.</p>
-                    </div>
-                    <div class="timeline-row">
-                        <span class="t-n">05</span>
-                        <h3>Você revoga quando quiser</h3>
-                        <p>Encerrar o acesso é uma ação no painel — sem trocar senha nem reavisar o time.</p>
+                    <div class="split__aside" data-reveal style="--d:120ms">
+                        <p class="lede">Fale direto com quem constrói a Niango, pelo WhatsApp ou por e-mail. Sem robô e sem fila.</p>
+                        <a href="mailto:contato@niango.io" class="link-arrow"><span>Fale com a gente</span><span aria-hidden="true">→</span></a>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ========== PERGUNTAS ========== -->
-        <section class="section" id="perguntas">
-            <div class="container">
-                <div class="grid-2" style="align-items:start">
-                    <div class="prose-block">
-                        <h2 class="section-title">Cofre de senhas resolve outro problema.</h2>
-                        <p>Um cofre guarda credenciais e ainda depende de alguém digitar, passar por 2FA e receber o
-                            código. A Niango entrega o acesso já autenticado — e o retira do mesmo jeito.</p>
-                        <div>
-                            <a href="/pages/pricing/" class="btn btn-ink">Ver planos</a>
-                        </div>
-                    </div>
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
 
-                    <div class="faq">
-                        <div class="faq-item open">
-                            <button class="faq-q" type="button" aria-expanded="true">
-                                Vocês armazenam minhas senhas?
-                                <span class="plus" aria-hidden="true">+</span>
+        <!-- ========== DÚVIDAS ========== -->
+        <section class="frame" id="faq">
+            <div class="frame__in">
+                <div class="faq">
+                    <div class="faq__intro" data-reveal>
+                        <h2 class="h2">Tem dúvidas? Relaxa, a gente responde.</h2>
+                        <p class="lede">Juntamos as perguntas que mais aparecem por aqui. Se a sua não estiver na lista, é só chamar.</p>
+                    </div>
+                    <div class="faq__list" data-reveal style="--d:120ms">
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a1">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>A Niango pede a senha das minhas ferramentas?</span>
                             </button>
-                            <div class="faq-a">
-                                <div>
-                                    <p>Não. A Niango trabalha com a sessão já autenticada, cifrada com AES individual.
-                                        A credencial original continua apenas com você.</p>
-                                </div>
-                            </div>
+                            <p class="text faq__a" id="faq-a1" hidden>Não pra sua equipe. Quem cadastra a ferramenta faz login uma vez, e as pessoas recebem a sessão já autenticada, sem ver e-mail nem senha.</p>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-q" type="button" aria-expanded="false">
-                                Funciona com 2FA, SSO e magic links?
-                                <span class="plus" aria-hidden="true">+</span>
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a2">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>O que acontece quando eu revogo um acesso?</span>
                             </button>
-                            <div class="faq-a">
-                                <div>
-                                    <p>Sim. Como o que é compartilhado é a sessão, e não a credencial, qualquer método de
-                                        autenticação do serviço continua funcionando. Você passa pela verificação uma
-                                        vez.</p>
-                                </div>
-                            </div>
+                            <p class="text faq__a" id="faq-a2" hidden>A pessoa perde a sessão na hora, em todos os dispositivos dela. Não precisa trocar a senha da ferramenta.</p>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-q" type="button" aria-expanded="false">
-                                Como tiro o acesso de alguém?
-                                <span class="plus" aria-hidden="true">+</span>
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a3">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>Funciona com quais ferramentas?</span>
                             </button>
-                            <div class="faq-a">
-                                <div>
-                                    <p>Pelo painel, por pessoa, por pacote ou por sessão. A revogação encerra na hora a
-                                        conexão de quem recebeu o acesso.</p>
-                                </div>
-                            </div>
+                            <p class="text faq__a" id="faq-a3" hidden>Com as ferramentas web que sua equipe já usa no navegador, como Notion, Canva e ChatGPT.</p>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-q" type="button" aria-expanded="false">
-                                Isso viola os termos dos serviços?
-                                <span class="plus" aria-hidden="true">+</span>
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a4">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>Preciso instalar alguma coisa?</span>
                             </button>
-                            <div class="faq-a">
-                                <div>
-                                    <p>A Niango é indicada para acesso de equipe em planos que permitem múltiplos
-                                        usuários e para uso pessoal entre dispositivos. Os termos de cada serviço
-                                        continuam valendo.</p>
-                                </div>
-                            </div>
+                            <p class="text faq__a" id="faq-a4" hidden>Só a extensão da Niango no Chrome. O resto acontece no painel.</p>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-q" type="button" aria-expanded="false">
-                                Em quais navegadores funciona?
-                                <span class="plus" aria-hidden="true">+</span>
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a5">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>Consigo ver quem usou cada ferramenta?</span>
                             </button>
-                            <div class="faq-a">
-                                <div>
-                                    <p>Chrome, Edge, Brave e Arc — qualquer navegador baseado em Chromium.</p>
-                                </div>
-                            </div>
+                            <p class="text faq__a" id="faq-a5" hidden>Sim. O painel mostra quem tem acesso, o status de cada sessão e o tempo de uso por dia.</p>
+                        </div>
+                        <div class="faq__item">
+                            <button type="button" class="faq__q" aria-expanded="false" aria-controls="faq-a6">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+                                <span>Quanto tempo leva pra configurar?</span>
+                            </button>
+                            <p class="text faq__a" id="faq-a6" hidden>Poucos minutos: instale a extensão, crie um pacote, adicione as sessões e convide a equipe.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ========== O QUE MUDA NA PRÁTICA ========== -->
-        <section class="section">
-            <div class="container">
-                <div class="section-header" style="max-width:none;flex-direction:row;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap">
-                    <h2 class="section-title">O que muda na prática.</h2>
-                    <a href="/pages/pricing/" style="font-size:16px;color:var(--ink-2)">Ver planos</a>
-                </div>
+        <div class="hatch-row" aria-hidden="true"><div></div></div>
 
-                <div class="grid-3">
-                    <div class="value-card">
-                        <span class="value-num">01</span>
-                        <h3>Ninguém precisa saber a senha</h3>
-                        <p>O acesso é concedido pela sessão. A credencial permanece com quem a criou.</p>
-                        <span class="value-foot">Vale para serviços autenticados por sessão no navegador.</span>
-                    </div>
-                    <div class="value-card">
-                        <span class="value-num">02</span>
-                        <h3>2FA e SSO deixam de travar o time</h3>
-                        <p>Você passa pela verificação uma vez. Quem recebe o acesso entra sem repetir o processo.</p>
-                        <span class="value-foot">Sujeito aos termos de uso de cada serviço.</span>
-                    </div>
-                    <div class="value-card">
-                        <span class="value-num">03</span>
-                        <h3>Sair do time é uma ação, não um mutirão</h3>
-                        <p>Revogue o acesso e ele encerra na hora, sem trocar senha nem reavisar ninguém.</p>
-                        <span class="value-foot">A revogação encerra a sessão distribuída, não a sua.</span>
+        <!-- ========== CTA FINAL ========== -->
+        <section class="frame" id="comecar">
+            <div class="frame__grid closing">
+                <div class="spacer desk-only" aria-hidden="true"></div>
+                <div class="closing__box">
+                    <div class="dots" aria-hidden="true"></div>
+                    <div class="closing__content">
+                        <div class="closing__copy" data-reveal>
+                            <h2 class="closing__title">Pronto, você leu a página inteira.</h2>
+                            <p class="lede lede--tight">Agora só falta parar de mandar senha no WhatsApp.<br>Vai lá, cria seu primeiro pacote.</p>
+                            <a href="/login" class="btn btn--white">Tá bom, vou testar
+                                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><mask id="ar5"><rect width="20" height="20" fill="#fff" /><path d="M6 10h7.5M10.5 6.5 14 10l-3.5 3.5" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></mask><circle cx="10" cy="10" r="10" fill="currentColor" mask="url(#ar5)" /></svg>
+                            </a>
+                        </div>
+                        <!-- O post-it do topo, agora no lixo. -->
+                        <svg viewBox="0 0 420 420" aria-hidden="true" class="closing__art">
+                            <g fill="none" stroke="#0E2747" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="292" cy="398" rx="78" ry="10" fill="#0E2747" stroke="none" opacity=".18" />
+                                <path d="M232 262h120l-14 132h-92z" fill="#fff" />
+                                <path d="M262 286l4 84M292 286v84M322 286l-4 84" />
+                                <ellipse cx="292" cy="263" rx="58" ry="7" fill="#0E2747" />
+                                <g transform="rotate(64 356 262)"><rect x="220" y="244" width="140" height="18" rx="7" fill="#0E2747" /><path d="M274 244v-10h32v10" /></g>
+                                <g transform="rotate(-16 120 120)"><path d="M58 58h122v104l-22 22H58z" fill="#fff" /><path d="M158 184v-22h22" fill="#B8D6FF" /></g>
+                                <path d="M196 150c34 4 62 26 76 66" stroke-dasharray="2 14" stroke-width="5" />
+                                <path d="M206 120c40 2 78 30 94 74" stroke-width="4" opacity=".55" />
+                                <path d="M40 210l8 8m0-8-8 8M352 70l10 10m0-10-10 10" stroke-width="4" />
+                                <path d="M372 140c0 8-6 14-14 14 8 0 14 6 14 14 0-8 6-14 14-14-8 0-14-6-14-14z" fill="#0E2747" stroke="none" />
+                                <path d="M70 300c0 6-5 11-11 11 6 0 11 5 11 11 0-6 5-11 11-11-6 0-11-5-11-11z" fill="#fff" stroke="none" />
+                            </g>
+                            <g transform="rotate(-16 120 120)" font-family="Fustat, sans-serif" font-weight="700" fill="#0E2747">
+                                <text x="76" y="92" font-size="17">senha:</text>
+                                <text x="76" y="128" font-size="22" font-style="italic">cliente123</text>
+                                <path d="M74 136c30-6 64-4 90 0" stroke="#1C65C8" stroke-width="3" fill="none" stroke-linecap="round" />
+                            </g>
+                        </svg>
                     </div>
                 </div>
-
-                <div style="margin-top:24px">
-                    <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm"
-                        target="_blank" rel="noopener" class="btn btn-primary btn-lg"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="21.17" y1="8" x2="12" y2="8" /><line x1="3.95" y1="6.06" x2="8.54" y2="14" /><line x1="10.88" y1="21.94" x2="15.46" y2="14" /></svg>Adicionar ao Chrome</a>
-                </div>
+                <div class="spacer desk-only" aria-hidden="true"></div>
             </div>
         </section>
     </main>
 
-    <!-- ========== FOOTER ========== -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <a href="/?persist=true" class="nav-logo">
-                        <img class="niango-logo niango-logo--light" src="/assets/images/brand/niango-wordmark.svg" height="22" alt="Niango">
-                        <img class="niango-logo niango-logo--dark" src="/assets/images/brand/niango-wordmark-negativo.svg" height="22" alt="Niango">
-                    </a>
-                    <p>Distribuição controlada de acessos para times, agências e organizações.</p>
+    <div class="hatch-row" aria-hidden="true"><div></div></div>
+
+    <!-- ========== RODAPÉ ========== -->
+    <footer class="site-footer">
+        <div class="site-footer__in">
+            <div class="footer-cols">
+                <div>
+                    <div class="footer-col__title">Produto</div>
+                    <div class="footer-col__links">
+                        <a href="https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm" target="_blank" rel="noopener">Extensão para Chrome</a>
+                        <a href="/blog/como-criar-seu-primeiro-pacote/">Pacotes</a>
+                        <a href="/pages/pricing/">Preços</a>
+                        <a href="#seguranca">Segurança</a>
+                    </div>
                 </div>
-                <div class="footer-col">
-                    <h5>Produto</h5>
-                    <ul>
-                        <li><a href="#como">Como funciona</a></li>
-                        <li><a href="#seguranca">Segurança</a></li>
-                        <li><a href="#casos">Casos de uso</a></li>
-                        <li><a href="/pages/pricing/">Preços</a></li>
-                    </ul>
+                <div>
+                    <div class="footer-col__title">Para quem</div>
+                    <div class="footer-col__links">
+                        <a href="/blog/como-compartilhar-um-pacote/">Agências</a>
+                        <a href="/blog/como-compartilhar-acesso-sem-senha/">Startups</a>
+                        <a href="/blog/como-dar-acesso-ao-time-sem-senha/">Times de marketing</a>
+                        <a href="/blog/como-revogar-um-acesso-compartilhado/">TI e operações</a>
+                    </div>
                 </div>
-                <div class="footer-col">
-                    <h5>Empresa</h5>
-                    <ul>
-                        <li><a href="/blog/">Blog</a></li>
-                        <li><a href="mailto:team@niango.io">Contato</a></li>
-                        <li><a href="/login">Entrar</a></li>
-                    </ul>
+                <div>
+                    <div class="footer-col__title">Recursos</div>
+                    <div class="footer-col__links">
+                        <a href="/blog/">Blog</a>
+                        <a href="/blog/">Central de ajuda</a>
+                    </div>
                 </div>
-                <div class="footer-col">
-                    <h5>Legal</h5>
-                    <ul>
-                        <li><a href="/pages/legal/privacy/">Privacidade</a></li>
-                        <li><a href="/pages/legal/terms/">Termos</a></li>
-                    </ul>
+                <div>
+                    <div class="footer-col__title">Empresa</div>
+                    <div class="footer-col__links">
+                        <a href="#quem-faz">Sobre</a>
+                        <a href="/pages/legal/terms/">Termos de uso</a>
+                        <a href="/pages/legal/privacy/">Privacidade</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="footer-col__title">Conta</div>
+                    <div class="footer-col__links">
+                        <a href="/login">Criar conta</a>
+                        <a href="/login">Entrar</a>
+                        <a href="mailto:contato@niango.io">Falar com a gente</a>
+                    </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <span>© 2026 Niango Inc.</span>
-                <span class="mono">status · operacional</span>
+            <div class="footer-base">
+                <p>© 2026 Niango. Feito no Brasil.</p>
+                <a href="#topo" class="footer-base__logo" aria-label="Niango"><img src="/assets/images/brand/niango-assinatura.svg" alt="Niango"></a>
+                <!-- Redes ainda sem perfil: os links ficam no lugar e não navegam. -->
+                <div class="footer-base__social">
+                    <a href="#" class="link-under">Instagram</a>
+                    <a href="#" class="link-under">LinkedIn</a>
+                    <a href="#" class="link-under">YouTube</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <script src="/assets/scripts/home.js" defer></script>
+    <a href="mailto:contato@niango.io" class="fab" aria-label="Falar com a gente">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c4.9 0 8.5 3.3 8.5 7.6s-3.6 7.6-8.5 7.6c-.9 0-1.8-.1-2.6-.3L5 20.5l1-3.6C4.4 15.6 3.5 13.5 3.5 11.1 3.5 6.8 7.1 3.5 12 3.5z" fill="#fff" /></svg>
+    </a>
+
+    <script src="/assets/scripts/faviconManager.js" defer></script>
+    <script src="/assets/scripts/index.js" defer></script>
 </body>
 
 </html>
