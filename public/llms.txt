@@ -29,8 +29,10 @@ A plataforma é neutra e flexível, usada em cenários que vão de grupos de ami
 ## Páginas
 
 - [Página inicial](https://niango.io/): visão geral da plataforma Niango.
-- [Como funciona](https://niango.io/#como): captura, organização e distribuição de acessos.
-- [Para equipes](https://niango.io/#equipes): uso da Niango em times e organizações.
+- [Como começar](https://niango.io/#como-comecar): instalar a extensão, criar um pacote, convidar a equipe e acompanhar o uso.
+- [Segurança](https://niango.io/#seguranca): sessão já autenticada, senha nunca exposta e revogação em um clique.
+- [Dúvidas frequentes](https://niango.io/#faq): perguntas mais comuns sobre a Niango.
+- [Preços](https://niango.io/pages/pricing/): planos da Niango.
 - [Extensão na Chrome Web Store](https://chromewebstore.google.com/detail/niango/fncdgjcpelomihdflipojhkmgoicckpm): instalação oficial.
 
 ## Blog
@@ -41,4 +43,4 @@ A plataforma é neutra e flexível, usada em cenários que vão de grupos de ami
 
 ## Contato
 
-- E-mail: team@niango.io
+- E-mail: contato@niango.io
