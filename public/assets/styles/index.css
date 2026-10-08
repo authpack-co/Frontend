@@ -29,7 +29,7 @@
     --ease: cubic-bezier(.22, 1, .36, 1);
 
     /* Calhas do frame: estreita (a maioria das faixas) e larga (cabeçalho,
-       preço e cofre, que respiram mais). */
+       pausa e preço, que respiram mais). */
     --gutter: clamp(12px, calc(5vw - 8px), 64px);
     --gutter-wide: clamp(12px, calc(10vw - 25px), 119px);
     --pad-x: clamp(24px, 4.5vw, 64px);
@@ -717,44 +717,7 @@ img { display: block; }
 .quick-add:hover { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
 .quick-add .tool-ico { width: 24px; height: 24px; border-radius: 50%; }
 
-/* ===== Cofre ===== */
-.vault-intro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 32px 64px;
-    padding: var(--section-y) var(--pad-x);
-}
-.vault-intro__title {
-    margin: 0;
-    max-width: 640px;
-    font-weight: 600;
-    font-size: clamp(36px, 4.6vw, 56px);
-    line-height: 1.25;
-    letter-spacing: -.04em;
-    color: var(--ink);
-}
-.circled { position: relative; display: inline-block; white-space: nowrap; }
-.circled svg {
-    position: absolute;
-    left: -9%;
-    top: -16%;
-    width: 118%;
-    height: 136%;
-    overflow: visible;
-    pointer-events: none;
-}
-.circled path {
-    fill: none;
-    stroke: var(--blue-bright);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
-}
-.vault-intro .lede { max-width: 560px; padding-bottom: 10px; }
-
+/* ===== Proteções ===== */
 .guards { grid-template-columns: minmax(0, 1fr); }
 .guard .card__media { display: grid; place-items: center; height: clamp(300px, 26vw, 380px); }
 .guard__art {
@@ -1060,8 +1023,6 @@ img { display: block; }
     transition: opacity .7s var(--ease) var(--d, 0ms), translate .7s var(--ease) var(--d, 0ms);
 }
 .reveal [data-reveal].is-in { opacity: 1; translate: none; }
-.reveal [data-reveal] [data-draw] { stroke-dashoffset: 1; transition: stroke-dashoffset 1.4s var(--ease) .35s; }
-.reveal [data-reveal].is-in [data-draw] { stroke-dashoffset: 0; }
 
 /* Se o index.js não carregar, nada fica escondido para sempre. */
 .reveal:not(.reveal-ready) [data-reveal] { animation: reveal-failsafe 0s 3s forwards; }
