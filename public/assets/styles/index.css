@@ -482,7 +482,31 @@ img { display: block; }
     letter-spacing: -.04em;
     line-height: 1;
 }
-.price .lede { margin-top: 16px; }
+.price .lede { margin-top: 16px; max-width: 520px; }
+/* Valor de entrada do plano pago (Plus, em /pages/pricing/). */
+.price__from { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.price__label {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--muted);
+}
+.price__value {
+    font-weight: 600;
+    font-size: clamp(32px, 3.4vw, 44px);
+    line-height: 1.1;
+    letter-spacing: -.04em;
+    color: var(--ink);
+    white-space: nowrap;
+}
+.price__value small {
+    font-size: .42em;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    color: var(--muted);
+}
+.price__from .price__link { margin-top: 10px; }
 .price__link {
     display: inline-flex;
     align-items: center;
