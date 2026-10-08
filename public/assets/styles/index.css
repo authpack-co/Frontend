@@ -439,6 +439,22 @@ img { display: block; }
     transform-origin: top left;
 }
 
+/* ===== Pausa ===== */
+.pause {
+    margin: 0 auto;
+    max-width: 820px;
+    padding: calc(var(--section-y) * 1.4) var(--pad-x);
+    text-align: center;
+    font-weight: 500;
+    font-size: clamp(26px, 2.9vw, 42px);
+    line-height: 1.25;
+    letter-spacing: -.035em;
+    color: var(--ink);
+    text-wrap: balance;
+}
+.pause > span { display: block; }
+.pause__end { margin-top: .35em; font-weight: 600; color: var(--blue); }
+
 /* ===== Preço ===== */
 .price {
     position: relative;
