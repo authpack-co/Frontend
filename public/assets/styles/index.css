@@ -495,7 +495,7 @@ img { display: block; }
 }
 .price__link:hover { gap: 20px; color: var(--blue); }
 
-/* ===== Seções centralizadas (Ferramentas, Quem faz) ===== */
+/* ===== Seções centralizadas (Ferramentas) ===== */
 .centered {
     position: relative;
     display: flex;
@@ -787,96 +787,6 @@ img { display: block; }
 }
 .steps-band__actions .btn--bright:hover { background: #fff; color: var(--ink); }
 
-/* ===== Quem faz ===== */
-.founder-band { background: var(--surface); border-radius: 16px; padding: 56px var(--pad-x) 64px; }
-.founder {
-    position: relative;
-    max-width: 760px;
-    margin: 0 auto;
-    display: grid;
-    gap: 22px;
-    padding: clamp(24px, 3vw, 40px);
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    transform: rotate(-.4deg);
-}
-.founder__tape {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    width: 96px;
-    height: 26px;
-    margin-left: -48px;
-    background: rgba(184, 214, 255, .7);
-    transform: rotate(-3deg);
-    border-left: 2px dotted rgba(255, 255, 255, .8);
-    border-right: 2px dotted rgba(255, 255, 255, .8);
-}
-.founder__who { display: flex; align-items: center; gap: 14px; }
-/* Sem foto por enquanto: as iniciais ocupam o lugar. Para usar a foto,
-   troque o conteúdo do .founder__avatar por um <img> (ele já recorta em círculo). */
-.founder__avatar {
-    width: 64px;
-    height: 64px;
-    flex: none;
-    border-radius: 50%;
-    overflow: hidden;
-    display: grid;
-    place-items: center;
-    background: var(--blue);
-    color: #fff;
-    font-weight: 700;
-    font-size: 22px;
-    letter-spacing: -.02em;
-}
-.founder__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.founder__name { display: block; font-size: 20px; font-weight: 600; letter-spacing: -.02em; color: var(--ink); }
-.founder__role { display: block; font-size: 15px; font-weight: 600; color: var(--muted); }
-.founder__quote {
-    margin: 0;
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: clamp(16px, 1.25vw, 18px);
-    line-height: 1.8;
-    letter-spacing: .05em;
-    color: var(--ink);
-}
-.founder__quote span { background: linear-gradient(transparent 60%, rgba(125, 180, 255, .28) 60%); }
-.founder__sign { width: 150px; height: 56px; color: var(--blue); }
-
-/* ===== Suporte ===== */
-/* Foto real do suporte (ainda sem imagem; ver o comentário no index.html). */
-.support-photo {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    border-radius: 16px;
-    overflow: hidden;
-    background: radial-gradient(80% 90% at 75% 20%, #F6EBDC, transparent 70%), linear-gradient(160deg, #E9DAC6, #D9C2A5 55%, #C9AE8E);
-}
-.support-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-
-.split {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px 64px;
-    background: #fff;
-    border-radius: 8px;
-    padding: clamp(40px, 4.5vw, 56px) var(--pad-x) clamp(48px, 4.5vw, 64px);
-}
-.split > div { flex: 1 1 380px; min-width: 0; }
-.split__title {
-    margin: 20px 0 0;
-    max-width: 520px;
-    font-weight: 600;
-    font-size: clamp(32px, 4vw, 40px);
-    line-height: 1.2;
-    letter-spacing: -.04em;
-    color: var(--ink);
-}
-.split__aside { padding-top: clamp(0px, 4vw, 64px); }
-.split__aside .link-arrow { margin-top: 28px; }
-
 /* ===== FAQ ===== */
 .faq {
     display: flex;
@@ -1064,7 +974,6 @@ img { display: block; }
     .float-chips { display: block; }
     .desk-only { display: block; }
     .closing { grid-template-columns: 64px minmax(0, 1fr) 64px; }
-    .support-photo { aspect-ratio: 16 / 7; }
 }
 
 @media (min-width: 1100px) {
