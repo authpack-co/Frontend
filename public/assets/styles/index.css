@@ -1086,14 +1086,16 @@ img { display: block; }
     .nav__links, .nav__actions { display: flex; }
     .nav__toggle, .site-header.is-open .mobile-menu { display: none; }
 
+    /* O texto parte do topo, um pouco acima do painel da cena, em vez de
+       ficar centralizado na altura toda do hero. */
     .hero {
         min-height: calc(817px * var(--s));
         flex-direction: row;
-        align-items: center;
+        align-items: flex-start;
     }
     .hero__copy {
         max-width: 50%;
-        padding: calc(24px * var(--s)) 0 0 var(--hero-pad-x);
+        padding: calc(92px * var(--s)) 0 calc(48px * var(--s)) var(--hero-pad-x);
     }
     .hero__title > span { white-space: nowrap; }
     .hero__visual { position: absolute; height: 100%; }
