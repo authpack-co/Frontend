@@ -727,18 +727,6 @@ img { display: block; }
 .quick-add:hover { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
 .quick-add .tool-ico { width: 24px; height: 24px; border-radius: 50%; }
 
-/* ===== Proteções ===== */
-.guards { grid-template-columns: minmax(0, 1fr); }
-.guard .card__media { display: grid; place-items: center; height: clamp(300px, 26vw, 380px); }
-.guard__art {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    transition: transform .6s var(--ease);
-}
-.guard__art:hover { transform: translateY(-6px) rotate(-2deg); }
-.guard .card__body { align-items: stretch; gap: 8px; }
-
 /* ===== Como começar ===== */
 .steps-band { display: flex; }
 .steps-band__in {
@@ -1075,7 +1063,6 @@ img { display: block; }
 
     .float-chips { display: block; }
     .desk-only { display: block; }
-    .guards { grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) 64px; }
     .closing { grid-template-columns: 64px minmax(0, 1fr) 64px; }
     .support-photo { aspect-ratio: 16 / 7; }
 }
