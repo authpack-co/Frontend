@@ -32,7 +32,7 @@ export default function SelectServices({
                     <input
                         type="text"
                         className="form-input as-search"
-                        placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com)…"
+                        placeholder="Buscar serviço ou colar URL (ex.: https://app.exemplo.com ou http://localhost:5173)…"
                         autoComplete="off"
                         value={search}
                         onChange={(event) => onSearch(event.target.value)}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { isLocalHostname } from '../lib/hostname.js';
 
 /**
  * Favicon de um serviço, com a mesma cadeia de fallback do resto da aplicação
@@ -39,7 +40,9 @@ export function faviconDomain(urlOrDomain) {
 
 function googleFaviconUrl(urlOrDomain, size = GOOGLE_SIZE) {
     const domain = faviconDomain(urlOrDomain);
-    if (!domain) return '';
+    // localhost, IP e rede interna não existem para o Google: a consulta só
+    // devolveria o globo genérico e entregaria o nome interno a um terceiro.
+    if (!domain || isLocalHostname(domain)) return '';
     return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=${size}`;
 }
 

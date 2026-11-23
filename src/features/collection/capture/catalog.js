@@ -7,6 +7,8 @@
  * Os ícones não são mockup: vêm do favicon real de cada domínio.
  */
 
+import { isIpAddress, isLocalHostname } from '../../../lib/hostname.js';
+
 export const CATEGORIES = [
     { id: 'ia', label: 'IA' },
     { id: 'stream', label: 'Streaming' },
@@ -60,22 +62,54 @@ export function keyOf(url) {
     }
 }
 
-/** Normaliza uma entrada livre em { name, url }, ou null se não for URL. */
+/**
+ * Normaliza uma entrada livre em { name, url }, ou null se não for URL.
+ *
+ * Aceita qualquer URL http(s) válida — site público, localhost, IP, host de
+ * rede interna. Sem protocolo, o padrão é https://, exceto para host local
+ * (localhost:5173, 192.168.0.10:3000), que raramente tem certificado: esses
+ * saem como http://.
+ *
+ * Uma palavra solta ("slack", "chat") continua não sendo URL: é a busca por
+ * nome no catálogo, e tratá-la como host esconderia os resultados. Só vira
+ * URL se tiver ponto, porta, for "localhost" ou vier com http(s):// explícito.
+ */
 export function normalizeServiceInput(raw) {
     const value = (raw || '').trim();
     if (!value) return null;
 
-    const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+    const hasProtocol = /^https?:\/\//i.test(value);
 
     try {
-        const url = new URL(withProtocol);
-        if (!url.hostname.includes('.')) return null;
+        let url = new URL(hasProtocol ? value : `https://${value}`);
+        if (!url.hostname) return null;
 
-        const host = url.hostname.replace(/^www\./, '');
-        const name = host.split('.')[0];
+        if (!hasProtocol) {
+            const looksLikeUrl = url.hostname.includes('.')
+                || url.hostname === 'localhost'
+                || url.hostname.startsWith('[')
+                || url.port !== '';
+            if (!looksLikeUrl) return null;
 
-        return { name: name.charAt(0).toUpperCase() + name.slice(1), url: url.href };
+            if (isLocalHostname(url.hostname)) url = new URL(`http://${value}`);
+        }
+
+        return { name: nameOf(url), url: url.href };
     } catch {
         return null;
     }
+}
+
+/**
+ * Nome de exibição. Site público: o primeiro rótulo (app.exemplo.com → App).
+ * Host local: o host inteiro com a porta, porque "Localhost" sozinho não
+ * distingue dois apps de desenvolvimento rodando ao mesmo tempo.
+ */
+function nameOf(url) {
+    const host = url.hostname.replace(/^www\./, '');
+    const label = !host.includes('.') || isIpAddress(host)
+        ? `${host}${url.port ? `:${url.port}` : ''}`
+        : host.split('.')[0];
+
+    return label.charAt(0).toUpperCase() + label.slice(1);
 }
